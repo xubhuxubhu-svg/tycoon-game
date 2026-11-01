@@ -295,7 +295,7 @@ body.ing #toast{top:138px}
     <button class="ib" data-p="credits"><div class="sq">📜</div><span>聲明</span></button>
   </div>
 </div>
-<div id="credit">遊戲製作：Eric Hu　版本 0.2</div>
+<div id="credit">遊戲製作：Eric Hu　版本 1.1</div>
 </div>
 <div id="game" class="hide">
   <div id="lbls"></div>
@@ -391,7 +391,7 @@ if(!G.uid)G.uid='p'+Math.random().toString(36).slice(2,10);
 if(G.tasks.date!==today()){G.tasks={date:today(),p:{login:1},claimed:{}}}
 let dirty=true;
 const hooks={beforeSave:[]};
-function save(show){try{hooks.beforeSave.forEach(f=>f());localStorage.setItem(KEY,JSON.stringify(G));dirty=false;if(show){const s=$('#saved');s.classList.add('on');clearTimeout(save.t);save.t=setTimeout(()=>s.classList.remove('on'),1300)}}catch(e){}}
+function save(show){try{hooks.beforeSave.forEach(f=>f());let js;if(typeof NET!=='undefined'&&NET.swap){const cur=G.maps.food2;if(NET.own===undefined)delete G.maps.food2;else G.maps.food2=NET.own;js=JSON.stringify(G);G.maps.food2=cur}else js=JSON.stringify(G);localStorage.setItem(KEY,js);dirty=false;if(show){const s=$('#saved');s.classList.add('on');clearTimeout(save.t);save.t=setTimeout(()=>s.classList.remove('on'),1300)}}catch(e){}}
 const mark=()=>{dirty=true};
 setInterval(()=>{if(dirty||mode==='game')save(true)},4000);
 addEventListener('visibilitychange',()=>{if(document.hidden)save()});
@@ -1000,13 +1000,15 @@ const PANELS={
    return `<button class="sc ${un?'':'lock'}" data-i="${i}"><span class="no">${String(i+1).padStart(2,'0')}</span>${un?'':'<span class="lk">🔒</span>'}<div class="em" style="background:${s.color}">${s.em}</div><div class="nm">${s.name}</div><div class="ct">${c?`${d} / ${c} 已自動化`:'玩法整理中'}</div><div class="bar"><i style="width:${c?d/c*100:0}%"></i></div></button>`}).join('')}</div>`;
    openPanel('📚 系列地圖',html,()=>pb.querySelectorAll('.sc').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;if(!seriesUnlocked(i)){SFX.err();b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');toast(`先把「${SERIES[i-1].name}」全部玩法完成自動化，才能解鎖喔！`);return}SFX.click();showProgress()}))},
  duo(){openPanel('👥 雙人合作',`
+   <div class="opt"><h3>🌐 不同裝置連線（筆電、手機都可以）</h3><p>一人建立房間，把 4 位數房號告訴朋友；朋友用自己的手機或電腦打開遊戲，在這裡輸入房號加入，就能一起在<b>房主的地圖</b>搬運、加工、賺錢，也可以互相邀請對戰！</p>
+   <button class="sbtn" id="netNew" style="background:#2f7bd6;box-shadow:0 3px 0 #1f5ea8">🏠 建立房間（我當房主）</button>
+   <div class="netrow"><span style="font-size:14px">朋友的房號</span><input id="netCode" maxlength="4" inputmode="numeric" placeholder="0000"><button class="sbtn" id="netGo" style="background:#8a63d2;box-shadow:0 3px 0 #5c3fa0">🚪 加入</button></div><div id="netErr"></div>
+   <div style="font-size:12px;color:#789;text-align:center">💡 加入別人的房間時，經營的是房主的地圖，不會影響你自己的存檔</div></div>
    <div class="opt"><h3>📱 同一台裝置一起玩</h3><p>兩人用同一個螢幕。分開時畫面自動分成上、下兩半；兩人靠近時，畫面自動合併成一個！</p>
    <div class="split"><div class="scr" id="demo"><div class="h" id="demoH"></div><div class="p" id="dp1" style="left:20px;top:12px">🧑‍🍳</div><div class="p" id="dp2" style="left:54px;top:80px">👷</div></div><div style="font-size:14px;color:#567;line-height:1.8">🔵 玩家一：左半邊拖曳／WASD<br>🟣 玩家二：右半邊拖曳／方向鍵</div></div>
-   <button class="sbtn" id="coopGo" style="background:#4cb85c;box-shadow:0 3px 0 #2f8a3d">▶ 開始同機合作</button></div>
-   <div class="opt"><h3>🌐 線上連線<span class="tag">下一批開放</span></h3><p>建立房間後把房號給朋友，朋友用自己的手機或電腦加入，一起在同一張地圖搬運、加工、賺錢。</p>
-   <button class="sbtn" data-x="1" style="background:#2f7bd6;box-shadow:0 3px 0 #1f5ea8">建立房間</button> <button class="sbtn" data-x="1" style="background:#8a63d2;box-shadow:0 3px 0 #5c3fa0">輸入房號加入</button></div>`,()=>{
+   <button class="sbtn" id="coopGo" style="background:#4cb85c;box-shadow:0 3px 0 #2f8a3d">▶ 開始同機合作</button></div>`,()=>{
+     $('#netNew').onclick=()=>{SFX.click();netCreate()};$('#netGo').onclick=()=>{SFX.click();netJoin($('#netCode').value)};$('#netCode').onkeydown=e=>{if(e.key==='Enter')netJoin($('#netCode').value)};
      $('#coopGo').onclick=()=>{SFX.click();closePanel();startGame({coop:true})};
-     pb.querySelectorAll('[data-x]').forEach(b=>b.onclick=()=>{SFX.err();toast('線上連線會在下一批更新開放！先試試同機合作吧～')});
      let k=0;const anim=()=>{if(!modal.classList.contains('on')||!$('#demo'))return;k++;const close=k%2===1;$('#dp1').style.left=close?'34px':'20px';$('#dp1').style.top=close?'44px':'12px';$('#dp2').style.left=close?'50px':'54px';$('#dp2').style.top=close?'50px':'80px';$('#demoH').style.opacity=close?0:1;setTimeout(anim,1800)};setTimeout(anim,800)})},
  daily(){const claimedToday=G.daily.last===today();let streak=G.daily.streak;const y=new Date(Date.now()-864e5);const yd=y.getFullYear()+'-'+(y.getMonth()+1)+'-'+y.getDate();
    if(!claimedToday&&G.daily.last!==yd)streak=0;const idx=claimedToday?(streak-1)%7:streak%7;
@@ -2519,8 +2521,8 @@ function updatePads(dt){const st=GW.st;
     const wage=o.kind==='auto'?`<div style="font-size:11px;color:#ffb3b3">${o.lk.role==='belt'||o.lk.role==='vehicle'?'租金':'薪水'} 💵${wageOf(o.lk)}/分</div>`:'';const html=`<div class="padl">${o.name}<br><span style="font-size:12px;color:#bfe6ff">${o.sub}</span><div class="c">💵 ${left}</div>${wage}<div class="b" style="width:${paid/o.cost*100}%"></div></div>`;if(o.L.html!==html){o.L.el.innerHTML=html;o.L.html=html}
     let on=null;for(const p of GW.players)if(d2(p.pos,o.pos)<1.15){on=p;break}
     if(on)o.stay+=dt;else{o.stay=0;o.acc=0;o.warned=false}
-    if(!on){o.okLow=false;o.stopLow=false}
-    if(on&&o.stay>.25&&!o.okLow&&GW.floor&&st.money-Math.max(20,o.cost/1.6)*.1<GW.floor*3){if(o.stopLow)continue;if(!GW.asking){GW.asking=o;askLow(o)}continue}
+    if(!on){o.okLow=false;o.stopLow=false;o.okNet=false}
+    if(on&&o.stay>.25&&!o.okLow&&!(on.remote&&o.okNet)&&GW.floor&&st.money-Math.max(20,o.cost/1.6)*.1<GW.floor*3){if(on.remote||o.stopLow)continue;if(!GW.asking){GW.asking=o;askLow(o)}continue}
     if(on&&o.stay>.25&&st.money>0){o.acc+=dt*Math.max(20,o.cost/1.6);const ch=Math.min(st.money,left,Math.floor(o.acc));if(ch>0){o.acc-=ch;st.money-=ch;st.shops[o.S.i][o.key]=paid+ch}
       o.payT-=dt;if(o.payT<=0){o.payT=.07;o.n++;SFX.pay(o.n);const b=makeBill();fly(b,on.pos.clone().add(V(0,1.3,0)),()=>o.pos.clone().add(V(0,.15,0)),.22,1,(m)=>m.parent&&m.parent.remove(m))}
       if(padPaid(o)>=o.cost){completePad(o);return}}}}
@@ -2534,7 +2536,7 @@ function completePad(o){const st=GW.st,zs=st.shops[o.S.i];zs[o.key]=0;SFX.buy();
 function shopAutomated(S){G.stars++;G.stats.done=(G.stats.done||0)+1;G.lv=1+Math.floor(G.stars/2);refreshTop();S.sign();
   celebrate({em:'🤖',t1:'全自動化完成！',t2:`${S.def.em} ${S.def.name}`,t3:'⭐ +1　💎 +20　收入自動入帳！',rain:['🤖','⭐','💎','✨','🎉',S.def.em],on(){GW.players.forEach(p=>p.dance=2);confetti3d(S.c,90);shockwave(S.c,0xffe14d,10);setTimeout(()=>gemsFly($('#ceT3'),10,20,'#gGem'),600)}});
   pushRank();checkSeries();save(true)}
-function checkSeries(){let n=0;for(let i=0;i<FOOD_LIST.length;i++)if(zoneStatus(i)==='auto')n++;
+function checkSeries(){if(GW&&GW.net==='guest')return;let n=0;for(let i=0;i<FOOD_LIST.length;i++)if(zoneStatus(i)==='auto')n++;
   if(n>=FOOD_LIST.length&&!G.prog.foodDone){G.prog.foodDone=1;celebrate({em:'🏆',t1:'系列完成！',t2:'🍔 飲食與料理 全部自動化',t3:`🔓 解鎖：${SERIES[1].em} ${SERIES[1].name}`,big:true,rain:['🏆','👑','💎','⭐','🎉','🍔','🍕','🍦']})}}
 
 /* ======================= 交貨動作 ======================= */
@@ -2550,7 +2552,7 @@ function discard(p,type){const list=p.stack.filter(m=>!type||m.userData.type===t
   const t=sprite('🗑️',1.0);t.position.copy(bin).setY(.6);GW.scene.add(t);setTimeout(()=>{t.parent&&t.parent.remove(t);puff(bin.clone().add(V(0,.5,0)),8,.3)},list.length*30+700);
   list.forEach((m,i)=>{const tp=m.userData.type;setTimeout(()=>{const mm=takeTop(p,tp);if(!mm)return;fly(mm,mm.position.clone(),bin.clone().setY(.7),.35,1.4,(x)=>{x.parent&&x.parent.remove(x)})},i*30)});
   const val=Math.min(GW.st.money,list.reduce((a,m)=>a+itemValue(m.userData.type),0));GW.st.money-=val;flow(-val,'waste');
-  SFX.poof();floatAt(p.pos.clone().add(V(0,2.6,0)),`丟掉 ${list.length} 個　-💵${val}`,'#c0392b');p.fullWarned=false}
+  SFX.poof();floatAt(p.pos.clone().add(V(0,2.6,0)),`丟掉 ${list.length} 個　-💵${val}`,'#c0392b');p.fullWarned=false;if(GW.net==='guest'&&p===GW.players[0])netSend({t:'cmd',c:'disc',type:type||null})}
 function itemValue(t){if(ITEMS[t].cost)return ITEMS[t].cost;const S=SHOPS.find(d=>d.counter.item===t);return S?Math.ceil(S.counter.price/2):3}
 
 /* ======================= 玩家 ======================= */
@@ -2558,18 +2560,18 @@ function makePlayer(id){const p=carrier(id?0x8a63d2:0x2f6fd1,10);p.isPlayer=true
 const keys={};addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true});addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
 const joys=[{on:false,id:null,dx:0,dy:0,el:$('#joy1')},{on:false,id:null,dx:0,dy:0,el:$('#joy2')}];
 const cv=renderer.domElement;
-cv.addEventListener('pointerdown',e=>{if(mode!=='game')return;const k=GW.coop&&e.clientX>W/2?1:0;const j=joys[k];if(j.on)return;j.on=true;j.id=e.pointerId;j.sx=e.clientX;j.sy=e.clientY;j.dx=j.dy=0;j.el.style.display='block';j.el.style.left=e.clientX+'px';j.el.style.top=e.clientY+'px';j.el.firstChild.style.transform='';try{cv.setPointerCapture(e.pointerId)}catch(_){}});
+cv.addEventListener('pointerdown',e=>{if(mode!=='game')return;const k=GW.coop&&!GW.net&&e.clientX>W/2?1:0;const j=joys[k];if(j.on)return;j.on=true;j.id=e.pointerId;j.sx=e.clientX;j.sy=e.clientY;j.dx=j.dy=0;j.el.style.display='block';j.el.style.left=e.clientX+'px';j.el.style.top=e.clientY+'px';j.el.firstChild.style.transform='';try{cv.setPointerCapture(e.pointerId)}catch(_){}});
 cv.addEventListener('pointermove',e=>{for(const j of joys){if(!j.on||e.pointerId!==j.id)continue;let dx=e.clientX-j.sx,dy=e.clientY-j.sy;const L=Math.hypot(dx,dy),R=48;if(L>R){dx*=R/L;dy*=R/L}j.dx=dx/R;j.dy=dy/R;j.el.firstChild.style.transform=`translate(${dx}px,${dy}px)`}});
 const endJ=e=>{for(const j of joys)if(e.pointerId===j.id){j.on=false;j.dx=j.dy=0;j.el.style.display='none';j.id=null}};cv.addEventListener('pointerup',endJ);cv.addEventListener('pointercancel',endJ);
 function inputOf(id){let x=0,y=0;const k=keys;
-  if(id===0){if(k['a']||(!GW.coop&&k['arrowleft']))x--;if(k['d']||(!GW.coop&&k['arrowright']))x++;if(k['w']||(!GW.coop&&k['arrowup']))y--;if(k['s']||(!GW.coop&&k['arrowdown']))y++}
+  const solo=!GW.coop||GW.net;if(id===0){if(k['a']||(solo&&k['arrowleft']))x--;if(k['d']||(solo&&k['arrowright']))x++;if(k['w']||(solo&&k['arrowup']))y--;if(k['s']||(solo&&k['arrowdown']))y++}
   else{if(k['arrowleft'])x--;if(k['arrowright'])x++;if(k['arrowup'])y--;if(k['arrowdown'])y++}
   const j=joys[id];if(j.on){x+=j.dx;y+=j.dy}const L=Math.hypot(x,y);if(L>1){x/=L;y/=L}return [x,y]}
 const SR=V(1,0,-1).normalize(),SD=V(1,0,1).normalize();
 function collide(p,r=.38){for(const b of GW.solids){if(b.ob){const dx=p.x-b.cx,dz=p.z-b.cz;let lx=dx*b.c-dz*b.s,lz=dx*b.s+dz*b.c;const X=b.hw+r,Z=b.hd+r;if(Math.abs(lx)<X&&Math.abs(lz)<Z){if(X-Math.abs(lx)<Z-Math.abs(lz))lx=Math.sign(lx||1)*X;else lz=Math.sign(lz||1)*Z;p.x=b.cx+lx*b.c+lz*b.s;p.z=b.cz-lx*b.s+lz*b.c}continue}if(p.x>b.x0-r&&p.x<b.x1+r&&p.z>b.z0-r&&p.z<b.z1+r){const dl=p.x-(b.x0-r),dr=(b.x1+r)-p.x,du=p.z-(b.z0-r),dd=(b.z1+r)-p.z;const m=Math.min(dl,dr,du,dd);if(m===dl)p.x=b.x0-r;else if(m===dr)p.x=b.x1+r;else if(m===du)p.z=b.z0-r;else p.z=b.z1+r}}
   for(const [x,z,s] of GW.trees){const dx=p.x-x,dz=p.z-z,d=Math.hypot(dx,dz),rr=r+.7*s;if(d<rr&&d>0){p.x=x+dx/d*rr;p.z=z+dz/d*rr}}
   const R=Math.max(16,...GW.shops.filter(S=>S.built||GW.pads.some(o=>o.S===S)).map(S=>S.c.length()+S.rad+3));const l=Math.hypot(p.x,p.z);if(l>R){p.x*=R/l;p.z*=R/l}}
-function updatePlayer(p,dt){const [ix,iy]=inputOf(p.id);let speed=0;
+function updatePlayer(p,dt){const [ix,iy]=p.remote?[0,0]:inputOf(p.inId??p.id);let speed=p.remote?netMoveRemote(p,dt):0;
   if(p.dance>0){p.dance-=dt;const u=p.o.userData;u.body.position.y=Math.abs(Math.sin(p.dance*9))*.5;p.o.rotation.y+=dt*10;u.arms.forEach((a,i)=>{a.rotation.z=(i?-1:1)*(1.2+Math.sin(p.dance*12)*.6)});if(p.dance<=0)u.arms.forEach((a,i)=>a.rotation.z=(i?-1:1)*.18);return}
   if(ix||iy){const mv=V(0,0,0).addScaledVector(SR,ix).addScaledVector(SD,iy);const mag=Math.min(1,mv.length());mv.normalize();const sp=6.4*mag*(buffOn('run')?1.5:1);const old=p.pos.clone();p.pos.addScaledVector(mv,sp*dt);collide(p.pos);speed=old.distanceTo(p.pos)/dt;p.dir=Math.atan2(mv.x,mv.z)}
   p.o.rotation.y=lerpA(p.o.rotation.y,p.dir,dt*14);walkAnim(p,speed,dt,p.stack.length+p.incoming>0,(q)=>{puff(q.pos.clone().add(V(0,.08,0)),2,.1);SFX.step()});
@@ -2659,10 +2661,10 @@ function setCam(cam,tgt,asp,extra=0){const dist=baseDist(asp)+extra+(window.__ca
   if(GW.shake>0)cam.position.add(V(rand(-1,1),rand(-1,1),rand(-1,1)).multiplyScalar(GW.shake*.6));cam.lookAt(tgt.x,tgt.y+.6,tgt.z)}
 let views=[];
 function renderGame(dt){const [p1,p2]=GW.players;const asp=W/H;
-  if(GW.coop&&p2){const d=d2(p1.pos,p2.pos);if(GW.merged&&d>17)GW.merged=false;else if(!GW.merged&&d<12)GW.merged=true}else GW.merged=true;
+  if(GW.coop&&p2&&!GW.net){const d=d2(p1.pos,p2.pos);if(GW.merged&&d>17)GW.merged=false;else if(!GW.merged&&d<12)GW.merged=true}else GW.merged=true;
   $('#divider').style.opacity=GW.merged?0:1;GW.shake=Math.max(0,(GW.shake||0)-dt);
-  if(GW.merged){const tgt=GW.coop&&p2?p1.pos.clone().add(p2.pos).multiplyScalar(.5):p1.pos;GW.camT[0].lerp(tgt,Math.min(1,dt*5));GW.camT[1].copy(GW.camT[0]);
-    const extra=GW.coop&&p2?Math.max(0,d2(p1.pos,p2.pos)-5)*1.1:0;setCam(GW.cams[0],GW.camT[0],asp,extra);
+  if(GW.merged){const two=GW.coop&&p2&&!GW.net;const tgt=two?p1.pos.clone().add(p2.pos).multiplyScalar(.5):p1.pos;GW.camT[0].lerp(tgt,Math.min(1,dt*5));GW.camT[1].copy(GW.camT[0]);
+    const extra=two?Math.max(0,d2(p1.pos,p2.pos)-5)*1.1:0;setCam(GW.cams[0],GW.camT[0],asp,extra);
     renderer.setScissorTest(false);renderer.setViewport(0,0,W,H);renderer.render(GW.scene,GW.cams[0]);views=[{cam:GW.cams[0],x:0,y:0,w:W,h:H}]}
   else{const ha=W/(H/2);for(let k=0;k<2;k++){GW.camT[k].lerp(GW.players[k].pos,Math.min(1,dt*5));setCam(GW.cams[k],GW.camT[k],ha,-4)}
     renderer.setScissorTest(true);renderer.setViewport(0,H/2,W,H/2);renderer.setScissor(0,H/2,W,H/2);renderer.render(GW.scene,GW.cams[0]);
@@ -2699,7 +2701,7 @@ function updateGame(dt){const W0=GW;W0.time+=dt;const t=W0.time;
   W0.helpers.forEach(h=>updateHelper(h,dt,W0.players.some(p=>d2(p.pos,h.pos)<34)));
   updatePads(dt);
   if(!W0.strike)W0.belts.forEach(b=>{b.tex.offset.y+=dt*1.6*b.dir});
-  payroll(dt);billing(dt);idleHint(dt);eventTick(dt);miniTick(dt);facUpdate(dt);
+  if(W0.net!=='guest'){payroll(dt);billing(dt);eventTick(dt);miniTick(dt)}else{W0.evs=(W0.evs||[]).filter(e=>e.until>W0.time)}idleHint(dt);facUpdate(dt);netTick(dt);
   W0.rings.forEach(r=>{if(!r.visible)return;const k=((t*.9)+r.userData.ph)%1;r.userData.pulse.scale.setScalar(1+k*.5);r.userData.pulse.material.opacity=.6*(1-k);if(r.userData.icon)r.userData.icon.position.y=1.15+Math.sin(t*3+r.userData.ph)*.1});
   W0.arrows.forEach(a=>{a.material.opacity=.25+.7*Math.max(0,Math.sin(t*5-a.userData.ph*6))});
   goalT-=dt;if(goalT<=0){goalT=.35;goal=computeGoal(W0.players[0]);const e=$('#goal');const txt=goal?'👉 '+goal.text:'✨ 一切順利運轉中～';if(e.textContent!==txt){e.textContent=txt;e.animate([{transform:'translateX(-50%) scale(1.12)'},{transform:'translateX(-50%) scale(1)'}],{duration:250})}}
@@ -2709,8 +2711,8 @@ function updateGame(dt){const W0=GW;W0.time+=dt;const t=W0.time;
   if(!window.__noR&&!GW.hideR)renderGame(dt);
   W0.players.forEach(p=>{p.tag.show=W0.coop;p.tag.pos=p.pos.clone().setY(2.3+stackH(p))});
   placeLabels();
-  updateInv(W0.players[0],$('#inv'));updateInv(W0.coop?W0.players[1]:null,$('#inv2'));
-  if(W0.coop&&!W0.merged){$('#inv').style.bottom=(H/2+10)+'px';$('#inv2').style.bottom='14px'}else{$('#inv').style.bottom='14px';$('#inv2').style.bottom='62px'}
+  updateInv(W0.players[0],$('#inv'));updateInv(W0.coop&&!W0.net?W0.players[1]:null,$('#inv2'));
+  if(W0.coop&&!W0.net&&!W0.merged){$('#inv').style.bottom=(H/2+10)+'px';$('#inv2').style.bottom='14px'}else{$('#inv').style.bottom='14px';$('#inv2').style.bottom='62px'}
   const edge=$('#edge');if(goal){const [x,y,ok]=projectGame(goal.pos);const vw=views[0];const inView=ok&&x>vw.x+20&&x<vw.x+vw.w-20&&y>vw.y+80&&y<vw.y+vw.h-40;
     if(!inView){_pv.copy(goal.pos).project(vw.cam);let dx=_pv.x,dy=-_pv.y;if(_pv.z>1){dx=-dx;dy=-dy}const a=Math.atan2(dy*vw.h,dx*vw.w);const cx=vw.x+vw.w/2,cy=vw.y+vw.h/2;const rx=vw.w/2-34,ry=vw.h/2-60;
       const k=Math.min(Math.abs(rx/Math.cos(a)||1e9),Math.abs(ry/Math.sin(a)||1e9));edge.style.display='block';edge.style.left=(cx+Math.cos(a)*k)+'px';edge.style.top=(cy+Math.sin(a)*k+20)+'px';edge.querySelector('i').style.transform=`rotate(${a}rad)`;edge.querySelector('b').textContent=goal.em||'⭐'}else edge.style.display='none'}else edge.style.display='none';
@@ -2735,16 +2737,16 @@ function useCard(c){if(c.dur){G.buffs[c.id]=Math.max(Date.now(),G.buffs[c.id]||0
 function startGame(opts={}){initAudio();mode='game';document.body.classList.add('ing');$('#home').classList.add('hide');$('#game').classList.remove('hide');$('#tapHint').style.display='none';
   if(!GW)buildWorld();curScene=GW.scene;projector=projectGame;
   if(!GW.players.length){const p=makePlayer(0);p.pos.set(GW.st.px??0,0,GW.st.pz??14);GW.players.push(p);GW.camT[0].copy(p.pos)}
-  GW.coop=!!opts.coop;
-  if(GW.coop&&GW.players.length<2){const p=makePlayer(1);p.pos.copy(GW.players[0].pos).add(V(1.4,0,.6));GW.players.push(p);GW.camT[1].copy(p.pos)}
-  if(!GW.coop&&GW.players.length>1){const p=GW.players.pop();p.stack.forEach(m=>m.parent&&m.parent.remove(m));GW.scene.remove(p.o);p.tag.el.remove();LABELS.splice(LABELS.indexOf(p.tag),1)}
+  GW.coop=!!opts.coop;GW.net=opts.net||null;
+  if(GW.coop&&!GW.net&&GW.players.length<2){const p=makePlayer(1);p.pos.copy(GW.players[0].pos).add(V(1.4,0,.6));GW.players.push(p);GW.camT[1].copy(p.pos)}
+  if((!GW.coop||GW.net==='host')&&GW.players.length>1){const p=GW.players.pop();p.stack.forEach(m=>m.parent&&m.parent.remove(m));GW.scene.remove(p.o);p.tag.el.remove();LABELS.splice(LABELS.indexOf(p.tag),1)}
   if(opts.focus!==undefined)teleport(opts.focus);
   $('#gSfx').classList.toggle('off',!G.set.sfx);refreshTop();
-  if(GW.coop)toast('👥 1P：左半邊／WASD　2P：右半邊／方向鍵',4200);
+  if(GW.coop&&!GW.net)toast('👥 1P：左半邊／WASD　2P：右半邊／方向鍵',4200);
   else if(GW.st.first){GW.st.first=false;setTimeout(()=>toast('跟著地上的黃色箭頭走！站進發亮的圈圈就能拿取或放下東西～',5200),600)}
-  offlineCheck();save()}
-function teleport(k){const S=GW.shops[k];if(!S)return;const dir=S.c.clone().normalize();GW.players.forEach((p,i)=>{p.pos.copy(S.c).sub(dir.clone().multiplyScalar(S.rad*.45)).add(V(i*1.4,0,0));collide(p.pos);puff(p.pos.clone().add(V(0,.5,0)),14,.35)});GW.camT[0].copy(GW.players[0].pos);GW.camT[1].copy(GW.players[0].pos);SFX.poof();toast(`✨ 傳送到 ${S.def.em} ${S.def.name}`)}
-function exitGame(){save(true);mode='home';document.body.classList.remove('ing');$('#game').classList.add('hide');$('#home').classList.remove('hide');curScene=HOME.scene;projector=HOME.project;joys.forEach(j=>{j.on=false;j.el.style.display='none'});refreshTop();showSlogan()}
+  if(GW.net!=='guest')offlineCheck();netChip();save()}
+function teleport(k){const S=GW.shops[k];if(!S)return;const dir=S.c.clone().normalize();(GW.net?[GW.players[0]]:GW.players).forEach((p,i)=>{p.pos.copy(S.c).sub(dir.clone().multiplyScalar(S.rad*.45)).add(V(i*1.4,0,0));collide(p.pos);puff(p.pos.clone().add(V(0,.5,0)),14,.35)});GW.camT[0].copy(GW.players[0].pos);GW.camT[1].copy(GW.players[0].pos);SFX.poof();toast(`✨ 傳送到 ${S.def.em} ${S.def.name}`)}
+function exitGame(){if(NET.role==='guest'){netLeave();return}netLeave();if(MG&&MG.stage==='notice'){MG=null;$('#mini').style.display='none'}save(true);mode='home';document.body.classList.remove('ing');$('#game').classList.add('hide');$('#home').classList.remove('hide');curScene=HOME.scene;projector=HOME.project;joys.forEach(j=>{j.on=false;j.el.style.display='none'});refreshTop();showSlogan()}
 function offlineCheck(){const st=GW.st;const now=Date.now();const awayAll=(now-(st.last||now))/1000;const away=Math.min(30*60,awayAll);st.last=now;if(awayAll<60)return;
   const rate=Math.max(0,(st.netRate||0)/60);if(rate<=0)return;
   let amt=Math.floor(rate*away);const dbl=!!G.buffs.night;if(dbl){amt*=2;G.buffs.night=false}amt=Math.max(0,Math.min(amt,MONEY_CAP-Math.floor(st.money)));if(amt<=0)return;
@@ -2779,7 +2781,7 @@ function payroll(dt){payT-=dt;if(payT>0)return;payT=10;
     const [x,y,ok]=projector(GW.players[0].pos.clone().add(V(0,3.2,0)));const d=document.createElement('div');d.className='float';d.textContent=`-${need} 薪水`;d.style.webkitTextStroke='5px #b33';d.style.fontSize='16px';
     const r=$('#gCash').getBoundingClientRect();d.style.left=(r.left+r.width/2)+'px';d.style.top=(r.bottom+30)+'px';document.body.appendChild(d);d.animate([{opacity:0,transform:'translate(-50%,-50%) scale(.6)'},{opacity:1,offset:.2},{opacity:0,transform:'translate(-50%,0%) scale(1)'}],{duration:1400}).onfinish=()=>d.remove()}
   else{if(!GW.strike){GW.strike=true;SFX.err();toast('😴 錢不夠付薪水，員工罷工了！先自己賺點錢吧～',4200)}}}
-function flowRates(){const L=GW.flowLog||[];const t0=GW.time-60;while(L.length&&L[0].t<t0)L.shift();let inc=0,out=0;const by={};L.forEach(e=>{if(e.a>0)inc+=e.a;else{out-=e.a;by[e.k]=(by[e.k]||0)-e.a}});return {inc,out,by}}
+function flowRates(){if(GW&&GW.net==='guest'&&NET.fr)return {inc:NET.fr[0],out:NET.fr[1],by:{}};const L=GW.flowLog||[];const t0=GW.time-60;while(L.length&&L[0].t<t0)L.shift();let inc=0,out=0;const by={};L.forEach(e=>{if(e.a>0)inc+=e.a;else{out-=e.a;by[e.k]=(by[e.k]||0)-e.a}});return {inc,out,by}}
 setInterval(()=>{if(mode!=='game'||!GW)return;const r=flowRates();const el=$('#flow');el.innerHTML=`<span class="up">▲${r.inc}</span><span class="dn">▼${r.out}</span><small>/分</small>`;el.classList.toggle('neg',r.out>r.inc);if(GW.time>65)GW.st.netRate=r.inc-r.out;
   const fl=floorAmt();GW.floor=fl;$('#gFloor b').textContent=fl.toLocaleString();const low=fl>0&&GW.st.money<fl*3;$('#gCash').classList.toggle('warn',!!(low||GW.strike));$('#gFloor').classList.toggle('warn',!!low);haltTip()},1000);
 function showLedger(){const r=flowRates();const rows=[];let tot=0;
@@ -2876,12 +2878,12 @@ $('#gFun').onclick=()=>{SFX.click();openPanel('🎡 遊樂場',`<div class="note
   const gb=document.querySelector('#ghud .gbtns');const pb=document.createElement('button');pb.className='gbtn';pb.id='gPause';pb.title='暫停';pb.textContent='⏸️';gb.appendChild(pb)})();
 
 /* ---- 暫停 ---- */
-function setPause(on){if(!GW)return;GW.paused=on;$('#pauseOv').style.display=on?'flex':'none';if(on)save(true)}
+function setPause(on,fromNet){if(!GW)return;if(GW.net&&!fromNet)netSend({t:'pause',on});GW.paused=on;$('#pauseOv').style.display=on?'flex':'none';if(on)save(true)}
 $('#gPause').onclick=()=>{SFX.click();setPause(true)};$('#unpause').onclick=()=>{SFX.click();clock.getDelta();setPause(false)};
 
 /* ---- 低於保底 3 倍時先確認 ---- */
 function askLow(o){$('#askTxt').innerHTML=`再付下去，現金會低於<b>保底金額的 3 倍</b>（💵${(GW.floor*3).toLocaleString()}）。<br>錢不夠付薪水時，全部店家會停止營運喔！<br>要繼續付款嗎？`;$('#askLow').style.display='flex';SFX.err();
-  $('#askGo').onclick=()=>{SFX.click();o.okLow=true;GW.asking=null;$('#askLow').style.display='none'};$('#askStop').onclick=()=>{SFX.click();o.stopLow=true;GW.asking=null;$('#askLow').style.display='none'}}
+  $('#askGo').onclick=()=>{SFX.click();o.okLow=true;if(GW.net==='guest')netSend({t:'cmd',c:'padOk',i:o.S.i,key:o.key});GW.asking=null;$('#askLow').style.display='none'};$('#askStop').onclick=()=>{SFX.click();o.stopLow=true;GW.asking=null;$('#askLow').style.display='none'}}
 
 /* ---- 隨機事件（政府政策、物價波動） ---- */
 const EVENTS=[
@@ -2905,7 +2907,7 @@ function eventTick(dt){if(!GW.evs)GW.evs=[];if(GW.evT===undefined)GW.evT=rand(15
   const pool=EVENTS.filter(e=>!GW.evs.some(x=>x.id===e.id));let tot=pool.reduce((a,e)=>a+e.w,0),r=Math.random()*tot,E=pool[0];for(const e of pool){r-=e.w;if(r<=0){E=e;break}}
   let extra='';if(E.grant){const n=GW.shops.filter(S=>S.built).length;const amt=Math.max(0,Math.min(Math.round(80+n*45),MONEY_CAP-Math.floor(GW.st.money)));GW.st.money+=amt;flow(amt,'grant');extra=`　+💵${amt}`;bump('#gCash');emojiRain(['💵','🏛️','✨'],14)}
   else GW.evs.push({id:E.id,em:E.em,t:E.t,mod:E.mod,until:GW.time+E.dur});
-  const c=$('#evCard');c.className=E.bad?'bad':'';c.innerHTML=`<div class="h">${E.em} ${E.bad?'📰 壞消息':'📰 好消息'}：${E.t}</div><div>${E.d}${extra}${E.dur?`（${Math.round(E.dur/60*10)/10} 分鐘）`:''}</div>`;c.style.display='block';
+  const c=$('#evCard');c.className=E.bad?'bad':'';c.innerHTML=`<div class="h">${E.em} ${E.bad?'📰 壞消息':'📰 好消息'}：${E.t}</div><div>${E.d}${extra}${E.dur?`（${Math.round(E.dur/60*10)/10} 分鐘）`:''}</div>`;c.style.display='block';if(GW.net==='host')netSend({t:'evc',cls:c.className,h:c.innerHTML});
   c.animate([{transform:'translateX(-50%) translateY(-40px) scale(.7)',opacity:0},{transform:'translateX(-50%) translateY(0) scale(1)',opacity:1}],{duration:400,easing:'cubic-bezier(.3,1.6,.5,1)'});E.bad?SFX.err():SFX.fanfare&&SFX.ding();clearTimeout(GW.evHide);GW.evHide=setTimeout(()=>c.style.display='none',6500)}
 function eventChips(){if(!GW||!GW.evs)return [];return GW.evs.map(e=>`${e.em} ${e.t} ${Math.max(0,Math.ceil(e.until-GW.time))} 秒`)}
 
@@ -2925,8 +2927,8 @@ function boostPanel(i){const S=GW.shops[i];if(!S||!isAuto(S))return;const zs=GW.
    <div class="note">加倍的運輸改用<b>自主移動機器人</b>和<b>無人搬運車</b>，不再增加人力。<br>🏭 機器人會從「自動化工廠」的鐵捲門出發；路太遠時會由 AI 貨車載過去。<br>每次只能加 1 倍，最多 3 倍。<br>💡 租賃費依距離：第一圈近店 52%、第二圈 60%、外圈遠店 66%（扣完租金、原料和稅，多賺的部分還是你的）。</div>
    ${cur<2?`<button class="boostOpt" id="bUp"><b>⬆️ 升級到「${BOOST[nx].t}」</b><br><small>機器人租賃費：只抽「加派後<b>多賺的營收</b>」的 ${Math.round(boostShare(S,nx)*100)}%（不用付薪水）<br>沒多賺就不收錢 ➜ 加了一定比不加賺得多！</small></button>`:`<div class="note" style="text-align:center;font-size:16px">🏆 已經是「全自動最大化」！</div>`}
    ${cur>0?`<button class="boostOpt down" id="bDown">⬇️ 撤回一組機器人（回到「${BOOST[cur-1].t}」）</button>`:''}`,
-    ()=>{const up=$('#bUp'),dn=$('#bDown');if(up)up.onclick=()=>{if(!cur){const h=S.revH||[];zs.base=h.length?Math.round(h.reduce((a,b)=>a+b,0)/h.length):0}zs.bo=nx;spawnBoost(S,true);S.sign();SFX.buy();confettiDom(40);toast(nx===2?'🏆 全自動最大化！運輸量 ×3':'🤖 無人搬運機器人上工！運輸量 ×2');save(true);boostPanel(i)};
-      if(dn)dn.onclick=()=>{zs.bo=cur-1;spawnBoost(S,true);S.sign();SFX.click();save(true);boostPanel(i)}})}
+    ()=>{const up=$('#bUp'),dn=$('#bDown');if(up)up.onclick=()=>{boostSet(i,nx);SFX.buy();confettiDom(40);toast(nx===2?'🏆 全自動最大化！運輸量 ×3':'🤖 無人搬運機器人上工！運輸量 ×2');save(true);boostPanel(i)};
+      if(dn)dn.onclick=()=>{boostSet(i,cur-1);SFX.click();save(true);boostPanel(i)}})}
 document.addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('[data-boost]');if(t&&mode==='game'){SFX.click();boostPanel(+t.dataset.boost)}});
 
 
@@ -3016,20 +3018,20 @@ const MINI_GAMES=[
 let MG=null;const MG_BAG=[];let MG_LAST=null;
 function miniNext(){if(!MG_BAG.length){const b=MINI_GAMES.map((_,k)=>k).sort(()=>Math.random()-.5);if(b[0]===MG_LAST)b.push(b.shift());MG_BAG.push(...b)}const k=MG_BAG.shift();MG_LAST=k;return k}
 // 右側提醒（遊戲時間計時）
-function miniTick(dt){if(MG)return;if(GW.miniT===undefined)GW.miniT=rand(90,160);GW.miniT-=dt;if(GW.miniT>0||GW.shops.filter(S=>S.built).length<1||$('#modal').classList.contains('on'))return;GW.miniT=rand(170,300);miniNotice(miniNext())}
+function miniTick(dt){if(MG||VSX)return;if(GW.miniT===undefined)GW.miniT=rand(90,160);GW.miniT-=dt;if(GW.miniT>0||GW.shops.filter(S=>S.built).length<1||$('#modal').classList.contains('on'))return;GW.miniT=rand(170,300);miniNotice(miniNext())}
 function miniNotice(idx){const gm=MINI_GAMES[idx];const el=$('#mini');MG={idx,stage:'notice'};let left=12;
-  el.innerHTML=`<div class="mascot">${gm.m}</div><span class="x" id="mgX">✖</span><div class="t1">🎮 獎金小遊戲來囉！</div><div class="t2">${gm.t}</div><div class="rw" style="font-size:12px">獎金 💵0～1000</div>${GW.coop?'<div class="go" data-p="0">👆 1P 搶先玩</div><div class="go p2" data-p="1">👆 2P 搶先玩</div>':'<div class="go" data-p="0">👆 點我玩</div>'}<div class="bar"><i style="width:100%"></i></div>`;el.style.display='block';
+  el.innerHTML=`<div class="mascot">${gm.m}</div><span class="x" id="mgX">✖</span><div class="t1">🎮 獎金小遊戲來囉！</div><div class="t2">${gm.t}</div><div class="rw" style="font-size:12px">獎金 💵0～1000</div>${GW.net?'<div class="go" data-p="n">👆 搶先玩！（誰先按誰玩）</div>':GW.coop?'<div class="go" data-p="0">👆 1P 搶先玩</div><div class="go p2" data-p="1">👆 2P 搶先玩</div>':'<div class="go" data-p="0">👆 點我玩</div>'}<div class="bar"><i style="width:100%"></i></div>`;el.style.display='block';
   el.animate([{transform:'translate(140%,-50%) rotate(10deg)'},{transform:'translate(-8%,-50%) rotate(-4deg)',offset:.7},{transform:'translate(0,-50%)'}],{duration:500,easing:'ease-out'});SFX.pop();
   const iv=setInterval(()=>{if(!MG||MG.stage!=='notice'){clearInterval(iv);return}left-=.1;el.querySelector('.bar i').style.width=Math.max(0,left/12*100)+'%';if(left<=0){clearInterval(iv);hideNotice();MG=null}},100);
-  $('#mgX').onclick=e=>{e.stopPropagation();clearInterval(iv);hideNotice();MG=null};const start=pid=>{if(!MG||MG.stage!=='notice')return;clearInterval(iv);MG.stage='taken';hideNotice();MG=null;if(GW.coop)toast(`${pid?'2P':'1P'} 搶到小遊戲了！`,1800);miniPlay(idx,false,pid)};
-  el.querySelectorAll('.go').forEach(b=>b.onclick=e=>{e.stopPropagation();start(+b.dataset.p)});el.onclick=()=>{if(!GW.coop)start(0)}}
+  $('#mgX').onclick=e=>{e.stopPropagation();clearInterval(iv);hideNotice();MG=null};const start=pid=>{if(!MG||MG.stage!=='notice')return;clearInterval(iv);MG.stage='taken';hideNotice();MG=null;if(GW.coop&&!GW.net)toast(`${pid?'2P':'1P'} 搶到小遊戲了！`,1800);miniPlay(idx,false,pid)};MG.start=start;netMiniOpen(idx);
+  el.querySelectorAll('.go').forEach(b=>b.onclick=e=>{e.stopPropagation();if(b.dataset.p==='n')netMiniClick();else start(+b.dataset.p)});el.onclick=()=>{if(!GW.coop)start(0)}}
 function hideNotice(){const el=$('#mini');if(el.style.display!=='block')return;el.animate([{transform:'translate(0,-50%)'},{transform:'translate(140%,-50%)'}],{duration:280}).onfinish=()=>el.style.display='none'}
 // 畫面中間的正式遊戲（先 3‧2‧1 倒數，遊戲 15 秒）
 function miniPlay(idx,trial,pid){const gm=MINI_GAMES[idx];const box=$('#mbig');const G2={el:0,live:false,trial,tick:null,onTime:null};MG={idx,stage:'play',G2};
   box.innerHTML=`<div class="win"><div class="mascot">${gm.m}</div><div class="bub">${gm.bub}</div><span class="x" id="mbX">✖</span><div class="tt">${GW.coop&&pid!==undefined?(pid?'2P ':'1P '):''}${gm.t}${trial?'<small style="font-size:14px;-webkit-text-stroke:0;color:#8a5a00">（試玩）</small>':''}</div><div class="rw">${gm.d}<br>獎金 💵0～1000</div><div class="bar"><i style="width:100%"></i><b style="left:100%">🐾</b></div><div class="body"></div><div class="cd"></div></div>`;box.style.display='flex';SFX.pop();
   const body=box.querySelector('.body');let iv=null;
   G2.finish=(amt,lines)=>{if(G2.over)return;G2.over=true;G2.live=false;clearInterval(iv);amt=Math.max(0,Math.min(1000,Math.round(amt/10)*10));
-    const give=trial?0:Math.max(0,Math.min(amt,MONEY_CAP-Math.floor(GW.st.money)));if(give){GW.st.money+=give;flow(give,'mini');bump('#gCash')}
+    const give=trial?0:Math.max(0,Math.min(amt,MONEY_CAP-Math.floor(GW.st.money)));if(give){GW.st.money+=give;flow(give,'mini');bump('#gCash');netMoney(give)}
     const good=amt>=500,ok=amt>0;box.querySelector('.mascot').textContent=good?'🥳':ok?'😊':'🥺';box.querySelector('.bub').textContent=good?'太厲害了！':ok?'好棒棒！':'下次再來～';
     body.innerHTML=`<div class="res">${good?'🎉':ok?'👏':'🙈'}</div><div class="money">${trial?'試玩：可得 💵'+amt:'+💵'+give}</div><div class="det">${lines.join('<br>')}</div><button class="done" id="mbOk">${ok?'收下獎金':'好的'}</button>`;
     if(ok){SFX.cash();mgFxEl(body,['💵','✨','⭐','💖','🪙'],good?20:10);if(!trial)mgCoinFly(body,Math.min(8,2+(amt/150|0)));if(good)confettiDom(50)}else SFX.err();$('#mbOk').onclick=close};
@@ -3066,8 +3068,8 @@ function czBal(){return Math.floor(GW.st.money)}
 function czHead(){return `<div class="bal">💵 目前現金 <b id="czBal">${czBal().toLocaleString()}</b></div><div class="chips">${CZ_CHIPS.map((c,k)=>`<button class="chip c${k} ${c===czBet?'on':''}" data-c="${c}" ${c>czBal()?'disabled':''}>${c>=1000?c/1000+'千':c}</button>`).join('')}</div>`}
 function czBind(){document.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{if(CZA.left)return;czBet=+b.dataset.c;SFX.click();document.querySelectorAll('.chip').forEach(x=>x.classList.toggle('on',+x.dataset.c===czBet))})}
 function czRefresh(){const e=$('#czBal');if(e)e.textContent=czBal().toLocaleString();document.querySelectorAll('.chip').forEach(b=>b.disabled=+b.dataset.c>czBal())}
-function czPay(bet){if(czBal()<bet){SFX.err();toast('💸 現金不夠下注喔！');return false}GW.st.money-=bet;flow(-bet,'fun');czRefresh();return true}
-function czWin(amt,el,msg){amt=Math.round(amt);const m=$('#czMsg');if(!m)return;CZA.sum+=amt;if(amt>0){GW.st.money+=amt;flow(amt,'fun');bump('#gCash');SFX.cash();if(el)mgFxEl(el,['💵','✨','⭐','💖','🪙'],amt>=czBet*5?18:8);if(amt>=czBet*5){confettiDom(50);SFX.fanfare()}m.className='czmsg win';m.innerHTML=`${msg||'贏了！'}　+💵${amt.toLocaleString()}`}else{m.className='czmsg lose';m.innerHTML=msg||'沒中～再接再厲！';if(!CZA.left)SFX.err()}czRefresh();
+function czPay(bet){if(czBal()<bet){SFX.err();toast('💸 現金不夠下注喔！');return false}GW.st.money-=bet;flow(-bet,'fun');netMoney(-bet);czRefresh();return true}
+function czWin(amt,el,msg){amt=Math.round(amt);const m=$('#czMsg');if(!m)return;CZA.sum+=amt;if(amt>0){GW.st.money+=amt;flow(amt,'fun');netMoney(amt);bump('#gCash');SFX.cash();if(el)mgFxEl(el,['💵','✨','⭐','💖','🪙'],amt>=czBet*5?18:8);if(amt>=czBet*5){confettiDom(50);SFX.fanfare()}m.className='czmsg win';m.innerHTML=`${msg||'贏了！'}　+💵${amt.toLocaleString()}`}else{m.className='czmsg lose';m.innerHTML=msg||'沒中～再接再厲！';if(!CZA.left)SFX.err()}czRefresh();
   if(CZA.total){const n=CZA.total-(CZA.left===Infinity?0:CZA.left);const net=CZA.sum-CZA.spent;$('#czSum').innerHTML=`自動進度：第 ${CZA.done} 局　累計 ${net>=0?'<b style="color:#2e9d4a">贏 💵'+net.toLocaleString():'<b style="color:#c0392b">輸 💵'+(-net).toLocaleString()}</b>`}}
 const czBack=()=>`<button class="czbtn b2" id="czBack" style="font-size:15px;padding:8px 16px">← 回遊樂場</button>`;
 function czOpen(title,html,init){CZA.left=0;openPanel(title,`<div class="cz">${czHead()}${html}<div class="czmsg" id="czMsg"></div><div id="czSum" style="font-size:13px;color:#6a5a4a"></div>${czBack()}</div>`,()=>{czBind();$('#czBack').onclick=()=>{SFX.click();CZA.left=0;funPanel()};init&&init()})}
@@ -3105,7 +3107,7 @@ function gWheel(){czOpen('🎡 幸運轉盤',`<div class="wheelwrap"><div class=
   g.beginPath();g.arc(200,200,190,0,7);g.strokeStyle='#ffd02e';g.lineWidth=8;g.stroke();g.beginPath();g.arc(200,200,34,0,7);g.fillStyle='#fff';g.fill();g.font='40px sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText('🐼',200,203);
   let rot=0;czAuto('#czGo',done=>{if(!czPay(czBet))return false;$('#czMsg').textContent='';$('#whGlow').classList.remove('on');let r=Math.random()*100,P=WSEG[0];for(const p of WSEG){r-=p.w;if(r<=0){P=p;break}}const mid=P.a0+(P.a1-P.a0)*rand(.25,.75);
    const T=CZA.left?2.2:4;c.style.transition=`transform ${T}s cubic-bezier(.12,.8,.2,1)`;rot+=360*(CZA.left?3:5)+((360-mid)-rot%360+360)%360;c.style.transform=`rotate(${rot}deg)`;SSND.lever();let tick=0;const iv=setInterval(()=>{tick++;if(tick<T*8)tone(900-tick*12,.03,'square',.04)},110);
-   setTimeout(()=>{clearInterval(iv);if(!$('#whc'))return;$('#whGlow').classList.add('on');const m=P.m;if(m<0){const ex=Math.min(czBet,czBal());GW.st.money-=ex;flow(-ex,'fun');CZA.sum-=ex;czWin(0,null,`😱 指到「扣 1 注」！再扣 💵${ex}`)}else{if(m>=5)SSND.big();else if(m>=1.5)SSND.win();czWin(czBet*m,c,m>=2?`指到 ×${m}！`:m>0?`指到 ×${m}`:'指到 😢 ～')}CZA.fast=500;done()},T*1000+100);return true},'🎡 轉一下！')})}
+   setTimeout(()=>{clearInterval(iv);if(!$('#whc'))return;$('#whGlow').classList.add('on');const m=P.m;if(m<0){const ex=Math.min(czBet,czBal());GW.st.money-=ex;flow(-ex,'fun');netMoney(-ex);CZA.sum-=ex;czWin(0,null,`😱 指到「扣 1 注」！再扣 💵${ex}`)}else{if(m>=5)SSND.big();else if(m>=1.5)SSND.win();czWin(czBet*m,c,m>=2?`指到 ×${m}！`:m>0?`指到 ×${m}`:'指到 😢 ～')}CZA.fast=500;done()},T*1000+100);return true},'🎡 轉一下！')})}
 
 // 🃏 比大小（自動時會選機率比較高的一邊）
 const CARDN=['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
@@ -3279,14 +3281,14 @@ function vsSection(){return {html:`<div class="note"><b>⚔️ 對戰遊戲區</
   <div class="vsg">${VS_GAMES.map((g,k)=>`<div class="s" data-vs="${k}"><b>${g.em}</b>${g.name}<br><small>10 關可選</small></div>`).join('')}</div>`,
   bind(){document.querySelectorAll('[data-vs]').forEach(b=>b.onclick=()=>{SFX.click();vsSetup(+b.dataset.vs)})}}}
 function vsSetup(k){const g=VS_GAMES[k];let lv=1,mode=GW.coop?'duo':'solo';
-  openPanel(`${g.em} ${g.name}`,`<div class="note">${g.tip}<br>🙋 單人：自己玩一場，開局 💵${VS_FEE.solo}　⚔️ 雙人即時對戰：開局 💵${VS_FEE.duo}<br>${g.duoLive?'':'雙人時 1P 是大畫面、2P 是右下角小視窗（長按上方標題可拖曳、可調大小、可交換大小畫面）'}</div>
-   <div class="vsm"><button data-m="solo" class="${mode==='solo'?'on':''}">🙋 單人玩</button>${GW.coop?`<button data-m="duo" class="${mode==='duo'?'on':''}">⚔️ 邀請對戰</button>`:''}</div>
+  openPanel(`${g.em} ${g.name}`,`<div class="note">${g.tip}<br>🙋 單人：自己玩一場，開局 💵${VS_FEE.solo}　⚔️ 雙人即時對戰：開局 💵${VS_FEE.duo}<br>${GW.net?(g.id==='hockey'?'🌐 連線對戰：兩台裝置同一張球桌即時對打，你永遠在下方':'🌐 連線對戰：各自在自己的裝置上玩，右下角小視窗是對手的即時畫面（長按標題可拖曳、可調大小）'):g.duoLive?'':'雙人時 1P 是大畫面、2P 是右下角小視窗（長按上方標題可拖曳、可調大小、可交換大小畫面）'}</div>
+   <div class="vsm"><button data-m="solo" class="${mode==='solo'?'on':''}">🙋 單人玩</button>${GW.coop?`<button data-m="duo" class="${mode==='duo'?'on':''}">⚔️ 邀請${GW.net?(NET.peer?netEsc(NET.peer):'朋友'):''}對戰</button>`:''}</div>
    ${GW.coop?'':'<div style="font-size:12px;color:#8a7a5a;text-align:center">（要雙人對戰，請從首頁用「雙人合作」進入地圖）</div>'}
    <div style="text-align:center;font-size:14px;margin-top:6px">選擇關卡</div><div class="lvp">${Array.from({length:10},(_,i)=>`<button data-l="${i+1}" class="${i?'':'on'}">${i+1}</button>`).join('')}</div>
    <button class="czbtn b3" id="vsGo" style="display:block;margin:8px auto">▶ 開始</button><button class="czbtn b2" id="vsBk" style="font-size:15px;padding:8px 16px;display:block;margin:0 auto">← 回遊樂場</button>`,()=>{
    document.querySelectorAll('.vsm button').forEach(b=>b.onclick=()=>{mode=b.dataset.m;SFX.click();document.querySelectorAll('.vsm button').forEach(x=>x.classList.toggle('on',x===b))});
    document.querySelectorAll('.lvp button').forEach(b=>b.onclick=()=>{lv=+b.dataset.l;SFX.click();document.querySelectorAll('.lvp button').forEach(x=>x.classList.toggle('on',x===b))});
-   $('#vsBk').onclick=()=>{SFX.click();funPanel()};$('#vsGo').onclick=()=>{SFX.click();if(mode==='duo')vsInvite(k,lv);else{closePanel();vsStart(k,lv,'solo',0)}}})}
+   $('#vsBk').onclick=()=>{SFX.click();funPanel()};$('#vsGo').onclick=()=>{SFX.click();if(mode==='duo'){if(GW.net)vsNetInvite(k,lv);else vsInvite(k,lv)}else{closePanel();vsStart(k,lv,'solo',0)}}})}
 function vsInvite(k,lv){const g=VS_GAMES[k];closePanel();const box=$('#vsInv .box');
   box.innerHTML=`<div style="font-size:15px">誰要發出邀請？</div><div class="row"><button class="ok" data-f="0">1P 邀請 2P</button><button class="p2" data-f="1">2P 邀請 1P</button></div><div class="row"><button class="no" id="vsCancel">取消</button></div>`;$('#vsInv').style.display='flex';
   $('#vsCancel').onclick=()=>{$('#vsInv').style.display='none'};box.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{const f=+b.dataset.f,t=1-f;SFX.ding();
@@ -3315,7 +3317,7 @@ const VS_MUTE={f1:f=>f.contentWindow.postMessage({type:'f1rush:sound',on:false},
  zombie:f=>f.contentWindow.postMessage({game:'zombie-defense',cmd:'mute',value:true},'*'),maze:f=>f.contentWindow.postMessage({target:'cute-maze',cmd:'mute',value:true},'*')};
 const VS_PORTRAIT={army:1,cube:1,zombie:1};
 
-function vsStart(k,lv,mode,first){const g=VS_GAMES[k];const fee=VS_FEE[mode];if(GW.st.money<fee){SFX.err();toast('💸 現金不夠開局喔！');return}GW.st.money-=fee;flow(-fee,'fun');bump('#gCash');
+function vsStart(k,lv,mode,first){const g=VS_GAMES[k];const fee=VS_FEE[mode];if(GW.st.money<fee){SFX.err();toast('💸 現金不夠開局喔！');return}GW.st.money-=fee;flow(-fee,'fun');bump('#gCash');netMoney(-fee);
   VSX={k,g,lv,mode,first,res:[null,null],panes:[],big:0,size:1};$('#vsHost').style.display='block';GW.hideR=true;bgmPause(true);
   if(mode==='duo'&&g.duoLive)vsLoadLive();else vsLoadPanes()}
 function vsWho(p){return p?'2P':'1P'}
@@ -3329,7 +3331,7 @@ function vsLoadPanes(){const g=VSX.g,host=$('#vsHost');host.querySelectorAll('.v
   vsLayout()}
 function vsLayout(){if(!VSX)return;const W=innerWidth,H=innerHeight;VSX.panes.forEach(P=>{const big=P.p===VSX.big||VSX.panes.length===1;P.pane.classList.toggle('vbig',big);P.pane.classList.toggle('vsmall',!big);
   if(big){P.pane.style.cssText=P.pane.style.cssText.replace(/(left|top|width|height):[^;]+;?/g,'');return}
-  const sc=[.34,.42,.52][VSX.size];let w,h;if(VS_PORTRAIT[VSX.g.id]){h=Math.min(H*sc*1.25,H*.62);w=Math.min(h*.56,W*.6)}else{w=Math.min(W*sc,W*.6);h=w*(H/W)}h+=28;
+  const sc=[.34,.42,.52][VSX.size];let w,h;if(P.asp){w=Math.min(W*sc,W*.6);h=w*P.asp;if(h>H*.6){h=H*.6;w=h/P.asp}}else if(VS_PORTRAIT[VSX.g.id]){h=Math.min(H*sc*1.25,H*.62);w=Math.min(h*.56,W*.6)}else{w=Math.min(W*sc,W*.6);h=w*(H/W)}h+=28;
   if(P.x===undefined){P.x=W-w-12;P.y=H-h-12}P.x=Math.max(4,Math.min(W-w-4,P.x));P.y=Math.max(4,Math.min(H-h-4,P.y));Object.assign(P.pane.style,{left:P.x+'px',top:P.y+'px',width:w+'px',height:h+'px'})})}
 addEventListener('resize',()=>VSX&&VSX.panes&&vsLayout());
 function vsDragSetup(P){const hd=P.pane.querySelector('.hd');let t=null,drag=false,sx=0,sy=0,ox=0,oy=0,id=null;
@@ -3343,7 +3345,7 @@ function vsDragSetup(P){const hd=P.pane.querySelector('.hd');let t=null,drag=fal
 function vsHook(P){const w=P.f.contentWindow;if(!w)return;const duo=VSX.panes.length>1;
   try{if(duo){const fwd=e=>{if(e.__vs)return;e.stopImmediatePropagation();e.preventDefault();vsRoute(e.type,e.code)};w.addEventListener('keydown',fwd,true);w.addEventListener('keyup',fwd,true);w.addEventListener('blur',e=>e.stopImmediatePropagation(),true)}}catch(e){}
   if(VSX.g.start)setTimeout(()=>vsKickP(P),2500);if(duo&&P.p!==VSX.big)setTimeout(()=>{try{VS_MUTE[VSX.g.id]&&VS_MUTE[VSX.g.id](P.f)}catch(e){}},1500)}
-function vsKickP(P){if(!VSX||P.started||!VSX.g.start)return;P.started=true;VSX.g.start(P.f,VSX.lv)}
+function vsKickP(P){if(!VSX||P.started||!VSX.g.start)return;if(VSX.mode==='net')return;P.started=true;VSX.g.start(P.f,VSX.lv)}
 const vsHeld={};
 function vsRoute(type,code){if(!VSX||VSX.panes.length<2)return;for(const p of [0,1]){const out=VS_KEYS[p][code];if(!out)continue;const P=VSX.panes[p];const w=P.f.contentWindow,doc=P.f.contentDocument;if(!w||!doc)continue;
   const ev=new w.KeyboardEvent(type,{key:KEYNAME[out]||out,code:out,bubbles:true,cancelable:true});ev.__vs=1;const kc={ArrowLeft:37,ArrowUp:38,ArrowRight:39,ArrowDown:40,Space:32,ShiftLeft:16}[out];if(kc){Object.defineProperty(ev,'keyCode',{get:()=>kc});Object.defineProperty(ev,'which',{get:()=>kc})}
@@ -3361,7 +3363,7 @@ window.addEventListener('message',e=>{if(!VSX||!VSX.panes)return;const P=VSX.pan
   if(d.type==='ready'||d.event==='ready'||d.type==='f1rush:ready')setTimeout(()=>vsKickP(P),300);
   if(d.event==='pause'&&d.game==='zombie-defense'&&VSX.panes.length>1)P.f.contentWindow.postMessage({game:'zombie-defense',cmd:'resume'},'*');
   const r=VSX.g.ev(d);if(!r)return;if(r.quit&&VSX.panes.length===1){vsBack();return}if(r.quit)vsPaneDone(P,{v:-1,txt:'中途離開'});else if(r.done)vsPaneDone(P,r)});
-function vsPaneDone(P,r){if(!VSX||VSX.res[P.p])return;VSX.res[P.p]=r;const dn=P.pane.querySelector('.done');
+function vsPaneDone(P,r){if(VSX&&VSX.mode==='net'){vsNetDone(P,r);return}if(!VSX||VSX.res[P.p])return;VSX.res[P.p]=r;const dn=P.pane.querySelector('.done');
   if(VSX.panes.length===1){setTimeout(()=>vsSoloEnd(r),1800);return}
   dn.innerHTML=`<b>${r.v>0?'🏁':'😵'}</b>${vsWho(P.p)} ${r.v>0?'完成！':'結束了'}<br>${r.txt}`;dn.style.display='flex';SFX.ding();
   const o=1-P.p;if(VSX.res[o]){clearInterval(VSX.cd);setTimeout(()=>vsCompare(),1500);return}
@@ -3369,15 +3371,15 @@ function vsPaneDone(P,r){if(!VSX||VSX.res[P.p])return;VSX.res[P.p]=r;const dn=P.
 function vsCompare(){const [a,b]=VSX.res;const w=a.v===b.v?-1:(a.v>b.v?0:1);vsFinal(w,[a.txt,b.txt])}
 function vsSoloEnd(r){const m=$('#vsMask');m.innerHTML=`<div class="card"><div class="big">${r.v>0?'🎉':'💪'}</div><div style="font-size:20px">${r.txt}</div><div style="font-size:13px;color:#8a7a5a;margin-top:4px">對戰遊戲只是玩樂，不會發獎金喔</div><div style="display:flex;gap:10px;justify-content:center;margin-top:12px"><button class="ok" id="vsAgain">再玩一場（💵${VS_FEE.solo}）</button><button class="no" id="vsEnd">回遊樂場</button></div></div>`;m.style.display='flex';
   $('#vsAgain').onclick=()=>{const {k,lv}=VSX;vsClose();vsStart(k,lv,'solo',0)};$('#vsEnd').onclick=()=>vsBack()}
-$('#vsBack').onclick=()=>{SFX.click();if(!VSX)return;if(VSX.panes.length>1&&!VSX.poll&&!(VSX.res[0]&&VSX.res[1])){ask('對戰還沒結束，確定要回遊樂場嗎？<br><small>這場不算勝負</small>',()=>vsBack());return}vsBack()};
-$('#vsQuit').onclick=()=>{SFX.click();if(!VSX)return;if(VSX.poll||VSX.panes.length===1){vsBack();return}
+$('#vsBack').onclick=()=>{SFX.click();if(!VSX)return;if(VSX.mode==='net'&&!(VSX.res[0]&&VSX.res[1])){ask('對戰還沒結束，確定要回遊樂場嗎？<br><small>會算你放棄這場</small>',()=>{if(VSX&&!VSX.res[VSX.me])vsNetDone(VSX.panes[0],{v:-1,q:1,txt:'中途離開'});vsBack()});return}if(VSX.panes.length>1&&!VSX.poll&&!(VSX.res[0]&&VSX.res[1])){ask('對戰還沒結束，確定要回遊樂場嗎？<br><small>這場不算勝負</small>',()=>vsBack());return}vsBack()};
+$('#vsQuit').onclick=()=>{SFX.click();if(!VSX)return;if(VSX.mode==='net'){if(!VSX.res[VSX.me])ask('確定要放棄這場對戰嗎？',()=>{if(VSX&&!VSX.res[VSX.me])vsNetDone(VSX.panes[0],{v:-1,q:1,txt:'中途放棄'})});return}if(VSX.poll||VSX.panes.length===1){vsBack();return}
   VSX.panes.forEach(P=>{if(!VSX.res[P.p])VSX.res[P.p]={v:-1,txt:'沒完成'}});clearInterval(VSX.cd);vsCompare()};
 function vsFinal(win,txt){const m=$('#vsMask');SFX.fanfare&&SFX.fanfare();if(win>=0)confettiDom(60);clearInterval(VSX.cd);
   m.innerHTML=`<div class="card"><div class="big">${win<0?'🤝':'🏆'}</div><div style="font-size:24px">${win<0?'平手！':`<b style="color:${win?'#e0507e':'#2f6fd1'}">${win?'2P':'1P'}</b> 獲勝！`}</div><div class="res"><div class="${win===0?'win':''}"><b style="color:#2f6fd1">1P</b><br>${txt[0]}</div><div class="${win===1?'win':''}"><b style="color:#e0507e">2P</b><br>${txt[1]}</div></div>
    <div style="display:flex;gap:10px;justify-content:center;margin-top:12px"><button class="ok" id="vsAgain">再戰一場（💵${VS_FEE.duo}）</button><button class="no" id="vsEnd">回遊樂場</button></div></div>`;m.style.display='flex';
   $('#vsAgain').onclick=()=>{const {k,lv,first}=VSX;vsClose();vsStart(k,lv,'duo',first)};$('#vsEnd').onclick=()=>vsBack()}
 function vsBack(){vsClose();setTimeout(()=>funPanel(),50)}
-function vsClose(){if(!VSX)return;if(VSX.poll)clearInterval(VSX.poll);clearInterval(VSX.cd);$('#vsHost').querySelectorAll('.vspane,.keys').forEach(e=>e.remove());$('#vsHost').style.display='none';$('#vsMask').style.display='none';VSX=null;GW.hideR=false;bgmPause(false)}
+function vsClose(){if(!VSX)return;if(VSX.poll)clearInterval(VSX.poll);clearInterval(VSX.capIv);clearInterval(VSX.cd);$('#vsHost').querySelectorAll('.vspane,.keys').forEach(e=>e.remove());$('#vsHost').style.display='none';$('#vsMask').style.display='none';VSX=null;GW.hideR=false;bgmPause(false)}
 
 /* ======================= 🎵 背景音樂（首頁輕快、地圖輕柔，隨機輪播） ======================= */
 const BGM_LIST={
@@ -3395,5 +3397,241 @@ function bgmToggle(v){G.set.music=v;if(v){if(!BGM.list)bgmPlay(mode==='game'?'ga
 document.addEventListener('pointerdown',()=>{if(bgmOn()&&!BGM.paused&&BGM.el.paused){if(!BGM.list)bgmPlay(mode==='game'?'game':'home');else BGM.el.play().catch(()=>{})}},true);
 setInterval(()=>{const want=mode==='game'?'game':'home';if(BGM.list&&BGM.kind!==want&&bgmOn()&&!BGM.paused)bgmPlay(want)},800);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)BGM.el.pause();else if(bgmOn()&&!BGM.paused&&BGM.list)BGM.el.play().catch(()=>{})});
+
+/* ======================= 🌐 不同裝置連線：雙人合作＋對戰 ======================= */
+// 房主（1P）的裝置負責整張地圖的經營計算；朋友（2P）的裝置同步房主的地圖，自己的角色即時傳給房主。
+(()=>{const st=document.createElement('style');st.textContent=`
+#netChip{position:fixed;left:8px;bottom:64px;z-index:31;display:none;background:rgba(255,255,255,.94);border:3px solid #8fc9ff;border-radius:14px;padding:4px 10px;font-size:13px;color:#163a6b;box-shadow:0 3px 0 #6aa8e0;pointer-events:none;line-height:1.35}
+#netChip b{color:#e0507e;letter-spacing:2px}#netChip.on{border-color:#7fd88f;box-shadow:0 3px 0 #4cb85c}
+#netMsg{position:fixed;inset:0;z-index:96;display:none;align-items:center;justify-content:center;background:rgba(20,30,70,.55)}
+#netMsg .box{background:linear-gradient(#fffef6,#eef7ff);border-radius:24px;padding:18px 20px;text-align:center;color:#163a6b;width:min(90vw,360px);box-shadow:0 0 0 6px #fff,0 0 0 11px #8fc9ff,0 12px 30px rgba(0,0,0,.3);animation:pop .35s;font-size:15px;line-height:1.6}
+#netMsg .code{font-size:46px;letter-spacing:10px;color:#e0507e;margin:4px 0}
+#netMsg button{font-family:inherit;border:none;border-radius:16px;padding:10px 20px;font-size:17px;color:#fff;cursor:pointer;margin:8px 4px 0;background:linear-gradient(#5ee07a,#2fb04a);box-shadow:0 4px 0 #1f8a38}
+#netMsg button.b{background:linear-gradient(#5aa9ff,#2f6fd1);box-shadow:0 4px 0 #1f4f9a}
+.netrow{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin-top:8px}
+.netrow input{font-family:inherit;font-size:22px;width:120px;text-align:center;letter-spacing:6px;border:3px solid #b9d9f5;border-radius:12px;padding:4px 6px;color:#163a6b}
+#netErr{color:#d03838;font-size:13px;min-height:18px;margin-top:6px;text-align:center}
+#vsHost .vspane img.vsimg{position:absolute;left:0;right:0;bottom:0;top:28px;width:100%;height:calc(100% - 28px);object-fit:contain;background:#120c24}
+#vsHost .vspane .wait{position:absolute;left:0;right:0;top:50%;text-align:center;color:#fff;font-size:12px;opacity:.8}`;document.head.appendChild(st);
+  const c=document.createElement('div');c.id='netChip';document.body.appendChild(c);
+  const m=document.createElement('div');m.id='netMsg';m.innerHTML='<div class="box"></div>';document.body.appendChild(m)})();
+
+const NET={ws:null,role:null,code:'',peer:'',own:undefined,swap:false,pT:0,syncT:0,pileT:0,fr:null,mini:null,inv:null};
+const netEsc=s=>String(s==null?'':s).replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+const netName=()=>String(G.name||'老闆').slice(0,10);
+function netCan(){return location.protocol==='http:'||location.protocol==='https:'}
+function netConnect(cb,fail){
+  if(!netCan()){fail&&fail('要先把遊戲放到伺服器上（Render 網頁服務）才能連線喔');return}
+  if(NET.ws&&NET.ws.readyState===1){cb();return}
+  let ws;try{ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host+'/net')}catch(e){fail&&fail('連線失敗，請稍後再試');return}
+  NET.ws=ws;let opened=false;
+  const to=setTimeout(()=>{if(!opened){try{ws.close()}catch(e){}if(NET.ws===ws)NET.ws=null;fail&&fail('連不上伺服器（伺服器剛睡醒時需要約 30 秒，請再按一次）')}},15000);
+  ws.onopen=()=>{opened=true;clearTimeout(to);cb()};
+  ws.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch(_){return}try{netOn(m)}catch(err){console.error(err)}};
+  ws.onclose=()=>{clearTimeout(to);if(NET.ws!==ws)return;NET.ws=null;if(!opened){fail&&fail('連不上伺服器，請稍後再試');return}if(NET.role)netLost()};
+  ws.onerror=()=>{}}
+function netSend(o){if(NET.ws&&NET.ws.readyState===1)NET.ws.send(JSON.stringify(o))}
+setInterval(()=>{if(NET.ws)netSend({t:'ping'})},20000);
+function netBox(html,after){const b=$('#netMsg .box');b.innerHTML=html;$('#netMsg').style.display='flex';after&&after(b)}
+function netBoxClose(){$('#netMsg').style.display='none'}
+function netChip(){const c=$('#netChip');if(!NET.role||mode!=='game'){c.style.display='none';return}c.style.display='block';c.classList.toggle('on',!!NET.peer);
+  c.innerHTML=NET.role==='host'?(NET.peer?`🌐 房號 <b>${NET.code}</b><br>👥 ${netEsc(NET.peer)}（2P）已連線`:`🌐 房號 <b>${NET.code}</b><br>⏳ 等待朋友加入…`):`🌐 房號 <b>${NET.code}</b><br>👑 房主：${netEsc(NET.peer)}（1P）`}
+
+/* ---- 首頁：建立房間／輸入房號加入 ---- */
+function netCreate(){const err=t=>{const e=$('#netErr');if(e)e.textContent=t;else toast(t)};err('連線中…');
+  netConnect(()=>netSend({t:'create',name:netName()}),err)}
+function netJoin(code){code=String(code||'').trim();const err=t=>{const e=$('#netErr');if(e)e.textContent=t;else toast(t,4000)};
+  if(!/^\d{4}$/.test(code)){err('請輸入 4 位數的房號');return}
+  if(GW){try{sessionStorage.setItem('netJoin',code)}catch(e){}save();location.reload();return}// 先重新整理，乾淨地載入房主的地圖
+  err('連線中…');netConnect(()=>netSend({t:'join',code,name:netName()}),err)}
+{let pj=null;try{pj=sessionStorage.getItem('netJoin');sessionStorage.removeItem('netJoin')}catch(e){}
+  if(pj)setTimeout(()=>{netBox(`<div style="font-size:30px">🌐</div>正在加入房間 <b>${pj}</b>…`);netConnect(()=>netSend({t:'join',code:pj,name:netName()}),t=>netBox(`<div style="font-size:30px">😵</div>${t}<br><button class="b" id="nmOk">好的</button>`,()=>$('#nmOk').onclick=netBoxClose))},700)}
+
+/* ---- 收到訊息 ---- */
+function netOn(m){NET.rx=NET.rx||{};NET.rx[m.t]=(NET.rx[m.t]||0)+1;switch(m.t){
+  case 'pong':break;
+  case 'err':{const e=$('#netErr');if(e&&$('#modal').classList.contains('on'))e.textContent=m.msg;else netBox(`<div style="font-size:30px">😵</div>${netEsc(m.msg)}<br><button class="b" id="nmOk">好的</button>`,()=>$('#nmOk').onclick=netBoxClose);break}
+  case 'created':NET.role='host';NET.code=m.code;NET.peer='';closePanel();startGame({coop:true,net:'host'});netChip();
+    netBox(`<div>🌐 房間建立好了！請朋友在自己的手機或電腦打開遊戲，<br>點首頁「👥 雙人合作」輸入房號：</div><div class="code">${m.code}</div><div style="font-size:13px;color:#567">朋友加入前可以先自己經營；房號也會顯示在左下角</div><button id="nmOk">知道了</button>`,()=>$('#nmOk').onclick=netBoxClose);break;
+  case 'joined':NET.role='guest';NET.code=m.code;NET.peer=m.host||'房主';netBox(`<div style="font-size:30px">🌐</div>已加入房間 <b>${m.code}</b>！<br>正在載入 ${netEsc(NET.peer)} 的地圖…`);break;
+  case 'peer':NET.peer=m.name||'朋友';netAddRemote();saveWorld();netSend({t:'world',st:GW.st,ev:(GW.evs||[]).map(e=>[e.id,Math.round(e.until-GW.time)]),paused:!!GW.paused});
+    netBoxClose();SFX.fanfare&&SFX.fanfare();toast(`👥 ${NET.peer} 加入了！一起經營吧～`,3500);netChip();break;
+  case 'peerLeft':netPeerGone(`👋 ${NET.peer||'朋友'} 離開房間了`);break;
+  case 'hostLeft':netGuestEnd('房主離開了，房間已關閉。');break;
+  case 'world':netGuestWorld(m);break;
+  case 'p':{const p=GW&&GW.players.find(x=>x.remote);if(p)p.net=m;break}
+  case 'sync':netApplySync(m);break;
+  case 'piles':netApplyPiles(m);break;
+  case 'cmd':netCmd(m);break;
+  case 'pause':if(GW&&!!GW.paused!==!!m.on){setPause(!!m.on,true);toast(m.on?`⏸️ ${NET.peer} 按了暫停`:`▶️ ${NET.peer} 繼續遊戲`)}break;
+  case 'evc':{const c=$('#evCard');c.className=m.cls||'';c.innerHTML=m.h;c.style.display='block';c.animate([{transform:'translateX(-50%) translateY(-40px) scale(.7)',opacity:0},{transform:'translateX(-50%) translateY(0) scale(1)',opacity:1}],{duration:400});SFX.ding&&SFX.ding();clearTimeout(NET.evH);NET.evH=setTimeout(()=>c.style.display='none',6500);break}
+  case 'mini':if(GW&&GW.net==='guest'&&!MG&&!VSX)miniNotice(m.idx);break;
+  case 'miniClaim':netMiniClaim();break;
+  case 'miniGo':if(MG&&MG.stage==='notice'&&MG.start)MG.start(1);else if(!MG)miniPlay(m.idx,false,1);break;
+  case 'miniTaken':if(MG&&MG.stage==='notice'){MG.stage='taken';hideNotice();MG=null}toast(`${NET.peer} 搶先一步玩到小遊戲了！`,2200);break;
+  case 'vsInv':vsNetAsk(m);break;
+  case 'vsAns':if(!NET.inv)break;$('#vsInv').style.display='none';if(m.ok)vsNetStart(NET.inv.k,NET.inv.lv);else{SFX.err();toast(m.busy?'對方正在忙，等一下再邀請吧':`🙅 ${NET.peer} 拒絕了對戰邀請～`)}NET.inv=null;break;
+  case 'vsCancel':$('#vsInv').style.display='none';toast('對方取消了對戰邀請');break;
+  case 'vsReady':if(VSX&&VSX.mode==='net'){VSX.ready[1-VSX.me]=1;vsNetTryGo()}break;
+  case 'vsGo':if(VSX&&VSX.mode==='net')vsNetGo();break;
+  case 'vsRes':if(VSX&&VSX.mode==='net'){const P=VSX.panes.find(P=>P.p!==VSX.me)||{p:1-VSX.me,pane:null};vsNetDone(P,m.r)}break;
+  case 'vsFinal':if(VSX&&VSX.mode==='net')vsNetFinal(m.w,m.txt);else toast(m.w<0?'🤝 對戰平手':(m.w===(NET.role==='host'?0:1)?'🏆 你贏了剛剛的對戰！':'對戰結果：對手獲勝'),3000);break;
+  case 'vf':if(VSX&&VSX.mode==='net'){const P=VSX.panes.find(P=>P.img);if(P){P.img.src=m.i;const w=P.pane.querySelector('.wait');if(w)w.remove();const a=m.h/m.w;if(a&&Math.abs((P.asp||0)-a)>.02){P.asp=a;vsLayout()}}}break;
+  case 'hk':if(VSX&&VSX.mode==='net'&&VSX.g.id==='hockey'){const f=VSX.panes[0]&&VSX.panes[0].f;f&&f.contentWindow&&f.contentWindow.postMessage({type:'neonHockey',cmd:'netData',d:m.d},'*')}break;
+  case 'f1code':if(VSX&&VSX.mode==='net'){VSX.f1code=m.code;if(VSX.f1ready)f1JoinCode()}break;
+}}
+
+/* ---- 連線中斷／離開 ---- */
+function netLost(){if(NET.role==='guest')netGuestEnd('和房主的連線中斷了。');else{netPeerGone('🌐 連線中斷，改回單人經營');NET.role=null;NET.code='';netChip()}}
+function netPeerGone(msg){const was=NET.peer;NET.peer='';if(GW){const i=GW.players.findIndex(p=>p.remote);if(i>=0){const p=GW.players[i];GW.players.splice(i,1);p.stack.forEach(m=>m.parent&&m.parent.remove(m));GW.scene.remove(p.o);p.tag.el.remove();LABELS.splice(LABELS.indexOf(p.tag),1)}}
+  if(VSX&&VSX.mode==='net'){const o=1-VSX.me;if(!VSX.res[o])vsNetDone(VSX.panes.find(P=>P.p===o)||{p:o,pane:null},{v:-1,q:1,txt:'離線了'})}
+  if(was)toast(msg,3500);netChip()}
+function netGuestEnd(msg){if(NET.role!=='guest')return;NET.role=null;try{NET.ws&&NET.ws.close()}catch(e){}
+  if(VSX)try{vsClose()}catch(e){}
+  netBox(`<div style="font-size:30px">👋</div>${msg}<br>按下確定回到你自己的地圖。<br><button class="b" id="nmOk">確定</button>`,()=>$('#nmOk').onclick=()=>{save();location.reload()})}
+function netLeave(){if(!NET.role)return;const r=NET.role;netSend({t:'leave'});NET.role=null;NET.peer='';try{NET.ws&&NET.ws.close()}catch(e){}NET.ws=null;
+  if(r==='guest'){save();location.reload();return}
+  if(GW){const i=GW.players.findIndex(p=>p.remote);if(i>=0){const p=GW.players[i];GW.players.splice(i,1);p.stack.forEach(m=>m.parent&&m.parent.remove(m));GW.scene.remove(p.o);p.tag.el.remove();LABELS.splice(LABELS.indexOf(p.tag),1)}GW.net=null;GW.coop=false}netChip()}
+
+/* ---- 房主：加入對方角色 ---- */
+function netAddRemote(){if(!GW||GW.players.some(p=>p.remote))return;const p=makePlayer(1);p.remote=true;p.pos.copy(GW.players[0].pos).add(V(1.4,0,.6));p.net={x:p.pos.x,z:p.pos.z,d:0,s:''};GW.players.push(p)}
+/* ---- 朋友：用房主的地圖建立世界（不會蓋掉自己的存檔） ---- */
+function netGuestWorld(m){if(NET.role!=='guest'||GW)return;
+  NET.own=G.maps.food2;NET.swap=true;G.maps.food2=JSON.parse(JSON.stringify(m.st));G.maps.food2.first=false;
+  buildWorld();const st=GW.st;const me=makePlayer(1);me.inId=0;me.pos.set((st.px??0)+1.4,0,(st.pz??14)+.6);const rp=makePlayer(0);rp.remote=true;rp.pos.set(st.px??0,0,st.pz??14);rp.net={x:rp.pos.x,z:rp.pos.z,d:0,s:''};
+  GW.players.push(me,rp);GW.camT[0].copy(me.pos);GW.camT[1].copy(me.pos);
+  startGame({coop:true,net:'guest'});
+  GW.evs=(m.ev||[]).map(([id,rem])=>{const E=EVENTS.find(e=>e.id===id);return E&&E.mod?{id,em:E.em,t:E.t,mod:E.mod,until:GW.time+rem}:null}).filter(Boolean);
+  if(m.paused)setPause(true,true);
+  netBoxClose();SFX.fanfare&&SFX.fanfare();toast(`👥 進入 ${NET.peer} 的地圖！你是 2P（紫色）`,4000);netChip()}
+
+/* ---- 每一幀 ---- */
+function netTick(dt){if(!GW.net||!NET.ws)return;const p=GW.players[0];if(!p)return;
+  NET.pT-=dt;if(NET.pT<=0&&(GW.net==='guest'||NET.peer)){NET.pT=1/12;netSend({t:'p',x:+p.pos.x.toFixed(2),z:+p.pos.z.toFixed(2),d:+(p.dir||0).toFixed(2),s:p.stack.map(m=>m.userData.type).join(',')})}
+  if(GW.net==='host'&&NET.peer){NET.syncT-=dt;if(NET.syncT<=0){NET.syncT=.4;netSync()}NET.pileT-=dt;if(NET.pileT<=0){NET.pileT=3;netPiles()}}
+  netStackFix(dt)}
+function netMoveRemote(p,dt){const t=p.net;if(!t)return 0;const dx=t.x-p.pos.x,dz=t.z-p.pos.z,d=Math.hypot(dx,dz);if(d>8){p.pos.set(t.x,0,t.z);return 0}
+  const k=Math.min(1,dt*10);p.pos.x+=dx*k;p.pos.z+=dz*k;if(d>.04){p.dir=t.d;return Math.min(7,d*10)}return 0}
+// 對方手上的東西：兩邊不一樣超過 1 秒就照對方的修正
+function netStackFix(dt){const p=GW.players.find(x=>x.remote);if(!p||!p.net)return;NET.fixT=(NET.fixT||0)-dt;if(NET.fixT>0)return;NET.fixT=.6;if(p.incoming)return;
+  const cnt=a=>{const c={};a.forEach(k=>{if(k)c[k]=(c[k]||0)+1});return c};const A=cnt((p.net.s||'').split(',')),B=cnt(p.stack.map(m=>m.userData.type));
+  const same=Object.keys(A).length===Object.keys(B).length&&Object.keys(A).every(k=>A[k]===B[k]);if(same){NET.bad=0;return}if(++NET.bad<2)return;NET.bad=0;
+  for(const k in B){let x=B[k]-(A[k]||0);while(x-->0){const m=takeTop(p,k);if(m&&m.parent)m.parent.remove(m)}}
+  for(const k in A){let x=A[k]-(B[k]||0);while(x-->0){if(!ITEMS[k])break;const m=makeItem(k);GW.scene.add(m);addToStack(p,m,p.pos.clone().add(V(0,1.6,0)))}}}
+
+/* ---- 房主 → 朋友：同步經營狀態 ---- */
+function netSync(){const st=GW.st;const fr=flowRates();
+  netSend({t:'sync',m:Math.floor(st.money),k:GW.strike?1:0,c:GW.capped?1:0,debt:st.debt||0,fr:[fr.inc,fr.out],hub:st.hub,
+    sh:st.shops.map(z=>[z.b||0,z.p||0,z.bo||0,z.pp||0,z.bp||0,z.m||[],z.base||0]),ev:(GW.evs||[]).map(e=>[e.id,Math.round(e.until-GW.time)])})}
+function netApplySync(m){if(!GW||GW.net!=='guest')return;const st=GW.st;st.money=m.m;GW.strike=!!m.k;GW.capped=!!m.c;st.debt=m.debt;NET.fr=m.fr;let dirty=false;
+  m.sh.forEach((a,i)=>{const S=GW.shops[i],zs=st.shops[i];if(!S||!zs)return;const [b,p,bo,pp,bp,mm,base]=a;
+    if(b&&!S.built){openShop(S,true);updateTutorial();toast(`🎊 新店開幕：${S.def.em} ${S.def.name}`);dirty=true}
+    const ok0=S.built&&zs.p<S.links.length&&manualOk(S,zs.p);
+    while(S.built&&(zs.p||0)<p&&zs.p<S.links.length){const lk=S.links[zs.p];zs.p++;enableLink(S,lk,true);dirty=true;if(zs.p>=S.links.length)setTimeout(()=>shopAutomated(S),900)}
+    zs.pp=pp;zs.bp=bp;zs.m=mm;zs.base=base;
+    if(S.built&&(zs.bo||0)!==bo){zs.bo=bo;spawnBoost(S,true);S.sign()}
+    const ok1=S.built&&zs.p<S.links.length&&manualOk(S,zs.p);if(ok0!==ok1)dirty=true});
+  Object.assign(st.hub,m.hub||{});
+  GW.evs=(m.ev||[]).map(([id,rem])=>{const E=EVENTS.find(e=>e.id===id);return E&&E.mod?{id,em:E.em,t:E.t,mod:E.mod,until:GW.time+rem}:null}).filter(Boolean);
+  if(dirty){refreshHub();refreshPads()}}
+function netPiles(){const sh=[];GW.shops.forEach(S=>{if(!S.built)return;sh.push([S.i,S.mach.map(m=>[{...m.q},m.out.items.length+m.out.incoming]),S.counter.pile.n,S.cash.amt])});const ml=GW.hub.mill;netSend({t:'piles',sh,mill:[ml.q.wheat||0,ml.out.n]})}
+function netPileSet(pile,n,type){if(pile.incoming)return;n=Math.max(0,Math.min(n,pile.cap||99));let ch=false;
+  while(pile.items.length>n){const m=pile.items.pop();m.parent&&m.parent.remove(m);ch=true}
+  while(pile.items.length<n){const it=makeItem(type);GW.scene.add(it);pile.items.push(it);ch=true}if(ch)pile.reflow()}
+function netApplyPiles(m){if(!GW||GW.net!=='guest')return;m.sh.forEach(([i,ms,c,cash])=>{const S=GW.shops[i];if(!S||!S.built)return;
+  ms.forEach(([q,o],k)=>{const M=S.mach[k];if(!M)return;for(const t in q)if(t in M.q&&!(M.pend&&M.pend[t]))M.q[t]=q[t];netPileSet(M.out,o,M.outType)});
+  netPileSet(S.counter.pile,c,S.counter.item);if(S.cash.amt!==cash){S.cash.amt=cash;S.cash.rebuild()}});
+  const ml=GW.hub.mill;if(m.mill){ml.q.wheat=m.mill[0];netPileSet(ml.out,m.mill[1],'flour')}}
+
+/* ---- 朋友 → 房主：按鈕操作 ---- */
+function netMoney(d){if(GW&&GW.net==='guest'&&d)netSend({t:'cmd',c:'money',d:Math.round(d)})}
+function netCmd(m){if(!GW||GW.net!=='host')return;const st=GW.st;
+  if(m.c==='money'){st.money=Math.max(0,Math.min(MONEY_CAP,st.money+m.d));flow(m.d,'fun');bump('#gCash')}
+  else if(m.c==='boost'){boostSet(m.i,m.bo,true)}
+  else if(m.c==='padOk'){const o=GW.pads.find(o=>o.S.i===m.i&&o.key===m.key);if(o)o.okNet=true}
+  else if(m.c==='disc'){const p=GW.players.find(x=>x.remote);if(p)discard(p,m.type||null)}
+  NET.syncT=0}
+function boostSet(i,bo,fromNet){const S=GW.shops[i];if(!S)return;const zs=GW.st.shops[i];const cur=zs.bo||0;if(cur===bo)return;
+  if(!cur&&bo>0){const h=S.revH||[];zs.base=h.length?Math.round(h.reduce((a,b)=>a+b,0)/h.length):0}zs.bo=bo;spawnBoost(S,true);S.sign();
+  if(GW.net==='guest'&&!fromNet)netSend({t:'cmd',c:'boost',i,bo});if(fromNet)toast(`🤖 ${NET.peer} 調整了 ${S.def.em} ${S.def.name} 的運輸`)}
+
+/* ---- 小遊戲：誰先按誰玩 ---- */
+function netMiniOpen(idx){if(GW.net==='host'&&NET.peer){NET.mini={idx,until:Date.now()+12500,taken:false};netSend({t:'mini',idx})}}
+function netMiniClick(){if(!MG||MG.stage!=='notice')return;
+  if(GW.net==='host'){if(NET.mini&&NET.mini.taken)return;if(NET.mini)NET.mini.taken=true;netSend({t:'miniTaken'});MG.start(0)}
+  else{if(MG.claiming)return;MG.claiming=1;netSend({t:'miniClaim'});const b=$('#mini .go');if(b)b.textContent='⏳ 搶搶搶…'}}
+function netMiniClaim(){const n=NET.mini;if(!n||n.taken||Date.now()>n.until){netSend({t:'miniTaken'});return}n.taken=true;
+  if(MG&&MG.stage==='notice'){MG.stage='taken';hideNotice();MG=null}toast(`${NET.peer}（2P）搶到小遊戲了！`,2000);netSend({t:'miniGo',idx:n.idx})}
+
+/* ======================= ⚔️ 不同裝置即時對戰 ======================= */
+function vsNetInvite(k,lv){if(!NET.peer){SFX.err();toast('朋友還沒加入房間喔！');return}if(GW.st.money<VS_FEE.duo){SFX.err();toast('💸 現金不夠開局喔！');return}
+  closePanel();const g=VS_GAMES[k];const box=$('#vsInv .box');NET.inv={k,lv};
+  box.innerHTML=`<div class="vs">⚔️</div><div style="font-size:17px;margin:6px 0">已向 <b>${netEsc(NET.peer)}</b> 發出對戰邀請</div><div>${g.em} ${g.name}　第 ${lv} 關</div><div style="font-size:13px;color:#8a7a5a;margin-top:4px">等待對方回應…</div><div class="row"><button class="no" id="vsCancel">取消邀請</button></div>`;$('#vsInv').style.display='flex';
+  netSend({t:'vsInv',k,lv});$('#vsCancel').onclick=()=>{NET.inv=null;$('#vsInv').style.display='none';netSend({t:'vsCancel'})}}
+function vsNetAsk(m){const g=VS_GAMES[m.k];if(!g||VSX||(MG&&MG.stage==='play')){netSend({t:'vsAns',ok:0,busy:1});return}SFX.ding&&SFX.ding();
+  const box=$('#vsInv .box');box.innerHTML=`<div class="vs">⚔️</div><div style="font-size:18px;margin:6px 0"><b>${netEsc(NET.peer)}</b> 向你發出對戰邀請！</div><div>${g.em} ${g.name}　第 ${m.lv} 關<br><small>開局從共同現金扣 💵${VS_FEE.duo}（只是玩樂，不會賺錢）</small></div><div class="row"><button class="ok" id="vsYes">⚔️ 應戰！</button><button class="no" id="vsNo">拒絕</button></div>`;$('#vsInv').style.display='flex';
+  $('#vsYes').onclick=()=>{$('#vsInv').style.display='none';netSend({t:'vsAns',ok:1});vsNetStart(m.k,m.lv)};$('#vsNo').onclick=()=>{$('#vsInv').style.display='none';netSend({t:'vsAns',ok:0})}}
+function vsNetStart(k,lv){const g=VS_GAMES[k];if(VSX)vsClose();closePanel();$('#vsInv').style.display='none';
+  if(GW.net==='host'){const fee=Math.min(VS_FEE.duo,Math.floor(GW.st.money));GW.st.money-=fee;flow(-fee,'fun');bump('#gCash')}
+  const me=GW.net==='host'?0:1;VSX={k,g,lv,mode:'net',me,first:0,res:[null,null],panes:[],big:me,size:1,ready:[0,0],go:false};$('#vsHost').style.display='block';GW.hideR=true;bgmPause(true);
+  const host=$('#vsHost');host.querySelectorAll('.vspane,.keys').forEach(e=>e.remove());$('#vsMask').style.display='none';
+  const mk=(p,local)=>{const pane=document.createElement('div');pane.className='vspane';pane.style.setProperty('--pc',p?'#e0507e':'#2f6fd1');
+    pane.innerHTML=`<div class="hd"><b>${local?'你':netEsc(NET.peer)}（${vsWho(p)}）</b><span class="sp">✋ 長按拖曳</span><button data-a="size">大小</button><button data-a="swap" style="display:none"></button></div><span class="tag">${vsWho(p)}　${local?'你':'對手'}</span><div class="done"></div>`;
+    host.insertBefore(pane,host.querySelector('.vsbar'));return pane};
+  // 自己的遊戲（大畫面）
+  const pane=mk(me,true);const f=document.createElement('iframe');f.allow='autoplay; fullscreen';
+  f.src=g.dir+(g.id==='hockey'?'index.html?embed=1&net=1':g.id==='f1'?'index.html?embed=1&unlockAll=1&save=tycoon&net=1':g.url(lv)+(g.url(lv).includes('?')?'&':'?')+'net=1');
+  pane.insertBefore(f,pane.firstChild);const P={p:me,pane,f,started:false,local:true};VSX.panes.push(P);
+  f.onload=()=>{const w=f.contentWindow;try{w.addEventListener('blur',e=>e.stopImmediatePropagation(),true)}catch(e){}
+    if(g.id==='f1'){setTimeout(()=>{try{f1Drive(P)}catch(e){console.error(e)}},1500);return}
+    setTimeout(()=>{if(!VSX||VSX.mode!=='net')return;VSX.ready[me]=1;netSend({t:'vsReady'});vsNetTryGo()},g.id==='hockey'?700:2200)};
+  // 對手的即時畫面（小視窗，可拖曳）
+  if(g.id!=='hockey'){const op=mk(1-me,false);const img=document.createElement('img');img.className='vsimg';img.alt='';op.insertBefore(img,op.firstChild);const w=document.createElement('div');w.className='wait';w.textContent='等待對手畫面…';op.appendChild(w);
+    const Q={p:1-me,pane:op,img,f:null,asp:.62};VSX.panes.push(Q);vsDragSetup(Q);VSX.capIv=setInterval(vsCapture,300)}
+  $('#vsBarT').innerHTML=g.id==='hockey'?`🏒 連線對戰<br><b style="color:#e0507e">你在下方</b><br>先拿 5 分獲勝`:`${g.em} 第 ${lv} 關<br>⚔️ 連線對戰`;$('#vsQuit').textContent='放棄這場';$('#vsQuit').style.display='';
+  vsLayout()}
+function vsNetTryGo(){if(!VSX||VSX.go||GW.net!=='host')return;if(VSX.ready[0]&&VSX.ready[1]){netSend({t:'vsGo'});vsNetGo()}}
+function vsNetGo(){if(!VSX||VSX.go)return;VSX.go=true;const P=VSX.panes[0];if(!P||!P.f)return;P.started=true;
+  if(VSX.g.id==='hockey')P.f.contentWindow.postMessage({type:'neonHockey',cmd:'netStart',role:GW.net,win:5},'*');else if(VSX.g.start)VSX.g.start(P.f,VSX.lv);
+  const k=document.createElement('div');k.className='keys';k.textContent='⚔️ 開始！雙方同時開打';$('#vsHost').appendChild(k);setTimeout(()=>k.style.opacity=0,2500)}
+// 把自己的畫面縮小傳給對手
+function vsCapture(){if(!VSX||VSX.mode!=='net')return;const P=VSX.panes[0];if(!P||!P.f)return;let D;try{D=P.f.contentDocument}catch(e){return}if(!D)return;
+  const W0=P.f.clientWidth,H0=P.f.clientHeight;if(!W0||!H0)return;const sc=Math.min(320/W0,320/H0);const c=VSX.cap||(VSX.cap=document.createElement('canvas'));c.width=Math.max(8,Math.round(W0*sc));c.height=Math.max(8,Math.round(H0*sc));
+  const x=c.getContext('2d');x.fillStyle='#120c24';x.fillRect(0,0,c.width,c.height);let any=false;
+  D.querySelectorAll('canvas').forEach(cv=>{const r=cv.getBoundingClientRect();if(r.width<40||r.height<40)return;const cs=D.defaultView.getComputedStyle(cv);if(cs.display==='none'||cs.visibility==='hidden'||+cs.opacity===0)return;try{x.drawImage(cv,r.left*sc,r.top*sc,r.width*sc,r.height*sc);any=true}catch(e){}});
+  if(any)try{netSend({t:'vf',i:c.toDataURL('image/jpeg',.55),w:c.width,h:c.height})}catch(e){}}
+// 極速F1：用遊戲內建的連線賽車（同一條賽道，看得到對方的車）
+function f1Drive(P){const D=P.f.contentDocument;const click=id=>{const e=D.getElementById(id);e&&e.click()};const nm=netName().slice(0,8)||(GW.net==='host'?'1P':'2P');
+  click('mOnline');setTimeout(()=>{if(!VSX)return;D.getElementById('nameIn').value=nm;
+    if(GW.net==='host'){click('oCreate');let n=0;const iv=setInterval(()=>{if(!VSX||VSX.mode!=='net'){clearInterval(iv);return}
+        const code=((D.getElementById('roomCode')||{}).textContent||'').trim();
+        if(/^\d{4}$/.test(code)&&!VSX.f1code){VSX.f1code=code;const sel=D.getElementById('lvSel');if(sel){sel.value=String(VSX.lv-1);sel.dispatchEvent(new Event('change'))}netSend({t:'f1code',code})}
+        if(VSX.f1code&&D.querySelectorAll('#plist i').length>=2){clearInterval(iv);setTimeout(()=>{click('oStart');vsNetGoF1()},900)}
+        if(++n>400)clearInterval(iv)},300)}
+    else{VSX.f1ready=1;if(VSX.f1code)f1JoinCode()}},500)}
+function f1JoinCode(){if(!VSX||VSX.f1joined)return;const P=VSX.panes[0];const D=P.f.contentDocument;if(!D)return;VSX.f1joined=1;D.getElementById('codeIn').value=VSX.f1code;D.getElementById('oJoin').click();vsNetGoF1()}
+function vsNetGoF1(){if(!VSX)return;VSX.go=true;VSX.panes[0].started=true}
+// 結果
+function vsNetDone(P,r){if(!VSX||VSX.res[P.p])return;VSX.res[P.p]=r;const local=P.p===VSX.me;
+  if(P.pane){const dn=P.pane.querySelector('.done');dn.innerHTML=`<b>${r.v>0?'🏁':'😵'}</b>${local?'你':'對手'} ${r.v>0?'完成！':'結束了'}<br>${r.txt}`;dn.style.display='flex'}SFX.ding();
+  if(local)netSend({t:'vsRes',r});vsNetCheck()}
+function vsNetCheck(){const R=VSX.res;
+  if(R[0]&&R[1]){clearInterval(VSX.cd);if(GW.net==='host'&&!VSX.fin){VSX.fin=1;setTimeout(()=>{const w=R[0].v===R[1].v?-1:(R[0].v>R[1].v?0:1);const txt=[R[0].txt,R[1].txt];netSend({t:'vsFinal',w,txt});vsNetFinal(w,txt)},1200)}return}
+  const q=R[0]&&R[0].q?0:R[1]&&R[1].q?1:-1;// 有人中途離開：直接結算
+  if(q>=0&&GW.net==='host'){const o=1-q;R[o]={v:0,txt:'對手放棄，直接獲勝'};vsNetCheck();return}
+  if(VSX.cd||(!R[0]&&!R[1]))return;const o=R[0]?1:0;let left=45;
+  VSX.cd=setInterval(()=>{if(!VSX){return}left--;$('#vsBarT').innerHTML=`${VSX.g.em} 第 ${VSX.lv} 關<br>⏱️ ${o===VSX.me?'你':'對手'}還剩 <b>${left}</b> 秒`;
+    if(left<=0){clearInterval(VSX.cd);if(o===VSX.me&&!VSX.res[o])vsNetDone(VSX.panes[0],{v:-1,txt:'時間到，沒完成'})}},1000)}
+function vsNetFinal(w,txt){if(!VSX){toast(w<0?'🤝 對戰平手':(w===(GW.net==='host'?0:1)?'🏆 你贏了！':'對手獲勝'),3000);return}
+  clearInterval(VSX.cd);clearInterval(VSX.capIv);const m=$('#vsMask');const me=VSX.me;SFX.fanfare&&SFX.fanfare();if(w===me)confettiDom(60);
+  const nm=p=>p===me?'你':netEsc(NET.peer||'對手');
+  m.innerHTML=`<div class="card"><div class="big">${w<0?'🤝':w===me?'🏆':'💪'}</div><div style="font-size:24px">${w<0?'平手！':w===me?'你獲勝了！':`<b style="color:${w?'#e0507e':'#2f6fd1'}">${nm(w)}</b> 獲勝！`}</div><div class="res"><div class="${w===0?'win':''}"><b style="color:#2f6fd1">1P ${nm(0)}</b><br>${txt[0]}</div><div class="${w===1?'win':''}"><b style="color:#e0507e">2P ${nm(1)}</b><br>${txt[1]}</div></div>
+   <div style="display:flex;gap:10px;justify-content:center;margin-top:12px"><button class="ok" id="vsAgain">再邀請一場（💵${VS_FEE.duo}）</button><button class="no" id="vsEnd">回遊樂場</button></div></div>`;m.style.display='flex';
+  $('#vsAgain').onclick=()=>{const {k,lv}=VSX;vsClose();vsNetInvite(k,lv)};$('#vsEnd').onclick=()=>vsBack()}
+// 冰球：房主的裝置算物理，資料經伺服器互傳
+window.addEventListener('message',e=>{if(!VSX||VSX.mode!=='net'||VSX.g.id!=='hockey')return;const P=VSX.panes[0];if(!P||e.source!==P.f.contentWindow)return;const d=e.data||{};if(d.type!=='neonHockey')return;
+  if(d.event==='net')netSend({t:'hk',d:d.d});
+  else if(d.event==='netOver'&&GW.net==='host'&&!VSX.fin){VSX.fin=1;const [a,b]=d.score||[0,0];const w=a>b?0:1;const txt=[`${a} 分`,`${b} 分`];setTimeout(()=>{netSend({t:'vsFinal',w,txt});vsNetFinal(w,txt)},1500)}});
+window.__N={get NET(){return NET},get VSX(){return VSX},vsNetInvite,netJoin,netCreate,miniNotice:(i)=>miniNotice(i),setPause};
 </script>
 </body></html>

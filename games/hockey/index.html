@@ -184,7 +184,7 @@ function stepPhysics(dt){
    const kx=(keys.ArrowRight?1:0)-(keys.ArrowLeft?1:0),ky=(keys.ArrowDown?1:0)-(keys.ArrowUp?1:0);
    if(kx||ky){blue.tx=blue.x-kx*0.12;blue.ty=blue.y+ky*0.12}// 畫面左右與世界座標相反
    moveMallet(blue,-HL+blue.r,-blue.r*0.6,mode==='2p'&&(kx||ky)?2.6:9,dt);
-  }else{aiStep(dt);moveMallet(blue,-HL+blue.r,-blue.r*0.6,LV.spd,dt)}
+  }else if(mode==='net'){moveMallet(blue,-HL+blue.r,-blue.r*0.6,9,dt)}else{aiStep(dt);moveMallet(blue,-HL+blue.r,-blue.r*0.6,LV.spd,dt)}
  }
  if(state!=='play')return;
  const fr=Math.pow(fric,dt);puck.vx*=fr;puck.vy*=fr;
@@ -207,7 +207,7 @@ function goal(who){// who: 0 紅得分, 1 藍得分
  const gy=who===0?-HL:HL,col=who===0?'#ff4d7a':'#4d9dff';
  spark(puck.x,gy,60,col,2.4,1.6);spark(puck.x,gy,30,'#ffffff',1.6,1.2);ring(puck.x,gy,who===0?'255,80,130':'90,150,255',0.6);
  SFX.goal(mode==='2p'||who===0);
- banner={text:(mode==='ai'&&who===1)?'失分！':'得分！',col,t:0};
+ banner={text:(mode!=='2p'&&who===1)?'失分！':'得分！',col,t:0};
  puck.vx=puck.vy=0;puck.y=gy+(who===0?-0.2:0.2);
 }
 
@@ -345,10 +345,10 @@ let last=performance.now(),acc=0,T=0;
 function frame(now){
  let dt=Math.min(0.05,(now-last)/1000);last=now;T+=dt;
  if(state!=='menu'&&state!=='paused'){
-  acc+=dt;const st=1/240;while(acc>=st){hitCool-=st;wallCool-=st;stepPhysics(st);acc-=st}
+  if(mode==='netg')netGuestStep(dt);else{acc+=dt;const st=1/240;while(acc>=st){hitCool-=st;wallCool-=st;stepPhysics(st);acc-=st}}if(mode==='net'||mode==='netg')netSend(dt);
   stateT+=dt;
   if(state==='count'){const n=3-Math.floor(stateT/0.7);if(n!==countN){countN=n;if(n>0)SFX.beep(false);else SFX.beep(true)}if(stateT>=2.1+0.5){state='play';stateT=0}}
-  else if(state==='goal'&&stateT>1.5){
+  else if(state==='goal'&&stateT>1.5&&mode!=='netg'){
    if(score[lastScorer]>=winScore){endGame()}else{resetPositions(lastScorer===0?1:0);state='play';stateT=0;SFX.beep(true)}
   }
   const sp=Math.hypot(puck.vx,puck.vy);if(state==='play'&&sp>0.4){trail.push({x:puck.x,y:puck.y});if(trail.length>10)trail.shift()}else if(trail.length)trail.shift();
@@ -423,6 +423,7 @@ function endGame(){state='over';
    et.style.color='#ffd84a';et.style.textShadow='0 0 24px #ffb000,0 0 4px #fff';
    tellHost('levelWin',{level:curLv+1,stars,score:[score[0],score[1]]});
   }else{et.textContent='挑戰失敗';es.style.display='none';et.style.color='#8fa0c0';et.style.textShadow='0 0 14px #3050a0';SFX.lose();tellHost('levelLose',{level:curLv+1,score:[score[0],score[1]]})}
+ }else if(mode==='net'||mode==='netg'){el.textContent='連線對戰';es.style.display='none';et.textContent=redWon?'你贏了！':'對手獲勝';et.style.color=redWon?'#ffd84a':'#8fa0c0';et.style.textShadow='0 0 24px currentColor';redWon?SFX.win():SFX.lose();document.getElementById('bAgain').style.display='none';bB.style.display='none';tellHost('netOver',{score:[score[0],score[1]],win:redWon})
  }else{el.textContent='雙人同機';es.style.display='none';bB.textContent='回主選單';
   et.textContent=redWon?'紅方勝利':'藍方勝利';et.style.color=redWon?'#ff5a84':'#6aa8ff';et.style.textShadow='0 0 24px currentColor';SFX.win()}
  et.style.fontSize=et.textContent.length>2?'44px':'60px';
@@ -446,8 +447,32 @@ if(EMBED){const bx=document.getElementById('bExit');bx.style.display='';bx.oncli
 addEventListener('message',e=>{const d=e.data;if(!d||d.type!=='neonHockey'||!d.cmd)return;
  if(d.cmd==='startLevel'){const i=Math.max(0,Math.min(9,(d.level|0)-1));startLevel(i)}
  else if(d.cmd==='menu')toMenu();else if(d.cmd==='levels')toLevels();
+ else if(d.cmd==='netStart'){netStart(d.role,d.win)}
+ else if(d.cmd==='netData'){netApply(d.d)}
  else if(d.cmd==='mute'){muted=!!d.value;document.getElementById('bMute').textContent=muted?'🔇':'🔊'}
  else if(d.cmd==='resetProgress'){prog={unlocked:1,stars:Array(10).fill(0)};saveProg();buildGrid()}});
+
+// ===== 不同裝置連線對戰（由外層「製作大亨」轉送資料） =====
+// 房主：跑完整物理、自己是紅方（下）；對手：只畫面＋自己的擊球器，畫面上下翻轉，所以自己也在下方
+let netAcc=0,netPrev='';const NST=['menu','count','play','goal','over','paused'];
+function netStart(role,win){initAudio();if(AC&&AC.state==='suspended')AC.resume();mode=role==='host'?'net':'netg';LV=null;winScore=win||5;maxP=MAXP;fric=0.82;blue.r=RM;show(null);startGame();document.getElementById('hudBtns').style.display='none';netPrev='count'}
+function netSend(dt){netAcc+=dt;if(netAcc<1/30)return;netAcc=0;
+ if(mode==='net')tellHost('net',{d:[+puck.x.toFixed(4),+puck.y.toFixed(4),+puck.vx.toFixed(3),+puck.vy.toFixed(3),+red.x.toFixed(4),+red.y.toFixed(4),+blue.x.toFixed(4),+blue.y.toFixed(4),score[0],score[1],NST.indexOf(state),+stateT.toFixed(2),lastScorer]});
+ else tellHost('net',{d:[+(-red.tx).toFixed(4),+(-red.ty).toFixed(4)]})}
+function netGuestStep(dt){moveMallet(red,RM*0.6,HL-RM,9,dt);if(state!=='play')return;
+ puck.x+=puck.vx*dt;puck.y+=puck.vy*dt;const lx=HW-RP;if(puck.x<-lx){puck.x=-lx;puck.vx=Math.abs(puck.vx)}if(puck.x>lx){puck.x=lx;puck.vx=-Math.abs(puck.vx)}}
+function netApply(d){
+ if(mode==='net'){blue.tx=d[0];blue.ty=d[1];return}
+ if(mode!=='netg')return;const ns=NST[d[10]]||'play';
+ puck.x=-d[0];puck.y=-d[1];puck.vx=-d[2];puck.vy=-d[3];
+ const bx=-d[4],by=-d[5];blue.vx=(bx-blue.x)*30;blue.vy=(by-blue.y)*30;blue.x=bx;blue.y=by;
+ const gx=-d[6],gy=-d[7];if(Math.hypot(gx-red.x,gy-red.y)>0.3){red.x=gx;red.y=gy}
+ if(ns==='goal'&&state!=='goal'){goal(d[12]===0?1:0)}
+ score=[d[9],d[8]];
+ if(ns==='play'&&state!=='play'){if(state==='goal'){SFX.beep(true);trail=[]}state='play';stateT=0}
+ if(ns==='count'&&state!=='count'){state='count';stateT=d[11]}
+ if(ns==='over'&&state!=='over'){endGame()}
+}
 tellHost('ready',{levels:10});
 document.getElementById('bMute').onclick=e=>{muted=!muted;e.target.textContent=muted?'🔇':'🔊'};
 resetPositions(0);requestAnimationFrame(frame);
