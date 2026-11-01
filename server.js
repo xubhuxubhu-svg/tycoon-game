@@ -66,17 +66,22 @@ const server = http.createServer((req, res) => {
 const wss = new WebSocketServer({ server, maxPayload: 2 * 1024 * 1024 });
 function send(ws, obj) { if (ws && ws.readyState === 1) ws.send(typeof obj === 'string' ? obj : JSON.stringify(obj)); }
 
-/* ================= 製作大亨：雙人房間（房主＋一位朋友） ================= */
+/* ================= 製作大亨：合作房間（雙人 2 位／多人 4 位，斷線可用房號回來） ================= */
+// 房間成員用玩家代號記住；有人登出時保留位置 30 分鐘，用同一個房號就能回來繼續玩。
 const tRooms = new Map();
+function tMembers(r) { return [...r.mem.values()].map(m => ({ uid: m.uid, name: m.name, slot: m.slot, on: !!(m.ws && m.ws.readyState === 1) })); }
+function tBroadcast(r, obj, except) { const s = JSON.stringify(obj); for (const m of r.mem.values()) if (m.ws && m.ws !== except && m.ws.readyState === 1) m.ws.send(s); }
+function tCheckEmpty(r) {
+  clearTimeout(r.kill);
+  if ([...r.mem.values()].some(m => m.ws && m.ws.readyState === 1)) return;
+  r.kill = setTimeout(() => tRooms.delete(r.code), 30 * 60 * 1000);
+}
 function tLeave(ws) {
   const r = ws.troom; if (!r) return; ws.troom = null;
-  if (r.host === ws) {
-    send(r.guest, { t: 'hostLeft' }); if (r.guest) r.guest.troom = null;
-    tRooms.delete(r.code);
-  } else if (r.guest === ws) {
-    r.guest = null; r.guestName = '';
-    send(r.host, { t: 'peerLeft' });
-  }
+  const m = r.mem.get(ws.tuid); if (!m || m.ws !== ws) return;
+  m.ws = null;
+  tBroadcast(r, { t: 'gone', uid: m.uid, name: m.name, slot: m.slot, host: m.slot === 0 });
+  tCheckEmpty(r);
 }
 function tycoon(ws) {
   ws.on('message', raw => {
@@ -87,26 +92,46 @@ function tycoon(ws) {
       case 'create': {
         tLeave(ws);
         let code; do { code = String(1000 + Math.floor(Math.random() * 9000)); } while (tRooms.has(code) || fRooms.has(code));
-        const room = { code, host: ws, guest: null, hostName: String(m.name || '老闆').slice(0, 10), guestName: '' };
-        tRooms.set(code, room); ws.troom = room;
-        send(ws, { t: 'created', code });
+        const uid = String(m.uid || ('u' + Math.random().toString(36).slice(2))).slice(0, 40);
+        const room = { code, cap: m.cap === 4 ? 4 : 2, mem: new Map(), kill: null };
+        room.mem.set(uid, { uid, name: String(m.name || '老闆').slice(0, 10), slot: 0, ws });
+        tRooms.set(code, room); ws.troom = room; ws.tuid = uid;
+        send(ws, { t: 'created', code, cap: room.cap, uid, slot: 0, members: tMembers(room) });
         break;
       }
       case 'join': {
         const room = tRooms.get(String(m.code || '').trim());
-        if (!room) return send(ws, { t: 'err', msg: '找不到這個房間，請確認房號' });
-        if (room.guest && room.guest !== ws && room.guest.readyState === 1) return send(ws, { t: 'err', msg: '這個房間已經有兩位玩家了' });
+        if (!room) return send(ws, { t: 'err', msg: '找不到這個房間，請確認房號（房間沒人超過 30 分鐘會自動關閉）' });
+        let uid = String(m.uid || ('u' + Math.random().toString(36).slice(2))).slice(0, 40);
+        let mem = room.mem.get(uid);
+        if (mem && mem.ws && mem.ws !== ws && mem.ws.readyState === 1) { uid = uid + '#' + Math.random().toString(36).slice(2, 6); mem = null; } // 同一個瀏覽器開兩個分頁
+        if (!mem) {
+          if (room.mem.size >= room.cap) return send(ws, { t: 'err', msg: `這個房間已經滿了（最多 ${room.cap} 位）` });
+          const used = new Set([...room.mem.values()].map(x => x.slot));
+          let slot = 1; while (used.has(slot)) slot++;
+          mem = { uid, name: '', slot, ws: null }; room.mem.set(uid, mem);
+        }
         tLeave(ws);
-        room.guest = ws; room.guestName = String(m.name || '朋友').slice(0, 10); ws.troom = room;
-        send(ws, { t: 'joined', code: room.code, host: room.hostName });
-        send(room.host, { t: 'peer', name: room.guestName });
+        mem.ws = ws; mem.name = String(m.name || '朋友').slice(0, 10); ws.troom = room; ws.tuid = uid; clearTimeout(room.kill);
+        const host = [...room.mem.values()].find(x => x.slot === 0);
+        send(ws, { t: 'joined', code: room.code, cap: room.cap, uid, slot: mem.slot, role: mem.slot === 0 ? 'host' : 'guest', hostName: host ? host.name : '', members: tMembers(room) });
+        tBroadcast(room, { t: 'peer', uid, name: mem.name, slot: mem.slot }, ws);
         break;
       }
       case 'leave': tLeave(ws); break;
       case 'ping': send(ws, { t: 'pong' }); break;
-      default: // 其他訊息原封不動轉給房間裡的另一位
+      default: { // 其他訊息轉給房間裡的其他人（_to 指定一人、_x 排除一人）
         if (!r) return;
-        send(r.host === ws ? r.guest : r.host, s);
+        const me = r.mem.get(ws.tuid); if (!me) return;
+        m._f = me.uid; m._s = me.slot;
+        const out = JSON.stringify(m);
+        for (const x of r.mem.values()) {
+          if (!x.ws || x.ws === ws || x.ws.readyState !== 1) continue;
+          if (m._to && x.uid !== m._to) continue;
+          if (m._x && x.uid === m._x) continue;
+          x.ws.send(out);
+        }
+      }
     }
   });
   ws.on('close', () => tLeave(ws));

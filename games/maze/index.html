@@ -601,7 +601,7 @@ function showHint() {
 
 // ================= 視角 =================
 const camModes = [
-  { name: '🎥 全身', dist: 7.2, ty: 0.9, pitch: 0.72, side: 0 },
+  { name: '🎥 全身', dist: 9, ty: 0.9, pitch: 1.25, side: 0 },
   { name: '🎥 半身', dist: 2.4, ty: 1.4, pitch: 0.22, side: 0.6 },
   { name: '🎥 第一視角', dist: 0, ty: 1.1, pitch: 0.05, side: 0 }
 ];
@@ -635,7 +635,7 @@ addEventListener('mousemove', e => { if (!mouseDown) return; look(e.clientX - lx
 canvas.addEventListener('wheel', e => { if (e.deltaY > 0 && camMode < 2) setCamMode(camMode + 1); else if (e.deltaY < 0 && camMode > 0) setCamMode(camMode - 1); }, { passive: true });
 function look(dx, dy) {
   lookOff -= dx * 0.006; pitch += dy * 0.004;
-  const lim = camMode === 2 ? [-1.1, 1.1] : camMode === 1 ? [-0.5, 0.9] : [0.05, 1.35];
+  const lim = camMode === 2 ? [-1.1, 1.1] : camMode === 1 ? [-0.5, 0.9] : [1.22, 1.45];
   pitch = Math.max(lim[0], Math.min(lim[1], pitch));
 }
 // 觸控
@@ -843,12 +843,12 @@ function update(dt, t) {
     const clear = (pp, dist) => { const c2 = Math.cos(pp), s2 = Math.sin(pp), vx = Math.sin(yaw) * c2, vy = -s2, vz = Math.cos(yaw) * c2;
       let d = 0.3; for (; d <= dist; d += 0.1) if (wallAtPoint(tgt.x - vx * d, tgt.y - vy * d, tgt.z - vz * d)) return d; return 99; };
     let wantP = pitch;
-    if (camMode === 0) { while (wantP < 1.25 && clear(wantP, cm.dist) < 99) wantP += 0.08; }
+    if (camMode === 0) wantP = Math.max(pitch, 1.22); // 全身視角：固定高角度俯視，不再忽遠忽近
     effPitch += (wantP - effPitch) * Math.min(1, dt * 6);
     const ep = effPitch, ecp = Math.cos(ep), esp = Math.sin(ep);
     fwd3.set(Math.sin(yaw) * ecp, -esp, Math.cos(yaw) * ecp);
     const hitD = clear(ep, cm.dist);
-    const allowed = hitD >= 99 ? cm.dist : Math.max(0.35, hitD - 0.25);
+    const allowed = camMode === 0 ? cm.dist : (hitD >= 99 ? cm.dist : Math.max(0.35, hitD - 0.25));
     camDist += (allowed - camDist) * Math.min(1, dt * (allowed < camDist ? 20 : 4));
     camera.position.set(tgt.x - fwd3.x * camDist, tgt.y - fwd3.y * camDist, tgt.z - fwd3.z * camDist);
     camera.lookAt(tgt);
