@@ -385,7 +385,7 @@ const TASKS=[
 /* ======================= 存檔（即時自動儲存） ======================= */
 const KEY='zzdh_save_v1';
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()};
-const DEF={name:'新手老闆',lv:1,gems:50,stars:0,cards:{},buffs:{},daily:{last:'',streak:0},tasks:{date:'',p:{},claimed:{}},prog:{},maps:{},stats:{assets:0,sold:0,done:0},set:{sfx:true,music:true,hq:true},uid:'',rk:[],name2:''};
+const DEF={name:'新手老闆',lv:1,gems:50,stars:0,cards:{},buffs:{},daily:{last:'',streak:0},tasks:{date:'',p:{},claimed:{}},prog:{},maps:{},stats:{assets:0,sold:0,done:0},set:{sfx:true,music:true,hq:true},uid:'',rk:[],name2:'',myCode:''};
 let G=JSON.parse(JSON.stringify(DEF));
 try{const d=JSON.parse(localStorage.getItem(KEY)||'null');if(d)G=Object.assign(G,d)}catch(e){}
 for(const k in DEF)if(G[k]===undefined)G[k]=JSON.parse(JSON.stringify(DEF[k]));
@@ -1004,14 +1004,14 @@ const PANELS={
    openPanel('📚 系列地圖',html,()=>pb.querySelectorAll('.sc').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;if(!seriesUnlocked(i)){SFX.err();b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');toast(`先把「${SERIES[i-1].name}」全部玩法完成自動化，才能解鎖喔！`);return}SFX.click();showProgress()}))},
  duo(){openPanel('👥 雙人合作',`
    <div class="opt"><h3>🌐 不同裝置連線（筆電、手機都可以）</h3><p>一人建立房間，把 4 位數房號告訴朋友；朋友用自己的手機或電腦打開遊戲，在這裡輸入房號加入，就能一起在<b>房主的地圖</b>搬運、加工、賺錢，也可以互相邀請對戰！</p>
-   <button class="sbtn" id="netNew" style="background:#2f7bd6;box-shadow:0 3px 0 #1f5ea8">🏠 建立房間（我當房主）</button>
+   <button class="sbtn" id="netNew" style="background:#2f7bd6;box-shadow:0 3px 0 #1f5ea8">🏠 建立房間（我當房主）</button>${netFixedHtml()}
    <div class="netrow"><span style="font-size:14px">朋友的房號</span><input id="netCode" maxlength="4" inputmode="numeric" placeholder="0000"><button class="sbtn" id="netGo" style="background:#8a63d2;box-shadow:0 3px 0 #5c3fa0">🚪 加入</button></div><div id="netErr"></div>
    <div style="font-size:12px;color:#789;text-align:center">💡 加入別人的房間時，經營的是房主的地圖，不會影響你自己的存檔</div></div>
    <div class="opt"><h3>📱 同一台裝置一起玩</h3><p>兩人用同一個螢幕。分開時畫面自動分成上、下兩半；兩人靠近時，畫面自動合併成一個！</p>
    <div class="split"><div class="scr" id="demo"><div class="h" id="demoH"></div><div class="p" id="dp1" style="left:20px;top:12px">🧑‍🍳</div><div class="p" id="dp2" style="left:54px;top:80px">👷</div></div><div style="font-size:14px;color:#567;line-height:1.8">🔵 玩家一：左半邊拖曳／WASD<br>🟣 玩家二：右半邊拖曳／方向鍵</div></div>
    <div class="netrow"><span style="font-size:14px">第二位玩家的名字</span><input id="nm2" maxlength="10" style="width:140px;letter-spacing:0;font-size:17px" placeholder="玩家二"></div>
    <button class="sbtn" id="coopGo" style="background:#4cb85c;box-shadow:0 3px 0 #2f8a3d">▶ 開始同機合作</button></div>`,()=>{$('#nm2').value=G.name2||'';
-     $('#netNew').onclick=()=>{SFX.click();netCreate()};$('#netGo').onclick=()=>{SFX.click();netJoin($('#netCode').value)};$('#netCode').onkeydown=e=>{if(e.key==='Enter')netJoin($('#netCode').value)};
+     netFixedBind();$('#netNew').onclick=()=>{SFX.click();netCreate()};$('#netGo').onclick=()=>{SFX.click();netJoin($('#netCode').value)};$('#netCode').onkeydown=e=>{if(e.key==='Enter')netJoin($('#netCode').value)};
      $('#coopGo').onclick=()=>{SFX.click();G.name2=$('#nm2').value.trim().slice(0,10);mark();closePanel();startGame({coop:true});relabelPlayers()};
      let k=0;const anim=()=>{if(!modal.classList.contains('on')||!$('#demo'))return;k++;const close=k%2===1;$('#dp1').style.left=close?'34px':'20px';$('#dp1').style.top=close?'44px':'12px';$('#dp2').style.left=close?'50px':'54px';$('#dp2').style.top=close?'50px':'80px';$('#demoH').style.opacity=close?0:1;setTimeout(anim,1800)};setTimeout(anim,800)})},
  daily(){const claimedToday=G.daily.last===today();let streak=G.daily.streak;const y=new Date(Date.now()-864e5);const yd=y.getFullYear()+'-'+(y.getMonth()+1)+'-'+y.getDate();
@@ -3481,7 +3481,10 @@ function netChip(){const c=$('#netChip');if(!NET.role||mode!=='game'){c.style.di
 /* ---- 首頁：建立房間／輸入房號加入 ---- */
 function netUid(code){try{return sessionStorage.getItem('netUid_'+code)||G.uid}catch(e){return G.uid}}
 function netCreate(cap){const err=t=>{const e=$('#netErr');if(e)e.textContent=t;else toast(t)};err('連線中…');
-  netConnect(()=>netSend({t:'create',name:netName(),uid:G.uid,cap}),err)}
+  netConnect(()=>netSend({t:'create',name:netName(),uid:G.uid,cap,code:G.myCode||''}),err)}
+// 固定房號：房主每次建立房間都用同一個號碼
+function netFixedHtml(){return `<div class="netrow" id="fixRow" style="font-size:14px">📌 你的固定房號：<b style="font-size:20px;letter-spacing:4px;color:#e0507e">${G.myCode||'（第一次建立時產生）'}</b>${G.myCode?'<button class="sbtn" id="fixNew" style="background:#9aa9b8;box-shadow:0 3px 0 #6c7a88;font-size:13px;padding:4px 10px">🔄 換新號碼</button>':''}</div>`}
+function netFixedBind(){const b=$('#fixNew');if(b)b.onclick=()=>ask('確定要換一個新的固定房號嗎？<br><small>下次建立房間時會產生新號碼，要記得告訴朋友新的號碼</small>',()=>{G.myCode='';mark();save();const r=$('#fixRow');if(r)r.outerHTML=netFixedHtml();toast('好的！下次建立房間會換新號碼')})}
 function netJoin(code){code=String(code||'').trim();const err=t=>{const e=$('#netErr');if(e)e.textContent=t;else toast(t,4000)};
   if(!/^\d{4}$/.test(code)){err('請輸入 4 位數的房號');return}
   if(GW){try{sessionStorage.setItem('netJoin',code)}catch(e){}save();location.reload();return}// 先重新整理，乾淨地載入地圖
@@ -3494,11 +3497,12 @@ function netSetMembers(list){NET.peers=new Map();(list||[]).forEach(p=>{if(p.uid
 function netOn(m){NET.rx=NET.rx||{};NET.rx[m.t]=(NET.rx[m.t]||0)+1;const f=m._f;switch(m.t){
   case 'pong':break;
   case 'err':{const e=$('#netErr');if(e&&$('#modal').classList.contains('on'))e.textContent=m.msg;else netErrBox(m.msg);break}
-  case 'created':NET.role='host';NET.code=m.code;NET.cap=m.cap;NET.uid=m.uid;NET.slot=0;netSetMembers(m.members);closePanel();startGame({coop:true,net:'host'});netChip();netProf();
-    netBox(`<div>🌐 ${m.cap>2?'多人':'雙人'}合作房間建立好了！請朋友用自己的手機或電腦打開遊戲，<br>點首頁「${m.cap>2?'👨‍👩‍👧‍👦 多人合作':'👥 雙人合作'}」輸入房號：</div><div class="code">${m.code}</div><div style="font-size:13px;color:#567">最多 ${m.cap} 人。朋友加入前可以先自己經營；房號會一直顯示在左上角，有人不小心登出，再輸入同一個房號就能回來</div><button id="nmOk">知道了</button>`,()=>$('#nmOk').onclick=netBoxClose);break;
+  case 'created':if(G.myCode!==m.code){if(G.myCode)toast(`原本的房號 ${G.myCode} 正在被別人使用，這次改用 ${m.code}（之後固定用這個）`,5000);G.myCode=m.code;mark();save()}
+    NET.role='host';NET.code=m.code;NET.cap=m.cap;NET.uid=m.uid;NET.slot=0;netSetMembers(m.members);closePanel();startGame({coop:true,net:'host'});netChip();netProf();
+    netBox(`<div>🌐 ${m.cap>2?'多人':'雙人'}合作房間建立好了！請朋友用自己的手機或電腦打開遊戲，<br>點首頁「${m.cap>2?'👨‍👩‍👧‍👦 多人合作':'👥 雙人合作'}」輸入房號：</div><div class="code">${m.code}</div><div style="font-size:13px;color:#567">最多 ${m.cap} 人。朋友加入前可以先自己經營；房號會一直顯示在左上角，有人不小心登出，再輸入同一個房號就能回來<br>📌 這是你的<b>固定房號</b>，以後每次建立房間都是這個號碼</div><button id="nmOk">知道了</button>`,()=>$('#nmOk').onclick=netBoxClose);break;
   case 'joined':NET.code=m.code;NET.cap=m.cap;NET.uid=m.uid;NET.slot=m.slot;netSetMembers(m.members);try{sessionStorage.setItem('netUid_'+m.code,m.uid)}catch(e){}
     if(m.role==='host'){// 房主回來了：用自己的地圖繼續
-      NET.role='host';netBoxClose();startGame({coop:true,net:'host'});saveWorld();netSend({t:'world',st:GW.st,ev:netEvList(),paused:!!GW.paused});NET.syncT=0;NET.pileT=0;toast('👑 你回到房間了！大家繼續一起經營',3500);netChip();netProf();break}
+      NET.role='host';netBoxClose();closePanel();if(m.fixed&&G.myCode!==m.code){G.myCode=m.code;mark()}startGame({coop:true,net:'host'});saveWorld();netSend({t:'world',st:GW.st,ev:netEvList(),paused:!!GW.paused});NET.syncT=0;NET.pileT=0;toast('👑 你回到房間了！大家繼續一起經營',3500);netChip();netProf();break}
     NET.role='guest';netProf();
     if(!NET.peers.get(netHostUid())||!NET.peers.get(netHostUid()).on)netBox(`<div style="font-size:30px">⏳</div>已加入房間 <b>${m.code}</b>，但房主 ${netEsc(m.hostName)} 目前登出了。<br>等房主回來就會自動進入地圖。<br><button class="b" id="nmQuit">離開房間</button>`,()=>$('#nmQuit').onclick=()=>netLeave());
     else netBox(`<div style="font-size:30px">🌐</div>已加入房間 <b>${m.code}</b>！<br>正在載入 ${netEsc(m.hostName)} 的地圖…`);break;
@@ -3740,10 +3744,10 @@ function vsTouchPad(P){if(!VSX||!vsTouch())return;const kind=VS_PAD[VSX.g.id];if
 /* ======================= 👨‍👩‍👧‍👦 首頁：多人合作 ======================= */
 PANELS.multi=function(){openPanel('👨‍👩‍👧‍👦 多人合作（3～4 人）',`
    <div class="opt"><h3>🌐 3～4 個人，各用自己的手機或電腦</h3><p>一人建立房間，把 4 位數房號告訴大家；其他人在自己的裝置打開遊戲，點「多人合作」輸入房號加入（最多 4 人），一起在<b>房主的地圖</b>經營！<br>⚔️ 對戰遊戲 6 款一樣是即時對戰，人多所以<b>每個人只看自己的遊戲畫面</b>，結束後公布排名。</p>
-   <button class="sbtn" id="netNew" style="background:#e07a14;box-shadow:0 3px 0 #a85808">🏠 建立多人房間（我當房主）</button>
+   <button class="sbtn" id="netNew" style="background:#e07a14;box-shadow:0 3px 0 #a85808">🏠 建立多人房間（我當房主）</button>${netFixedHtml()}
    <div class="netrow"><span style="font-size:14px">房號</span><input id="netCode" maxlength="4" inputmode="numeric" placeholder="0000"><button class="sbtn" id="netGo" style="background:#8a63d2;box-shadow:0 3px 0 #5c3fa0">🚪 加入</button></div><div id="netErr"></div>
    <div style="font-size:12px;color:#789;text-align:center">💡 只有 2 個人時，用「👥 雙人合作」可以在對戰時看到對手的即時畫面<br>有人不小心登出，再輸入同一個房號就能回來繼續玩</div></div>`,()=>{
-     $('#netNew').onclick=()=>{SFX.click();netCreate(4)};$('#netGo').onclick=()=>{SFX.click();netJoin($('#netCode').value)};$('#netCode').onkeydown=e=>{if(e.key==='Enter')netJoin($('#netCode').value)}})};
+     netFixedBind();$('#netNew').onclick=()=>{SFX.click();netCreate(4)};$('#netGo').onclick=()=>{SFX.click();netJoin($('#netCode').value)};$('#netCode').onkeydown=e=>{if(e.key==='Enter')netJoin($('#netCode').value)}})};
 {const b=$('#bMulti');if(b)b.onclick=()=>{SFX.click();PANELS.multi()}}
 window.__N={get NET(){return NET},get VSX(){return VSX},vsNetInvite,netJoin,netCreate,miniNotice:(i)=>miniNotice(i),setPause};
 </script>

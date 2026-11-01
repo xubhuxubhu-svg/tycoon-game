@@ -91,8 +91,22 @@ function tycoon(ws) {
     switch (m.t) {
       case 'create': {
         tLeave(ws);
-        let code; do { code = String(1000 + Math.floor(Math.random() * 9000)); } while (tRooms.has(code) || fRooms.has(code));
         const uid = String(m.uid || ('u' + Math.random().toString(36).slice(2))).slice(0, 40);
+        // 固定房號：房主每次都用同一個號碼；房間還在而且是自己的，就直接回到房間
+        const want = /^\d{4}$/.test(String(m.code || '')) ? String(m.code) : '';
+        const old = want && tRooms.get(want);
+        if (old) {
+          const h = [...old.mem.values()].find(x => x.slot === 0);
+          if (h && h.uid === uid) {
+            old.cap = Math.max(m.cap === 4 ? 4 : 2, old.mem.size);
+            h.ws = ws; h.name = String(m.name || h.name).slice(0, 10); ws.troom = old; ws.tuid = uid; clearTimeout(old.kill);
+            send(ws, { t: 'joined', code: old.code, cap: old.cap, uid, slot: 0, role: 'host', hostName: h.name, members: tMembers(old), fixed: true });
+            tBroadcast(old, { t: 'peer', uid, name: h.name, slot: 0 }, ws);
+            break;
+          }
+        }
+        let code = want && !tRooms.has(want) && !fRooms.has(want) ? want : '';
+        while (!code || tRooms.has(code) || fRooms.has(code)) code = String(1000 + Math.floor(Math.random() * 9000));
         const room = { code, cap: m.cap === 4 ? 4 : 2, mem: new Map(), kill: null };
         room.mem.set(uid, { uid, name: String(m.name || '老闆').slice(0, 10), slot: 0, ws });
         tRooms.set(code, room); ws.troom = room; ws.tuid = uid;
