@@ -2,6 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
+<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>製作大亨</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,6 +18,7 @@ button{font-family:inherit;cursor:pointer}
 .qs{-webkit-text-stroke:3px #fff;paint-order:stroke fill}
 .hide{display:none!important}
 /* 上方列 */
+#fsBtn{pointer-events:auto;border:none;border-radius:12px;padding:4px 10px;font-size:12px;color:#fff;background:linear-gradient(#5aa8f5,#2f7bd6);box-shadow:0 3px 0 #1f5ea8;font-family:inherit}
 #top{position:fixed;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none;z-index:3}
 #top>*{pointer-events:auto}
 .chip{display:flex;align-items:center;gap:8px;background:linear-gradient(#2c66b0,#163a6b);border:3px solid #9ad7f2;border-radius:16px;color:#fff;padding:4px 12px 4px 4px;box-shadow:0 3px 0 #0d2747,0 5px 10px rgba(0,0,0,.2);font-size:16px}
@@ -275,6 +277,7 @@ body.ing #toast{top:138px}
   <div class="money">
     <div class="cur" id="cGem"><span class="ic">💎</span><span id="gemV">0</span></div>
     <div class="cur" id="cStar"><span class="ic">⭐</span><span id="starV">0</span></div>
+    <button id="fsBtn">⛶ 全畫面</button>
   </div>
 </div>
 <div id="titleWrap">
@@ -297,7 +300,7 @@ body.ing #toast{top:138px}
     <button class="ib" data-p="credits"><div class="sq">📜</div><span>聲明</span></button>
   </div>
 </div>
-<div id="credit">遊戲製作：Eric Hu　版本 1.2</div>
+<div id="credit">遊戲製作：Eric Hu　版本 1.4</div>
 </div>
 <div id="game" class="hide">
   <div id="lbls"></div>
@@ -329,32 +332,22 @@ const pick=a=>a[(Math.random()*a.length)|0];
 
 /* ======================= 遊戲資料 ======================= */
 const SERIES=[
- {id:'food',em:'🍔',name:'飲食與料理',color:'#ff9f43',count:44},
- {id:'farm',em:'🌾',name:'農業與畜牧',color:'#8bc34a',count:30},
+ {id:'farm',em:'🌾',name:'農業與畜牧',color:'#8bc34a',count:0},
+ {id:'food',em:'🍔',name:'飲食與料理',color:'#ff9f43',count:44,closed:1},
  {id:'fish',em:'🐟',name:'漁業與海洋',color:'#29b6f6',count:30},
- {id:'wood',em:'🪵',name:'伐木與木工',color:'#a1724e',count:30},
+ {id:'wood',em:'🪵',name:'林業與木工',color:'#a1724e',count:30},
  {id:'mine',em:'⛏️',name:'採礦與冶金',color:'#8d99ae',count:30},
- {id:'ind',em:'🏭',name:'工業與製造',color:'#78909c',count:null},
  {id:'chem',em:'⚗️',name:'化工與能源',color:'#26a69a',count:30},
  {id:'build',em:'🧱',name:'建造與水泥',color:'#d9774b',count:30},
- {id:'fashion',em:'👕',name:'時尚與紡織',color:'#ec6fa6',count:null},
+ {id:'fashion',em:'👕',name:'紡織與時尚',color:'#ec6fa6',count:30},
  {id:'beauty',em:'💄',name:'美妝與護膚',color:'#f06292',count:30},
- {id:'home',em:'🛋️',name:'家具與家居',color:'#c49a6c',count:30},
  {id:'elec',em:'📺',name:'家電與電子',color:'#5c6bc0',count:30},
- {id:'kitchen',em:'🍳',name:'廚房家電與廚具',color:'#ffa726',count:30},
- {id:'vehicle',em:'🚗',name:'交通與載具',color:'#ef5350',count:null},
- {id:'toy',em:'🧸',name:'玩具與娛樂',color:'#ffb74d',count:null},
- {id:'office',em:'✏️',name:'辦公與文具',color:'#42a5f5',count:30},
- {id:'music',em:'🎸',name:'音響與樂器',color:'#ab47bc',count:30},
- {id:'sport',em:'🏋️',name:'運動與健身',color:'#66bb6a',count:30},
- {id:'clean',em:'🧼',name:'清潔與衛生',color:'#4dd0e1',count:30},
+ {id:'vehicle',em:'🚗',name:'交通與載具',color:'#ef5350',count:30},
+ {id:'toy',em:'🧸',name:'玩具與嬰幼兒',color:'#ffb74d',count:30},
+ {id:'sport',em:'🏕️',name:'運動與戶外',color:'#66bb6a',count:30},
+ {id:'office',em:'✏️',name:'文具與樂器',color:'#42a5f5',count:30},
  {id:'med',em:'🩺',name:'醫療與健康',color:'#e57373',count:30},
- {id:'tool',em:'🔧',name:'五金與工具',color:'#90a4ae',count:30},
  {id:'pet',em:'🐾',name:'寵物用品',color:'#ffb300',count:30},
- {id:'garden',em:'🌱',name:'園藝與農具',color:'#7cb342',count:30},
- {id:'camp',em:'🏕️',name:'戶外與露營',color:'#558b2f',count:30},
- {id:'baby',em:'🍼',name:'嬰幼兒用品',color:'#f48fb1',count:30},
- {id:'photo',em:'📷',name:'智能光學與攝影',color:'#546e7a',count:30},
  {id:'cyber',em:'🤖',name:'未來與賽博朋克',color:'#7c4dff',count:30},
 ];
 // 飲食系列 44 種玩法（地圖上出現的順序）
@@ -403,6 +396,8 @@ addEventListener('beforeunload',()=>save());
 addEventListener('offline',()=>save(true));
 function taskAdd(key,n=1){G.tasks.p[key]=(G.tasks.p[key]||0)+n;mark()}
 let mode='home';
+// 農業與畜牧（內嵌）的錢包：遊樂場、小遊戲在農場裡時用農場的錢
+let FARM=null;const wGet=()=>FARM?FARM.money:(GW?GW.st.money:0);function wAdd(v){if(FARM){FARM.money+=v;FARM.post({t:'money',d:Math.round(v)})}else if(GW)GW.st.money+=v}
 
 /* ======================= 音效（即時合成） ======================= */
 const A={ctx:null,out:null,noise:null};
@@ -988,8 +983,8 @@ showSlogan();setInterval(()=>{if(mode==='home')showSlogan()},3600);
 
 /* ======================= 首頁面板 ======================= */
 document.querySelectorAll('.ib').forEach(b=>b.onclick=()=>{SFX.click();PANELS[b.dataset.p]()});
-$('#bSolo').onclick=()=>{SFX.click();startGame({coop:false})};
-$('#bDuo').onclick=()=>{SFX.click();PANELS.duo()};
+$('#bSolo').onclick=()=>{SFX.click();startFarm()};
+$('#bDuo').onclick=()=>{SFX.click();startFarm({coop:2})};
 $('#prof').onclick=()=>{SFX.click();PANELS.settings()};
 const mapState=id=>G.maps[id]||null;
 function zoneStatus(i){const st=mapState('food2');const z=st&&st.shops[i];const impl=i<SHOPS.length;
@@ -997,11 +992,11 @@ function zoneStatus(i){const st=mapState('food2');const z=st&&st.shops[i];const 
   if(z&&z.b){const n=SHOPS[i].links.length;return z.p>=n?'auto':'open'}
   if(!impl)return 'soon';const prevBuilt=i===0||(st&&st.shops[i-1]&&st.shops[i-1].b);return prevBuilt?'next':'lock'}
 const seriesDone=id=>{if(id!=='food')return 0;let n=0;for(let i=0;i<FOOD_LIST.length;i++)if(zoneStatus(i)==='auto')n++;return n};
-const seriesUnlocked=i=>i===0||(SERIES[i-1].count&&seriesDone(SERIES[i-1].id)>=SERIES[i-1].count);
+const seriesUnlocked=i=>i===0||(!SERIES[i].closed&&SERIES[i-1].count&&seriesDone(SERIES[i-1].id)>=SERIES[i-1].count);
 const PANELS={
  series(){const html=`<div class="note">🔒 規則：一個系列裡的每一個玩法都完成「全自動化」後，才會解鎖下一個系列的新地圖。</div><div class="grid">${SERIES.map((s,i)=>{const un=seriesUnlocked(i);const d=seriesDone(s.id);const c=s.count;
-   return `<button class="sc ${un?'':'lock'}" data-i="${i}"><span class="no">${String(i+1).padStart(2,'0')}</span>${un?'':'<span class="lk">🔒</span>'}<div class="em" style="background:${s.color}">${s.em}</div><div class="nm">${s.name}</div><div class="ct">${c?`${d} / ${c} 已自動化`:'玩法整理中'}</div><div class="bar"><i style="width:${c?d/c*100:0}%"></i></div></button>`}).join('')}</div>`;
-   openPanel('📚 系列地圖',html,()=>pb.querySelectorAll('.sc').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;if(!seriesUnlocked(i)){SFX.err();b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');toast(`先把「${SERIES[i-1].name}」全部玩法完成自動化，才能解鎖喔！`);return}SFX.click();showProgress()}))},
+   return `<button class="sc ${un?'':'lock'}" data-i="${i}"><span class="no">${String(i+1).padStart(2,'0')}</span>${un?'':'<span class="lk">🔒</span>'}<div class="em" style="background:${s.color}">${s.em}</div><div class="nm">${s.name}</div><div class="ct">${s.id==='farm'?'🌾 點我開始經營':s.closed?'⏸️ 暫不開放':c?`${d} / ${c} 已自動化`:'玩法整理中'}</div><div class="bar"><i style="width:${c?d/c*100:0}%"></i></div></button>`}).join('')}</div>`;
+   openPanel('📚 系列地圖',html,()=>pb.querySelectorAll('.sc').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;if(SERIES[i].closed){SFX.err();toast(`「${SERIES[i].name}」暫不開放，目前先測試「農業與畜牧」`);return}if(i===0){SFX.click();closePanel();startFarm();return}if(!seriesUnlocked(i)){SFX.err();b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');toast(`先把「${SERIES[i-1].name}」全部玩法完成自動化，才能解鎖喔！`);return}SFX.click();showProgress()}))},
  duo(){openPanel('👥 雙人合作',`
    <div class="opt"><h3>🌐 不同裝置連線（筆電、手機都可以）</h3><p>一人建立房間，把 4 位數房號告訴朋友；朋友用自己的手機或電腦打開遊戲，在這裡輸入房號加入，就能一起在<b>房主的地圖</b>搬運、加工、賺錢，也可以互相邀請對戰！</p>
    <button class="sbtn" id="netNew" style="background:#2f7bd6;box-shadow:0 3px 0 #1f5ea8">🏠 建立房間（我當房主）</button>${netFixedHtml()}
@@ -1035,10 +1030,10 @@ const PANELS={
    <div class="set">存檔<span style="font-size:14px;color:#2f8a3d">✓ 每 4 秒、離開或斷線時自動儲存</span></div>
    <button class="danger" id="rst">重置全部進度</button>`;
    openPanel('⚙️ 設定',html,()=>{const nm=$('#nm');nm.value=G.name;const doName=()=>{const v=nm.value.trim().slice(0,10);if(!v){nm.value=G.name;$('#nmOkT').style.color='#c0392b';$('#nmOkT').textContent='暱稱不能空白喔';return}const ch=v!==G.name;G.name=v;nm.value=v;refreshTop();mark();save(true);pushRank();relabelPlayers();if(ch&&typeof netProf==='function')netProf();const t=$('#nmOkT');t.style.color='#2f8a3d';t.textContent='✅ 修改成功！（不用重置進度）';SFX.ding&&SFX.ding();clearTimeout(t.h);t.h=setTimeout(()=>{if($('#nmOkT'))t.textContent=''},2500)};$('#nmSave').onclick=doName;nm.onkeydown=e=>{if(e.key==='Enter')doName()};
-     $('#tS').onclick=e=>{G.set.sfx=!G.set.sfx;e.target.classList.toggle('on',G.set.sfx);if(A.out)A.out.gain.value=G.set.sfx?.8:0;$('#gSfx').classList.toggle('off',!G.set.sfx);SFX.click();mark()};
-     $('#tM').onclick=e=>{const v=!(G.set.music!==false);e.target.classList.toggle('on',v);bgmToggle(v);SFX.click();mark()};
+     $('#tS').onclick=e=>{G.set.sfx=!G.set.sfx;e.target.classList.toggle('on',G.set.sfx);if(A.out)A.out.gain.value=G.set.sfx?.8:0;sndIcon();SFX.click();mark()};
+     $('#tM').onclick=e=>{const v=!(G.set.music!==false);e.target.classList.toggle('on',v);bgmToggle(v);sndIcon();SFX.click();mark()};
      pb.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{G.set.hq=b.dataset.q==='1';pb.querySelectorAll('.seg button').forEach(x=>x.classList.toggle('on',x===b));renderer.setPixelRatio(Math.min(devicePixelRatio,G.set.hq?1.75:1));renderer.shadowMap.enabled=G.set.hq;[HOME.scene,GW&&GW.scene].forEach(s=>s&&s.traverse(o=>{if(o.material){[].concat(o.material).forEach(m=>m.needsUpdate=true)}}));resize();SFX.click();mark()});
-     $('#rst').onclick=()=>ask('確定要重置全部進度嗎？<br><small>鑽石、卡片、地圖進度都會清除</small>',()=>{try{localStorage.removeItem(KEY)}catch(e){}hooks.beforeSave.length=0;G=null;location.reload()})})},
+     $('#rst').onclick=()=>ask('確定要重置全部進度嗎？<br><small>鑽石、卡片、地圖進度都會清除</small>',()=>setTimeout(()=>ask('⚠️ 再確認一次：<b>真的要刪除嗎？</b><br><small>刪除後沒辦法復原（不會刪除「農業與畜牧」的農場）</small>',()=>{try{localStorage.removeItem(KEY)}catch(e){}hooks.beforeSave.length=0;G=null;location.reload()}),150))})},
  credits(){openPanel('📜 製作與來源聲明',`<div class="txt">
    <h3>🎮 製作聲明</h3>遊戲名稱：製作大亨<br>遊戲製作：Eric Hu<br>程式、立體場景、角色、特效：由 Claude 協助以程式碼產生<br>音效：全部以程式即時合成，未使用外部音效檔<br>背景音樂：由製作人提供，見下方「音樂來源」
    <h3>🕹️ 遊戲玩法說明</h3>① 到地圖中央的原料中心拿原料，送進店裡的機器加工，再放到櫃台賣給客人。<br>② 每條工作路線都要<b>先自己親手做過 1～2 次</b>，才會出現雇人／買機器的藍色圈圈。<br>③ 雇人、買機器、開新店都要花錢；員工每分鐘領薪水，店家每分鐘還要付租金、水電瓦斯和 12% 營業稅。<br>④ 金額旁邊會一直顯示「保底金額」（每一期帳單的金額）。錢低於保底的 3 倍時，金額會閃爍提醒。<br>⑤ 錢不夠付薪水時，<b>全部店家會停止營運</b>，畫面會一直提示你去哪裡手動賺錢；停業期間帳單減半，欠款分 2 期慢慢還。<br>⑥ <b>超過 30 分鐘沒有上線</b>，店家會自動停止營運（離線收益最多只算 30 分鐘）。<br>⑦ <b>金額達到 10 萬元</b>時，金庫滿了，全部店家會暫停營運，要先花掉一些錢（開新店、遊樂場）才會恢復。<br>⑧ 等錢開新店的空檔，可以到「🎡 遊樂場」用賺到的錢試試手氣。
@@ -1081,6 +1076,16 @@ async function renderRank(){const el=$('#rk');if(!el)return;const label={assets:
    <div class="note" style="margin:0 0 8px">📌 最上面是你的進度　⭐ 下面是你和一起連線玩過的玩家（最多保存 10 位），右邊是最後登入日期</div>`+
    all.map((r,i)=>`<div class="row ${r.id===me.id?'me':''}"><span class="r">${medal[i]||i+1}</span><span class="nm"></span><span class="v">${(r[rankTab]||0).toLocaleString()} ${label}<br><small style="font-size:11px;color:#789">🕒 ${dt(r.last)}</small></span></div>`).join('');
   const nms=el.querySelectorAll('.row .nm');nms[0].textContent=`${G.name}（你的進度）`;all.forEach((r,i)=>nms[i+1].textContent=(r.name||'玩家')+(r.id===me.id?'（你）':''))}
+
+/* ===== 全畫面：手機進入遊戲自動切換，首頁也有切換按鍵 ===== */
+{const fsOK=()=>!!(document.documentElement.requestFullscreen||document.documentElement.webkitRequestFullscreen);const isFS=()=>!!(document.fullscreenElement||document.webkitFullscreenElement);
+ const MOB=matchMedia('(pointer:coarse)').matches||matchMedia('(max-width:700px)').matches;let pref=localStorage.getItem('zzdh_fs');if(pref==null)pref=MOB?'1':'0';
+ window.zzFS=()=>{if(!fsOK()){alert('這個瀏覽器不支援全畫面。iPhone 請按「分享」→「加入主畫面」，從主畫面打開就是全畫面');return}const on=!isFS();pref=on?'1':'0';localStorage.setItem('zzdh_fs',pref);go(on)};
+ const go=on=>{const d=document.documentElement;try{let r;if(on&&!isFS())r=(d.requestFullscreen||d.webkitRequestFullscreen).call(d,{navigationUI:'hide'});else if(!on&&isFS())r=(document.exitFullscreen||document.webkitExitFullscreen).call(document);if(r&&r.catch)r.catch(()=>{})}catch(e){}};
+ const lab=()=>{const b=document.getElementById('fsBtn');if(b)b.textContent=isFS()?'🔲 離開全畫面':'⛶ 全畫面'};
+ document.addEventListener('fullscreenchange',lab);document.addEventListener('webkitfullscreenchange',lab);
+ addEventListener('pointerdown',()=>{if(pref==='1'&&fsOK()&&!isFS())go(true)},{capture:true,once:true});
+ document.getElementById('fsBtn').onclick=e=>{e.stopPropagation();if(!fsOK()){alert('這個瀏覽器不支援全畫面。iPhone 請按「分享」→「加入主畫面」，從主畫面打開就是全畫面');return}const on=!isFS();pref=on?'1':'0';localStorage.setItem('zzdh_fs',pref);go(on)};lab()}
 /* ======================= 遊戲世界（原料中心＋向外擴張） ======================= */
 let GW=null;
 const RING_R=1.05;
@@ -2753,7 +2758,7 @@ function startGame(opts={}){initAudio();mode='game';document.body.classList.add(
   if(GW.coop&&!GW.net&&GW.players.length<2){const p=makePlayer(1);p.pos.copy(GW.players[0].pos).add(V(1.4,0,.6));GW.players.push(p);GW.camT[1].copy(p.pos)}
   if((!GW.coop||GW.net==='host')&&GW.players.length>1){const p=GW.players.pop();p.stack.forEach(m=>m.parent&&m.parent.remove(m));GW.scene.remove(p.o);p.tag.el.remove();LABELS.splice(LABELS.indexOf(p.tag),1)}
   if(opts.focus!==undefined)teleport(opts.focus);
-  $('#gSfx').classList.toggle('off',!G.set.sfx);refreshTop();
+  sndIcon();refreshTop();
   if(GW.coop&&!GW.net)toast('👥 1P：左半邊／WASD　2P：右半邊／方向鍵',4200);
   else if(GW.st.first){GW.st.first=false;setTimeout(()=>toast('跟著地上的黃色箭頭走！站進發亮的圈圈就能拿取或放下東西～',5200),600)}
   if(GW.net!=='guest')offlineCheck();netChip();save()}
@@ -2767,14 +2772,16 @@ function offlineCheck(){const st=GW.st;const now=Date.now();const awayAll=(now-(
 $('#gHome').onclick=()=>{SFX.click();exitGame()};
 $('#gMenu').onclick=()=>{SFX.click();showProgress()};
 $('#gCard').onclick=()=>{SFX.click();PANELS.cards(true)};
-$('#gSfx').onclick=()=>{G.set.sfx=!G.set.sfx;if(A.out)A.out.gain.value=G.set.sfx?.8:0;$('#gSfx').classList.toggle('off',!G.set.sfx);SFX.click();mark()};
+// 地圖上方喇叭：音效＋背景音樂一起開關
+function sndIcon(){const on=G.set.sfx||G.set.music!==false;const b=$('#gSfx');b.classList.toggle('off',!on);b.textContent=on?'🔊':'🔇'}
+$('#gSfx').onclick=()=>{const on=!(G.set.sfx||G.set.music!==false);G.set.sfx=on;if(A.out)A.out.gain.value=on?.8:0;bgmToggle(on);sndIcon();if(on)SFX.click();toast(on?'🔊 音效、背景音樂已開啟':'🔇 已靜音（音效、背景音樂都關閉）',1600);mark()};
 
 /* ======================= 主迴圈 ======================= */
 function resize(){W=innerWidth;H=innerHeight;renderer.setSize(W,H)}addEventListener('resize',resize);resize();
 curScene=HOME.scene;projector=HOME.project;refreshTop();
 const clock=new THREE.Clock();
 function frame(){const TS=window.__TS||1;const dt=Math.min(.05*TS,clock.getDelta()*TS);
-  try{if(mode==='home'){updateFlights(dt);updateParts(dt);HOME.update(dt)}else if(!(GW&&GW.paused))updateGame(dt)}catch(e){console.error(e)}
+  try{if(mode==='home'){updateFlights(dt);updateParts(dt);HOME.update(dt)}else if(mode==='farm'){}else if(!(GW&&GW.paused))updateGame(dt)}catch(e){console.error(e)}
   requestAnimationFrame(frame)}
 frame();
 window.__Z={sim(sec){const c=A.ctx;A.ctx=null;window.__noR=1;try{for(let t=0;t<sec;t+=1/30)updateGame(1/30)}finally{A.ctx=c;window.__noR=0}},get GW(){return GW},G,startGame,exitGame,teleport,completePad,zoneStatus,spawnBoost:(...a)=>spawnBoost(...a)};
@@ -2997,7 +3004,7 @@ function makeAMR(big,accent){const g=new THREE.Group();const body=new THREE.Grou
 function mgFx(x,y,list,n=6){for(let k=0;k<n;k++){const d=document.createElement('div');d.className='mgfx';d.textContent=typeof list==='string'?list:pick(list);d.style.left=x+'px';d.style.top=y+'px';document.body.appendChild(d);
   const a=rand(0,Math.PI*2),r=rand(30,80);d.animate([{transform:'translate(-50%,-50%) scale(.3)',opacity:1},{transform:`translate(calc(-50% + ${Math.cos(a)*r}px),calc(-50% + ${Math.sin(a)*r-30}px)) scale(1.15)`,opacity:1,offset:.6},{transform:`translate(calc(-50% + ${Math.cos(a)*r*1.2}px),calc(-50% + ${Math.sin(a)*r-70}px)) scale(.8)`,opacity:0}],{duration:950,easing:'ease-out'}).onfinish=()=>d.remove()}}
 function mgFxEl(el,list,n){const r=el.getBoundingClientRect();mgFx(r.left+r.width/2,r.top+r.height/2,list,n)}
-function mgCoinFly(el,n=1){const r=el.getBoundingClientRect(),t=$('#gCash').getBoundingClientRect();for(let k=0;k<n;k++)setTimeout(()=>{const d=document.createElement('div');d.className='mgfx';d.textContent='🪙';d.style.left=r.left+r.width/2+'px';d.style.top=r.top+r.height/2+'px';document.body.appendChild(d);
+function mgCoinFly(el,n=1){const r=el.getBoundingClientRect(),t=FARM?{left:innerWidth-110,top:14}:$('#gCash').getBoundingClientRect();for(let k=0;k<n;k++)setTimeout(()=>{const d=document.createElement('div');d.className='mgfx';d.textContent='🪙';d.style.left=r.left+r.width/2+'px';d.style.top=r.top+r.height/2+'px';document.body.appendChild(d);
   d.animate([{transform:'translate(-50%,-50%) scale(1.2)'},{transform:`translate(${t.left-r.left-r.width/2+20}px,${t.top-r.top-r.height/2+10}px) scale(.5)`}],{duration:700,easing:'cubic-bezier(.5,-.4,.6,1)'}).onfinish=()=>{d.remove();bump('#gCash')}},k*80)}
 
 const MINI_GAMES=[
@@ -3032,18 +3039,18 @@ function miniNext(){if(!MG_BAG.length){const b=MINI_GAMES.map((_,k)=>k).sort(()=
 // 右側提醒（遊戲時間計時）
 function miniTick(dt){if(MG||VSX)return;if(GW.miniT===undefined)GW.miniT=rand(90,160);GW.miniT-=dt;if(GW.miniT>0||GW.shops.filter(S=>S.built).length<1||$('#modal').classList.contains('on'))return;GW.miniT=rand(170,300);miniNotice(miniNext())}
 function miniNotice(idx){const gm=MINI_GAMES[idx];const el=$('#mini');MG={idx,stage:'notice'};let left=12;
-  el.innerHTML=`<div class="mascot">${gm.m}</div><span class="x" id="mgX">✖</span><div class="t1">🎮 獎金小遊戲來囉！</div><div class="t2">${gm.t}</div><div class="rw" style="font-size:12px">獎金 💵0～1000</div>${GW.net?'<div class="go" data-p="n">👆 搶先玩！（誰先按誰玩）</div>':GW.coop?'<div class="go" data-p="0">👆 1P 搶先玩</div><div class="go p2" data-p="1">👆 2P 搶先玩</div>':'<div class="go" data-p="0">👆 點我玩</div>'}<div class="bar"><i style="width:100%"></i></div>`;el.style.display='block';
+  el.innerHTML=`<div class="mascot">${gm.m}</div><span class="x" id="mgX">✖</span><div class="t1">🎮 獎金小遊戲來囉！</div><div class="t2">${gm.t}</div><div class="rw" style="font-size:12px">獎金 💵0～1000</div>${(GW&&GW.net)?'<div class="go" data-p="n">👆 搶先玩！（誰先按誰玩）</div>':(GW&&GW.coop)?'<div class="go" data-p="0">👆 1P 搶先玩</div><div class="go p2" data-p="1">👆 2P 搶先玩</div>':'<div class="go" data-p="0">👆 點我玩</div>'}<div class="bar"><i style="width:100%"></i></div>`;el.style.display='block';
   el.animate([{transform:'translate(140%,-50%) rotate(10deg)'},{transform:'translate(-8%,-50%) rotate(-4deg)',offset:.7},{transform:'translate(0,-50%)'}],{duration:500,easing:'ease-out'});SFX.pop();
   const iv=setInterval(()=>{if(!MG||MG.stage!=='notice'){clearInterval(iv);return}left-=.1;el.querySelector('.bar i').style.width=Math.max(0,left/12*100)+'%';if(left<=0){clearInterval(iv);hideNotice();MG=null}},100);
-  $('#mgX').onclick=e=>{e.stopPropagation();clearInterval(iv);hideNotice();MG=null};const start=pid=>{if(!MG||MG.stage!=='notice')return;clearInterval(iv);MG.stage='taken';hideNotice();MG=null;if(GW.coop&&!GW.net)toast(`${pid?'2P':'1P'} 搶到小遊戲了！`,1800);miniPlay(idx,false,pid)};MG.start=start;netMiniOpen(idx);
-  el.querySelectorAll('.go').forEach(b=>b.onclick=e=>{e.stopPropagation();if(b.dataset.p==='n')netMiniClick();else start(+b.dataset.p)});el.onclick=()=>{if(!GW.coop)start(0)}}
+  $('#mgX').onclick=e=>{e.stopPropagation();clearInterval(iv);hideNotice();MG=null};const start=pid=>{if(!MG||MG.stage!=='notice')return;clearInterval(iv);MG.stage='taken';hideNotice();MG=null;if((GW&&GW.coop)&&!GW.net)toast(`${pid?'2P':'1P'} 搶到小遊戲了！`,1800);miniPlay(idx,false,pid)};MG.start=start;netMiniOpen(idx);
+  el.querySelectorAll('.go').forEach(b=>b.onclick=e=>{e.stopPropagation();if(b.dataset.p==='n')netMiniClick();else start(+b.dataset.p)});el.onclick=()=>{if(!(GW&&GW.coop))start(0)}}
 function hideNotice(){const el=$('#mini');if(el.style.display!=='block')return;el.animate([{transform:'translate(0,-50%)'},{transform:'translate(140%,-50%)'}],{duration:280}).onfinish=()=>el.style.display='none'}
 // 畫面中間的正式遊戲（先 3‧2‧1 倒數，遊戲 15 秒）
 function miniPlay(idx,trial,pid){const gm=MINI_GAMES[idx];const box=$('#mbig');const G2={el:0,live:false,trial,tick:null,onTime:null};MG={idx,stage:'play',G2};
-  box.innerHTML=`<div class="win"><div class="mascot">${gm.m}</div><div class="bub">${gm.bub}</div><span class="x" id="mbX">✖</span><div class="tt">${GW.coop&&pid!==undefined?(pid?'2P ':'1P '):''}${gm.t}${trial?'<small style="font-size:14px;-webkit-text-stroke:0;color:#8a5a00">（試玩）</small>':''}</div><div class="rw">${gm.d}<br>獎金 💵0～1000</div><div class="bar"><i style="width:100%"></i><b style="left:100%">🐾</b></div><div class="body"></div><div class="cd"></div></div>`;box.style.display='flex';SFX.pop();
+  box.innerHTML=`<div class="win"><div class="mascot">${gm.m}</div><div class="bub">${gm.bub}</div><span class="x" id="mbX">✖</span><div class="tt">${(GW&&GW.coop)&&pid!==undefined?(pid?'2P ':'1P '):''}${gm.t}${trial?'<small style="font-size:14px;-webkit-text-stroke:0;color:#8a5a00">（試玩）</small>':''}</div><div class="rw">${gm.d}<br>獎金 💵0～1000</div><div class="bar"><i style="width:100%"></i><b style="left:100%">🐾</b></div><div class="body"></div><div class="cd"></div></div>`;box.style.display='flex';SFX.pop();
   const body=box.querySelector('.body');let iv=null;
   G2.finish=(amt,lines)=>{if(G2.over)return;G2.over=true;G2.live=false;clearInterval(iv);amt=Math.max(0,Math.min(1000,Math.round(amt/10)*10));
-    const give=trial?0:Math.max(0,Math.min(amt,MONEY_CAP-Math.floor(GW.st.money)));if(give){GW.st.money+=give;flow(give,'mini');bump('#gCash');netMoney(give)}
+    const give=trial?0:Math.max(0,Math.min(amt,MONEY_CAP-Math.floor(wGet())));if(give){wAdd(give);flow(give,'mini');bump('#gCash');netMoney(give)}
     const good=amt>=500,ok=amt>0;box.querySelector('.mascot').textContent=good?'🥳':ok?'😊':'🥺';box.querySelector('.bub').textContent=good?'太厲害了！':ok?'好棒棒！':'下次再來～';
     body.innerHTML=`<div class="res">${good?'🎉':ok?'👏':'🙈'}</div><div class="money">${trial?'試玩：可得 💵'+amt:'+💵'+give}</div><div class="det">${lines.join('<br>')}</div><button class="done" id="mbOk">${ok?'收下獎金':'好的'}</button>`;
     if(ok){SFX.cash();mgFxEl(body,['💵','✨','⭐','💖','🪙'],good?20:10);if(!trial)mgCoinFly(body,Math.min(8,2+(amt/150|0)));if(good)confettiDom(50)}else SFX.err();$('#mbOk').onclick=close};
@@ -3076,12 +3083,12 @@ function miniPlay(idx,trial,pid){const gm=MINI_GAMES[idx];const box=$('#mbig');c
 .wheelwrap .ptr:after{content:'';position:absolute;left:-7px;top:-30px;width:14px;height:14px;border-radius:50%;background:#fff}
 .wheelwrap .glow{position:absolute;left:50%;top:22px;width:6px;height:46%;margin-left:-3px;background:linear-gradient(#ffd02e,transparent);border-radius:3px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:1}.wheelwrap .glow.on{opacity:.9}`;document.head.appendChild(st)})();
 const CZ_CHIPS=[50,100,500,1000,2000,4000];let czBet=100;
-function czBal(){return Math.floor(GW.st.money)}
+function czBal(){return Math.floor(wGet())}
 function czHead(){return `<div class="bal">💵 目前現金 <b id="czBal">${czBal().toLocaleString()}</b></div><div class="chips">${CZ_CHIPS.map((c,k)=>`<button class="czchip c${k} ${c===czBet?'on':''}" data-c="${c}" ${c>czBal()?'disabled':''}>${c>=1000?c/1000+'千':c}</button>`).join('')}</div>`}
 function czBind(){document.querySelectorAll('.czchip').forEach(b=>b.onclick=()=>{if(CZA.left)return;czBet=+b.dataset.c;SFX.click();document.querySelectorAll('.czchip').forEach(x=>x.classList.toggle('on',+x.dataset.c===czBet))})}
 function czRefresh(){const e=$('#czBal');if(e)e.textContent=czBal().toLocaleString();document.querySelectorAll('.czchip').forEach(b=>b.disabled=+b.dataset.c>czBal())}
-function czPay(bet){if(czBal()<bet){SFX.err();toast('💸 現金不夠下注喔！');return false}GW.st.money-=bet;flow(-bet,'fun');netMoney(-bet);czRefresh();return true}
-function czWin(amt,el,msg){amt=Math.round(amt);const m=$('#czMsg');if(!m)return;CZA.sum+=amt;if(amt>0){GW.st.money+=amt;flow(amt,'fun');netMoney(amt);bump('#gCash');SFX.cash();if(el)mgFxEl(el,['💵','✨','⭐','💖','🪙'],amt>=czBet*5?18:8);if(amt>=czBet*5){confettiDom(50);SFX.fanfare()}m.className='czmsg win';m.innerHTML=`${msg||'贏了！'}　+💵${amt.toLocaleString()}`}else{m.className='czmsg lose';m.innerHTML=msg||'沒中～再接再厲！';if(!CZA.left)SFX.err()}czRefresh();
+function czPay(bet){if(czBal()<bet){SFX.err();toast('💸 現金不夠下注喔！');return false}wAdd(-bet);flow(-bet,'fun');netMoney(-bet);czRefresh();return true}
+function czWin(amt,el,msg){amt=Math.round(amt);const m=$('#czMsg');if(!m)return;CZA.sum+=amt;if(amt>0){wAdd(amt);flow(amt,'fun');netMoney(amt);bump('#gCash');SFX.cash();if(el)mgFxEl(el,['💵','✨','⭐','💖','🪙'],amt>=czBet*5?18:8);if(amt>=czBet*5){confettiDom(50);SFX.fanfare()}m.className='czmsg win';m.innerHTML=`${msg||'贏了！'}　+💵${amt.toLocaleString()}`}else{m.className='czmsg lose';m.innerHTML=msg||'沒中～再接再厲！';if(!CZA.left)SFX.err()}czRefresh();
   if(CZA.total){const n=CZA.total-(CZA.left===Infinity?0:CZA.left);const net=CZA.sum-CZA.spent;$('#czSum').innerHTML=`自動進度：第 ${CZA.done} 局　累計 ${net>=0?'<b style="color:#2e9d4a">贏 💵'+net.toLocaleString():'<b style="color:#c0392b">輸 💵'+(-net).toLocaleString()}</b>`}}
 const czBack=()=>`<button class="czbtn b2" id="czBack" style="font-size:15px;padding:8px 16px">← 回遊樂場</button>`;
 function czOpen(title,html,init){CZA.left=0;openPanel(title,`<div class="cz">${czHead()}${html}<div class="czmsg" id="czMsg"></div><div id="czSum" style="font-size:13px;color:#6a5a4a"></div>${czBack()}</div>`,()=>{czBind();$('#czBack').onclick=()=>{SFX.click();CZA.left=0;funPanel()};init&&init()})}
@@ -3119,7 +3126,7 @@ function gWheel(){czOpen('🎡 幸運轉盤',`<div class="wheelwrap"><div class=
   g.beginPath();g.arc(200,200,190,0,7);g.strokeStyle='#ffd02e';g.lineWidth=8;g.stroke();g.beginPath();g.arc(200,200,34,0,7);g.fillStyle='#fff';g.fill();g.font='40px sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText('🐼',200,203);
   let rot=0;czAuto('#czGo',done=>{if(!czPay(czBet))return false;$('#czMsg').textContent='';$('#whGlow').classList.remove('on');let r=Math.random()*100,P=WSEG[0];for(const p of WSEG){r-=p.w;if(r<=0){P=p;break}}const mid=P.a0+(P.a1-P.a0)*rand(.25,.75);
    const T=CZA.left?2.2:4;c.style.transition=`transform ${T}s cubic-bezier(.12,.8,.2,1)`;rot+=360*(CZA.left?3:5)+((360-mid)-rot%360+360)%360;c.style.transform=`rotate(${rot}deg)`;SSND.lever();let tick=0;const iv=setInterval(()=>{tick++;if(tick<T*8)tone(900-tick*12,.03,'square',.04)},110);
-   setTimeout(()=>{clearInterval(iv);if(!$('#whc'))return;$('#whGlow').classList.add('on');const m=P.m;if(m<0){const ex=Math.min(czBet,czBal());GW.st.money-=ex;flow(-ex,'fun');netMoney(-ex);CZA.sum-=ex;czWin(0,null,`😱 指到「扣 1 注」！再扣 💵${ex}`)}else{if(m>=5)SSND.big();else if(m>=1.5)SSND.win();czWin(czBet*m,c,m>=2?`指到 ×${m}！`:m>0?`指到 ×${m}`:'指到 😢 ～')}CZA.fast=500;done()},T*1000+100);return true},'🎡 轉一下！')})}
+   setTimeout(()=>{clearInterval(iv);if(!$('#whc'))return;$('#whGlow').classList.add('on');const m=P.m;if(m<0){const ex=Math.min(czBet,czBal());wAdd(-ex);flow(-ex,'fun');netMoney(-ex);CZA.sum-=ex;czWin(0,null,`😱 指到「扣 1 注」！再扣 💵${ex}`)}else{if(m>=5)SSND.big();else if(m>=1.5)SSND.win();czWin(czBet*m,c,m>=2?`指到 ×${m}！`:m>0?`指到 ×${m}`:'指到 😢 ～')}CZA.fast=500;done()},T*1000+100);return true},'🎡 轉一下！')})}
 
 // 🃏 比大小（自動時會選機率比較高的一邊）
 const CARDN=['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
@@ -3292,15 +3299,15 @@ let VSX=null;
 function vsSection(){return {html:`<div class="note"><b>⚔️ 對戰遊戲區</b>（只是玩樂，不會賺錢）　單人每場 💵${VS_FEE.solo}、對戰每人 💵50（雙人 💵${VS_FEE.duo}）${GW&&GW.coop?'<br>👥 雙人合作中：任何一位玩家都可以邀請另一位對戰，對方可以應戰或拒絕':''}</div>
   <div class="vsg">${VS_GAMES.map((g,k)=>`<div class="s" data-vs="${k}"><b>${g.em}</b>${g.name}<br><small>10 關可選</small></div>`).join('')}</div>`,
   bind(){document.querySelectorAll('[data-vs]').forEach(b=>b.onclick=()=>{SFX.click();vsSetup(+b.dataset.vs)})}}}
-function vsSetup(k){const g=VS_GAMES[k];let lv=1,mode=GW.coop?'duo':'solo';
-  openPanel(`${g.em} ${g.name}`,`<div class="note">${g.tip}<br>🙋 單人：自己玩一場，開局 💵${VS_FEE.solo}　⚔️ 雙人即時對戰：開局 💵${VS_FEE.duo}<br>${GW.net?(g.id==='hockey'?'🌐 連線對戰：兩台裝置同一張球桌即時對打，你永遠在下方':'🌐 連線對戰：各自在自己的裝置上玩，右下角小視窗是對手的即時畫面（長按標題可拖曳、可調大小）'):g.duoLive?'':'雙人時 1P 是大畫面、2P 是右下角小視窗（長按上方標題可拖曳、可調大小、可交換大小畫面）'}</div>
-   <div class="vsm"><button data-m="solo" class="${mode==='solo'?'on':''}">🙋 單人玩</button>${GW.coop?`<button data-m="duo" class="${mode==='duo'?'on':''}">⚔️ 邀請${GW.net?(NET.cap>2?'大家':'朋友'):''}對戰</button>`:''}</div>
-   ${GW.coop?'':'<div style="font-size:12px;color:#8a7a5a;text-align:center">（要雙人對戰，請從首頁用「雙人合作」進入地圖）</div>'}
+function vsSetup(k){const g=VS_GAMES[k];let lv=1,mode=(GW&&GW.coop)?'duo':'solo';
+  openPanel(`${g.em} ${g.name}`,`<div class="note">${g.tip}<br>🙋 單人：自己玩一場，開局 💵${VS_FEE.solo}　⚔️ 雙人即時對戰：開局 💵${VS_FEE.duo}<br>${(GW&&GW.net)?(g.id==='hockey'?'🌐 連線對戰：兩台裝置同一張球桌即時對打，你永遠在下方':'🌐 連線對戰：各自在自己的裝置上玩，右下角小視窗是對手的即時畫面（長按標題可拖曳、可調大小）'):g.duoLive?'':'雙人時 1P 是大畫面、2P 是右下角小視窗（長按上方標題可拖曳、可調大小、可交換大小畫面）'}</div>
+   <div class="vsm"><button data-m="solo" class="${mode==='solo'?'on':''}">🙋 單人玩</button>${(GW&&GW.coop)?`<button data-m="duo" class="${mode==='duo'?'on':''}">⚔️ 邀請${(GW&&GW.net)?(NET.cap>2?'大家':'朋友'):''}對戰</button>`:''}</div>
+   ${(GW&&GW.coop)?'':'<div style="font-size:12px;color:#8a7a5a;text-align:center">（要雙人對戰，請從首頁用「雙人合作」進入地圖）</div>'}
    <div style="text-align:center;font-size:14px;margin-top:6px">選擇關卡</div><div class="lvp">${Array.from({length:10},(_,i)=>`<button data-l="${i+1}" class="${i?'':'on'}">${i+1}</button>`).join('')}</div>
    <button class="czbtn b3" id="vsGo" style="display:block;margin:8px auto">▶ 開始</button><button class="czbtn b2" id="vsBk" style="font-size:15px;padding:8px 16px;display:block;margin:0 auto">← 回遊樂場</button>`,()=>{
    document.querySelectorAll('.vsm button').forEach(b=>b.onclick=()=>{mode=b.dataset.m;SFX.click();document.querySelectorAll('.vsm button').forEach(x=>x.classList.toggle('on',x===b))});
    document.querySelectorAll('.lvp button').forEach(b=>b.onclick=()=>{lv=+b.dataset.l;SFX.click();document.querySelectorAll('.lvp button').forEach(x=>x.classList.toggle('on',x===b))});
-   $('#vsBk').onclick=()=>{SFX.click();funPanel()};$('#vsGo').onclick=()=>{SFX.click();if(mode==='duo'){if(GW.net)vsNetInvite(k,lv);else vsInvite(k,lv)}else{closePanel();vsStart(k,lv,'solo',0)}}})}
+   $('#vsBk').onclick=()=>{SFX.click();funPanel()};$('#vsGo').onclick=()=>{SFX.click();if(mode==='duo'){if(GW&&GW.net)vsNetInvite(k,lv);else vsInvite(k,lv)}else{closePanel();vsStart(k,lv,'solo',0)}}})}
 function vsInvite(k,lv){const g=VS_GAMES[k];closePanel();const box=$('#vsInv .box');
   box.innerHTML=`<div style="font-size:15px">誰要發出邀請？</div><div class="row"><button class="ok" data-f="0">1P 邀請 2P</button><button class="p2" data-f="1">2P 邀請 1P</button></div><div class="row"><button class="no" id="vsCancel">取消</button></div>`;$('#vsInv').style.display='flex';
   $('#vsCancel').onclick=()=>{$('#vsInv').style.display='none'};box.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{const f=+b.dataset.f,t=1-f;SFX.ding();
@@ -3329,8 +3336,8 @@ const VS_MUTE={f1:f=>f.contentWindow.postMessage({type:'f1rush:sound',on:false},
  zombie:f=>f.contentWindow.postMessage({game:'zombie-defense',cmd:'mute',value:true},'*'),maze:f=>f.contentWindow.postMessage({target:'cute-maze',cmd:'mute',value:true},'*')};
 const VS_PORTRAIT={army:1,cube:1,zombie:1};
 
-function vsStart(k,lv,mode,first){const g=VS_GAMES[k];const fee=VS_FEE[mode];if(GW.st.money<fee){SFX.err();toast('💸 現金不夠開局喔！');return}GW.st.money-=fee;flow(-fee,'fun');bump('#gCash');netMoney(-fee);
-  VSX={k,g,lv,mode,first,res:[null,null],panes:[],big:0,size:1};$('#vsHost').style.display='block';GW.hideR=true;bgmPause(true);
+function vsStart(k,lv,mode,first){const g=VS_GAMES[k];const fee=VS_FEE[mode];if(wGet()<fee){SFX.err();toast('💸 現金不夠開局喔！');return}wAdd(-fee);flow(-fee,'fun');bump('#gCash');netMoney(-fee);
+  VSX={k,g,lv,mode,first,res:[null,null],panes:[],big:0,size:1};$('#vsHost').style.display='block';(GW&&(GW.hideR=true));bgmPause(true);
   if(mode==='duo'&&g.duoLive)vsLoadLive();else vsLoadPanes()}
 function vsWho(p){return p?'2P':'1P'}
 function vsLoadPanes(){const g=VSX.g,host=$('#vsHost');host.querySelectorAll('.vspane,.keys').forEach(e=>e.remove());$('#vsMask').style.display='none';
@@ -3391,7 +3398,7 @@ function vsFinal(win,txt){const m=$('#vsMask');SFX.fanfare&&SFX.fanfare();if(win
    <div style="display:flex;gap:10px;justify-content:center;margin-top:12px"><button class="ok" id="vsAgain">再戰一場（💵${VS_FEE.duo}）</button><button class="no" id="vsEnd">回遊樂場</button></div></div>`;m.style.display='flex';
   $('#vsAgain').onclick=()=>{const {k,lv,first}=VSX;vsClose();vsStart(k,lv,'duo',first)};$('#vsEnd').onclick=()=>vsBack()}
 function vsBack(){vsClose();setTimeout(()=>funPanel(),50)}
-function vsClose(){if(!VSX)return;if(VSX.poll)clearInterval(VSX.poll);clearInterval(VSX.capIv);clearInterval(VSX.cd);$('#vsHost').querySelectorAll('.vspane,.keys,.vsPad,.vsJump').forEach(e=>e.remove());clearTimeout(VSX.goT);$('#vsHost').style.display='none';$('#vsHost').classList.remove('net');$('#vsHost .vsbar').style.display='';$('#vsMask').style.display='none';VSX=null;GW.hideR=false;bgmPause(false)}
+function vsClose(){if(!VSX)return;if(VSX.poll)clearInterval(VSX.poll);clearInterval(VSX.capIv);clearInterval(VSX.cd);$('#vsHost').querySelectorAll('.vspane,.keys,.vsPad,.vsJump').forEach(e=>e.remove());clearTimeout(VSX.goT);$('#vsHost').style.display='none';$('#vsHost').classList.remove('net');$('#vsHost .vsbar').style.display='';$('#vsMask').style.display='none';VSX=null;(GW&&(GW.hideR=false));bgmPause(false)}
 
 /* ======================= 🎵 背景音樂（首頁輕快、地圖輕柔，隨機輪播） ======================= */
 const BGM_LIST={
@@ -3404,10 +3411,10 @@ function bgmPlay(kind){if(BGM.kind===kind&&!BGM.el.paused)return;BGM.kind=kind;B
 function bgmLoad(){const n=BGM.list[BGM.i%BGM.list.length];BGM.el.src='music/'+n+'.mp3';if(bgmOn()&&!BGM.paused)BGM.el.play().catch(()=>{})}
 function bgmNext(){BGM.i++;bgmLoad()}
 function bgmPause(p){BGM.paused=p;if(p)BGM.el.pause();else if(bgmOn())BGM.el.play().catch(()=>{})}
-function bgmToggle(v){G.set.music=v;if(v){if(!BGM.list)bgmPlay(mode==='game'?'game':'home');else BGM.el.play().catch(()=>{})}else BGM.el.pause();save(true)}
+function bgmToggle(v){G.set.music=v;if(v){if(!BGM.list)bgmPlay(mode!=='home'?'game':'home');else BGM.el.play().catch(()=>{})}else BGM.el.pause();save(true)}
 // 瀏覽器規定要先點一下才能播放音樂
-document.addEventListener('pointerdown',()=>{if(bgmOn()&&!BGM.paused&&BGM.el.paused){if(!BGM.list)bgmPlay(mode==='game'?'game':'home');else BGM.el.play().catch(()=>{})}},true);
-setInterval(()=>{const want=mode==='game'?'game':'home';if(BGM.list&&BGM.kind!==want&&bgmOn()&&!BGM.paused)bgmPlay(want)},800);
+document.addEventListener('pointerdown',()=>{if(bgmOn()&&!BGM.paused&&BGM.el.paused){if(!BGM.list)bgmPlay(mode!=='home'?'game':'home');else BGM.el.play().catch(()=>{})}},true);
+setInterval(()=>{const want=mode!=='home'?'game':'home';if(BGM.list&&BGM.kind!==want&&bgmOn()&&!BGM.paused)bgmPlay(want)},800);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)BGM.el.pause();else if(bgmOn()&&!BGM.paused&&BGM.list)BGM.el.play().catch(()=>{})});
 
 /* ======================= 🌐 不同裝置連線：雙人合作＋對戰 ======================= */
@@ -3748,7 +3755,31 @@ PANELS.multi=function(){openPanel('👨‍👩‍👧‍👦 多人合作（3～
    <div class="netrow"><span style="font-size:14px">房號</span><input id="netCode" maxlength="4" inputmode="numeric" placeholder="0000"><button class="sbtn" id="netGo" style="background:#8a63d2;box-shadow:0 3px 0 #5c3fa0">🚪 加入</button></div><div id="netErr"></div>
    <div style="font-size:12px;color:#789;text-align:center">💡 只有 2 個人時，用「👥 雙人合作」可以在對戰時看到對手的即時畫面<br>有人不小心登出，再輸入同一個房號就能回來繼續玩</div></div>`,()=>{
      netFixedBind();$('#netNew').onclick=()=>{SFX.click();netCreate(4)};$('#netGo').onclick=()=>{SFX.click();netJoin($('#netCode').value)};$('#netCode').onkeydown=e=>{if(e.key==='Enter')netJoin($('#netCode').value)}})};
-{const b=$('#bMulti');if(b)b.onclick=()=>{SFX.click();PANELS.multi()}}
+{const b=$('#bMulti');if(b)b.onclick=()=>{SFX.click();startFarm({coop:4})}}
 window.__N={get NET(){return NET},get VSX(){return VSX},vsNetInvite,netJoin,netCreate,miniNotice:(i)=>miniNotice(i),setPause};
+
+/* ======================= 系列 1：農業與畜牧（內嵌 farm.html） ======================= */
+(()=>{const st=document.createElement('style');st.textContent=`#farmHost{position:fixed;inset:0;z-index:8;display:none;background:#cfe9b8}#farmHost iframe{width:100%;height:100%;border:0;display:block}`;document.head.appendChild(st);
+  const h=document.createElement('div');h.id='farmHost';document.body.appendChild(h)})();
+let farmIf=null,farmMiniT=0,farmMiniIv=null;
+function startFarm(opt={}){initAudio();mode='farm';document.body.classList.add('ing');$('#home').classList.add('hide');$('#tapHint').style.display='none';const host=$('#farmHost');host.style.display='block';
+  FARM={money:0,post:m=>{try{farmIf&&farmIf.contentWindow.postMessage(m,'*')}catch(e){}}};
+  if(!farmIf){farmIf=document.createElement('iframe');farmIf.allow='autoplay; fullscreen; accelerometer; gyroscope';farmIf.src='farm.html?embed=1&name='+encodeURIComponent(G.name||'')+(opt.coop?'&coop='+opt.coop:'');farmIf.onload=()=>farmSnd();host.appendChild(farmIf)}
+  else{FARM.post({t:'resume',name:G.name||''});farmSnd();if(opt.coop)FARM.post({t:'coop',cap:opt.coop})}
+  farmMiniT=rand(120,200);clearInterval(farmMiniIv);
+  // 獎金小遊戲：在農場裡也會隨機從右邊跳出提醒
+  farmMiniIv=setInterval(()=>{if(mode!=='farm'||MG||VSX||$('#modal').classList.contains('on')||FARM.paused)return;farmMiniT-=1;if(farmMiniT<=0){farmMiniT=rand(200,320);miniNotice(miniNext())}},1000)}
+function exitFarm(){if(FARM)FARM.post({t:'pause'});clearInterval(farmMiniIv);if(MG&&MG.stage==='notice'){MG=null;$('#mini').style.display='none'}
+  $('#farmHost').style.display='none';FARM=null;mode='home';document.body.classList.remove('ing');$('#home').classList.remove('hide');closePanel();try{refreshTop()}catch(e){}}
+addEventListener('message',e=>{const m=e.data;if(!m||!farmIf||e.source!==farmIf.contentWindow)return;
+  if(m.t==='sync'&&FARM){FARM.money=m.money;FARM.paused=m.paused}
+  else if(m.t==='exit')exitFarm();
+  else if(m.t==='fun'&&FARM){FARM.money=m.money;SFX.click();funPanel()}
+  else if(m.t==='snd'){G.set.sfx=!!m.on;if(A.out)A.out.gain.value=m.on?.8:0;bgmToggle(!!m.on);sndIcon();mark&&mark()}
+  else if(m.t==='fs'){if(window.zzFS)window.zzFS()}
+  else if(m.t==='earn'){G.stats=G.stats||{};G.stats.assets=(G.stats.assets||0)+(m.v||0);mark&&mark()}});
+
+// 農場的「聲音」按鍵和主遊戲的喇叭同步（音效＋背景音樂一起開關）
+function farmSnd(){const on=!!(G.set.sfx||G.set.music!==false);if(FARM)FARM.post({t:'snd',on})}
 </script>
 </body></html>
