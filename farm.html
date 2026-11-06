@@ -354,10 +354,10 @@ const PEN_MACH=[
 const GLOBAL_MACH=[{id:'lorry',em:'🚚',n:'運貨卡車',p:3500,day:12,d:'每 5 分鐘自動把所有集貨箱、冷藏箱的貨載去賣'}];
 // 人力仲介：雇人（每天付薪水）
 const STAFF=[
- {id:'farmer',em:'🧑‍🌾',n:'農夫',wage:45,d:'負責一塊田：自動播種、採收、修復損壞的田（會自動買種子）',per:'field',does:['sow','reap','fix']},
- {id:'waterer',em:'👩‍🌾',n:'澆水工',wage:20,d:'負責一塊田：田乾了就澆水',per:'field',does:['water']},
- {id:'rancher',em:'🤠',n:'牧場工',wage:40,d:'負責一個養殖場：自動餵食、收集產品',per:'pen',does:['feed','collect']},
- {id:'courier',em:'🧑‍✈️',n:'送貨員',wage:50,d:'每 7 分半鐘把集貨箱、冷藏箱的貨送去賣',per:'farm',does:['deliver']}];
+ {id:'farmer',em:'🧑‍🌾',n:'農夫',wage:45,d:'負責一塊田：會走到田裡採收（放進集貨箱）、清掉壞掉的、修復損壞的田；在木牌設定「自動種植」後會自己買種子去播種',per:'field',does:['sow','reap','fix']},
+ {id:'waterer',em:'👩‍🌾',n:'澆水工',wage:20,d:'負責一塊田：田快乾了就去澆水（有水管會去拉水管，沒有就去水井提水桶）',per:'field',does:['water']},
+ {id:'rancher',em:'🤠',n:'牧場工',wage:40,d:'負責一個養殖場：會去飼料桶／乾草堆拿飼料倒進飼料槽，把產品收進產品箱',per:'pen',does:['feed','collect']},
+ {id:'courier',em:'🧑‍✈️',n:'送貨員',wage:50,d:'集貨箱、產品箱一有貨就馬上走過去搬，送到收購站賣掉',per:'farm',does:['deliver']}];
 
 /* ======================= 土地（地政事務所） ======================= */
 const LOTS=[
@@ -428,7 +428,7 @@ const DURS=[{s:1200,n:'20 分鐘',m:1,tag:'⚡ 下班一直玩'},{s:1800,n:'30 �
 const durOf=sec=>DURS.find(d=>d.s===sec)||DURS.reduce((a,b)=>Math.abs(b.s-sec)<Math.abs(a.s-sec)?b:a);
 const plotDur=s=>s.dur||(S.dur||7200);
 const ripeKeep=s=>Math.max(1800,plotDur(s)*.5),witherKeep=s=>Math.max(1800,plotDur(s)*.4),dryTime=s=>Math.max(1800,plotDur(s)*.5);
-const penDur=pk=>(S.penDur&&S.penDur[pk])||PROFILES[S.profile||'mid'].pen;
+const penDur=pk=>PROFILES[S.profile||'mid'].pen;// 生產時間跟著經營模式
 const spoilSec=pk=>Math.max(7200,penDur(pk)*1.5);
 /* ======================= 經營模式（低、中、高收益） ======================= */
 const PROFILES={
@@ -565,7 +565,7 @@ function makePen(type,pos,animate){const T=PEN_T[type];const p={type,...pos,n:T.
   p.shed=sh;regOcc(sh);p.door=V(sx,0,sz+1.4);BLOCKS.push([sx,sz,type==='apiary'?3:3,2.1]);
   const tg=new THREE.Group();const tb=mesh(G.box,M(0x8a5a2a));tb.scale.set(2,.45,.6);tb.position.y=.22;const tf=mesh(G.box,M(type==='cow'||type==='sheep'||type==='ranch'?0xe8c868:0xc98a4a),false);tf.scale.set(1.8,.05,.45);tf.position.y=.46;tg.add(tb,tf);tg.position.set(p.x-2.6,0,p.z+p.d/2-1);scene.add(tg);p.trough=tf;p.troughG=tg;
   if(type!=='apiary'){const wt=mesh(G.box,M(0x9aa4ae));wt.scale.set(1,.35,.5);wt.position.set(p.x+p.w/2-1,.18,p.z+p.d/2-1);scene.add(wt);const wv=mesh(G.box,M(0x5cb8ff),false);wv.scale.set(.9,.04,.4);wv.position.set(p.x+p.w/2-1,.36,p.z+p.d/2-1);scene.add(wv);p.wtr=[wt,wv]}
-  p.L=label(`<div class="shop" style="border-color:#ffb36b;color:#8a4a10">${T.em} ${T.n}</div>`,V(p.x,2.4,p.z-p.d/2),30);
+  p.L=label(`<div class="shop" style="border-color:#ffb36b;color:#8a4a10">${T.em} ${T.n}</div>`,V(p.x,2.4,p.z-p.d/2),60);
   const z1=p.z+p.d/2+1.3;
   if(T.food.length)p.ring.trough=addRing({kind:'trough',pen:type,x:p.x-2.6,z:z1,t:'飼料槽'});
   p.ring.release=addRing({kind:'release',pen:type,x:p.x,z:z1,t:'放動物進去'});
@@ -1056,8 +1056,8 @@ const A={ctx:null};
 function initAudio(){if(A.ctx){if(A.ctx.state==='suspended')A.ctx.resume();return}try{A.ctx=new (window.AudioContext||window.webkitAudioContext)();A.out=A.ctx.createGain();A.out.gain.value=S.snd?.7:0;A.out.connect(A.ctx.destination);const b=A.ctx.createBuffer(1,A.ctx.sampleRate*2,A.ctx.sampleRate);const d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;A.noise=b}catch(e){}}
 function tone(f,dur,type='sine',vol=.2,slide=null,delay=0){if(!A.ctx)return;const t=A.ctx.currentTime+delay;const o=A.ctx.createOscillator(),g=A.ctx.createGain();o.type=type;o.frequency.setValueAtTime(f,t);if(slide)o.frequency.exponentialRampToValueAtTime(slide,t+dur);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.008);g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g);g.connect(A.out);o.start(t);o.stop(t+dur+.02)}
 function noise(dur,vol,freq,type='bandpass',delay=0){if(!A.ctx)return;const t=A.ctx.currentTime+delay;const s=A.ctx.createBufferSource();s.buffer=A.noise;const f=A.ctx.createBiquadFilter();f.type=type;f.frequency.value=freq;const g=A.ctx.createGain();g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+dur);s.connect(f);f.connect(g);g.connect(A.out);s.start(t,Math.random()*.5);s.stop(t+dur+.02)}
-const SFX={click(){tone(660,.07,'triangle',.15,990)},pick(n){tone(520+Math.min(n,30)*22,.08,'sine',.13,900+Math.min(n,30)*22)},place(){tone(220,.08,'triangle',.2,140);noise(.05,.1,1800)},
- plant(){noise(.12,.12,600,'lowpass');tone(330,.1,'triangle',.1,500,.05)},water(){noise(.3,.1,2500,'bandpass')},harvest(){tone(784,.08,'triangle',.14);tone(1175,.15,'triangle',.12,null,.06)},
+const SFX={click(){tone(660,.07,'triangle',.15,990)},pick(n){tone(520+Math.min(n,30)*22,.1,'sine',.34,900+Math.min(n,30)*22);tone(1040+Math.min(n,30)*22,.08,'triangle',.16,null,.04)},place(){tone(220,.1,'triangle',.4,140);noise(.07,.25,1800)},
+ plant(){noise(.14,.3,600,'lowpass');tone(330,.12,'triangle',.26,500,.05)},water(){noise(.35,.26,2500,'bandpass')},harvest(){tone(784,.1,'triangle',.32);tone(1175,.18,'triangle',.28,null,.06)},
  cash(){tone(1318,.09,'square',.045);tone(1760,.2,'square',.045,null,.07)},err(){tone(220,.15,'square',.07);tone(180,.2,'square',.07,null,.12)},buy(){tone(988,.06,'triangle',.14);tone(1480,.2,'triangle',.14,null,.06)},
  moo(){tone(140,.6,'sawtooth',.06,110)},cluck(){tone(900,.05,'square',.04,700);tone(1100,.05,'square',.04,800,.08)},quack(){tone(500,.12,'sawtooth',.05,380)},oink(){tone(260,.18,'sawtooth',.06,200);tone(300,.12,'sawtooth',.05,240,.15)},baa(){tone(420,.4,'sawtooth',.05,380)},buzz(){tone(220,.4,'sawtooth',.03,240)},
  thunder(){noise(1.6,.35,180,'lowpass')},crack(){noise(.25,.4,3000,'highpass');noise(1.4,.3,160,'lowpass',.05)},bad(){tone(392,.2,'triangle',.12,330);tone(311,.35,'triangle',.12,262,.18)},ding(){tone(1568,.3,'sine',.06);tone(2093,.35,'sine',.04,null,.04)},
@@ -1091,9 +1091,9 @@ const findField=pred=>{for(const f of FIELDS)if(PLOTS.some(p=>p.f===f&&pred(S.pl
 const penGate=k=>{const p=PENS[k];return p?V(p.x,0,p.z+p.d/2+1.3):null};
 const TUT=[
  {k:'buySeed',t:'到東邊的「🌱 種子店」買種子',at:()=>SHOPS.seed.ring},
- {k:'plant',t:'走進田裡播種（或按田邊木牌的「🌱 一鍵播種」）',at:()=>findField(s=>s.st==='empty')},
+ {k:'plant',t:'走進田裡播種（或按田邊木牌的「🌱 栽種」）',at:()=>findField(s=>s.st==='empty')},
  {k:'water',t:'有田快乾了！去水井拿水桶，站到那塊田上澆水',at:()=>S.hand.includes('water')?findField(s=>s.st==='grow'&&s.w<.35):V(-7,0,3.6),skipWet:1,need:()=>PLOTS.some(p=>{const s=S.plots[p.id];return s.st==='grow'&&s.w<.35})},
- {k:'harvest',t:'作物成熟後站上去採收（或按「✅ 一鍵採收」）',at:()=>findField(s=>s.st==='ripe'||s.st==='wither'),wait:'等作物長大成熟（右上「×1」可以加速測試）'},
+ {k:'harvest',t:'作物成熟後站上去採收（或按木牌的「✅ 採收」）',at:()=>findField(s=>s.st==='ripe'||s.st==='wither'),wait:'等作物長大成熟（右上「×1」可以加速測試）'},
  {k:'sell',t:'把菜籃子裡的東西拿去收購站賣（可以按「🧺 一鍵賣貨」）',at:()=>S.basket.length?V(0,0,2.2):null,wait:'先採收作物放進菜籃子'},
  {k:'buyAnimal',t:'去「🐣 繁殖場」買小動物',at:()=>SHOPS.breed.ring},
  {k:'release',t:'把小動物帶回養殖場，站上粉紅色圈圈放進去',at:()=>{const a=S.cage[0]||S.leash[0];return a?penGate(ANIM[a.k].pen):null},wait:'先去繁殖場買小動物'},
@@ -1116,6 +1116,7 @@ const fmOn=(fi,id)=>!S.strike&&S.fm[fi]&&S.fm[fi][id];
 const pmOn=(pk,id)=>!S.strike&&S.pm[pk]&&S.pm[pk][id];
 // OFFSIM：離線計算中。離線保護開著時：作物不枯萎、田不會乾、產品不會壞、沒有天災損害和烏鴉
 let OFFSIM=false;
+function npcWork(){return !OFFSIM&&typeof WORKERS!=='undefined'&&!S.strike}
 function step(dt,quiet){const OB=outB();const PROT=OFFSIM&&prof().protect;const t0=S.t;S.t+=dt;const se=seasonOf(S.t);const pi=Math.floor(S.t/PERIOD);const wk=weatherAt(pi),w=WEATHER[wk];
   // 換天氣：寒流凍傷（有布棚不怕）
   if(pi!==S.lastP){const first=S.lastP<0;S.lastP=pi;if(!first&&!quiet)weatherChanged(wk);
@@ -1149,19 +1150,19 @@ function step(dt,quiet){const OB=outB();const PROT=OFFSIM&&prof().protect;const 
   for(const pk in S.piles){const L=S.piles[pk];let bad=0;for(let i=L.length-1;i>=0;i--){if(PROT){L[i][0]+=dt;continue}if(NOSPOIL(L[i][1]))continue;if(S.t-L[i][0]>spoilSec(pk)*(1+(OB.spoil||0))){L.splice(i,1);bad++}}if(bad&&!quiet){SFX.bad();toast(`🥚 ${PEN_T[pk].n}有 ${bad} 份產品放太久壞掉了！（買「自動收集機」或雇牧場工就不會壞）`,3800)}}
   // ===== 自動化 =====
   for(const f of FIELDS){const fi=f.i;const ps=PLOTS.filter(p=>p.f===f);
-    if(fmOn(fi,'sprinkler')||staffOn('waterer',fi)||fmOn(fi,'sprinkler0'))ps.forEach(p=>{const s=S.plots[p.id];if(fmOn(fi,'sprinkler')||s.w<.3)s.w=1});
+    if(fmOn(fi,'sprinkler')||(staffOn('waterer',fi)&&!npcWork())||fmOn(fi,'sprinkler0'))ps.forEach(p=>{const s=S.plots[p.id];if(fmOn(fi,'sprinkler')||s.w<.3)s.w=1});
     f.autoT=(f.autoT||0)-dt;if(f.autoT>0)continue;f.autoT=2;
-    const reap=fmOn(fi,'harvester')||staffOn('farmer',fi),sow=fmOn(fi,'tractor')||staffOn('farmer',fi),fix=staffOn('farmer',fi);
+    const fw=staffOn('farmer',fi)&&!npcWork();const reap=fmOn(fi,'harvester')||fw,sow=fmOn(fi,'tractor')||fw,fix=fw;
     for(const p of ps){const s=S.plots[p.id];
       if((s.st==='ripe'||s.st==='wither')&&reap&&S.boxes[fi].length<60){harvestTo(p,true,true);f.busy=S.t;break}
       if((s.st==='rot'&&reap)||(s.st==='broken'&&fix)){s.st='empty';s.c='';s.g=0;f.busy=S.t;break}
       if(s.st==='empty'&&sow){const k=S.autoCrop[fi];const c=CROPS[k];if(c&&!canPlant(c)&&S.money>=c.seed){spend(c.seed,'seed');s.st='grow';s.c=k;s.g=0;s.rt=0;s.warned=0;s.dur=S.autoDur[fi]||S.dur||7200;f.busy=S.t;break}}}}
   for(const pk in PENS){const T=PEN_T[pk];if(!T.food.length)continue;
     if(pmOn(pk,'feeder0')&&!pmOn(pk,'feeder')&&S.trough[pk]<2){const src=T.food.includes('feed')&&S.stock.feed>0?'feed':T.food.includes('hay')&&S.stock.hay>0?'hay':'';if(src){const n=Math.min(5-S.trough[pk],S.stock[src]);S.stock[src]-=n;S.trough[pk]+=n}}
-    if((pmOn(pk,'feeder')||staffOn('rancher',pk))&&S.trough[pk]<6){const src=T.food.includes('feed')&&S.stock.feed>0?'feed':T.food.includes('hay')&&S.stock.hay>0?'hay':'';if(src){const n=Math.min(10-S.trough[pk],S.stock[src]);S.stock[src]-=n;S.trough[pk]+=n}}}
-  for(const pk in PENS){if((pmOn(pk,'collector')||staffOn('rancher',pk))&&S.piles[pk].length){S.pbox[pk].push(...S.piles[pk].map(x=>x[1]));S.piles[pk]=[]}}
+    if((pmOn(pk,'feeder')||(staffOn('rancher',pk)&&!npcWork()))&&S.trough[pk]<6){const src=T.food.includes('feed')&&S.stock.feed>0?'feed':T.food.includes('hay')&&S.stock.hay>0?'hay':'';if(src){const n=Math.min(10-S.trough[pk],S.stock[src]);S.stock[src]-=n;S.trough[pk]+=n}}}
+  for(const pk in PENS){if((pmOn(pk,'collector')||(staffOn('rancher',pk)&&!npcWork()))&&S.piles[pk].length){S.pbox[pk].push(...S.piles[pk].map(x=>x[1]));S.piles[pk]=[]}}
   // 送貨：運貨卡車（每 2 小時）、送貨員（每 3 小時）
-  const delivery=!S.strike&&(S.gm.lorry?DAY/12:S.staff.courier&&S.staff.courier.farm?DAY/8:0);
+  const delivery=!S.strike&&(S.gm.lorry?DAY/12:S.staff.courier&&S.staff.courier.farm&&!npcWork()?DAY/8:0);
   if(delivery){S.dT=(S.dT||delivery)-dt;if(S.dT<=0){S.dT=delivery;let sum=0,n=0;for(const k in S.boxes){S.boxes[k].forEach(t=>{sum+=sellPrice(t);n++});S.boxes[k]=[]}for(const k in S.pbox){S.pbox[k].forEach(t=>{sum+=sellPrice(t);n++});S.pbox[k]=[]}
     if(n){earn(sum,'deliver');if(!quiet){toast(`${S.gm.lorry?'🚚 運貨卡車':'🧑‍✈️ 送貨員'}載走 ${n} 件貨，賣了 💵${sum}！`,3000);truckTrip()}}}}
   // ===== 每天早上 6 點：付帳單 =====
@@ -1249,12 +1250,15 @@ function cropChooser(title,note,list,cb,all,dur0){let du=dur0||S.dur||7200;const
    ()=>{info();document.querySelectorAll('#durs button').forEach(b=>b.onclick=()=>{du=+b.dataset.dur;document.querySelectorAll('#durs button').forEach(x=>x.classList.toggle('on',x===b));info();SFX.click()});document.querySelectorAll('.chooser button').forEach(b=>b.onclick=()=>{if(b.disabled)return;const c=CROPS[b.dataset.k];confirmAsk(`確定選「${c.em} ${c.n}」嗎？<br><small>種植時間 ${durName(du)}，每格收 ${Math.round(c.yield*durOf(du).m)} 個</small>`,()=>{closePanel();cb(b.dataset.k,du)})})})}
 function oneSow(fi){const f=FI(fi);if(!fieldNear(f)){hint('far','要走到這塊田旁邊才能按喔');return}const empties=PLOTS.filter(p=>p.f===f&&S.plots[p.id].st==='empty');if(!empties.length){hint('noempty','這塊田沒有空位了');return}
   const list=Object.keys(S.seeds).filter(k=>S.seeds[k]>0);if(!list.length){hint('noseed','🌱 身上沒有種子了！去東邊的「種子店」買');return}
-  cropChooser(`🌱 ${f.name}：一鍵播種`,`有 ${empties.length} 格空田，選一種種子：`,list.map(k=>[k,`　種子 ×${S.seeds[k]}`]),(k,du)=>{S.dur=du;if(NETG){netCmd({c:'sow',fi,k,dur:du});return}doSow(fi,k)})}
+  cropChooser(`🌱 ${f.name}：栽種`,`有 ${empties.length} 格空田，選一種種子：`,list.map(k=>[k,`　種子 ×${S.seeds[k]}`]),(k,du)=>{S.dur=du;if(NETG){netCmd({c:'sow',fi,k,dur:du});return}doSow(fi,k)})}
 function doSow(fi,k){const f=FI(fi);if(!f||!CROPS[k])return;const empties=PLOTS.filter(p=>p.f===f&&S.plots[p.id].st==='empty');{let n=0;empties.forEach((p,i)=>{if((S.seeds[k]||0)<=0)return;n++;plantPlot(p,k,true);setTimeout(()=>puff(V(p.x,.3,p.z),10,0x9a7a4a,.12),i*90)});SFX.plant();toast(`🌱 一口氣種下 ${n} 格${CROPS[k].n}！${n<empties.length?'（種子不夠，還有空田）':''}`)}}
 function oneReap(fi){if(NETG){netCmd({c:'reap',fi});return}const f=FI(fi);if(!fieldNear(f)){hint('far','要走到這塊田旁邊才能按喔');return}let n=0,full=false,clr=0,fix=0;
   PLOTS.filter(p=>p.f===f).forEach((p,i)=>{const s=S.plots[p.id];if(s.st==='broken'){repairPlot(p);fix++;return}if(s.st==='rot'){s.st='empty';s.c='';clr++;puff(V(p.x,.5,p.z),8,0x8a7a5a);return}
     if(s.st==='ripe'||s.st==='wither'){if(S.boxes[f.i].length>=60){full=true;return}const t=s.st==='ripe'?s.c:s.c+'_w';const g=harvestTo(p,true);n+=g;setTimeout(()=>flyAway(t,V(p.x,.6,p.z),V(f.x+3.4,1.1,f.z+.4)),i*80)}});
   if(!n&&!clr&&!fix){hint('noripe','這塊田還沒有可以採收的作物');return}SFX.harvest();tutDo('harvest');toast(`✅ 採收 ${n} 個，放進「📦 集貨箱」${clr?`，清掉 ${clr} 格壞掉的`:''}${fix?`，修好 ${fix} 格`:''}${full?'（集貨箱滿了！）':''}`)}
+function oneRoot(fi){const f=FI(fi);if(!fieldNear(f)){hint('far','要走到這塊田旁邊才能按喔');return}const L=PLOTS.filter(p=>p.f===f&&S.plots[p.id].st!=='empty'&&S.plots[p.id].st!=='broken');if(!L.length){hint('noroot','這塊田是空的，不用拔除');return}
+  const tree=L.some(p=>CROPS[S.plots[p.id].c]&&CROPS[S.plots[p.id].c].tree);confirmAsk(`確定要把 <b>${f.name}</b> 的 ${L.length} 格作物<b>全部拔掉</b>嗎？<br><small>拔掉的作物不會退還種子${tree?'，果樹也會被砍掉':''}；拔完可以按「🌱 栽種」重新種。</small>`,()=>{if(NETG){netCmd({c:'root',fi});return}doRoot(fi)})}
+function doRoot(fi){const f=FI(fi);let n=0;PLOTS.filter(p=>p.f===f).forEach((p,i)=>{const s=S.plots[p.id];if(s.st==='empty'||s.st==='broken')return;s.st='empty';s.c='';s.g=0;s.rt=0;s.warned=0;n++;setTimeout(()=>puff(V(p.x,.4,p.z),10,0x8a7a5a,.12),i*60)});if(n){SFX.place();toast(`🧹 拔掉 ${n} 格，可以按「🌱 栽種」重新種了`);tutDo('root')}}
 function oneSpray(fi){if(NETG){netCmd({c:'spray',fi});return}const f=FI(fi);if(!(S.ev&&S.ev.pest&&S.ev.fi===fi))return;if(!fieldNear(f)){hint('far','要走到這塊田旁邊才能噴藥');return}if(S.money<30){hint('money','💸 噴藥要 💵30');return}spend(30,'spray');S.ev=null;PLOTS.filter(p=>p.f===f).forEach((p,i)=>setTimeout(()=>{for(let j=0;j<8;j++)particle(V(p.x+rand(-.6,.6),1.2,p.z+rand(-.6,.6)),V(rand(-.3,.3),-.5,rand(-.3,.3)),0xb8f0d0,.07,.8,-1)},i*80));SFX.water();toast('🧴 噴完藥了，蟲子跑光光！')}
 function autoCropSet(fi){const ks=Object.keys(CROPS).filter(k=>(CROPS[k].lv||1)<=farmLv());cropChooser(`⚙️ ${FI(fi).name}：自動種植的作物`,'曳引機或農夫會自動買這種種子來種（季節不對時會等）：',ks.map(k=>[k,`　種子 💵${CROPS[k].seed}`]).sort((a,b)=>(canPlant(CROPS[a[0]])?1:0)-(canPlant(CROPS[b[0]])?1:0)),(k,du)=>{if(NETG){netCmd({c:'auto',fi,k,dur:du});return}S.autoCrop[fi]=k;S.autoDur[fi]=du;SFX.ding();toast(`⚙️ ${FI(fi).name}自動種植：${CROPS[k].em}${CROPS[k].n}（季節不對時會等）`)},1,S.autoDur[fi]||S.dur)}
 
@@ -1586,9 +1590,9 @@ function setPause(on,exit){S.paused=on?1:0;$('#pause').style.display=on?'flex':'
 $('#goal').onclick=()=>{const tu=tutNow();if(tu){S.guide='';toast('👣 跟著地上的黃色箭頭走',1500)}else if(TASKS[0]){S.guide=TASKS[0].k;todoKey=''}};
 $('#money').onclick=()=>{SFX.click();ledger()};
 $('#bInfo').onclick=()=>{SFX.click();openPanel(`<h2>📖 遊戲說明${EMBED?'':'（測試版）'}</h2><div>
- 🌱 <b>種田</b>：到東邊「種子店」買種子 → 走進空田就會播種，或在田邊木牌按「一鍵播種」。作物成熟後木牌會變成<b style="color:#c08a00">金黃色</b>，快枯萎時變<b style="color:#e0602a">橘紅色</b>。<br>
+ 🌱 <b>種田</b>：到東邊「種子店」買種子 → 走進空田就會播種，或在田邊木牌按「🌱 栽種」。作物成熟後木牌會變成<b style="color:#c08a00">金黃色</b>，快枯萎時變<b style="color:#e0602a">橘紅色</b>。<br>
  💧 <b>澆水</b>：去水井拿水桶；買了水管就到水龍頭拿起來，走過的田自動澆水。下雨天自動澆水。<br>
- ✅ <b>採收</b>：站上成熟的田放進菜籃子；「一鍵採收」會放進田邊的集貨箱。太久沒收會枯萎、壞掉。<br>
+ ✅ <b>採收</b>：站上成熟的田放進菜籃子；木牌的「✅ 採收」會放進田邊的集貨箱；想換種別的，按「🧹 拔除」把整塊田清空再重新栽種。太久沒收會枯萎、壞掉。<br>
  🐣 <b>養動物</b>：繁殖場買小動物，親手帶回養殖場。飼料、乾草在「🥫 飼料行」買，送到廣場的飼料桶、乾草堆，再拿去餵。<br>
  🏛️ <b>擴大農場</b>：地政事務所租地或買地 → 開墾（清雜草、石頭、樹頭）→ 農地變成田；建地買齊材料後一鍵蓋養殖場。<br>
  🚜 <b>自動化</b>：農機車行買灑水器、曳引機、收割機、防災布棚、自動餵食機、收集機、運貨卡車；人力仲介可以雇農夫、澆水工、牧場工、送貨員。<br>
@@ -1709,7 +1713,7 @@ function frameBody(){if(EMBED&&HOLD){clock.getDelta();return}const rdt=Math.min(
   if(!S.paused&&RUN&&!NETG){let gdt=rdt*S.speed*TS();while(gdt>0){const d=Math.min(gdt,TS()>1?5:2);step(d,false);gdt-=d}}
   const w=curW(),wk=curWk(),se=seasonOf(S.t),hr=hourOf(S.t);const lv=stormLevel();
   // 移動
-  let [ix,iy]=S.paused||!RUN||S.inHome||P.stun>0?[0,0]:input();let speed=0,mv=null;if(P.stun>0)P.stun-=rdt;
+  let [ix,iy]=S.paused||!RUN||S.inHome||P.stun>0||PUN?[0,0]:input();let speed=0,mv=null;if(P.stun>0)P.stun-=rdt;
   if(ix||iy){P.auto=null;mv=V(0,0,0).addScaledVector(SR,ix).addScaledVector(SD,iy)}
   else if(P.auto&&!S.paused&&!S.inHome&&!(P.stun>0)){const tgt=P.auto.pts[0];const d=Math.hypot(tgt.x-P.pos.x,tgt.z-P.pos.z);if(d<.3){if(P.auto.pts.length>1)P.auto.pts.shift();else if(!P.auto.sell)P.auto=null}else mv=V(tgt.x-P.pos.x,0,tgt.z-P.pos.z).normalize().multiplyScalar(Math.min(1,d))}
   const vh=vehOf();if(mv){const mag=Math.min(1,mv.length());mv.normalize();const old=P.pos.clone();P.pos.addScaledVector(mv,6.4*(vh?vh.spd:1)*(P.slow||1)*(1+(ownB().speed||0))*mag*rdt);collide(P.pos);speed=old.distanceTo(P.pos)/rdt;P.dir=Math.atan2(mv.x,mv.z)}
@@ -1757,10 +1761,10 @@ function frameBody(){if(EMBED&&HOLD){clock.getDelta();return}const rdt=Math.min(
       g.font='bold 30px "Huninn","PingFang TC","Microsoft JhengHei",sans-serif';g.fillText({ripe:'✅ 可以採收！',warn:'⚠️ 快枯萎了！',dry:'💧 要澆水',broken:'🔨 要修復'}[mood]||`第 ${f.i+1} 塊田`,128,36);const c0=crops[0]&&CROPS[crops[0]];g.font='54px '+EMOJI;g.fillText(c0?c0.em:'🌱',62,98);g.font='bold 34px "Huninn","PingFang TC","Microsoft JhengHei",sans-serif';g.fillText(c0?c0.n+(crops.length>1?'等':''):'空田',160,100);f.btex.needsUpdate=true}
     f.board.position.y=mood==='ripe'||mood==='warn'?Math.abs(Math.sin(wTime*4))*.08:0;
     const auto=fmOn(f.i,'tractor')||staffOn('farmer',f.i)||(S.fm[f.i]&&S.fm[f.i].tractor)||(S.staff.farmer&&S.staff.farmer[f.i]);const pest=S.ev&&S.ev.pest&&S.ev.fi===f.i;
-    f.L.el.classList.toggle('act',near&&!S.inHome);setL(f.L,`<div class="sign ${mood}">${f.name}：${name}<br><small>${sum}${S.boxes[f.i].length?`　📦${S.boxes[f.i].length}`:''}${covered(f)?'　⛺布棚':''}${pest?'　🐛蟲害':''}</small>${near?`<div class="bt"><button data-sow="${f.i}">🌱 一鍵播種</button><button class="h" data-reap="${f.i}">✅ 一鍵採收</button>${auto?`<button class="b" data-auto="${f.i}">⚙️ 自動：${S.autoCrop[f.i]?CROPS[S.autoCrop[f.i]].em:'未設定'}</button>`:''}${pest?`<button class="r" data-spray="${f.i}">🧴 噴藥 💵30</button>`:''}</div>`:''}</div>`);
+    f.L.el.classList.toggle('act',near&&!S.inHome);setL(f.L,`<div class="sign ${mood}">${f.name}：${name}<br><small>${sum}${S.boxes[f.i].length?`　📦${S.boxes[f.i].length}`:''}${covered(f)?'　⛺布棚':''}${pest?'　🐛蟲害':''}</small>${near?`<div class="bt"><button data-sow="${f.i}">🌱 栽種</button><button class="h" data-reap="${f.i}">✅ 採收</button><button class="r" data-root="${f.i}">🧹 拔除</button>${auto?`<button class="b" data-auto="${f.i}">⚙️ 自動種植：${S.autoCrop[f.i]?CROPS[S.autoCrop[f.i]].em:'未設定'}</button>`:''}${pest?`<button class="r" data-spray="${f.i}">🧴 噴藥 💵30</button>`:''}</div>`:''}</div>`);
     const bl=S.boxes[f.i].length,want=Math.min(10,Math.ceil(bl/6));if(f.boxPile.children.length!==want){f.boxPile.clear();for(let i=0;i<want;i++){const m=miniItem(S.boxes[f.i][i*6]||'grass');m.scale.setScalar(.14);m.position.set((i%3-1)*.22,Math.floor(i/3)*.12,(i%2)*.15);f.boxPile.add(m)}}
     // 機器動畫
-    const pt=f.parts||{};const busy=S.t-(f.busy||-99)<3;if(pt.spr){pt.spr.userData.head.rotation.y+=rdt*4;if(Math.random()<rdt*20&&!S.paused){const a=rand(0,6.28);particle(V(f.x,1,f.z),V(Math.cos(a)*2.5,1.5,Math.sin(a)*1.6),0x8fd0ff,.05,.6,-6)}}
+    const pt=f.parts||{};const busy=S.t-(f.busy||-99)<3;if(pt.spr){pt.spr.userData.head.rotation.y+=rdt*4;if(!S.paused){const n=Math.floor(rdt*90+Math.random());for(let q=0;q<n;q++){const a=pt.spr.userData.head.rotation.y+rand(-.5,.5)+(q%2)*Math.PI;particle(V(f.x,1.3,f.z),V(Math.cos(a)*rand(2.5,4.2),rand(2,3.4),Math.sin(a)*rand(2,3.2)),q%3?0x8fd0ff:0xd8f0ff,rand(.07,.12),rand(.7,1),-7)}}}
     for(const m of [pt.trac,pt.harv]){if(!m)continue;const hm=m.userData.home;if(busy){m.position.x=hm.x+Math.sin(wTime*1.5)*1.6;m.position.z=hm.z-1.2-Math.abs(Math.sin(wTime*.8))*.4;m.position.y=Math.abs(Math.sin(wTime*14))*.03;if(Math.random()<rdt*8)puff(m.position.clone().add(V(0,.3,0)),2,0xd8c8a8,.12)}else{m.position.lerp(hm,rdt*2);m.position.y=0}}});
   // 動物（天災時自動躲進小屋，結束後走出來）
   const shelter=(w.shelter&&lv>.45)||!!S.tor;
@@ -1774,7 +1778,7 @@ function frameBody(){if(EMBED&&HOLD){clock.getDelta();return}const rdt=Math.min(
     const d2=ANIM[a.k];const hungry=a.food<=0&&d2.eat;const nearP=Math.hypot(P.pos.x-v.o.position.x,P.pos.z-v.o.position.z)<9;let h='';
     if(v.hid)h='';else if(hungry)h='😣 肚子餓';else if(nearP){if(a.age<1)h=`${d2.bem} 長大中 ${Math.floor(a.age*100)}%`;else if(d2.prod)h=`${ITEMS[d2.prod].em} ${Math.floor((a.prog||0)*100)}%`;else h='✅ 長大了，可以賣'}
     v.L.pos=v.o.position.clone().setY((['cow','beef','buffalo','ostrich','alpaca'].includes(a.k)?2:a.k==='pig'?1.3:1.1)*(a.age>=1?1:.7));v.L.near=h?14:0;setL(v.L,h?`<div class="pl ${hungry?'warn':''}">${h}</div>`:'')}
-  for(const k in PENS){const p=PENS[k];p.trough.scale.z=.05+.4*(S.trough[k]/10);p.trough.visible=S.trough[k]>0;const hidden=shelter&&S.animals.some(a=>ANIM[a.k].pen===k&&ANIM[a.k].pen!=='apiary');const pn=Math.hypot(P.pos.x-p.x,P.pos.z-p.z)<Math.max(p.w,p.d)*.75;p.L.el.classList.toggle('act',pn&&!S.inHome);const tl=troughLeft(k);setL(p.L,`<div class="shop" style="border-color:#ffb36b;color:#8a4a10">${PEN_T[k].em} ${PEN_T[k].n}<br><small>⏱️ 每 ${fmtDur(penDur(k))} 生產${tl!=null?`　🥣 還能吃 ${fmtDur(Math.max(0,tl))}`:''}</small>${hidden?'<br><small>🏠 動物躲進小屋避難中</small>':''}${pn?`<div class="bt"><button data-pen="${k}">⏱️ 改生產時間</button></div>`:''}</div>`)}
+  for(const k in PENS){const p=PENS[k];p.trough.scale.z=.05+.4*(S.trough[k]/10);p.trough.visible=S.trough[k]>0;const hidden=shelter&&S.animals.some(a=>ANIM[a.k].pen===k&&ANIM[a.k].pen!=='apiary');const pn=Math.hypot(P.pos.x-p.x,P.pos.z-p.z)<Math.max(p.w,p.d)*.75;p.L.el.classList.toggle('act',pn&&!S.inHome);const tl=troughLeft(k);setL(p.L,`<div class="shop" style="border-color:#ffb36b;color:#8a4a10">${PEN_T[k].em} ${PEN_T[k].n}<br><small>⏱️ 每 ${fmtDur(penDur(k))} 生產（跟著經營模式）${tl!=null?`　🥣 還能吃 ${fmtDur(Math.max(0,tl))}`:''}</small>${hidden?'<br><small>🏠 動物躲進小屋避難中</small>':''}</div>`)}
   // 倉庫（飼料桶、乾草堆）
   STOCKV.feed.visible=S.stock.feed>0;STOCKV.feed.position.y=.12+.9*Math.min(1,S.stock.feed/80);const hb=Math.min(9,Math.ceil(S.stock.hay/10));if(STOCKV.hay.children.length!==hb){STOCKV.hay.clear();for(let i=0;i<hb;i++){const b=mesh(G.box,M(0xe8c868));b.scale.set(.85,.45,.55);b.position.set((i%3-1)*.9,.23+Math.floor(i/3)*.46,0);STOCKV.hay.add(b);const s=mesh(G.box,M(0xb8962a),false);s.scale.set(.04,.47,.57);s.position.copy(b.position);STOCKV.hay.add(s)}}
   // 圈圈文字
@@ -1828,10 +1832,10 @@ function frameBody(){if(EMBED&&HOLD){clock.getDelta();return}const rdt=Math.min(
   P.tag.pos=P.pos.clone().setY(S.veh?2.6:2.15);P.tag.near=S.inHome?0:99;setL(P.tag,P.stun>0?'<span class="ptag">💫 頭暈中…</span>':`<span class="ptag">${esc(PNAME||'我的農場')}</span>`);
   {const [hx,hy]=project(P.pos.clone().setY(1.7)),[fx,fy]=project(P.pos.clone().setY(0));PB[0]=hx-22;PB[2]=hx+22;PB[1]=hy-6;PB[3]=fy+4}
   for(const L of LABELS){const d=Math.hypot(L.pos.x-P.pos.x,L.pos.z-P.pos.z);const nr=L.near>=50?L.near:Math.min(L.near,7);if(!L.near||d>nr||!L.html){L.el.style.display='none';continue}const [x,y,ok]=project(L.pos);if(!ok){L.el.style.display='none';continue}L.el.style.display='';L.el.style.transform=`translate(${x|0}px,${y|0}px) translate(-50%,-100%)`;
-    if(L!==P.tag){if(L.mh!==L.html){L.mh=L.html;L.w=L.el.offsetWidth;L.h=L.el.offsetHeight}const hit=!S.inHome&&x+L.w/2>PB[0]&&x-L.w/2<PB[2]&&y>PB[1]&&y-L.h<PB[3];if(hit!==!!L.fd){L.fd=hit;L.el.classList.toggle('fade',hit)}}}
+    if(L!==P.tag){if(L.mh!==L.html){L.mh=L.html;L.w=L.el.offsetWidth;L.h=L.el.offsetHeight}const hit=false&&x+L.w/2>PB[0]&&x-L.w/2<PB[2]&&y>PB[1]&&y-L.h<PB[3];if(hit!==!!L.fd){L.fd=hit;L.el.classList.toggle('fade',hit)}}}
   taskT-=rdt;if(taskT<=0){taskT=.5;TASKS=buildTasks();renderTodo();layoutHUD();homeUI();if(S.flow.length>400)S.flow=S.flow.filter(f=>S.t-f[0]<DAY*3)}
   hud(w,wk,se,hr,night);renderBottom()}
-document.addEventListener('click',e=>{const pb=e.target.closest&&e.target.closest('[data-pen]');if(pb){SFX.click();penPanel(pb.dataset.pen);return}const t=e.target.closest&&e.target.closest('[data-sow],[data-reap],[data-auto],[data-spray]');if(!t)return;SFX.click();if(t.dataset.sow!=null)oneSow(+t.dataset.sow);else if(t.dataset.reap!=null)oneReap(+t.dataset.reap);else if(t.dataset.auto!=null)autoCropSet(+t.dataset.auto);else oneSpray(+t.dataset.spray)});
+document.addEventListener('click',e=>{const pb=e.target.closest&&e.target.closest('[data-pen]');if(pb){SFX.click();penPanel(pb.dataset.pen);return}const t=e.target.closest&&e.target.closest('[data-sow],[data-reap],[data-auto],[data-spray],[data-root]');if(!t)return;SFX.click();if(t.dataset.root!=null)oneRoot(+t.dataset.root);else if(t.dataset.sow!=null)oneSow(+t.dataset.sow);else if(t.dataset.reap!=null)oneReap(+t.dataset.reap);else if(t.dataset.auto!=null)autoCropSet(+t.dataset.auto);else oneSpray(+t.dataset.spray)});
 let moneyShown=Math.floor(S.money);
 function hud(w,wk,se,hr,night){const day=dayOf(S.t),dIn=day%DAYS_PER_SEASON+1,year=Math.floor(day/(DAYS_PER_SEASON*4))+1;const h=Math.floor(hr),mi=Math.floor((hr-h)*6)*10;const pi=Math.floor(S.t/PERIOD);
   const nightName=x=>night>.5&&(x.n==='晴天'||x.n==='多雲')?(x.n==='晴天'?'🌙 晴朗的夜晚':'☁️ 多雲的夜晚'):`${x.em} ${x.n}`;
@@ -2058,7 +2062,7 @@ window.HAI_GET=()=>HAI.spot+':'+HAI.mode;
 /* ======================= 時間選擇、飼料倒數、經營模式、每日禮物 ======================= */
 function troughLeft(pk){const an=S.animals.filter(a=>ANIM[a.k].pen===pk&&ANIM[a.k].eat);if(!an.length)return null;const cyc=penDur(pk)*(1+(outB().eat||0));return (S.trough[pk]*cyc+an.reduce((t,a)=>t+Math.max(0,a.food||0),0))/an.length}
 function stockLeft(k){let rate=0;for(const pk in PENS){const T=PEN_T[pk];if(!T.food.includes(k))continue;if(k==='hay'&&T.food.includes('feed'))continue;const n=S.animals.filter(a=>ANIM[a.k].pen===pk&&ANIM[a.k].eat).length;if(n)rate+=n/(penDur(pk)*(1+(outB().eat||0)))}return rate?S.stock[k]/rate:null}
-function durPanel(){openPanel(`<h2>⏱️ 種植時間</h2><div>走進田裡播種、按「一鍵播種」時，都會用這個時間。</div>${durChips(S.dur||7200,'gd')}<div class="note2">💡 <b>20 分鐘</b>：下班後、假日一直玩時用，每小時賺最多。<br>💡 <b>1～4 小時</b>：吃飯、做家事前種下去。<br>💡 <b>6～8 小時</b>：睡前、上班前種，一次收很多。<br>💡 時間越久一次收成越多（最多 ×10），但每小時平均賺得比較少。</div>`,
+function durPanel(){openPanel(`<h2>⏱️ 種植時間</h2><div>走進田裡播種、按木牌「🌱 栽種」時，都會用這個時間。</div>${durChips(S.dur||7200,'gd')}<div class="note2">💡 <b>20 分鐘</b>：下班後、假日一直玩時用，每小時賺最多。<br>💡 <b>1～4 小時</b>：吃飯、做家事前種下去。<br>💡 <b>6～8 小時</b>：睡前、上班前種，一次收很多。<br>💡 時間越久一次收成越多（最多 ×10），但每小時平均賺得比較少。</div>`,
   ()=>document.querySelectorAll('#gd button').forEach(b=>b.onclick=()=>{S.dur=+b.dataset.dur;SFX.ding();closePanel();toast(`⏱️ 種植時間改成 ${durName(durOf(S.dur).s)}（收成 ×${durOf(S.dur).m}）`)}))}
 function penPanel(pk){const T=PEN_T[pk];const ds=Object.values(ANIM).filter(a=>a.pen===pk&&a.prod);openPanel(`<h2>⏱️ ${T.em} ${T.n}：生產時間</h2><div>每隻動物每一輪吃 1 份飼料，時間到就生產；時間越久一輪生產越多。</div>${durChips(penDur(pk),'pd')}
   <div class="note2">${ds.map(d=>`${d.em} ${d.n}：每輪約 ${(durOf(penDur(pk)).m*240/d.prodT).toFixed(1)} 份${ITEMS[d.prod].n}`).join('<br>')||'這裡的動物長大後是拿去賣的，時間越久長得越慢但吃得越省'}<br>💡 飼料槽 10 份：1 隻動物可以吃 10 輪。上班前選 8 小時，就不怕動物餓肚子。</div>`,
@@ -2110,7 +2114,7 @@ function netMsg(m){switch(m.t){
     else{NET.role='guest';NET.hostGone=!NET.members.some(x=>x.slot===0&&x.on);if(NETG){netSend({t:'hello',_to:NET.hostUid});netChip();hostWait()}else{netSend({t:'want',_to:NET.hostUid});toast('📡 正在下載房主的農場…',4000)}}break}
   case 'peer':{const i=NET.members.findIndex(x=>x.uid===m.uid);const it={uid:m.uid,name:m.name,slot:m.slot,on:true};if(i>=0)NET.members[i]=it;else NET.members.push(it);if(m.slot===0){NET.hostUid=m.uid;NET.hostGone=false;hostWait();if(NETG)netSend({t:'hello',_to:m.uid})}
     if(NET.role==='host'){toast(`👋 ${esc(m.name)} 加入農場了！`,3000);SFX.ding()}netChip();break}
-  case 'gone':{const it=NET.members.find(x=>x.uid===m.uid);if(it)it.on=false;const r=NET.remote.get(m.uid);if(r){scene.remove(r.o);if(r.petO)scene.remove(r.petO);if(r.doorB)scene.remove(r.doorB);dropL(r.L);NET.remote.delete(m.uid)}
+  case 'gone':{const it=NET.members.find(x=>x.uid===m.uid);if(it)it.on=false;const r=NET.remote.get(m.uid);if(r){scene.remove(r.o);if(r.petO)scene.remove(r.petO);(r.leash||[]).forEach(l=>scene.remove(l.o,l.line));if(r.hoseM)scene.remove(r.hoseM);if(r.doorB)scene.remove(r.doorB);dropL(r.L);NET.remote.delete(m.uid)}
     if(NET.role==='host'){const g=NET.guests.get(m.uid);if(g)g.on=false;toast(`👋 ${esc(m.name||'朋友')} 離開了`,2500)}else if(m.host){NET.hostGone=true;hostWait()}netChip();break}
   case 'want':if(NET.role==='host'){const g=netGuest(m._f,m.name);coopAddMember(m._f,m.name);S.px=P.pos.x;S.pz=P.pos.z;const full=JSON.parse(JSON.stringify(S));full.hand=g.c.hand;full.basket=g.c.basket;full.cage=g.c.cage;full.leash=g.c.leash;full.veh=g.c.veh||'';full.px=P.pos.x+1.5;full.pz=P.pos.z+1;full.inHome=0;full.welcome=1;full.paused=S.paused;
     netSend({t:'full',_to:m._f,s:full})}break;
@@ -2131,7 +2135,7 @@ function withActor(g,fn){const sv={du:S.dur,h:S.hand,b:S.basket,c:S.cage,l:S.lea
     S.dur=sv.du;S.hand=sv.h;S.basket=sv.b;S.cage=sv.c;S.leash=sv.l;S.veh=sv.veh;S.sel=sv.sel;P.pos.copy(sv.pos);P.cd=sv.cd;P.hose=sv.hose;P.plot=sv.plot;P.plotStay=sv.ps;P.auto=sv.auto}}
 function flushFx(g){if(g.msgs.length||g.snd.length||g.ui){netSend({t:'fx',_to:g.uid,m:g.msgs.slice(-4),s:g.snd.slice(-8),ui:g.ui});g.msgs=[];g.snd=[];g.ui=null}}
 function hostCmd(g,m){withActor(g,()=>{switch(m.c){
-  case 'sow':{const d0=S.dur;if(m.dur)S.dur=m.dur;doSow(m.fi,m.k);S.dur=d0}break;case 'reap':oneReap(m.fi);break;case 'spray':oneSpray(m.fi);break;
+  case 'sow':{const d0=S.dur;if(m.dur)S.dur=m.dur;doSow(m.fi,m.k);S.dur=d0}break;case 'reap':oneReap(m.fi);break;case 'root':doRoot(m.fi);break;case 'spray':oneSpray(m.fi);break;
   case 'auto':if(CROPS[m.k]){S.autoCrop[m.fi]=m.k;if(m.dur)S.autoDur[m.fi]=m.dur;toast(`⚙️ ${FI(m.fi)?FI(m.fi).name:''}自動種植：${CROPS[m.k].em}${CROPS[m.k].n}`)}break;
   case 'act':if(ACT[m.a]&&m.a!=='goLot')ACT[m.a](m.v);break;case 'build':doBuild(m.id,m.k);break;
   case 'drop':{let h,n=0;while((h=takeHand(x=>x===m.t))){n++;if(m.t==='feed'||m.t==='hay')S.stock[m.t]++}if(n)toast(`放下了 ${ITEMS[m.t].n}`)}break;
@@ -2164,12 +2168,23 @@ function hostWait(){const e=$('#hostWait');if(NET.role==='guest'&&NET.hostGone){
 
 /* ===== 其他玩家的人物 ===== */
 function netRemote(m){if(m._f===NET.uid)return;let r=NET.remote.get(m._f);if(!r){const o=makeFarmer();o.position.set(m.x,0,m.z);r={o,L:label('',V(0,0,0),99),tx:m.x,tz:m.z,d:m.d,k:'',slot:m._s||1,t:0};NET.remote.set(m._f,r);puff(o.position.clone().add(V(0,.6,0)),10)}
-  if(m.of&&m.of!==r.of){r.of=m.of;applyOutfit(r.o,m.of)}if(m.of&&m.of!=='farmer'&&m.of===WARD.wear&&(m._s||0)<NET.slot){const o=OUTFITS.find(x=>x.id===m.of);WARD.wear='farmer';saveWard();applyOutfit(P.o,'farmer');toast(`👕 「${o.n}」${esc(m.nm||'朋友')}已經穿了，你先換回經典農夫裝（同一套只能一個人穿）`,4500)}remotePet(r,m);r.tx=m.x;r.tz=m.z;r.d=m.d;r.mv=m.mv;r.home=m.home;r.hs=m.hs;r.hm=m.hm;r.nm=m.nm;r.st=m.st;r.slot=m._s||0;const key=(m.h||[]).join()+'|'+m.b+'|'+m.cg+'|'+m.veh;if(key!==r.k){r.k=key;const u=r.o.userData;u.anchor.clear();(m.h||[]).slice(0,8).forEach((t,i)=>{if(!ITEMS[t])return;const it=makeItem(t);it.position.y=i*ITEM_H;u.anchor.add(it)});
-    u.fillG.clear();for(let i=0;i<Math.min(10,m.b||0);i++){const it=miniItem('grass');it.material=M(0xd8b060);const a=i*2.4,rr=i?.15:0;it.position.set(Math.cos(a)*rr,-.15+i*.03,Math.sin(a)*rr);u.fillG.add(it)}
+  if(m.of&&m.of!==r.of){r.of=m.of;applyOutfit(r.o,m.of)}if(m.of&&m.of!=='farmer'&&m.of===WARD.wear&&(m._s||0)<NET.slot){const o=OUTFITS.find(x=>x.id===m.of);WARD.wear='farmer';saveWard();applyOutfit(P.o,'farmer');toast(`👕 「${o.n}」${esc(m.nm||'朋友')}已經穿了，你先換回經典農夫裝（同一套只能一個人穿）`,4500)}remotePet(r,m);r.hose=!!m.hose;r.ls=m.ls||'';r.auto=!!m.auto;r.tx=m.x;r.tz=m.z;r.d=m.d;r.mv=m.mv;r.home=m.home;r.hs=m.hs;r.hm=m.hm;r.nm=m.nm;r.st=m.st;r.slot=m._s||0;const key=(m.h||[]).join()+'|'+m.b+'|'+(m.bk||'')+'|'+m.cg+'|'+m.veh;if(key!==r.k){r.k=key;const u=r.o.userData;u.anchor.clear();(m.h||[]).slice(0,8).forEach((t,i)=>{if(!ITEMS[t])return;const it=makeItem(t);it.position.y=i*ITEM_H;u.anchor.add(it)});
+    u.fillG.clear();{const bk=String(m.bk||'').split(',').filter(Boolean).reverse();for(let i=0;i<Math.min(14,m.b||0);i++){const t=bk[i];let it;try{it=miniItem(t||'grass')}catch(e){it=null}if(!it){it=miniItem('grass');it.material=M(0xd8b060)}const a=i*2.4,rr=i<6?.14:.22;it.position.set(Math.cos(a)*rr*(i?1:0),-.15+Math.min(.32,i*.025),Math.sin(a)*rr*(i?1:0));u.fillG.add(it)}}
     u.cage.visible=false;if(!u.bkA){u.bkA=new THREE.Group();u.bkA.position.y=.36;u.basket.add(u.bkA)}u.bkA.clear();String(m.cg||'').split(',').filter(x=>x&&ANIM[x.slice(0,-1)]).forEach((x,i)=>{const a={k:x.slice(0,-1),age:x.endsWith('A')?1:0};const am=animalModel(a);am.scale.multiplyScalar(ANIM[a.k].pen==='apiary'?.3:.6);const an=i*2.4,rr=i?.16:0;am.position.set(Math.cos(an)*rr,i>=4?.12:0,Math.sin(an)*rr);am.rotation.y=Math.PI/4;u.bkA.add(am)});if(r.veh){r.o.remove(r.veh);r.veh=null}if(m.veh){r.veh=vehicleModel(m.veh);r.o.add(r.veh)}r.vy={bike:.32,trike:.42,truck:.75}[m.veh]||0}}
+// 朋友牽的動物、拉的水管、灑水：大家都看得到
+function remoteExtras(r,rdt){const o=r.o,u=o.userData;r.leash=r.leash||[];const show=!r.home||!!S.inHome;
+  if(r.lsK!==r.ls){r.lsK=r.ls;r.leash.forEach(l=>scene.remove(l.o,l.line));r.leash=[];String(r.ls||'').split(',').filter(x=>x&&ANIM[x.slice(0,-1)]).forEach((x,i)=>{const a={k:x.slice(0,-1),age:x.endsWith('A')?1:0};const am=animalModel(a);am.position.copy(o.position).add(V(-1-i,0,-1));scene.add(am);const line=new THREE.Line(new THREE.BufferGeometry().setFromPoints([V(),V()]),ropeMat);scene.add(line);r.leash.push({o:am,line});puff(am.position.clone().add(V(0,.5,0)),8)})}
+  r.leash.forEach((l,i)=>{l.o.visible=l.line.visible=show&&!r.home;if(r.home)return;const dir=o.rotation.y;const back=V(-Math.sin(dir),0,-Math.cos(dir)).multiplyScalar(1.4+i*1.2+(r.veh?.6:0));const tgt=o.position.clone().add(back).add(V(Math.cos(dir)*(i?-.5:.5),0,0));const d=l.o.position.distanceTo(tgt);
+    if(d>8)l.o.position.copy(tgt);else if(d>.15){const dv=tgt.clone().sub(l.o.position).normalize();l.o.position.addScaledVector(dv,Math.min(d,rdt*Math.max(3,d*4)));l.o.rotation.y=lerpA(l.o.rotation.y,Math.atan2(dv.x,dv.z)-Math.PI/2,rdt*8)}if(typeof animAnim==='function')animAnim(l.o,wTime+i,d>.2);
+    const hand=new THREE.Vector3();u.arms[0].localToWorld(hand.set(0,-.42,0));l.line.geometry.setFromPoints([hand,l.o.position.clone().setY(.55)])});
+  if(r.hose&&show&&!r.home){const hand=new THREE.Vector3();u.arms[1].localToWorld(hand.set(0,-.42,0));const a=V(FAUCET.x,.9,FAUCET.z),m1=a.clone().lerp(hand,.33).setY(.08),m2=a.clone().lerp(hand,.7).setY(.12);const curve=new THREE.CatmullRomCurve3([a,V(FAUCET.x,.1,FAUCET.z+.4),m1,m2,hand]);
+    r.hoseT=(r.hoseT||0)-rdt;if(!r.hoseM||r.hoseT<=0||r.hoseP.distanceTo(hand)>.05){r.hoseT=.1;r.hoseP=hand.clone();if(r.hoseM){scene.remove(r.hoseM);r.hoseM.geometry.dispose()}r.hoseM=mesh(new THREE.TubeGeometry(curve,30,.06,6),hoseMat,false);scene.add(r.hoseM)}
+    if(Math.random()<rdt*25){const f=V(Math.sin(o.rotation.y),0,Math.cos(o.rotation.y));particle(hand.clone().add(f.clone().multiplyScalar(.2)),f.multiplyScalar(2.2).add(V(0,1,0)),0x5cb8ff,.05,.5,-8)}
+    u.arms[1].rotation.x=-1.1}
+  else if(r.hoseM){scene.remove(r.hoseM);r.hoseM.geometry.dispose();r.hoseM=null}}
 function netFrame(rdt){if(!NET||!NET.role)return;
   // 傳送自己的位置
-  NET.ppT-=rdt;if(NET.ppT<=0&&NET.ws){NET.ppT=.1;const pp={t:'pp',x:+P.pos.x.toFixed(2),z:+P.pos.z.toFixed(2),d:+P.dir.toFixed(2),mv:(keys.w||keys.a||keys.s||keys.d||joy.on||P.auto)?1:0,home:S.inHome?1:0,hose:P.hose?1:0,sel:S.sel,auto:P.auto?1:0,h:S.hand.slice(0,8),b:S.basket.length,cg:S.cage.map(a=>a.k+(a.age>=1?'A':'B')).join(','),veh:S.veh,nm:PNAME||(NET.role==='host'?'房主':'朋友'),st:P.stun>0?1:0,of:WARD.wear,du:S.dur,hs:S.inHome?HAI.spot:'',hm:S.inHome&&HAI.mode==='do'?1:0,pk:PETX&&PETX.o&&!S.inHome?PETW.cur:'',px:PETX&&PETX.o?+PETX.o.position.x.toFixed(2):0,pz:PETX&&PETX.o?+PETX.o.position.z.toFixed(2):0};
+  NET.ppT-=rdt;if(NET.ppT<=0&&NET.ws){NET.ppT=.1;const pp={t:'pp',x:+P.pos.x.toFixed(2),z:+P.pos.z.toFixed(2),d:+P.dir.toFixed(2),mv:(keys.w||keys.a||keys.s||keys.d||joy.on||P.auto)?1:0,home:S.inHome?1:0,hose:P.hose?1:0,sel:S.sel,auto:P.auto?1:0,h:S.hand.slice(0,8),b:S.basket.length,bk:S.basket.slice(-12).join(','),cg:S.cage.map(a=>a.k+(a.age>=1?'A':'B')).join(','),ls:S.leash.map(a=>a.k+(a.age>=1?'A':'B')).join(','),veh:S.veh,nm:PNAME||(NET.role==='host'?'房主':'朋友'),st:P.stun>0?1:0,of:WARD.wear,du:S.dur,hs:S.inHome?HAI.spot:'',hm:S.inHome&&HAI.mode==='do'?1:0,pk:PETX&&PETX.o&&!S.inHome?PETW.cur:'',px:PETX&&PETX.o?+PETX.o.position.x.toFixed(2):0,pz:PETX&&PETX.o?+PETX.o.position.z.toFixed(2):0};
     const k=JSON.stringify(pp);if(k!==NET.lastPP||Math.random()<.05){NET.lastPP=k;netSend(pp)}}
   if(NET.role==='host'){netHostTick(rdt);NET.ssT-=rdt;NET.flowT-=rdt;if(NET.ssT<=0&&NET.guests.size){NET.ssT=.4;const wf=NET.flowT<=0;if(wf)NET.flowT=3;netSend({t:'ss',s:snapOut(wf)})}}
   for(const r of NET.remote.values()){const o=r.o,u=o.userData;o.visible=!r.home||!!S.inHome;u.basket.visible=!r.home;
@@ -2178,6 +2193,7 @@ function netFrame(rdt){if(!NET||!NET.role)return;
     if(sp){o.position.set(HOME.x+sp.x,sp.y,HOME.z+sp.z);o.rotation.y=sp.ry;homeActAnim(o,r.hs,wTime,rdt,false);r.L.pos=o.position.clone().setY(sp.y+(sp.pose==='lie'?.9:2));r.L.near=S.inHome?99:0;setL(r.L,`<span class="ptag" style="background:${NET_COL[r.slot%4]}">${esc(r.nm||'朋友')}</span>`);continue}const dx=r.tx-o.position.x,dz=r.tz-o.position.z,d=Math.hypot(dx,dz);if(d>6)o.position.set(r.tx,0,r.tz);else{o.position.x+=dx*Math.min(1,rdt*10);o.position.z+=dz*Math.min(1,rdt*10)}
     o.rotation.y=lerpA(o.rotation.y,r.d,rdt*12);const mv=d>.05;r.t+=rdt*(mv?9:0);const sw=mv&&!r.veh?Math.sin(r.t):0;u.legs[0].rotation.x=sw*.7;u.legs[1].rotation.x=-sw*.7;u.legs.forEach(l=>l.visible=!r.veh);u.body.position.y=(r.vy||0)+(mv&&!r.veh?Math.abs(Math.cos(r.t))*.06:0);u.body.rotation.y=r.st?wTime*8:0;if(!r.veh)outfitAnim(o,r.t,mv?4:0,rdt);
     u.arms[1].rotation.x=(u.anchor.children.length?-1.35:-sw*.6);u.arms[0].rotation.x=u.cage.visible?-.2:(u.anchor.children.length?-1.35:sw*.6);
+    remoteExtras(r,rdt);
     r.L.pos=o.position.clone().setY(r.veh?2.6:2.15);r.L.near=r.home&&!S.inHome?0:99;setL(r.L,`<span class="ptag" style="background:${NET_COL[r.slot%4]}">${esc(r.nm||'朋友')}</span>`)}}
 
 /* ===== 介面：連線合作視窗、房號小標籤 ===== */
@@ -2265,7 +2281,7 @@ function openRecord(tab){if(tab)REC_TAB=tab;const r=recRows();const g=(h,L)=>`<d
   ()=>$('#recP').querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{SFX.click();openRecord(b.dataset.t)}))}
 
 /* ======================= 每一格畫面都會跑 ======================= */
-function f7Tick(rdt){const sb=document.getElementById('bSell');if(sb&&sb.classList.contains('sellFab'))sb.style.display=S.inHome?'none':'block';legTick();recBoardInit();if(typeof tutTick==='function')tutTick(rdt);if(typeof wildTick==='function')wildTick(rdt)}
+function f7Tick(rdt){if(typeof wkTick==='function')wkTick(rdt);const sb=document.getElementById('bSell');if(sb&&sb.classList.contains('sellFab'))sb.style.display=S.inHome?'none':'block';legTick();recBoardInit();if(typeof tutTick==='function')tutTick(rdt);if(typeof wildTick==='function')wildTick(rdt)}
 
 /* ======================= 野生動物、圍欄、護衛犬、獵人、巡邏隊、路燈 ======================= */
 // 森林裡的動物會跑進農場：山豬拱田、猴子偷水果、狐狸抓家禽、黑熊偷蜂蜜。靠近牠就會跑掉。
@@ -2410,7 +2426,7 @@ function tutSteps(){const T=TUT2;const ck=CROPS[T.crop],an=ANIM[T.anim],pk=an.pe
   {el:'#px',t:'買好了！按 <b>✖</b> 關掉商店。',done:()=>!modalOn()},
   {el:()=>$(`#seeds button[data-k="${T.crop}"]`)||$('#seeds'),t:`下面這排是 <b>你身上的種子</b>，黃色框框是現在選的。<br>點一下「${ck.em}${ck.n}」選它來種。`,click:1,done:()=>T.clicked&&S.sel===T.crop},
   {w:()=>fieldPos(F()),go:()=>fieldPos(F()),t:`去 <b>${F().name}</b>。<br>走進空田站著，就會自動播種一格。`,done:()=>Math.hypot(P.pos.x-F().x,P.pos.z-F().z-2.3)<2.2&&!P.auto,skip:()=>!T.fresh.length},
-  {el:()=>$(`[data-sow="${T.fi}"]`),t:'也可以按田邊木牌的「<b>🌱 一鍵播種</b>」，整塊田一次種滿！點它。',done:()=>modalOn()||fresh().every(s=>s.st!=='empty'),skip:()=>!T.fresh.length||fresh().every(s=>s.st!=='empty'),go:()=>fieldPos(F())},
+  {el:()=>$(`[data-sow="${T.fi}"]`),t:'也可以按田邊木牌的「<b>🌱 栽種</b>」，整塊田一次種滿！點它。<br><small>想換種別的作物，按「🧹 拔除」清空再重新栽種。</small>',done:()=>modalOn()||fresh().every(s=>s.st!=='empty'),skip:()=>!T.fresh.length||fresh().every(s=>s.st!=='empty'),go:()=>fieldPos(F())},
   {el:'#panel',t:'選要種的種子（也可以改種植時間），按下去會再問一次，按確定。',done:()=>fresh().every(s=>s.st!=='empty'),back:()=>!modalOn()&&!askOn()&&fresh().some(s=>s.st==='empty'),skip:()=>!T.fresh.length||fresh().every(s=>s.st!=='empty')},
   {el:'#soilLeg',t:'種好了！靠近田地時，左下角會顯示 <b>這塊田的顏色和水分</b>：<br>深咖啡＝滿水、淺一點＝微缺水、再淺＝<b>快乾了</b>、淺黃＝乾枯（停止生長）。',next:1,enter:()=>{fresh().forEach(s=>{if(s.st==='grow')s.w=.15})},skip:()=>!fresh().some(s=>s.st==='grow')},
   {w:()=>fieldPos(F()),t:'看！田地變淺色，頭上冒出 <b>💧</b>，右邊「📋 待處理」也會提醒 → 代表<b>快乾了</b>，要澆水。',next:1,skip:()=>!fresh().some(s=>s.st==='grow'&&s.w<=.3)},
@@ -2419,7 +2435,7 @@ function tutSteps(){const T=TUT2;const ck=CROPS[T.crop],an=ANIM[T.anim],pk=an.pe
     t:'拿著水桶走到快乾的田上，就會自動澆水（人物會自己走過去示範）。',done:()=>!fresh().some(s=>s.st==='grow'&&s.w<=.3),back:()=>!S.hand.includes('water')&&fresh().some(s=>s.st==='grow'&&s.w<=.3),skip:()=>!fresh().some(s=>s.st==='grow'&&s.w<=.3)},
   {w:()=>fieldPos(F()),t:()=>T.ff?'⏩ 時間快轉中…看作物一天天長大！':'澆好水了！平常作物要等你選的種植時間（例如 4 小時）才會成熟，這段時間可以先去做別的事。<br>教學中按「<b>⏩ 快轉時間</b>」，馬上看作物長大！',
     ff:1,done:()=>!fresh().some(s=>s.st==='grow'),skip:()=>!fresh().some(s=>s.st==='grow')},
-  {el:()=>$(`[data-reap="${T.fi}"]`),go:()=>fieldPos(F()),t:'成熟了！木牌變成 <b>金黃色</b>。<br>按「<b>✅ 一鍵採收</b>」，收成會放進田邊的 📦 集貨箱。',done:()=>tc('harvest')>T.base.harvest,skip:()=>!plotsOf(F()).some(p=>S.plots[p.id].st==='ripe')},
+  {el:()=>$(`[data-reap="${T.fi}"]`),go:()=>fieldPos(F()),t:'成熟了！木牌變成 <b>金黃色</b>。<br>按「<b>✅ 採收</b>」，收成會放進田邊的 📦 集貨箱。',done:()=>tc('harvest')>T.base.harvest,skip:()=>!plotsOf(F()).some(p=>S.plots[p.id].st==='ripe')},
   {w:()=>{const r=ringOf('box',r=>r.f===T.fi);return V(r.x,0,r.z)},go:()=>{const r=ringOf('box',r=>r.f===T.fi);return V(r.x,0,r.z)},t:'走到 <b>📦 集貨箱</b>，站著就會把菜搬到背上的菜籃子。<br><small>（直接走進田裡採收，會直接放進菜籃子）</small>',done:()=>!S.boxes[T.fi].length||basketFull(),skip:()=>!S.boxes[T.fi].length},
   {el:'#bSell',t:'菜籃子有東西了，按「<b>🧺 一鍵賣貨</b>」，人物會自己走到收購站賣掉！',done:()=>tc('sell')>T.base.sell,skip:()=>!hasSellable()},
   {t:'賣掉了，賺到錢 💵！<br>接下來教你 <b>養動物</b> 🐔',next:1},
@@ -2543,6 +2559,107 @@ if(!EMBED&&!QS.has('dev')){['#bReset','#bTest','#bSpeed','#bCoop','#bExit'].forE
 #bSell.sellFab:active{transform:translateY(3px);box-shadow:0 2px 0 #b8501a}
 @media (min-width:701px){#bSell.sellFab{font-size:22px;padding:16px 24px;bottom:96px}}`;document.head.appendChild(st)}
 window.__farmSave=()=>save();
+window.__NR=m=>netRemote(m);window.__NET=NET;
+
+/* ======================= 雇來的員工：真的會走來走去做事（可以處罰他們） ======================= */
+// 農夫：走到田裡採收、清壞掉的、修田、買種子播種；澆水工：拉水管或去水井提水；牧場工：拿飼料倒進飼料槽、收產品；送貨員：一有貨就去搬去賣
+const WORKERS=[];
+const WK_N={farmer:'🧑‍🌾 農夫',waterer:'👩‍🌾 澆水工',rancher:'🤠 牧場工',courier:'🧑‍✈️ 送貨員'};
+const WK_COL={farmer:0x4f9a2f,waterer:0x2f8ad8,rancher:0xc8822a,courier:0x6a4ad8};
+function wkKeyName(id,key){return id==='rancher'?(PEN_T[key]?PEN_T[key].n:key):id==='courier'?'整座農場':`第 ${+key+1} 塊田`}
+function wkMake(id,key){const o=makeFarmer();const u=o.userData;const vest=mesh(new THREE.BoxGeometry(.46,.36,.36),M(WK_COL[id]));vest.position.set(0,.62,0);u.body.add(vest);if(u.basket)u.basket.visible=false;
+  const home=wkHome(id,key);o.position.set(home.x+rand(-.5,.5),0,home.z+rand(-.5,.5));scene.add(o);
+  const w={id,key,o,u,L:label('',V(),9),path:[],busy:0,job:null,txt:'',water:0,hose:false,load:[],stun:0,fly:null,taps:0,tapT:0,t:0,idleT:rand(1,3)};w.L.near=9;WORKERS.push(w);puff(o.position.clone().add(V(0,.6,0)),10);return w}
+function wkHome(id,key){if(id==='farmer'||id==='waterer'){const f=FI(+key);return f?V(f.x-3.3,0,f.z-.2):V(0,0,3)}if(id==='rancher'){const p=PENS[key];return p?V(p.door.x+1.2,0,p.door.z+1.2):V(0,0,3)}return V(1.5,0,1.6)}
+function wkSync(){const want=new Set();for(const id of ['farmer','waterer','rancher','courier']){const o=S.staff&&S.staff[id];if(!o)continue;for(const key in o)if(o[key]){if(id==='rancher'&&!PENS[key])continue;if((id==='farmer'||id==='waterer')&&!FI(+key))continue;want.add(id+'|'+key)}}
+  for(let i=WORKERS.length-1;i>=0;i--){const w=WORKERS[i];if(!want.has(w.id+'|'+w.key)){scene.remove(w.o);dropL(w.L);if(w.hoseM)scene.remove(w.hoseM);WORKERS.splice(i,1)}else want.delete(w.id+'|'+w.key)}
+  for(const k of want){const [id,key]=k.split('|');wkMake(id,key)}}
+function wkGo(w,to,txt,then){w.path=findPath(w.o.position.clone().setY(0),V(to.x,0,to.z));w.then=then;w.txt=txt||w.txt}
+function wkHold(w,t){w.u.anchor.clear();if(t){for(let i=0;i<Math.min(4,t.n||1);i++){const it=makeItem(t.k);it.position.y=i*ITEM_H;w.u.anchor.add(it)}}}
+const wkDo=(w,sec,txt,fn)=>{w.busy=sec;w.txt=txt;w.after=fn};
+const canAct=()=>!NETG;
+// 找工作
+function wkPlan(w){const id=w.id,key=w.key;
+  if(id==='farmer'){const f=FI(+key);const ps=PLOTS.filter(p=>p.f===f);
+    let p=ps.find(p=>{const s=S.plots[p.id];return (s.st==='ripe'||s.st==='wither')&&S.boxes[f.i].length<60});if(p)return wkGo(w,p,'🌾 去採收',()=>wkDo(w,1.1,'🌾 採收中',()=>{if(canAct()){const s=S.plots[p.id];if(s.st==='ripe'||s.st==='wither'){harvestTo(p,true,true);f.busy=S.t}}}));
+    p=ps.find(p=>{const s=S.plots[p.id];return s.st==='rot'||s.st==='broken'});if(p)return wkGo(w,p,'🔨 去整理',()=>wkDo(w,1.4,'🔨 修田中',()=>{if(!canAct())return;const s=S.plots[p.id];if(s.st==='broken')repairPlot(p);else if(s.st==='rot'){s.st='empty';s.c='';s.g=0;s.rt=0;puff(V(p.x,.4,p.z),10,0x8a7a5a)}}));
+    const k=S.autoCrop[f.i],c=CROPS[k];p=ps.find(p=>S.plots[p.id].st==='empty');if(p&&c&&!canPlant(c)&&S.money>=c.seed)return wkGo(w,p,'🌱 去播種',()=>wkDo(w,1,'🌱 播種中',()=>{if(!canAct())return;const s=S.plots[p.id];if(s.st!=='empty'||S.money<c.seed)return;spend(c.seed,'seed');s.st='grow';s.c=k;s.g=0;s.rt=0;s.warned=0;s.dur=S.autoDur[f.i]||S.dur||7200;f.busy=S.t;puff(V(p.x,.3,p.z),8,0x9a7a4a,.1)}));
+    if(p&&!c){wkIdle(w);w.txt='❗ 請在田邊木牌按「⚙️ 自動種植」選作物';if(!w.warned){w.warned=1;toast(`🧑‍🌾 第 ${f.i+1} 塊田的農夫：請在田邊木牌按「⚙️ 自動種植」選要種的作物，我才會去買種子播種喔！`,5000)}return}w.warned=0;return wkIdle(w)}
+  if(id==='waterer'){const f=FI(+key);const dry=PLOTS.filter(p=>p.f===f&&(S.plots[p.id].st==='grow'||S.plots[p.id].st==='ripe')&&S.plots[p.id].w<.4&&!(curW().wet&&!covered(f)));
+    if(!dry.length){if(w.hose)return wkGo(w,V(FAUCET.x,0,FAUCET.z+1),'🚿 收水管',()=>{w.hose=false;w.txt=''});return wkIdle(w)}
+    const near=dry.sort((a,b)=>Math.hypot(a.x-w.o.position.x,a.z-w.o.position.z)-Math.hypot(b.x-w.o.position.x,b.z-w.o.position.z))[0];
+    if(S.own.hose&&!w.hose)return wkGo(w,V(FAUCET.x,0,FAUCET.z+1),'🚿 去拉水管',()=>wkDo(w,.6,'🚿 拉水管',()=>{w.hose=true}));
+    if(!S.own.hose&&w.water<=0)return wkGo(w,V(WELL.position.x,0,WELL.position.z+1.6),'🪣 去水井提水',()=>wkDo(w,1.2,'🪣 提水中',()=>{w.water=4;wkHold(w,{k:'water',n:4})}));
+    return wkGo(w,near,w.hose?'🚿 拉水管去澆水':'💧 提水去澆水',()=>wkDo(w,.8,'💧 澆水中',()=>{const s=S.plots[near.id];if(canAct())s.w=1;for(let i=0;i<14;i++)particle(V(near.x+rand(-.6,.6),1,near.z+rand(-.6,.6)),V(rand(-.3,.3),-1,rand(-.3,.3)),0x5cb8ff,.07,.5,-6);SFX.water();if(!w.hose){w.water--;wkHold(w,w.water>0?{k:'water',n:w.water}:null)}}))}
+  if(id==='rancher'){const pk=w.key,pen=PENS[pk],T=PEN_T[pk];if(!pen)return wkIdle(w);
+    if(w.load.length){const tr=pen.ring.trough;return wkGo(w,tr,'🥣 倒進飼料槽',()=>wkDo(w,1,'🥣 倒飼料中',()=>{if(canAct()){const src=w.load[0];const n=Math.min(10-S.trough[pk],w.load.length);S.trough[pk]+=n;const back=w.load.length-n;if(back>0)S.stock[src]=(S.stock[src]||0)+back}w.load=[];wkHold(w,null)}))}
+    if(T.food.length&&pen.ring.trough&&S.trough[pk]<5&&S.animals.some(a=>ANIM[a.k].pen===pk)){const src=T.food.includes('feed')&&S.stock.feed>0?'feed':T.food.includes('hay')&&S.stock.hay>0?'hay':'';if(src){const at=src==='feed'?V(7,0,2.9):V(10.5,0,2.6);return wkGo(w,at,src==='feed'?'🌰 去拿飼料':'🌾 去拿乾草',()=>wkDo(w,1,'拿飼料中',()=>{const n=Math.min(10-S.trough[pk],S.stock[src]||0);if(canAct())S.stock[src]-=n;w.load=Array(n).fill(src);wkHold(w,{k:src,n})}))}}
+    if(S.piles[pk]&&S.piles[pk].length&&pen.ring.take)return wkGo(w,pen.ring.take,'🥚 去收產品',()=>wkDo(w,1.2,'🥚 收產品中',()=>{if(canAct()&&S.piles[pk].length){S.pbox[pk].push(...S.piles[pk].map(x=>x[1]));S.piles[pk]=[]}}));
+    return wkIdle(w)}
+  if(id==='courier'){if(w.load.length)return wkGo(w,V(0,0,1.2),'🚚 送去收購站',()=>wkDo(w,1,'💵 賣貨中',()=>{if(canAct()){let sum=0;w.load.forEach(t=>sum+=sellPrice(t));if(sum){earn(sum,'deliver');toast(`🧑‍✈️ 送貨員賣了 ${w.load.length} 件貨，賺到 💵${sum}！`,2600);SFX.cash&&SFX.cash()}}w.load=[];wkHold(w,null)}));
+    for(const f of FIELDS){if(S.boxes[f.i]&&S.boxes[f.i].length)return wkGo(w,V(f.x+3.4,0,f.z+1.9),'📦 去搬貨',()=>wkDo(w,1,'📦 搬貨中',()=>{if(canAct()){w.load.push(...S.boxes[f.i]);S.boxes[f.i]=[]}else w.load.push('x');wkHold(w,{k:w.load[0]==='x'?'grass':w.load[0],n:Math.min(4,w.load.length)})}))}
+    for(const pk in PENS){if(S.pbox[pk]&&S.pbox[pk].length){const r=PENS[pk].ring.take||PENS[pk].door;return wkGo(w,r,'📦 去搬產品',()=>wkDo(w,1,'📦 搬產品中',()=>{if(canAct()){w.load.push(...S.pbox[pk]);S.pbox[pk]=[]}else w.load.push('x');wkHold(w,{k:w.load[0]==='x'?'grass':w.load[0],n:Math.min(4,w.load.length)})}))}}
+    return wkIdle(w)}}
+function wkIdle(w){w.txt='☕ 待命中';w.idleT=rand(3,6);const h=wkHome(w.id,w.key);if(w.o.position.distanceTo(h)>2.5)wkGo(w,h,'🚶 回崗位')}
+// 每一幀
+let wkSyncT=0;
+function wkTick(rdt){punTick(rdt);wkSyncT-=rdt;if(wkSyncT<=0){wkSyncT=1;wkSync()}
+  for(const w of WORKERS){const o=w.o,u=w.u;w.tapT-=rdt;o.visible=!S.inHome;
+    if(w.fly)flyTickW(w,rdt);
+    else if(w.held){}
+    else if(w.stun>0){w.stun-=rdt;u.body.rotation.y+=rdt*8;w.txt='💫 頭暈中…';if(w.stars)w.stars.rotation.y+=rdt*6;if(w.stun<=0){u.body.rotation.y=0;starRing(w,false);const say=['對不起老闆！我會更努力！','我馬上去做！','好痛…不敢偷懶了','老闆饒命！'][Math.floor(Math.random()*4)];w.say=say;w.sayT=3;w.boost=60}}
+    else if(S.paused){}
+    else if(w.busy>0){w.busy-=rdt*(w.boost>0?1.6:1);u.arms[0].rotation.x=Math.sin(wTime*10)*.8;u.arms[1].rotation.x=-Math.sin(wTime*10)*.8;u.body.rotation.x=.25;if(w.busy<=0){u.body.rotation.x=0;const fn=w.after;w.after=null;fn&&fn()}}
+    else if(w.path&&w.path.length){const tg=w.path[0];const d=Math.hypot(tg.x-o.position.x,tg.z-o.position.z);if(d<.25){w.path.shift();if(!w.path.length){const th=w.then;w.then=null;th&&th()}}else{const sp=(w.boost>0?5.2:3.6)*rdt;o.position.x+=(tg.x-o.position.x)/d*Math.min(d,sp);o.position.z+=(tg.z-o.position.z)/d*Math.min(d,sp);o.rotation.y=lerpA(o.rotation.y,Math.atan2(tg.x-o.position.x,tg.z-o.position.z),rdt*10);w.t+=rdt*9;const sw=Math.sin(w.t);u.legs[0].rotation.x=sw*.7;u.legs[1].rotation.x=-sw*.7;u.body.position.y=Math.abs(Math.cos(w.t))*.06;if(!u.anchor.children.length){u.arms[0].rotation.x=sw*.6;u.arms[1].rotation.x=-sw*.6}}}
+    else{u.legs[0].rotation.x=u.legs[1].rotation.x=0;w.idleT-=rdt;if(w.idleT<=0){w.idleT=.5;wkPlan(w)}}
+    if(w.boost>0)w.boost-=rdt;if(u.anchor.children.length){u.arms[0].rotation.x=u.arms[1].rotation.x=-1.35}
+    // 水管
+    if(w.hose&&!S.inHome){const hand=new THREE.Vector3();u.arms[1].localToWorld(hand.set(0,-.42,0));w.hT=(w.hT||0)-rdt;if(!w.hoseM||w.hT<=0){w.hT=.12;const a=V(FAUCET.x,.9,FAUCET.z),m1=a.clone().lerp(hand,.33).setY(.08),m2=a.clone().lerp(hand,.7).setY(.12);if(w.hoseM){scene.remove(w.hoseM);w.hoseM.geometry.dispose()}w.hoseM=mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([a,V(FAUCET.x,.1,FAUCET.z+.4),m1,m2,hand]),30,.06,6),hoseMat,false);scene.add(w.hoseM)}
+      if(w.busy>0&&Math.random()<rdt*30){const f=V(Math.sin(o.rotation.y),0,Math.cos(o.rotation.y));particle(hand.clone(),f.multiplyScalar(2.4).add(V(0,1,0)),0x5cb8ff,.06,.5,-8)}}
+    else if(w.hoseM){scene.remove(w.hoseM);w.hoseM.geometry.dispose();w.hoseM=null}
+    if(w.sayT>0)w.sayT-=rdt;
+    w.L.pos=o.position.clone().setY(2.2);w.L.near=S.inHome?0:9;setL(w.L,`<div class="pl" style="font-size:11px">${WK_N[w.id]}（${wkKeyName(w.id,w.key)}）<br>${w.sayT>0?'💬 '+w.say:w.txt}</div>`)}}
+/* ---- 處罰員工：點兩下員工出現選項 ---- */
+{const cv=renderer.domElement;let dn=null;cv.addEventListener('pointerdown',e=>{dn={x:e.clientX,y:e.clientY,t:performance.now()}},true);
+  cv.addEventListener('pointerup',e=>{if(!dn||Math.hypot(e.clientX-dn.x,e.clientY-dn.y)>10||performance.now()-dn.t>400||S.inHome)return;const rc=new THREE.Raycaster();rc.setFromCamera(new THREE.Vector2(e.clientX/W*2-1,-(e.clientY/H)*2+1),camera);
+    let hit=null,hd=1e9;for(const w of WORKERS){if(w.fly||w.held||!w.o.visible)continue;const r=rc.intersectObject(w.o,true);if(r.length&&r[0].distance<hd){hd=r[0].distance;hit=w}}if(!hit)return;
+    if(hit.tapT>0){hit.tapT=0;punishPanel(hit)}else{hit.tapT=.7;SFX.click();floatAt(hit.o.position.clone().setY(2.6),'再點一下','#6a4ad8')}})}
+function punishPanel(w){openPanel(`<h2>${WK_N[w.id]}（${wkKeyName(w.id,w.key)}）</h2><div>工作偷懶？處罰一下！處罰完他會害怕，接下來 1 分鐘做事變快。</div><div class="chooser"><button data-p="kick">🦵 踢飛他</button><button data-p="spin">🌀 抓起來轉圈丟出去</button><button data-p="no">❌ 算了</button></div>`,
+  ()=>document.querySelectorAll('.chooser [data-p]').forEach(b=>b.onclick=()=>{closePanel();const k=b.dataset.p;if(k==='no')return;const d=Math.hypot(P.pos.x-w.o.position.x,P.pos.z-w.o.position.z);
+    const go=()=>{if(k==='kick')kickWorker(w);else spinWorker(w)};if(d>1.6){P.auto={pts:findPath(P.pos,w.o.position.clone().add(V(.9,0,.9)))};const iv=setInterval(()=>{if(!P.auto||Math.hypot(P.pos.x-w.o.position.x,P.pos.z-w.o.position.z)<1.8){clearInterval(iv);P.auto=null;go()}},120)}else go()}))}
+// ===== 處罰動畫 =====
+var PUN=null;// 處罰中：人物不能移動
+function starRing(w,on){if(on&&!w.stars){const g=new THREE.Group();for(let i=0;i<3;i++){const s=sprite('⭐',.35);s.position.set(Math.cos(i*2.1)*.45,0,Math.sin(i*2.1)*.45);g.add(s)}g.position.y=2.05;w.o.add(g);w.stars=g}else if(!on&&w.stars){w.o.remove(w.stars);w.stars=null}}
+function impact(pos,n){for(let i=0;i<n;i++){const a=rand(0,6.28);particle(pos.clone(),V(Math.cos(a)*rand(2,5),rand(1,4),Math.sin(a)*rand(2,5)),[0xffe14a,0xffffff,0xff8a3a][i%3],rand(.08,.15),rand(.4,.8),-6)}}
+function stopWork(w){w.path=[];w.busy=0;w.after=null;w.u.anchor.clear();w.load=w.id==='courier'?w.load:[];w.water=0;w.hose=false}
+function launch(w,from,dir,dist,h,dur){const to=from.clone().add(V(Math.sin(dir)*dist,0,Math.cos(dir)*dist));collide(to);w.fly={t:0,dur,from:from.clone().setY(0),to,h,dir,bounce:0}}
+// 踢飛：轉身→抬腳往後蓄力→用力踢出去→「砰！」→員工翻滾飛出去、彈兩下、趴在地上、爬起來頭暈
+function kickWorker(w){stopWork(w);const dir=Math.atan2(w.o.position.x-P.pos.x,w.o.position.z-P.pos.z);PUN={k:'kick',t:0,w,dir};w.held=true;w.o.rotation.y=dir+Math.PI;w.say='咦？老闆？';w.sayT=1}
+// 抓起來轉圈丟出去：抓住→舉起來→原地越轉越快（員工被甩成水平）→放手→員工飛出去
+function spinWorker(w){stopWork(w);const dir=Math.atan2(w.o.position.x-P.pos.x,w.o.position.z-P.pos.z);PUN={k:'spin',t:0,w,dir,ang:dir,spd:0,snd:0};w.held=true;w.say='放我下來～！';w.sayT=3}
+function punTick(rdt){const U=PUN;if(!U)return;U.t+=rdt;const pu=P.o.userData,w=U.w,wu=w.u;
+  if(U.k==='kick'){P.dir=U.dir;P.o.rotation.y=U.dir;const lg=pu.legs[1],t=U.t;
+    if(t<.35){lg.rotation.x=t/.35*1.1;pu.body.rotation.x=-.15;pu.arms[0].rotation.x=-.6;pu.arms[1].rotation.x=.5}
+    else if(t<.5){const k=(t-.35)/.15;lg.rotation.x=1.1-k*3;pu.body.rotation.x=-.15+k*.35;if(!U.hit){U.hit=1;w.held=false;const hp=w.o.position.clone().setY(.9);impact(hp,24);floatAt(hp.clone().setY(2.2),'砰！','#e0402a');SFX.thunk&&SFX.thunk();SFX.bad&&SFX.bad();launch(w,w.o.position,U.dir,8,4,1.15);w.say='哇啊啊啊～！';w.sayT=1.6}}
+    else if(t<.9){lg.rotation.x=-1.9+(t-.5)/.4*1.9;pu.body.rotation.x=.2*(1-(t-.5)/.4)}
+    else{lg.rotation.x=0;pu.body.rotation.x=0;pu.arms[0].rotation.x=pu.arms[1].rotation.x=0;PUN=null;toast(`🦵 把${WK_N[w.id]}踢飛了！`,1800)}}
+  else if(U.k==='spin'){const t=U.t;
+    if(t<.45){P.dir=U.dir;P.o.rotation.y=U.dir;pu.arms[0].rotation.x=pu.arms[1].rotation.x=-1.4*(t/.45);const k=t/.45;const hold=P.pos.clone().add(V(Math.sin(U.dir)*1,0,Math.cos(U.dir)*1));w.o.position.lerp(hold.setY(k*1.1),k);w.o.rotation.y=U.dir+Math.PI;wu.legs[0].rotation.x=Math.sin(t*30)*.8;wu.legs[1].rotation.x=-Math.sin(t*30)*.8}
+    else if(t<2.6){U.spd=Math.min(22,U.spd+rdt*14);U.ang+=U.spd*rdt;P.dir=U.ang;P.o.rotation.y=U.ang;pu.arms[0].rotation.x=pu.arms[1].rotation.x=-1.5;pu.body.rotation.x=-.25;
+      const r=1.25+U.spd*.02;w.o.position.set(P.pos.x+Math.sin(U.ang)*r,1+Math.min(.4,U.spd*.02),P.pos.z+Math.cos(U.ang)*r);w.o.rotation.set(0,U.ang+Math.PI,0);w.o.rotation.z=0;
+      // 員工被甩到幾乎水平
+      w.o.rotateX(-Math.min(1.45,U.spd*.08));wu.legs[0].rotation.x=Math.sin(t*25)*.9;wu.legs[1].rotation.x=-Math.sin(t*25)*.9;wu.arms[0].rotation.x=Math.sin(t*20)*1.2-1;wu.arms[1].rotation.x=-Math.sin(t*20)*1.2-1;
+      if(Math.random()<rdt*40)particle(w.o.position.clone(),V(rand(-.5,.5),rand(0,1),rand(-.5,.5)),0xffffff,.07,.4,-1);U.snd-=rdt;if(U.snd<=0){U.snd=.28-U.spd*.008;try{tone(300+U.spd*25,.08,'sawtooth',.06)}catch(e){}}}
+    else{w.held=false;const tang=U.ang+Math.PI/2;w.o.rotation.set(0,0,0);launch(w,w.o.position,U.ang+.6,10,4.5,1.3);w.fly.from.copy(w.o.position).setY(0);SFX.bad&&SFX.bad();impact(w.o.position.clone(),14);w.say='飛～～～！';w.sayT=1.6;
+      pu.arms[0].rotation.x=pu.arms[1].rotation.x=0;pu.body.rotation.x=0;P.stun=.9;PUN=null;toast(`🌀 把${WK_N[w.id]}轉圈丟出去了！`,1800)}}}
+// 員工被打飛：翻滾→落地彈兩下→趴著→爬起來→頭暈（頭上轉星星）
+function flyTickW(w,rdt){const F=w.fly,o=w.o,u=w.u;
+  if(F.bounce<3){F.t+=rdt;const k=Math.min(1,F.t/F.dur);const pos=F.from.clone().lerp(F.to,k);o.position.set(pos.x,Math.sin(k*Math.PI)*F.h,pos.z);o.rotation.set(F.t*(F.bounce?6:13),F.dir,F.t*(F.bounce?3:7));
+    u.arms[0].rotation.x=Math.sin(F.t*30)*1.4;u.arms[1].rotation.x=-Math.sin(F.t*30)*1.4;u.legs[0].rotation.x=Math.sin(F.t*26)*.9;u.legs[1].rotation.x=-Math.sin(F.t*26)*.9;
+    if(k>=1){puff(o.position.clone().add(V(0,.2,0)),14,0xd8c8a8,.2);SFX.thunk&&SFX.thunk();F.bounce++;if(F.bounce<3){const d=F.bounce===1?1.6:.6;F.from=o.position.clone().setY(0);F.to=F.from.clone().add(V(Math.sin(F.dir)*d,0,Math.cos(F.dir)*d));collide(F.to);F.t=0;F.dur=F.bounce===1?.4:.22;F.h=F.bounce===1?.8:.25}else{F.lie=1.4;o.rotation.set(-Math.PI/2,F.dir+Math.PI,0);o.position.y=.15;w.say='好痛…';w.sayT=1.4}}}
+  else if(F.lie>0){F.lie-=rdt;u.legs[0].rotation.x=Math.sin(F.lie*12)*.3;if(F.lie<=0){F.up=.6}}
+  else if(F.up>0){F.up-=rdt;const k=1-F.up/.6;o.rotation.x=-Math.PI/2*(1-k);o.position.y=.15*(1-k);if(F.up<=0){o.rotation.set(0,F.dir+Math.PI,0);o.position.y=0;w.fly=null;w.stun=3.5;starRing(w,true)}}}
+window.__W={WORKERS,kickWorker,spinWorker,punishPanel};
 </script>
 </body>
 </html>

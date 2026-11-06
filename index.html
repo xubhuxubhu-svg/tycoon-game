@@ -300,7 +300,7 @@ body.ing #toast{top:138px}
     <button class="ib" data-p="credits"><div class="sq">📜</div><span>聲明</span></button>
   </div>
 </div>
-<div id="credit">遊戲製作：Eric Hu　版本 1.7.1</div>
+<div id="credit">遊戲製作：Eric Hu　版本 1.8.3</div>
 </div>
 <div id="game" class="hide">
   <div id="lbls"></div>
@@ -995,11 +995,11 @@ function zoneStatus(i){const st=mapState('food2');const z=st&&st.shops[i];const 
 const seriesDone=id=>{if(id!=='food')return 0;let n=0;for(let i=0;i<FOOD_LIST.length;i++)if(zoneStatus(i)==='auto')n++;return n};
 // 系列解鎖：第 1 系列農場到達 25 級開放第 2 系列；之後每個系列完成六成以上開放下一個
 const seriesNeed=i=>i===1?SERIES_UNLOCK_LV:Math.ceil((SERIES[i-1].count||0)*.6);
-const seriesUnlocked=i=>i===0||(!SERIES[i].closed&&(i===1?farmLevel()>=SERIES_UNLOCK_LV:SERIES[i-1].count&&seriesDone(SERIES[i-1].id)>=seriesNeed(i)));
+const seriesUnlocked=i=>i===0||(i===2&&DEV_UNLOCK)||(!SERIES[i].closed&&(i===1?farmLevel()>=SERIES_UNLOCK_LV:SERIES[i-1].count&&seriesDone(SERIES[i-1].id)>=seriesNeed(i)));
 const PANELS={
  series(){const html=`<div class="note">🔒 規則：第 1 系列「農業與畜牧」農場到達 <b>等級 25</b>（共 40 級）會開放第 2 系列；之後每個系列完成六成以上，就會開放下一個系列。每個系列的錢、進度都分開。</div><div class="grid">${SERIES.map((s,i)=>{const un=seriesUnlocked(i);const d=seriesDone(s.id);const c=s.count;
-   return `<button class="sc ${un?'':'lock'}" data-i="${i}"><span class="no">${String(i+1).padStart(2,'0')}</span>${un?'':'<span class="lk">🔒</span>'}<div class="em" style="background:${s.color}">${s.em}</div><div class="nm">${s.name}</div><div class="ct">${s.id==='farm'?`🌾 農場等級 ${farmLevel()||1} / 40`:s.id==='food'&&!un?`🔒 農場等級 ${SERIES_UNLOCK_LV} 開放（目前 ${farmLevel()||1}）`:s.closed?'⏸️ 暫不開放':c?`${d} / ${c} 已自動化`:'玩法整理中'}</div><div class="bar"><i style="width:${s.id==='farm'?(farmLevel()||1)/40*100:s.id==='food'&&!un?Math.min(100,(farmLevel()||1)/SERIES_UNLOCK_LV*100):c?d/c*100:0}%"></i></div></button>`}).join('')}</div>`;
-   openPanel('📚 系列地圖',html,()=>pb.querySelectorAll('.sc').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;if(SERIES[i].closed){SFX.err();toast(`「${SERIES[i].name}」暫不開放，目前先測試「農業與畜牧」`);return}if(i===0){SFX.click();closePanel();startFarm();return}if(!seriesUnlocked(i)){SFX.err();b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');toast(i===1?`「農業與畜牧」農場到達等級 ${SERIES_UNLOCK_LV} 才會開放喔！（目前 ${farmLevel()||1}）`:`「${SERIES[i-1].name}」完成 ${seriesNeed(i)} 個以上才會開放喔！`);return}SFX.click();showProgress()}))},
+   return `<button class="sc ${un?'':'lock'}" data-i="${i}"><span class="no">${String(i+1).padStart(2,'0')}</span>${un?'':'<span class="lk">🔒</span>'}<div class="em" style="background:${s.color}">${s.em}</div><div class="nm">${s.name}</div><div class="ct">${s.id==='farm'?`🌾 農場等級 ${farmLevel()||1} / 40`:s.id==='fish'&&un?`🐟 漁港等級 ${fishLevel()||1} / 40`:s.id==='food'&&!un?`🔒 農場等級 ${SERIES_UNLOCK_LV} 開放（目前 ${farmLevel()||1}）`:s.closed?'⏸️ 暫不開放':c?`${d} / ${c} 已自動化`:'玩法整理中'}</div><div class="bar"><i style="width:${s.id==='farm'?(farmLevel()||1)/40*100:s.id==='fish'&&un?(fishLevel()||1)/40*100:s.id==='food'&&!un?Math.min(100,(farmLevel()||1)/SERIES_UNLOCK_LV*100):c?d/c*100:0}%"></i></div></button>`}).join('')}</div>`;
+   openPanel('📚 系列地圖',html,()=>pb.querySelectorAll('.sc').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;if(SERIES[i].closed){SFX.err();toast(`「${SERIES[i].name}」暫不開放，目前先測試「農業與畜牧」`);return}if(i===0){SFX.click();closePanel();startFarm();return}if(i===2&&seriesUnlocked(2)){SFX.click();closePanel();startFish();return}if(!seriesUnlocked(i)){SFX.err();b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');toast(i===1?`「農業與畜牧」農場到達等級 ${SERIES_UNLOCK_LV} 才會開放喔！（目前 ${farmLevel()||1}）`:`「${SERIES[i-1].name}」完成 ${seriesNeed(i)} 個以上才會開放喔！`);return}SFX.click();showProgress()}))},
  duo(){openPanel('👥 雙人合作',`${typeof foodCoopHtml==='function'?foodCoopHtml():''}
    <div class="opt"><h3>🌐 不同裝置連線（筆電、手機都可以）</h3><p>一人建立房間，把 4 位數房號告訴朋友；朋友用自己的手機或電腦打開遊戲，在這裡輸入房號加入，就能一起在<b>房主的地圖</b>搬運、加工、賺錢，也可以互相邀請對戰！</p>
    <button class="sbtn" id="netNew" style="background:#2f7bd6;box-shadow:0 3px 0 #1f5ea8">🏠 建立房間（我當房主）</button>${netFixedHtml()}
@@ -1095,7 +1095,7 @@ async function renderRank(){const el=$('#rk');if(!el)return;const label={assets:
 
 /* ======================= 重置遊戲進度（可以選系列、選單人或合作） ======================= */
 // 單人：直接重置；雙人、多人合作：要原本的玩家都在線上（在合作房間裡由房主按），否則只能新建
-function resetPanel(){let ser=0,md='solo';const draw=()=>{const sn=['🌾 第 1 系列　農業與畜牧','🍔 第 2 系列　飲食與料理'];
+function resetPanel(){let ser=0,md='solo';const draw=()=>{const sn=['🌾 第 1 系列　農業與畜牧','🍔 第 2 系列　飲食與料理',...(seriesUnlocked(2)||localStorage.getItem('zzdh_fish_v1')?['🐟 第 3 系列　漁業與海洋']:[])];
   openPanel('🔄 重置遊戲進度',`<div class="note">只會重置你選的系列和模式，其他系列、鑽石、卡片都會保留。</div>
    <div class="set">系列<div class="seg">${sn.map((n,i)=>`<button data-s="${i}" class="${ser===i?'on':''}">${n}</button>`).join('')}</div></div>
    <div class="set">模式<div class="seg"><button data-m="solo" class="${md==='solo'?'on':''}">單人</button><button data-m="duo" class="${md==='duo'?'on':''}">雙人合作</button><button data-m="multi" class="${md==='multi'?'on':''}">多人合作</button></div></div>
@@ -1104,12 +1104,13 @@ function resetPanel(){let ser=0,md='solo';const draw=()=>{const sn=['🌾 第 1 
    pb.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{ser=+b.dataset.s;SFX.click();draw()});pb.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{md=b.dataset.m;SFX.click();draw()});
    const g=$('#rstGo');if(g)g.onclick=()=>ask(`確定要重置 <b>${sn[ser]}</b> 的<b>單人</b>進度嗎？`,()=>setTimeout(()=>ask('⚠️ 再確認一次：<b>真的要刪除嗎？</b><br><small>刪除後沒辦法復原，其他系列不受影響</small>',()=>{
      if(ser===0){try{if(farmIf){try{farmIf.contentWindow.__noSave=true}catch(e){}farmIf.remove();farmIf=null}localStorage.removeItem('zzdh_farm_v1');localStorage.removeItem('zzdh_tut_farm_v2')}catch(e){}G.farmLv=0;mark();save();toast('✅ 第 1 系列「農業與畜牧」的單人進度已經重置',3500);closePanel()}
+     else if(ser===2){try{if(fishIf){try{fishIf.contentWindow.__noSave=true}catch(e){}fishIf.remove();fishIf=null}localStorage.removeItem('zzdh_fish_v1');localStorage.removeItem('zzdh_tut_fish_v1')}catch(e){}G.fishLv=0;mark();save();toast('✅ 第 3 系列「漁業與海洋」的單人進度已經重置',3500);closePanel()}
      else{delete G.maps.food2;G.prog=G.prog||{};delete G.prog.food;try{localStorage.removeItem('zzdh_tut_food_v1')}catch(e){}hooks.beforeSave.length=0;save();location.reload()}}),150));
-   const rr=$('#rstRoom');if(rr)rr.onclick=()=>{SFX.click();closePanel();if(ser===0)startFarm({coop:md==='duo'?2:4});else if(md==='duo')PANELS.duo();else PANELS.multi()}})};draw()}
+   const rr=$('#rstRoom');if(rr)rr.onclick=()=>{SFX.click();closePanel();if(ser===2){toast('🐟「漁業與海洋」的合作模式之後才會開放',3500);return}if(ser===0)startFarm({coop:md==='duo'?2:4});else if(md==='duo')PANELS.duo();else PANELS.multi()}})};draw()}
 
 /* ======================= 匯出／匯入存檔（全部系列、單人和合作、教學紀錄、設定都包含） ======================= */
 function saveKeys(){const ks=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith('zzdh_')&&!k.includes('_test'))ks.push(k)}return ks}
-function saveExport(){try{save();if(farmIf&&farmIf.contentWindow&&farmIf.contentWindow.__farmSave)farmIf.contentWindow.__farmSave()}catch(e){}
+function saveExport(){try{save();if(farmIf&&farmIf.contentWindow&&farmIf.contentWindow.__farmSave)farmIf.contentWindow.__farmSave();if(typeof fishIf!=='undefined'&&fishIf&&fishIf.contentWindow.__farmSave)fishIf.contentWindow.__farmSave()}catch(e){}
   const data={game:'製作大亨',ver:3,time:new Date().toISOString(),keys:{},slots:{}};saveKeys().forEach(k=>data.keys[k]=localStorage.getItem(k));
   idbAll().then(sl=>{data.slots=sl;saveExport2(data)}).catch(()=>saveExport2(data))}
 function saveExport2(data){
@@ -1119,7 +1120,7 @@ function saveExport2(data){
 function saveImport(){const inp=document.createElement('input');inp.type='file';inp.accept='.json,application/json';inp.onchange=()=>{const f=inp.files&&inp.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{let data;try{data=JSON.parse(r.result)}catch(e){toast('❌ 這個檔案不是製作大亨的存檔');return}
     if(!data||data.game!=='製作大亨'||!data.keys){toast('❌ 這個檔案不是製作大亨的存檔');return}const n=Object.keys(data.keys).length;
     ask(`確定要匯入存檔嗎？<br><small>存檔時間：${new Date(data.time).toLocaleString('zh-TW')}<br>共 ${n} 份資料，<b>會蓋掉現在的進度</b></small>`,()=>setTimeout(()=>ask('⚠️ 再確認一次：現在的進度會被這個存檔取代，<b>確定嗎？</b><br><small>建議先「📤 匯出」一份現在的存檔備用</small>',()=>{
-      try{if(farmIf){try{farmIf.contentWindow.__noSave=true}catch(e){}farmIf.remove();farmIf=null}saveKeys().forEach(k=>localStorage.removeItem(k));for(const k in data.keys)if(k.startsWith('zzdh_'))localStorage.setItem(k,data.keys[k])}catch(e){toast('❌ 匯入失敗：手機儲存空間不夠');return}
+      try{if(farmIf){try{farmIf.contentWindow.__noSave=true}catch(e){}farmIf.remove();farmIf=null}if(fishIf){try{fishIf.contentWindow.__noSave=true}catch(e){}fishIf.remove();fishIf=null}saveKeys().forEach(k=>localStorage.removeItem(k));for(const k in data.keys)if(k.startsWith('zzdh_'))localStorage.setItem(k,data.keys[k])}catch(e){toast('❌ 匯入失敗：手機儲存空間不夠');return}
       hooks.beforeSave.length=0;window.__noMainSave=true;toast('✅ 匯入完成，重新載入中…',2000);(async()=>{try{await idbClear();for(const k in (data.slots||{}))await idbSet(k,data.slots[k])}catch(e){}setTimeout(()=>location.reload(),600)})()}),150))};r.readAsText(f)};inp.click()}
 /* ======================= 遊戲世界（原料中心＋向外擴張） ======================= */
 let GW=null;
@@ -3844,7 +3845,8 @@ function farmLevel(){let best=G.farmLv||0;if(DEV_UNLOCK)best=Math.max(best,SERIE
 // 首頁的「開始經營」「雙人合作」「多人合作」：第 2 系列開放後，先選要玩哪個系列
 function pickSeries(kind){if(farmLevel()<SERIES_UNLOCK_LV){if(kind==='solo')startFarm();else startFarm({coop:kind==='duo'?2:4});return}
   openPanel(kind==='solo'?'▶ 選擇系列':kind==='duo'?'👥 雙人合作：選擇系列':'👨‍👩‍👧‍👦 多人合作：選擇系列',`<div class="note">每個系列的進度和錢都是分開的。</div><div style="display:flex;flex-direction:column;gap:12px;align-items:center;margin:10px 0">
-   <button class="big green" id="ps1" style="width:260px">🌾 第 1 系列　農業與畜牧</button><button class="big" id="ps2" style="width:260px;background:linear-gradient(#ffb35a,#ff8a1a)">🍔 第 2 系列　飲食與料理</button></div>`,()=>{
+   <button class="big green" id="ps1" style="width:260px">🌾 第 1 系列　農業與畜牧</button><button class="big" id="ps2" style="width:260px;background:linear-gradient(#ffb35a,#ff8a1a)">🍔 第 2 系列　飲食與料理</button>${seriesUnlocked(2)?`<button class="big" id="ps3" style="width:260px;background:linear-gradient(#4fc3f7,#0288d1)">🐟 第 3 系列　漁業與海洋${kind==='solo'?'':'<br><small>（合作模式之後開放）</small>'}</button>`:''}</div>`,()=>{
+   const p3=$('#ps3');if(p3)p3.onclick=()=>{SFX.click();if(kind!=='solo'){toast('🐟「漁業與海洋」目前只有單人模式，合作模式之後開放',3500);return}closePanel();startFish()};
    $('#ps1').onclick=()=>{SFX.click();closePanel();if(kind==='solo')startFarm();else startFarm({coop:kind==='duo'?2:4})};
    $('#ps2').onclick=()=>{SFX.click();closePanel();if(kind==='solo')startGame({coop:false});else if(kind==='duo')PANELS.duo();else PANELS.multi()}})}
 
@@ -3988,13 +3990,13 @@ const MODE_N={solo:'單人',duo:'雙人合作',multi:'多人合作'};const SER_N
 function slotIdx(){try{return JSON.parse(LS('zzdh_slotidx')||'{}')}catch(e){return {}}}
 function slotOf(u){const a=slotIdx();return a[u]||(a[u]={act:1,names:{}})}
 function slotPut(u,o){const a=slotIdx();a[u]=o;LSset('zzdh_slotidx',JSON.stringify(a))}
-function slotMeta(u,raw){if(!raw)return null;try{if(u.startsWith('farm')){const d=JSON.parse(raw);let l=1;for(let i=1;i<FARM_LV_EARN.length;i++)if((d.earn||0)>=FARM_LV_EARN[i])l=i+1;return {txt:`⭐ 等級 ${l}/40　💵${Math.floor(d.money||0).toLocaleString()}`,t:d.last||0}}
+function slotMeta(u,raw){if(!raw)return null;try{if(/^(farm|fish)/.test(u)){const d=JSON.parse(raw);let l=1;for(let i=1;i<FARM_LV_EARN.length;i++)if((d.earn||0)>=FARM_LV_EARN[i])l=i+1;return {txt:`⭐ 等級 ${l}/40　💵${Math.floor(d.money||0).toLocaleString()}`,t:d.last||0}}
   const d=JSON.parse(raw).m;let a=0,o=0;(d.shops||[]).forEach((z,i)=>{if(!z||!SHOPS[i])return;if(z.b||z.p>0)o++;if(z.p>=SHOPS[i].links.length)a++});return {txt:`🤖 全自動 ${a} 家　💵${Math.floor(d.money||0).toLocaleString()}`,t:d.last||d.saved||0}}catch(e){return {txt:'（讀不到資料）',t:0}}}
 // 先把農場存好並關掉（換存檔前）
 function farmFlush(){if(typeof farmIf!=='undefined'&&farmIf){try{farmIf.contentWindow.__farmSave&&farmIf.contentWindow.__farmSave();farmIf.contentWindow.__noSave=true}catch(e){}farmIf.remove();farmIf=null}}
-async function slotSwitch(u,n){const o=slotOf(u);if(o.act===n)return;if(u.startsWith('farm'))farmFlush();const cur=UNITS[u].get();const t=slotMeta(u,cur);o.t=o.t||{};o.t[o.act]=Date.now();
+async function slotSwitch(u,n){const o=slotOf(u);if(o.act===n)return;if(u.startsWith('farm'))farmFlush();if(u.startsWith('fish')&&typeof fishFlush==='function')fishFlush();const cur=UNITS[u].get();const t=slotMeta(u,cur);o.t=o.t||{};o.t[o.act]=Date.now();
   if(cur)await idbSet(u+'_'+o.act,cur);else await idbDel(u+'_'+o.act);const nx=await idbGet(u+'_'+n);UNITS[u].set(nx||null);await idbDel(u+'_'+n);o.act=n;slotPut(u,o)}
-async function slotDelete(u,n){const o=slotOf(u);if(o.act===n){if(u.startsWith('farm'))farmFlush();UNITS[u].set(null)}else await idbDel(u+'_'+n);if(o.names)delete o.names[n];if(o.t)delete o.t[n];slotPut(u,o)}
+async function slotDelete(u,n){const o=slotOf(u);if(o.act===n){if(u.startsWith('farm'))farmFlush();if(u.startsWith('fish')&&typeof fishFlush==='function')fishFlush();UNITS[u].set(null)}else await idbDel(u+'_'+n);if(o.names)delete o.names[n];if(o.t)delete o.t[n];slotPut(u,o)}
 // 選擇存檔畫面
 async function slotPanel(ser,md,go){const u=ser+'_'+md;const o=slotOf(u);const rows=[];
   for(let n=1;n<=SLOT_N;n++){const raw=n===o.act?UNITS[u].get():await idbGet(u+'_'+n);const m=slotMeta(u,raw);const nm=esc((o.names||{})[n]||`存檔 ${n}`);const tt=(m&&m.t)||(o.t||{})[n];const t=m&&tt?new Date(tt).toLocaleString('zh-TW',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'';
@@ -4008,5 +4010,32 @@ async function slotPanel(ser,md,go){const u=ser+'_'+md;const o=slotOf(u);const r
 {const sf=startFarm;startFarm=function(opt){opt=opt||{};if(mode!=='home'||opt.noSlot)return sf(opt);const md=opt.coop?(opt.coop>2?'multi':'duo'):'solo';slotPanel('farm',md,()=>sf(Object.assign({},opt,{noSlot:1})))}}
 {const sg=startGame;startGame=function(opt){opt=opt||{};if(mode!=='home'||opt.coop||opt.net||opt.noSlot)return sg(opt);slotPanel('food','solo',()=>sg(Object.assign({},opt,{noSlot:1})))}}
 for(const k of ['duo','multi']){const p0=PANELS[k];PANELS[k]=function(skip){if(skip===true||mode!=='home'||Date.now()-(SLOT_PICK['food_'+k]||0)<300000)return p0.call(this);slotPanel('food',k,()=>PANELS[k](true))}}
+/* ======================= 系列 3：漁業與海洋（內嵌 fish.html） ======================= */
+(()=>{const st=document.createElement('style');st.textContent=`#fishHost{position:fixed;inset:0;z-index:8;display:none;background:#bfe6ff}#fishHost iframe{width:100%;height:100%;border:0;display:block}`;document.head.appendChild(st);
+  const h=document.createElement('div');h.id='fishHost';document.body.appendChild(h)})();
+let fishIf=null;
+SERIES[2].count=0;
+function fishLevel(){let best=G.fishLv||0;try{const d=JSON.parse(localStorage.getItem('zzdh_fish_v1')||'null');if(d){let l=1;for(let i=1;i<FARM_LV_EARN.length;i++)if((d.earn||0)>=FARM_LV_EARN[i])l=i+1;best=Math.max(best,l)}}catch(e){}return best}
+function startFish(opt={}){initAudio();mode='farm';document.body.classList.add('ing');$('#home').classList.add('hide');$('#tapHint').style.display='none';$('#fishHost').style.display='block';
+  FARM={money:0,fish:1,post:m=>{try{fishIf&&fishIf.contentWindow.postMessage(m,'*')}catch(e){}}};
+  if(!fishIf){fishIf=document.createElement('iframe');fishIf.allow='autoplay; fullscreen; accelerometer; gyroscope';fishIf.src='fish.html?embed=1&name='+encodeURIComponent(G.name||'');fishIf.onload=()=>farmSnd();$('#fishHost').appendChild(fishIf)}
+  else{FARM.post({t:'resume',name:G.name||''});farmSnd()}
+  farmMiniT=rand(120,200);clearInterval(farmMiniIv);
+  farmMiniIv=setInterval(()=>{if(!FARM||!FARM.fish||MG||VSX||$('#modal').classList.contains('on')||FARM.paused||FARM.tut)return;farmMiniT-=1;if(farmMiniT<=0){farmMiniT=rand(200,320);miniNotice(miniNext())}},1000)}
+function exitFish(){if(FARM)FARM.post({t:'pause'});clearInterval(farmMiniIv);if(MG&&MG.stage==='notice'){MG=null;$('#mini').style.display='none'}
+  $('#fishHost').style.display='none';FARM=null;mode='home';document.body.classList.remove('ing');$('#home').classList.remove('hide');closePanel();try{refreshTop()}catch(e){}}
+addEventListener('message',e=>{const m=e.data;if(!m||!fishIf||e.source!==fishIf.contentWindow)return;
+  if(m.t==='sync'&&FARM){FARM.money=m.money;FARM.paused=m.paused;if(m.lv&&m.lv>(G.fishLv||0)){G.fishLv=m.lv;mark()}}
+  else if(m.t==='tut'&&FARM){FARM.tut=!!m.on;if(m.on&&MG&&MG.stage==='notice'){MG=null;$('#mini').style.display='none'}}
+  else if(m.t==='exit')exitFish();
+  else if(m.t==='fun'&&FARM){FARM.money=m.money;SFX.click();funPanel()}
+  else if(m.t==='snd'){G.set.sfx=!!m.on;if(A.out)A.out.gain.value=m.on?.8:0;bgmToggle(!!m.on);sndIcon();mark&&mark()}
+  else if(m.t==='fs'){if(window.zzFS)window.zzFS()}
+  else if(m.t==='earn'){G.stats=G.stats||{};G.stats.assets=(G.stats.assets||0)+(m.v||0);mark&&mark()}});
+// 存檔一到五
+function fishFlush(){if(fishIf){try{fishIf.contentWindow.__farmSave&&fishIf.contentWindow.__farmSave();fishIf.contentWindow.__noSave=true}catch(e){}fishIf.remove();fishIf=null}}
+UNITS.fish_solo={get:()=>LS('zzdh_fish_v1'),set:v=>LSset('zzdh_fish_v1',v)};SER_N.fish='🐟 漁業與海洋';
+{const sf=startFish;startFish=function(opt){opt=opt||{};if(mode!=='home'||opt.noSlot)return sf(opt);slotPanel('fish','solo',()=>sf(Object.assign({},opt,{noSlot:1})))}}
+window.__FI={startFish,seriesUnlocked,fishLevel,get fishIf(){return fishIf}};
 </script>
 </body></html>
