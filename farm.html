@@ -369,7 +369,7 @@ const LOTS=[
  {id:'P6',kind:'pen',x:-20,z:-36,lv:8},{id:'P7',kind:'pen',x:-7,z:-36,lv:10},{id:'P8',kind:'pen',x:6,z:-36,lv:14}];
 // 預留給以後擴充的空地（不種樹、不放東西，畫面才不會亂）
 const RESERVE=[[-28,17,28.5,46],[-26,25,-41,-30],[13,26,-30,-18]];
-const LOT_PRICE={field:{rent:30,buy:600},pen:{rent:40,buy:800}};const lotPrice=L=>{const m=1+Math.max(0,(L.lv||1)-1)*.12;const b=LOT_PRICE[L.kind];return {rent:Math.round(b.rent*m),buy:Math.round(b.buy*m/10)*10}};const CREW=220;
+const LOT_PRICE={field:{rent:120,buy:6000},pen:{rent:160,buy:8000}};const lotPrice=L=>{const m=1+Math.max(0,(L.lv||1)-1)*.12;const b=LOT_PRICE[L.kind];return {rent:Math.round(b.rent*m),buy:Math.round(b.buy*m/10)*10}};const CREW=220;
 
 /* ======================= 農場隨機事件 ======================= */
 const EVENTS=[
@@ -1267,9 +1267,9 @@ addRing({kind:'faucet',x:-4.6,z:3.5,t:'🚿 水龍頭'});
 addRing({kind:'src',item:'feed',x:7,z:3.6,t:'飼料桶'});
 addRing({kind:'src',item:'hay',x:10.5,z:3.4,t:'乾草堆'});
 // 回收桶：手上多拿的飼料、乾草放回倉庫；水桶倒掉
-{const g=new THREE.Group();g.position.set(8.75,0,2.1);scene.add(g);const bd=mesh(new THREE.CylinderGeometry(.42,.34,.85,14),M(0x3fae5a));bd.position.y=.43;g.add(bd);const lid=mesh(new THREE.CylinderGeometry(.46,.46,.08,14),M(0x2f8a45));lid.position.y=.88;g.add(lid);
-  const sp=sprite('♻️',.55);sp.position.set(0,1.35,0);g.add(sp);RECYC=RECYC||{};RECYC.g=g;BLOCKS.push([8.75,2.1,.9,.9])}
-addRing({kind:'recycle',x:8.75,z:4.7,t:'回收桶'});
+{const g=new THREE.Group();g.position.set(14.5,0,1.6);scene.add(g);const bd=mesh(new THREE.CylinderGeometry(.42,.34,.85,14),M(0x3fae5a));bd.position.y=.43;g.add(bd);const lid=mesh(new THREE.CylinderGeometry(.46,.46,.08,14),M(0x2f8a45));lid.position.y=.88;g.add(lid);
+  const sp=sprite('♻️',.55);sp.position.set(0,1.35,0);g.add(sp);RECYC=RECYC||{};RECYC.g=g;BLOCKS.push([14.5,1.6,.9,.9])}
+addRing({kind:'recycle',x:14.5,z:3.8,t:'回收桶'});
 const homeRing=RINGS.find(r=>r.kind==='home');
 // 土地的圈圈
 const LOTR={};
@@ -1287,7 +1287,7 @@ function ringAction(r,dt){r.cd-=dt;if(r.cd>0)return;
   case 'well':{if(r.stay<.2)return;if(handFull()){if(!r.used){r.used=1;if(!S.hand.includes('water'))hint('hfull','✋ 手上拿滿了，先放下其他東西')}return}addHand('water',V(-7,1,1.5));r.used=1;r.cd=.15;return}
   case 'faucet':{if(r.opened||r.stay<.3)return;r.opened=1;if(!S.own.hose){hint('nohose','🚿 要先在「🔧 五金農具行」買水管');return}P.hose=!P.hose;SFX.click();toast(P.hose?'🚿 拉出水管了！走過的田地會自動澆水（最遠 26 公尺）':'🚿 把水管收回去了');return}
   case 'recycle':{if(r.stay<.2)return;const h=takeHand(t=>t==='feed'||t==='hay'||t==='water');if(!h){if(!r.used){r.used=1;hint('recy0','♻️ 手上沒有可以回收的東西（飼料、乾草、水桶）')}return}
-    if(h.t==='water'){flyAway('water',h.wp,V(8.75,1,2.1));for(let i=0;i<5;i++)particle(V(8.75+rand(-.3,.3),1,2.1+rand(-.3,.3)),V(0,-1,0),0x5cb8ff,.05,.4,-6)}else{S.stock[h.t]=Math.min(STOCK_MAX,(S.stock[h.t]||0)+1);flyAway(h.t,h.wp,h.t==='feed'?V(7,1,1.5):V(10.5,1,1.3))}
+    if(h.t==='water'){flyAway('water',h.wp,V(14.5,1,1.6));for(let i=0;i<5;i++)particle(V(14.5+rand(-.3,.3),1,1.6+rand(-.3,.3)),V(0,-1,0),0x5cb8ff,.05,.4,-6)}else{S.stock[h.t]=Math.min(STOCK_MAX,(S.stock[h.t]||0)+1);flyAway(h.t,h.wp,h.t==='feed'?V(7,1,1.5):V(10.5,1,1.3))}
     SFX.place();r.cd=.12;if(!S.hand.length)toast('♻️ 手上的東西都回收好了（飼料、乾草放回倉庫）',1800);RECYC.bump=.3;tutDo('recycle');return}
   case 'src':{if(r.stay<.2)return;const k=r.item;if(S.stock[k]<=0){if(!r.used){r.used=1;hint('nostock'+k,`${ITEMS[k].em} ${ITEMS[k].n}用完了！去「🥫 飼料行」買`)}return}if(handFull()){if(!r.used){r.used=1;hint('hfull','✋ 手上拿滿了')}return}S.stock[k]--;addHand(k,V(r.x,1.1,r.z-2));r.used=1;r.cd=.15;return}
   case 'trough':{const T=PEN_T[r.pen];if(S.trough[r.pen]>=10){if(!r.used){r.used=1;toast(`🥣 ${T.n}的飼料槽已經滿了`,1500)}return}
@@ -1879,7 +1879,7 @@ let HOLD=false;
 if(EMBED){['#bSpeed','#bReset'].forEach(q=>$(q).remove());S.speed=1;$('#credit').textContent='遊戲製作：Eric Hu';
   const fb=document.createElement('button');fb.className='hb y more';fb.id='bFun';fb.textContent='🎡 遊樂場';$('#btns').insertBefore(fb,$('#bFS'));
   fb.onclick=()=>{SFX.click();$('#btns').classList.remove('open');parent.postMessage({t:'fun',money:Math.floor(S.money)},'*')};
-  $('#bExit').onclick=()=>{SFX.click();$('#btns').classList.remove('open');closePanel();holdFarm();parent.postMessage({t:'exit'},'*')};
+  $('#bExit').onclick=()=>{SFX.click();$('#btns').classList.remove('open');closePanel();confirmAsk('確定要<b>離開農場</b>，回到「製作大亨」主畫面嗎？<br><small>進度會自動存檔</small>',()=>{save();holdFarm();parent.postMessage({t:'exit'},'*')})};
   $('#bFS').onclick=()=>{SFX.click();parent.postMessage({t:'fs'},'*')};
   setInterval(()=>{try{parent.postMessage({t:'sync',money:Math.floor(S.money),paused:!!(S.paused||HOLD),lv:NETG?0:farmLv()},'*')}catch(e){}},1000);
   addEventListener('message',e=>{const m=e.data;if(!m||e.source!==parent)return;
@@ -1905,7 +1905,7 @@ if(!EMBED)addEventListener('pointerdown',()=>{if(S.fs&&fsOK()&&!isFS())goFS(true
 if(!EMBED)$('#bFS').onclick=()=>{SFX.click();toggleFS()};
 if(!EMBED)$('#bExit').onclick=()=>{SFX.click();$('#btns').classList.remove('open');closePanel();save();goFS(false);setPause(true,1);toast('💾 已經自動存檔了',2500)};
 // 依照畫面大小重新排列按鈕和視窗，避免互相擋住
-function layoutHUD(){const mob=W<=700;const r=q=>$(q).getBoundingClientRect();const b=$('#btns'),g=$('#goal'),t=$('#todo'),bn=$('#banner');const bt=r('#bottom').top;
+function layoutHUD(){const mob=W<=700;const r=q=>$(q).getBoundingClientRect();const b=$('#btns'),g=$('#goal'),t=$('#todo'),bn=$('#banner');const sf=$('#bSell');const bt=Math.min(r('#bottom').top,sf&&sf.classList.contains('sellFab')&&sf.offsetParent?r('#bSell').top:1e9);
   if(mob){const top=Math.max(r('#clock').bottom,r('#money').bottom)+6;b.style.top=top+'px';const gt=r('#btns').bottom+6;g.style.top=gt+'px';const tt=r('#goal').bottom+6;t.style.top=tt+'px';t.style.maxHeight=Math.max(90,bt-tt-10)+'px';bn.style.top=(tt+4)+'px';$('#toast').style.top=(tt+4)+'px';const nc=$('#netChip');if(nc){nc.style.top=tt+'px';t.style.top=(tt+nc.offsetHeight+6)+'px'}}
   else{b.style.top=(r('#money').bottom+6)+'px';const tt=r('#btns').bottom+8;t.style.top=tt+'px';t.style.maxHeight=Math.max(120,bt-tt-12)+'px';g.style.top='8px';bn.style.top=(r('#goal').bottom+6)+'px';const nc=$('#netChip');if(nc)nc.style.top=(r('#clock').bottom+6)+'px'}}
 RUN=true;started=true;if(HOSTCAP)setTimeout(()=>{if(!NET.role)hostCreate(HOSTCAP)},700);firstStart();fsLabel();setTimeout(()=>{dailyGift();if(!S.profileSet&&!NETG)setTimeout(()=>{if(!$('#modal').classList.contains('on'))profilePanel(1);else S.profileAsk=1},5000)},1500);
@@ -2265,7 +2265,7 @@ function openRecord(tab){if(tab)REC_TAB=tab;const r=recRows();const g=(h,L)=>`<d
   ()=>$('#recP').querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{SFX.click();openRecord(b.dataset.t)}))}
 
 /* ======================= 每一格畫面都會跑 ======================= */
-function f7Tick(rdt){legTick();recBoardInit();if(typeof tutTick==='function')tutTick(rdt);if(typeof wildTick==='function')wildTick(rdt)}
+function f7Tick(rdt){const sb=document.getElementById('bSell');if(sb&&sb.classList.contains('sellFab'))sb.style.display=S.inHome?'none':'block';legTick();recBoardInit();if(typeof tutTick==='function')tutTick(rdt);if(typeof wildTick==='function')wildTick(rdt)}
 
 /* ======================= 野生動物、圍欄、護衛犬、獵人、巡邏隊、路燈 ======================= */
 // 森林裡的動物會跑進農場：山豬拱田、猴子偷水果、狐狸抓家禽、黑熊偷蜂蜜。靠近牠就會跑掉。
@@ -2432,7 +2432,7 @@ function tutSteps(){const T=TUT2;const ck=CROPS[T.crop],an=ANIM[T.anim],pk=an.pe
   {w:()=>fd==='hay'?V(10.5,0,3.4):V(7,0,3.6),go:()=>fd==='hay'?V(10.5,0,3.4):V(7,0,3.6),enter:()=>{if((S.stock[fd]||0)<10){S.stock[fd]=(S.stock[fd]||0)+10;toast(`🎁 教學送你 ${ITEMS[fd].em}${ITEMS[fd].n} ×10`,2200)}},
     t:`動物要吃東西才會長大、生產。<br>去 <b>${ITEMS[fd].em} ${fd==='hay'?'乾草堆':'飼料桶'}</b> 拿（站越久拿越多，用完了去「🥫 飼料行」買）。`,done:()=>S.hand.filter(t=>t===fd).length>=4||(S.hand.includes(fd)&&handFull())},
   {w:()=>{const r=pen().ring.trough;return V(r.x,0,r.z)},go:()=>{const r=pen().ring.trough;return V(r.x,0,r.z)},t:'走到 <b>🥣 飼料槽</b>，站著就會倒進去（最多 10 份），旁邊會顯示還能吃多久。',done:()=>tc('feed')>T.base.feed},
-  {w:()=>V(8.75,0,4.7),go:()=>V(8.75,0,4.7),t:'飼料槽滿了，手上還有多的？<br>拿到 <b>♻️ 回收桶</b>，會放回飼料桶、乾草堆，不會浪費。',done:()=>!S.hand.some(t=>t==='feed'||t==='hay'||t==='water'),skip:()=>!S.hand.some(t=>t==='feed'||t==='hay'||t==='water')},
+  {w:()=>V(14.5,0,3.8),go:()=>V(14.5,0,3.8),t:'飼料槽滿了，手上還有多的？<br>拿到 <b>♻️ 回收桶</b>，會放回飼料桶、乾草堆，不會浪費。',done:()=>!S.hand.some(t=>t==='feed'||t==='hay'||t==='water'),skip:()=>!S.hand.some(t=>t==='feed'||t==='hay'||t==='water')},
   {w:()=>{const r=pen().ring.take;return r?V(r.x,0,r.z):fieldPos(F())},go:()=>{const r=pen().ring.take;return r?V(r.x,0,r.z):fieldPos(F())},
     enter:()=>{const a=S.animals.find(a=>a.k===T.anim);if(a){a.age=1;a.food=Math.max(a.food||0,1)}if(an.prod){S.piles[pk].push([S.t,an.prod],[S.t,an.prod]);toast(`✨ 教學加速：${an.n}長大，生了 ${ITEMS[an.prod].em}${ITEMS[an.prod].n}！`,2600)}},
     t:()=>`${an.prod?ITEMS[an.prod].em+ITEMS[an.prod].n:'產品'}出來了！走到 <b>收產品</b> 的圈圈，收進菜籃子。<br><small>雞蛋、鮮奶放太久會壞，買「自動收集機」就不會。</small>`,done:()=>tc('collect')>T.base.collect,skip:()=>!an.prod||!pen().ring.take},
@@ -2440,9 +2440,9 @@ function tutSteps(){const T=TUT2;const ck=CROPS[T.crop],an=ANIM[T.anim],pk=an.pe
   {el:'#todo',t:'右邊的 <b>📋 待處理</b> 會列出要做的事（缺水、肚子餓、可以採收…）。<br>點一項，人物就會自己走過去；按「收起」可以縮小。',next:1},
   {el:'#bLedger',t:'<b>📒 帳本</b>：收入、支出、每天的帳單、等級進度都在這裡。點開看看。',click:1,done:()=>modalOn()},
   {el:'#panel',t:'看完按右上角 <b>✖</b> 關掉。',done:()=>!modalOn()},
-  {el:'#bMenu',t:'<b>☰ 更多</b> 裡面還有很多功能，點開。',click:1,done:()=>$('#btns').classList.contains('open')},
-  {el:'#btns',t:'這裡有：📖 說明、🔊 聲音、⚙️ 經營模式（輕鬆／標準／衝刺／極速）、🔍 畫面遠近、🤝 找朋友一起玩、🎮 獎金小遊戲、📘 重看教學、全畫面、回主畫面。',next:1},
-  {el:'#bMenu',t:'再按一次 <b>☰ 更多</b> 收起來。',click:1,done:()=>!$('#btns').classList.contains('open')},
+  {el:'#bMenu',t:'<b>☰ 更多</b> 裡面還有很多功能，點開。',click:1,done:()=>$('#btns').classList.contains('open'),skip:()=>!$('#bMenu').offsetParent},
+  {el:'#btns',t:()=>($('#bMenu').offsetParent?'':'上面這排按鈕是農場的功能，')+'這裡有：📖 說明、🔊 聲音、⚙️ 經營模式（輕鬆／標準／衝刺／極速）、🔍 畫面遠近、🤝 找朋友一起玩、🎮 獎金小遊戲、📘 重看教學、全畫面、回主畫面。',next:1},
+  {el:'#bMenu',t:'再按一次 <b>☰ 更多</b> 收起來。',click:1,done:()=>!$('#btns').classList.contains('open'),skip:()=>!$('#bMenu').offsetParent},
   {el:'#bHome',t:'<b>🏠 回家</b>：打雷、颱風、龍捲風時回家躲最安全。<br>點一下，人物會自己走回家。',click:1,done:()=>S.inHome},
   {el:'#homeUI .box',t:'在家裡可以：👗 <b>衣櫥</b> 換衣服（有加成）、🛋️ <b>裝潢</b>、🧊 <b>冰箱</b> 存放農產品。<br>作物、動物、員工在你回家時都會繼續運作。',next:1},
   {el:'#bRec',t:'點「<b>📋 紀錄看板</b>」（牆上的看板也可以點）。',click:1,done:()=>modalOn()},
@@ -2536,6 +2536,12 @@ window.__TG=i=>tutGo(i);
 
 // 農場測試版（不是從主遊戲進來）：只留一般玩家會用到的按鈕；網址加 ?dev 才顯示測試工具
 if(!EMBED&&!QS.has('dev')){['#bReset','#bTest','#bSpeed','#bCoop','#bExit'].forEach(q=>{const e=$(q);if(e)e.remove()});S.speed=1}
+
+// 一鍵賣貨：常常要按，放到右下角、做大一點
+{const b=$('#bSell');if(b){document.body.appendChild(b);b.classList.add('sellFab')}const st=document.createElement('style');st.textContent=`
+#bSell.sellFab{position:fixed;right:max(12px,env(safe-area-inset-right));bottom:calc(env(safe-area-inset-bottom) + 118px);z-index:7;font-size:20px;padding:14px 18px;border-radius:22px;box-shadow:0 5px 0 #b8501a,0 6px 14px rgba(0,0,0,.25)}
+#bSell.sellFab:active{transform:translateY(3px);box-shadow:0 2px 0 #b8501a}
+@media (min-width:701px){#bSell.sellFab{font-size:22px;padding:16px 24px;bottom:96px}}`;document.head.appendChild(st)}
 </script>
 </body>
 </html>
