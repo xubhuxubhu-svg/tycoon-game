@@ -25,6 +25,7 @@ button{font-family:inherit;cursor:pointer}
 .hb{border:none;border-radius:14px;padding:6px 11px;font-size:14px;color:#fff;background:linear-gradient(#7fc85a,#4f9a2f);box-shadow:0 3px 0 #356b1c;white-space:nowrap}
 .hb.y{background:linear-gradient(#ffcf5a,#e09a14);box-shadow:0 3px 0 #a86a00}
 .hb.b{background:linear-gradient(#5aa8f5,#2f7bd6);box-shadow:0 3px 0 #1f5ea8}
+.hb.rec{background:linear-gradient(#5fd0c0,#2a9a8a);box-shadow:0 3px 0 #1f6e62}
 .hb.g{background:linear-gradient(#bbb,#888);box-shadow:0 3px 0 #555}
 .hb.o{background:linear-gradient(#ffa25a,#e0602a);box-shadow:0 3px 0 #a84010}
 #todo{position:absolute;right:8px;top:136px;width:236px;max-height:calc(100vh - 290px);overflow:auto;padding:6px 8px;font-size:13px}
@@ -51,7 +52,7 @@ button{font-family:inherit;cursor:pointer}
 .lb{position:absolute;left:0;top:0;white-space:nowrap;will-change:transform;pointer-events:none;font-size:12px}
 .lb.act{pointer-events:auto}
 .pl{background:rgba(255,255,255,.93);border-radius:9px;padding:1px 6px;border:2px solid #9ccf6a;color:#2d4a18;text-align:center;line-height:1.3}
-.pl.ripe{border-color:#ffb300;background:#fff6d6}.pl.warn{border-color:#ff7043;background:#ffe6dc;color:#a03010}.pl.dead{border-color:#7a6a5a;background:#e8e0d8;color:#5a4a3a}.pl.dry{border-color:#4fa3e0;background:#e6f4ff;color:#1f5e98}
+.pl.ripe{border-color:#ffb300;background:#fff6d6}.pl.warn{border-color:#ff7043;background:#ffe6dc;color:#a03010}.pl.dead{border-color:#7a6a5a;background:#e8e0d8;color:#5a4a3a}.pl.dry{border-color:#4fa3e0;background:#e6f4ff;color:#1f5e98}.pl.dry{border-color:#e0402a;background:#fff0ec;color:#c0301a;font-size:17px;animation:wbob .8s ease-in-out infinite}.pl.low{border-color:#4fa3e0;background:#e6f4ff;color:#1f5e98;font-size:16px;animation:wbob 1.2s ease-in-out infinite}@keyframes wbob{50%{transform:translateY(-4px)}}
 .sign{background:#7a4a1a;color:#fff;border-radius:12px;padding:4px 10px;font-size:14px;border:2px solid #f0d090;box-shadow:0 3px 0 #4a2a08;text-align:center;line-height:1.35}
 .sign small{font-size:11px;color:#ffe7a8}
 .sign .bt{display:flex;gap:5px;justify-content:center;margin-top:3px}
@@ -193,7 +194,7 @@ const WEATHER={
 const W_TABLE=[{sun:35,cloud:30,rain:30,storm:5},{sun:30,hot:25,rain:15,storm:15,typhoon:15},{sun:40,cloud:30,rain:15,typhoon:15},{sun:25,cloud:30,rain:15,cold:20,snow:10}];
 
 /* ======================= 農場等級（規模變大就解鎖新作物、新動物） ======================= */
-const LV_EARN=[0,1200,3500,8000,16000,30000,50000,80000,120000,180000];const LV_MAX=LV_EARN.length;
+const LV_EARN=(()=>{const a=[0,1200,3500,8000,16000,30000,50000,80000,120000,180000];while(a.length<40){const n=a.length;a.push(Math.round(a[n-1]*(n<25?1.18:1.12)/1000)*1000)}return a})();const LV_MAX=LV_EARN.length;
 const farmLv=()=>{let l=1;for(let i=1;i<LV_EARN.length;i++)if((S.earn||0)>=LV_EARN[i])l=i+1;return l};
 
 /* ======================= 作物（45 種） ======================= */
@@ -258,9 +259,18 @@ const RIPE_KEEP=.5,WITHER_KEEP=.4;
 /* ======================= 物品 ======================= */
 const ITEMS={water:{n:'水桶',em:'💧',c:'#5cb8ff',p:0,hand:1},feed:{n:'飼料',em:'🌰',c:'#c98a4a',p:0,hand:1},hay:{n:'乾草',em:'🌾',c:'#e8c868',p:0,hand:1},
  milk:{n:'鮮奶',em:'🥛',c:'#f4f8ff',p:30},egg:{n:'雞蛋',em:'🥚',c:'#ffe7c2',p:9},duckegg:{n:'鴨蛋',em:'🥚',c:'#d8f0ff',p:14},gooseegg:{n:'鵝蛋',em:'🥚',c:'#fff8e8',p:22},
- goatmilk:{n:'羊奶',em:'🍼',c:'#fffaf0',p:26},wool:{n:'羊毛',em:'🧶',c:'#f8f4ec',p:40},alpacawool:{n:'羊駝毛',em:'🧶',c:'#e8c8a0',p:90},quailegg:{n:'鵪鶉蛋',em:'🥚',c:'#e8dcc8',p:5},honey:{n:'蜂蜜',em:'🍯',c:'#ffc030',p:60},ostrichegg:{n:'鴕鳥蛋',em:'🥚',c:'#fff0d8',p:120}};
+ goatmilk:{n:'羊奶',em:'🍼',c:'#fffaf0',p:26},wool:{n:'羊毛',em:'🧶',c:'#f8f4ec',p:40},alpacawool:{n:'羊駝毛',em:'🧶',c:'#e8c8a0',p:90},quailegg:{n:'鵪鶉蛋',em:'🥚',c:'#e8dcc8',p:5},honey:{n:'蜂蜜',em:'🍯',c:'#ffc030',p:60},ostrichegg:{n:'鴕鳥蛋',em:'🥚',c:'#fff0d8',p:120},
+ silkieegg:{n:'烏骨雞蛋',em:'🥚',c:'#f0e0d0',p:24},pigeonegg:{n:'鴿蛋',em:'🥚',c:'#ffffff',p:16},antler:{n:'鹿茸',em:'🦌',c:'#c89a6a',p:240,ns:1},angora:{n:'兔毛',em:'🧶',c:'#fffaf4',p:75,ns:1},
+ donkeymilk:{n:'驢奶',em:'🥛',c:'#f8f8f0',p:85},feather:{n:'孔雀羽毛',em:'🪶',c:'#3a8ad8',p:140,ns:1},yakmilk:{n:'犛牛奶',em:'🥛',c:'#fff8e8',p:70},emuegg:{n:'鴯鶓蛋',em:'🥚',c:'#2f5a4a',p:150},
+ camelmilk:{n:'駱駝奶',em:'🥛',c:'#fff4e0',p:120},goldegg:{n:'金蛋',em:'🥚',c:'#ffd040',p:220},royaljelly:{n:'蜂王乳',em:'🍯',c:'#fff0b0',p:380,ns:1}};
+for(const k of ['wool','alpacawool','honey'])ITEMS[k].ns=1;
+const NOSPOIL=k=>!!(ITEMS[k]&&ITEMS[k].ns);
+// 中後期的高級作物（等級越高越值錢）
+[['cherrytomato','tomato','小番茄','🍅',11,2.2,{0xe53935:0xffa21a},1],['goldmelon','melon','黃金哈密瓜','🍈',15,2,{0xffffff:0xffc83a},1.15],['whitestrawberry','strawberry','白草莓','🍓',19,2.6,{0xff3b5c:0xfff4ec},1.2],['purplecorn','corn','紫玉米','🌽',21,3,{0xf5d040:0x6a2a9a},1],
+ ['bigwatermelon','watermelon','巨無霸西瓜','🍉',23,2.6,{},1.45],['giantpumpkin','pumpkin','巨型南瓜','🎃',25,3,{},1.55],['ginseng','carrot','人參','🥕',27,6,{0xff8a2a:0xf2dcae,0x4fb83a:0x2f7a2a},1.1],['wasabi','radish','山葵','🌿',29,6,{0xf4f4ea:0x8ad06a,0x6ac84a:0x2f8a3a},1.1],
+ ['saffron','sunflower','番紅花','🌼',31,6,{0xffd23a:0xa45ad8,0x6a4a1a:0xff7a1a},.8],['blackgarlic','garlic','黑蒜','🧄',33,6.5,{0xf4ece0:0x2a2228},1.1],['purplecabbage','cabbage','紫高麗菜','🥬',34,6.5,{0xc8ec9a:0x8a3aa8,0x8fd86a:0x6a2a8a,0x58b947:0x5a2a7a},1],['goldtea','tea','金萱茶','🍵',36,4.5,{0x3f8a35:0x9ab83a,0x8ae06a:0xffd84a},1],['pearlrice','rice','珍珠米','🌾',37,7,{0xe8c24a:0xfffaf0},1],['rainbowberry','strawberry','彩虹莓','🍓',39,7,{0xff3b5c:'rb'},1.25]].forEach(([id,b,n,em,lv,m,tint,big])=>{const c=CROPS[b];if(!c)return;CROPS[id]=Object.assign({},c,{n,em,lv,tint,big,price:Math.round(c.price*m),seed:Math.round(c.seed*m*.7),grow:Math.round(c.grow*1.1)})});
 for(const k in CROPS){const c=CROPS[k];ITEMS[k]={n:c.n,em:c.em,c:c.c,p:c.price,crop:1};ITEMS[k+'_w']={n:'枯萎的'+c.n,em:c.em,c:'#b8925a',p:Math.round(c.price*.4),w:1,crop:1}}
-const SPOIL={milk:600,egg:900,duckegg:900,gooseegg:900,goatmilk:600,quailegg:900,ostrichegg:1200,wool:1e9,alpacawool:1e9,honey:1e9};
+const SPOIL={milk:600,egg:900,duckegg:900,gooseegg:900,goatmilk:600,quailegg:900,ostrichegg:1200,wool:1e9,alpacawool:1e9,honey:1e9,silkieegg:900,pigeonegg:900,antler:1e9,angora:1e9,donkeymilk:600,feather:1e9,yakmilk:600,emuegg:1200,camelmilk:600,goldegg:1200,royaljelly:1e9};
 
 /* ======================= 動物（15 種） ======================= */
 // carry：cage 籠子／leash 牽著走　pen：住在哪種養殖場　lv：解鎖等級
@@ -279,7 +289,27 @@ const ANIM={
  buffalo:{n:'水牛',baby:'小水牛',em:'🐃',bem:'🐃',buy:350,max:3,grow:780,eat:130,carry:'leash',pen:'ranch',sell:820,lv:4},
  bee:{n:'蜜蜂',baby:'蜂群',em:'🐝',bem:'🐝',buy:300,max:4,grow:1,eat:0,prod:'honey',prodT:300,carry:'cage',pen:'apiary',sell:0,lv:4},
  ostrich:{n:'鴕鳥',baby:'小鴕鳥',em:'🦤',bem:'🐣',buy:500,max:3,grow:900,eat:160,prod:'ostrichegg',prodT:600,carry:'leash',pen:'ostrich',sell:0,lv:5},
- alpaca:{n:'羊駝',baby:'小羊駝',em:'🦙',bem:'🦙',buy:400,max:3,grow:720,eat:150,prod:'alpacawool',prodT:480,carry:'leash',pen:'sheep',sell:0,lv:5}};
+ alpaca:{n:'羊駝',baby:'小羊駝',em:'🦙',bem:'🦙',buy:400,max:3,grow:720,eat:150,prod:'alpacawool',prodT:480,carry:'leash',pen:'sheep',sell:0,lv:5},
+ silkie:{n:'烏骨雞',baby:'小烏骨雞',em:'🐓',bem:'🐤',buy:60,max:6,grow:420,eat:150,prod:'silkieegg',prodT:200,carry:'cage',pen:'coop',sell:0,lv:6},
+ muscovy:{n:'番鴨',baby:'小番鴨',em:'🦆',bem:'🐥',buy:90,max:5,grow:600,eat:150,carry:'cage',pen:'pond',sell:360,lv:7},
+ pigeon:{n:'鴿子',baby:'小鴿子',em:'🕊️',bem:'🐣',buy:50,max:10,grow:300,eat:120,prod:'pigeonegg',prodT:160,carry:'cage',pen:'loft',sell:0,lv:8},
+ blackpig:{n:'黑毛豬',baby:'小黑豬',em:'🐖',bem:'🐷',buy:200,max:4,grow:720,eat:150,carry:'leash',pen:'pig',sell:620,lv:9},
+ deer:{n:'梅花鹿',baby:'小鹿',em:'🦌',bem:'🦌',buy:600,max:4,grow:900,eat:140,prod:'antler',prodT:720,carry:'leash',pen:'deer',sell:0,lv:10},
+ guinea:{n:'珍珠雞',baby:'小珍珠雞',em:'🐓',bem:'🐣',buy:110,max:6,grow:540,eat:150,carry:'cage',pen:'coop',sell:420,lv:12},
+ angora:{n:'安哥拉兔',baby:'小安哥拉兔',em:'🐇',bem:'🐰',buy:160,max:6,grow:420,eat:130,prod:'angora',prodT:420,carry:'cage',pen:'rabbit',sell:0,lv:13},
+ horse:{n:'馬',baby:'小馬',em:'🐎',bem:'🐴',buy:900,max:3,grow:1080,eat:130,carry:'leash',pen:'horse',sell:2200,lv:14},
+ donkey:{n:'驢子',baby:'小驢',em:'🫏',bem:'🫏',buy:700,max:3,grow:900,eat:130,prod:'donkeymilk',prodT:360,carry:'leash',pen:'horse',sell:0,lv:16},
+ peacock:{n:'孔雀',baby:'小孔雀',em:'🦚',bem:'🐣',buy:800,max:3,grow:900,eat:160,prod:'feather',prodT:600,carry:'leash',pen:'ostrich',sell:0,lv:17},
+ yak:{n:'犛牛',baby:'小犛牛',em:'🐂',bem:'🐮',buy:900,max:3,grow:960,eat:130,prod:'yakmilk',prodT:300,carry:'leash',pen:'ranch',sell:0,lv:18},
+ wagyu:{n:'和牛',baby:'小和牛',em:'🐂',bem:'🐮',buy:1400,max:3,grow:1200,eat:130,carry:'leash',pen:'ranch',sell:3600,lv:20},
+ emu:{n:'鴯鶓',baby:'小鴯鶓',em:'🦤',bem:'🐣',buy:1100,max:3,grow:1000,eat:160,prod:'emuegg',prodT:600,carry:'leash',pen:'ostrich',sell:0,lv:22},
+ camel:{n:'駱駝',baby:'小駱駝',em:'🐫',bem:'🐫',buy:1600,max:2,grow:1200,eat:120,prod:'camelmilk',prodT:360,carry:'leash',pen:'horse',sell:0,lv:24},
+ reindeer:{n:'馴鹿',baby:'小馴鹿',em:'🦌',bem:'🦌',buy:1800,max:3,grow:1200,eat:140,carry:'leash',pen:'deer',sell:4800,lv:26},
+ blackgoat:{n:'黑山羊',baby:'小黑羊',em:'🐐',bem:'🐐',buy:700,max:4,grow:720,eat:140,carry:'leash',pen:'sheep',sell:1800,lv:28},
+ goldhen:{n:'金雞',baby:'小金雞',em:'🐓',bem:'🐤',buy:1500,max:4,grow:720,eat:150,prod:'goldegg',prodT:360,carry:'cage',pen:'coop',sell:0,lv:30},
+ iberico:{n:'伊比利豬',baby:'小伊比利豬',em:'🐖',bem:'🐷',buy:2400,max:3,grow:1300,eat:150,carry:'leash',pen:'pig',sell:6500,lv:32},
+ queenbee:{n:'蜂王',baby:'蜂王群',em:'👑',bem:'🐝',buy:3000,max:3,grow:1,eat:0,prod:'royaljelly',prodT:480,carry:'cage',pen:'apiary',sell:0,lv:35},
+ whitehorse:{n:'白馬',baby:'小白馬',em:'🐎',bem:'🐴',buy:5000,max:2,grow:1500,eat:130,carry:'leash',pen:'horse',sell:14000,lv:38}};
 // 養殖場種類（前四種一開始就有，其他要買地、買材料、一鍵建造）
 const PEN_T={
  cow:{n:'乳牛牧場',em:'🐄',food:['hay','grass','corn'],col:0xb5d98a,shed:0xc0392b},
@@ -290,7 +320,13 @@ const PEN_T={
  rabbit:{n:'兔子窩',em:'🐇',food:['carrot','cabbage','bokchoy','grass','hay'],col:0xc8e0a0,shed:0xf0b0c0,lv:2},
  ranch:{n:'肉牛牧場',em:'🐂',food:['hay','grass','corn'],col:0xb0c880,shed:0x8a4a2a,lv:3},
  apiary:{n:'養蜂場',em:'🐝',food:[],col:0xd8e8a0,shed:0xffd040,lv:4},
- ostrich:{n:'鴕鳥園',em:'🦤',food:['feed','corn','grass'],col:0xd8c8a0,shed:0x6a8aa0,lv:5}};
+ ostrich:{n:'鴕鳥園',em:'🦤',food:['feed','corn','grass'],col:0xd8c8a0,shed:0x6a8aa0,lv:5},
+ loft:{n:'鴿舍',em:'🕊️',food:['feed','corn','wheat'],col:0xd8d0c0,shed:0x6a8ac8,lv:8},
+ deer:{n:'鹿園',em:'🦌',food:['hay','grass','carrot'],col:0xa8d080,shed:0x7a5a3a,lv:10},
+ horse:{n:'馬場',em:'🐎',food:['hay','grass','carrot','corn'],col:0xc0d890,shed:0xa83a2a,lv:14}};
+// 養殖場擴建（地政事務所）：每擴建一次，可以多養 50%
+const PEN_UP=[{lv:8,p:2000},{lv:16,p:6000},{lv:24,p:15000}];
+const animMax=k=>Math.round(ANIM[k].max*(1+.5*((S.penUp||{})[ANIM[k].pen]||0)));
 const FOOD_NAME=f=>f.length?f.map(k=>(ITEMS[k]||{}).em+(ITEMS[k]||{}).n).join('、'):'不用餵（附近有向日葵會產更多蜜）';
 
 /* ======================= 商店商品 ======================= */
@@ -326,8 +362,14 @@ const STAFF=[
 /* ======================= 土地（地政事務所） ======================= */
 const LOTS=[
  {id:'F1',kind:'field',x:-22,z:11},{id:'F2',kind:'field',x:-22,z:18.5},{id:'F3',kind:'field',x:-11,z:26},{id:'F4',kind:'field',x:0,z:26},{id:'F5',kind:'field',x:11,z:26},{id:'F6',kind:'field',x:-22,z:26},
- {id:'P1',kind:'pen',x:-20,z:-24},{id:'P2',kind:'pen',x:-7,z:-24},{id:'P3',kind:'pen',x:6,z:-24},{id:'P4',kind:'pen',x:19,z:-24},{id:'P5',kind:'pen',x:-33,z:-12}];
-const LOT_PRICE={field:{rent:30,buy:600},pen:{rent:40,buy:800}};const CREW=220;
+ {id:'P1',kind:'pen',x:-20,z:-24},{id:'P2',kind:'pen',x:-7,z:-24},{id:'P3',kind:'pen',x:6,z:-24},{id:'P4',kind:'pen',x:19,z:-24},{id:'P5',kind:'pen',x:-33,z:-12},
+ // 中後期才開放（等級越高，能買的地越多）
+ {id:'F7',kind:'field',x:-22,z:33.5,lv:8},{id:'F8',kind:'field',x:-11,z:33.5,lv:10},{id:'F9',kind:'field',x:0,z:33.5,lv:12},{id:'F10',kind:'field',x:11,z:33.5,lv:14},
+ {id:'F11',kind:'field',x:-22,z:41,lv:17},{id:'F12',kind:'field',x:-11,z:41,lv:20},{id:'F13',kind:'field',x:0,z:41,lv:24},{id:'F14',kind:'field',x:11,z:41,lv:28},
+ {id:'P6',kind:'pen',x:-20,z:-36,lv:8},{id:'P7',kind:'pen',x:-7,z:-36,lv:10},{id:'P8',kind:'pen',x:6,z:-36,lv:14}];
+// 預留給以後擴充的空地（不種樹、不放東西，畫面才不會亂）
+const RESERVE=[[-28,17,28.5,46],[-26,25,-41,-30],[13,26,-30,-18]];
+const LOT_PRICE={field:{rent:30,buy:600},pen:{rent:40,buy:800}};const lotPrice=L=>{const m=1+Math.max(0,(L.lv||1)-1)*.12;const b=LOT_PRICE[L.kind];return {rent:Math.round(b.rent*m),buy:Math.round(b.buy*m/10)*10}};const CREW=220;
 
 /* ======================= 農場隨機事件 ======================= */
 const EVENTS=[
@@ -393,7 +435,7 @@ const PROFILES={
  low:{n:'🌙 輕鬆經營',sub:'低收益',crop:28800,pen:28800,bill:.5,price:.85,protect:1,d:'適合平常上班、很久才上線一次：預設種 8 小時、動物 8 小時生產一次；帳單打 5 折；收購價 85 折。離線時作物不會枯萎、產品不會壞，也不會欠款。'},
  mid:{n:'☀️ 標準經營',sub:'中收益',crop:14400,pen:14400,bill:1,price:1,protect:1,d:'平日下班後、假日都適合：預設種 4 小時、動物 4 小時生產一次；帳單、收購價都是原價。離線時作物不會枯萎、產品不會壞，離線最多只扣 1 天帳單，不會欠款。'},
  high:{n:'🔥 衝刺經營',sub:'高收益',crop:1200,pen:1800,bill:1.5,price:1.25,protect:0,d:'假日有空一直玩：預設種 20 分鐘、動物每 30 分鐘；收購價 ×1.25，但帳單 ×1.5，而且離線時作物照樣會枯萎、產品會壞（離線仍不會欠款）。'},
- ultra:{n:'⚡ 極速經營',sub:'超高收益',crop:3600,pen:3600,bill:1,price:1,protect:0,ts:10,d:'回到最早測試版的速度：時間快 10 倍，作物幾分鐘就成熟（選 20 分鐘只要 2 分鐘），帳單每 6 分鐘扣一次，天氣每 3 分鐘變一次。要一直盯著玩，賺最快，但離線沒有保護、最多只算 6 小時。'}};
+ ultra:{n:'⚡ 極速經營',sub:'超高收益',crop:3600,pen:3600,bill:1,price:1,protect:0,ts:10,d:'時間快 10 倍，作物幾分鐘就成熟（選 20 分鐘只要 2 分鐘），帳單每 6 分鐘扣一次，天氣每 3 分鐘變一次。要一直盯著玩，賺最快，但離線沒有保護、最多只算 6 小時。'}};
 const TS=()=>prof().ts||1;const RT=s=>s/TS();
 // 現實時間的時刻（例如：今天 18:40）
 function realAt(gs){const d=new Date(Date.now()+RT(gs)*1000/(S.speed||1));const n=new Date();const hm=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');const dd=Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate())-new Date(n.getFullYear(),n.getMonth(),n.getDate()))/864e5);return (dd===0?'今天 ':dd===1?'明天 ':dd===2?'後天 ':`${d.getMonth()+1}/${d.getDate()} `)+hm}
@@ -404,14 +446,16 @@ const prof=()=>PROFILES[S.profile||'mid']||PROFILES.mid;
 const isWeekend=()=>{const d=new Date().getDay();return d===0||d===6};
 
 /* ======================= 存檔 ======================= */
-const NETG=QS.has('guest');const KEY=NETG?'zzdh_farm_guest':EMBED?'zzdh_farm_v1':'zzdh_farm_test_v3';
+const NETG=QS.has('guest');const HOSTCAP=QS.has('host')?(+QS.get('host')>2?4:2):0;
+// 存檔：單人、雙人合作、多人合作各自分開
+const KEY=NETG?'zzdh_farm_guest':HOSTCAP?(EMBED?'zzdh_farm_coop'+HOSTCAP:'zzdh_farm_test_coop'+HOSTCAP):EMBED?'zzdh_farm_v1':'zzdh_farm_test_v3';
 function newState(){return {money:600,t:DAY*.25,seed:(Math.random()*1e9)|0,plots:{},boxes:{},animals:[],trough:{},piles:{},pbox:{},
   hand:[],basket:[],cage:[],leash:[],seeds:{},sel:'',own:{},mats:{},veh:'',fm:{},pm:{},gm:{},staff:{},stock:{feed:10,hay:10},lots:{},pens:{cow:1,pig:1,coop:1,pond:1},penAt:{},autoCrop:{},
   tut:{},tutDone:0,lastP:-1,last:Date.now(),px:-15,pz:5,speed:1,snd:1,paused:0,earn:0,debt:0,strike:0,ev:null,evT:DAY*1.5,flow:[],day:-1,tor:null,inHome:0,pest:{},stats:{},crows:[],crowT:120,dur:7200,autoDur:{},penDur:{},profile:'mid',boostUntil:0,giftDay:'',offBill:0,fridge:{},decor:{own:[],wall:'cream',floor:'wood'},zoom:2}}
 let S;try{S=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){}
 if(!S||!S.plots)S=newState();
 {const d=newState();for(const k in d)if(S[k]===undefined)S[k]=d[k]}
-const save=()=>{if(!window.__farmHold)S.last=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const save=()=>{if(window.__noSave)return;if(!window.__farmHold)S.last=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
 setInterval(save,4000);addEventListener('pagehide',save);addEventListener('visibilitychange',()=>{if(document.hidden)save()});
 // 舊存檔換成新的時間單位
 if(S.day>Math.floor(S.t/DAY))S.day=-1;if(S.lastP>Math.floor(S.t/PERIOD))S.lastP=-1;if(!S.dur)S.dur=7200;
@@ -420,7 +464,8 @@ const cap={hand:()=>S.own.hand2?14:8,basket:()=>(S.own.basket2?40:20)+((vehOf()|
 const SEED_MAX=100;
 const dayOf=t=>Math.floor(t/DAY),seasonOf=t=>Math.floor(dayOf(t)/DAYS_PER_SEASON)%4,hourOf=t=>(t%DAY)/DAY*24;
 function srand(n){let a=(S.seed+n*2654435761)>>>0;a=(a+0x6D2B79F5)>>>0;let t=a;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return ((t^t>>>14)>>>0)/4294967296}
-function weatherAt(i){if(S.forceW&&S.forceW.pi===i)return S.forceW.k;const se=seasonOf(i*PERIOD+1);const tb=W_TABLE[se];let tot=0;for(const k in tb)tot+=tb[k];let r=srand(i)*tot;for(const k in tb){r-=tb[k];if(r<=0)return k}return 'sun'}
+var TUTON=false;
+function weatherAt(i){if(TUTON)return 'sun';if(S.forceW&&S.forceW.pi===i)return S.forceW.k;const se=seasonOf(i*PERIOD+1);const tb=W_TABLE[se];let tot=0;for(const k in tb)tot+=tb[k];let r=srand(i)*tot;for(const k in tb){r-=tb[k];if(r<=0)return k}return 'sun'}
 const curWk=()=>weatherAt(Math.floor(S.t/PERIOD)),curW=()=>WEATHER[curWk()];
 // 颱風、大雷雨的強度：一開始慢慢變強、中間最強、最後慢慢減弱
 function stormLevel(){const w=curW();if(!w.typhoon&&curWk()!=='storm')return w.wet?.5:0;const k=(S.t%PERIOD)/PERIOD;const base=k<.35?k/.35:k<.75?1:Math.max(0,(1-k)/.25);return w.typhoon?.25+.75*base:.3+.5*base}
@@ -445,7 +490,7 @@ function roof(w,d,h,c,x,y,z,p){const r=mesh(new THREE.CylinderGeometry(.01,1,1,4
 const ground=mesh(new THREE.PlaneGeometry(280,280),new THREE.MeshLambertMaterial({color:0x8fd16a}),false);ground.rotation.x=-Math.PI/2;scene.add(ground);
 const GROUND_COL=[0x8fd16a,0x6cc24a,0xc9c45a,0xe9eef2];
 function path(x,z,w,d){const m=mesh(G.box,M(0xe8d6a8),false);m.scale.set(w,.04,d);m.position.set(x,.02,z);scene.add(m)}
-path(0,6.8,58,2.6);path(0,14.75,52,2);path(0,22.4,52,2);path(-5.5,16,2,18);path(5.5,16,2,18);path(-16.5,16,2,18);path(0,-4.5,64,2.6);path(0,1,3,12);path(21.5,-1,2.4,40);path(-15,-1,2,8);path(0,-18.5,58,2.2);path(-26,0,2,10);
+path(0,6.8,58,2.6);path(0,14.75,52,2);path(0,22.4,52,2);path(0,29.9,52,2);path(0,37.4,52,2);path(0,44.6,52,2);path(-5.5,26,2,38);path(5.5,26,2,38);path(-16.5,26,2,38);path(-27.5,30,2,30);path(16.5,30,2,30);path(0,-30.4,58,2.2);path(-13.5,-30,2,22);path(-0.5,-30,2,22);path(12.5,-30,2,22);path(0,-4.5,64,2.6);path(0,1,3,12);path(21.5,-1,2.4,40);path(-15,-1,2,8);path(0,-18.5,58,2.2);path(-26,0,2,10);
 
 /* ---- 標籤 ---- */
 const LABELS=[];function label(html,pos,near){const el=document.createElement('div');el.className='lb';el.innerHTML=html;$('#lbls').appendChild(el);const L={el,pos,near:near||20,html};LABELS.push(L);return L}
@@ -454,7 +499,7 @@ function dropL(L){if(!L)return;L.el.remove();const i=LABELS.indexOf(L);if(i>=0)L
 
 /* ---- 樹、花（樹會在颱風時搖晃） ---- */
 const SWAY=[];
-for(let i=0;i<170;i++){const a=rand(0,6.28),r=rand(40,85);const x=Math.cos(a)*r,z=Math.sin(a)*r;const g=new THREE.Group();const tr=mesh(G.cyl,M(0x8a5a2a));tr.scale.set(.25,1,.25);tr.position.y=.5;g.add(tr);
+for(let i=0;i<170;i++){const a=rand(0,6.28),r=rand(40,85);const x=Math.cos(a)*r,z=Math.sin(a)*r;if(RESERVE.some(([x0,x1,z0,z1])=>x>x0-3&&x<x1+3&&z>z0-3&&z<z1+3)||(Math.abs(x)<30&&z>-44&&z<48))continue;const g=new THREE.Group();const tr=mesh(G.cyl,M(0x8a5a2a));tr.scale.set(.25,1,.25);tr.position.y=.5;g.add(tr);
   const top=new THREE.Group();top.position.y=1;g.add(top);const l1=mesh(new THREE.ConeGeometry(1.2,1.6,8),M(0x4fa63a));l1.position.y=.6;const l2=mesh(new THREE.ConeGeometry(.9,1.4,8),M(0x5fbf45));l2.position.y=1.4;top.add(l1,l2);g.scale.setScalar(rand(.9,1.6));g.position.set(x,0,z);scene.add(g);SWAY.push(top)}
 for(let i=0;i<60;i++){const x=rand(-36,36),z=rand(-30,32);if(Math.abs(x)<30&&z>-30&&z<30)continue;const f=mesh(G.sphL,M([0xff8ad8,0xffe25a,0xffffff,0xb08aff][i%4]),false);f.scale.setScalar(.12);f.position.set(x,.1,z);scene.add(f)}
 
@@ -472,7 +517,7 @@ const easeBack=t=>{const c1=1.70158,c3=c1+1;return 1+c3*Math.pow(t-1,3)+c1*Math.
 
 /* ======================= 地上的圈圈 ======================= */
 const RINGS=[];const ringGeo=new THREE.RingGeometry(.85,1.05,36);
-const RING_COL={market:0xffb300,shop:0x5cc8ff,release:0xff8ad8,catch:0xff8a5c,trough:0xffa53a,box:0xc98a4a,home:0xff7a5a,lot:0xb08aff,pbox:0x7ab8e0};
+const RING_COL={recycle:0x3fae5a,market:0xffb300,shop:0x5cc8ff,release:0xff8ad8,catch:0xff8a5c,trough:0xffa53a,box:0xc98a4a,home:0xff7a5a,lot:0xb08aff,pbox:0x7ab8e0};
 function addRing(r){const col=RING_COL[r.kind]||0x4cd36a;const m=new THREE.Mesh(ringGeo,new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.9}));m.rotation.x=-Math.PI/2;m.position.set(r.x,.06,r.z);scene.add(m);
   const fill=new THREE.Mesh(new THREE.CircleGeometry(.85,30),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.18}));fill.rotation.x=-Math.PI/2;fill.position.set(r.x,.05,r.z);scene.add(fill);r.m=m;r.fill=fill;
   r.L=label('',V(r.x,1.1,r.z),r.kind==='shop'?0:16);r.cd=0;r.stay=0;RINGS.push(r);return r}
@@ -485,7 +530,10 @@ const OCC=[];function regOcc(g){g.traverse(o=>{if(!o.isMesh)return;const one=m=>
 /* ======================= 農田 ======================= */
 const PLOT_S=1.8;const FIELDS=[],PLOTS=[];const FI=i=>FIELDS.find(f=>f.i==i);const FIELD_LOTS=()=>LOTS.filter(l=>l.kind==='field');
 const soilGeo=new THREE.BoxGeometry(PLOT_S-.14,.18,PLOT_S-.14);
-const SOIL={dry:M(0xc8a070),wet:M(0x7a5032),paddy:M(0x5a7a8a),broken:M(0x9a7a5a)};
+const SOIL={dry:M(0xd6b47c),low:M(0xb08758),mid:M(0x8f6440),wet:M(0x6a4228),paddy:M(0x5a7a8a),broken:M(0x9a7a5a)};
+// 土壤顏色：滿水（深咖啡）→ 微缺水 → 快乾了 → 乾枯（淺黃）
+const SOIL_ST=[{k:'wet',n:'滿水',hex:'#6a4228',d:'水很夠，作物正常長大'},{k:'mid',n:'微缺水',hex:'#8f6440',d:'還可以，有空再澆'},{k:'low',n:'快乾了',hex:'#b08758',d:'要澆水了！頭上會出現 💧'},{k:'dry',n:'乾枯',hex:'#d6b47c',d:'停止生長！頭上會出現 💧❗'}];
+const soilKey=w=>w<=0?'dry':w<=.3?'low':w<=.6?'mid':'wet';const soilOf=w=>SOIL[soilKey(w)];
 function makeField(f,animate){f.i=f.idx!=null?f.idx:FIELDS.length;f.name='第 '+(f.i+1)+' 塊田';FIELDS.push(f);if(!S.boxes[f.i])S.boxes[f.i]=[];const mine=[];
   for(let r=0;r<2;r++)for(let c=0;c<3;c++){const id=f.i+'_'+r+'_'+c;const p={id,f,x:f.x+(c-1)*PLOT_S,z:f.z+(r-.5)*PLOT_S};PLOTS.push(p);mine.push(p);if(!S.plots[id])S.plots[id]={st:'empty',c:'',g:0,w:.7,rt:0};
     p.soil=mesh(soilGeo,SOIL.wet,false);p.soil.position.set(p.x,.09,p.z);scene.add(p.soil);p.g=new THREE.Group();p.g.position.set(p.x,.18,p.z);scene.add(p.g);p.vk='';p.L=label('',V(p.x,1.2,p.z),12)}
@@ -648,7 +696,7 @@ function cropModel(k,stage,state){const g=new THREE.Group();const wi=state==='wi
   if(br){for(let i=0;i<6;i++)add(G.box,0x6a8a3a,.5,.04,.08,rand(-.6,.6),.06,rand(-.6,.6),g,0,rand(0,3),0);for(let i=0;i<3;i++)add(G.ico,0x8a6a4a,.12,.08,.12,rand(-.5,.5),.06,rand(-.5,.5),g);return g}
   if(ro){for(const [x,z] of SPOT4){add(G.sph,ROT,.26,.06,.26,x,.04,z,g)}const f=sprite('🪰',.35);f.position.set(0,.5,0);g.add(f);return g}
   const C=CROPS[k],mk=C.m;
-  if(C.tree){treeModel(k,stage,state,g,add,L,s,ripe);if(wi)g.rotation.z=.08;return g}
+  if(C.tree){treeModel(k,stage,state,g,add,L,s,ripe);cropTint(g,C,mk,ripe,wi,ro);if(wi)g.rotation.z=.08;return g}
   const spots={pumpkin:SPOT1,watermelon:SPOT1,melon:SPOT1,pineapple:SPOT2,cabbage:SPOT4,napa:SPOT4,cauliflower:SPOT4,sunflower:SPOT4,corn:SPOT4,cucumber:SPOT2,luffa:SPOT2,bittergourd:SPOT2,jiaobai:SPOT4,taro:SPOT2,sugarcane:SPOT4}[mk]||SPOT5;
   for(const [x,z] of spots){const p=new THREE.Group();p.position.set(x,0,z);p.rotation.y=rand(0,6.28);g.add(p);
    switch(mk){
@@ -690,7 +738,9 @@ function cropModel(k,stage,state){const g=new THREE.Group();const wi=state==='wi
     case 'pineapple':{for(let i=0;i<9;i++){const a=i*.7;add(G.cone,0x5a9a5a,.06,.6*s,.12,Math.cos(a)*.12,.3*s,Math.sin(a)*.12,p,Math.cos(a)*.6,0,Math.sin(a)*.6)}
       if(stage>=2){add(G.sph,ripe?paMat():0x8ab85a,.16,.22,.16,0,.55,0,p);for(let i=0;i<5;i++){const a=i*1.26;add(G.cone,0x4a8a3a,.03,.25,.06,Math.cos(a)*.04,.85,Math.sin(a)*.04,p,Math.cos(a)*.3,0,Math.sin(a)*.3)}}break}
    }}
+  cropTint(g,C,mk,ripe,wi,ro);
   if(wi)g.rotation.z=.18;return g}
+function cropTint(g,C,mk,ripe,wi,ro){if(C.tint&&!wi&&!ro){const RB=[0xff3b5c,0xffa020,0xffe040,0x4cd36a,0x3fa9f5,0xb06cff];let ri=0;g.traverse(o=>{if(o.isMesh&&o.material&&o.material.color){const hx=o.material.map&&mk==='melon'?0xffffff:o.material.color.getHex();const t=C.tint[hx];if(t!=null)o.material=M(t==='rb'?RB[ri++%6]:t)}})}if(C.big&&ripe)g.scale.setScalar(C.big)}
 let _ml=null;const mlMat=()=>_ml||(_ml=new THREE.MeshLambertMaterial({map:canvasTex(64,64,g=>{g.fillStyle='#e8d890';g.fillRect(0,0,64,64);g.strokeStyle='#c8b060';g.lineWidth=2;for(let i=0;i<64;i+=8){g.beginPath();g.moveTo(i,0);g.lineTo(i+20,64);g.stroke();g.beginPath();g.moveTo(i+20,0);g.lineTo(i,64);g.stroke()}})}));
 // 果樹、香蕉、木瓜、火龍果、葡萄、茶、咖啡
 function treeModel(k,stage,state,g,add,L,s,ripe){const C=CROPS[k],mk=C.m;const sz=[.35,.65,1,1][stage];const fruitOn=ripe&&state!=='wither';
@@ -756,6 +806,7 @@ function quadModel(o){const g=new THREE.Group(),b=new THREE.Group();g.add(b);con
     else{const e=mesh(G.sph,M(hc));e.scale.set(.05,.07,.13);e.position.set(-.04,.1,.22*k2*o.hs);e.rotation.x=.6*k2;h.add(e)}
     if(o.horn==='goat'){const hn=mesh(G.cone,M(0xd8c8a0));hn.scale.set(.04,.25,.04);hn.position.set(-.08,.25,.08*k2);hn.rotation.z=.6;h.add(hn)}
     if(o.horn==='cow'){const hn=mesh(G.cone,M(0xf6e2c0));hn.scale.set(.05,.2,.05);hn.position.set(-.04,.24,.17*k2);hn.rotation.x=-.5*k2;h.add(hn)}
+    if(o.horn==='antler'){const am=M(0xd8c0a0);const st=mesh(G.cyl,am);st.scale.set(.025,.3,.025);st.position.set(-.05,.33,.1*k2);st.rotation.x=.3*k2;h.add(st);for(let j=0;j<2;j++){const br=mesh(G.cyl,am);br.scale.set(.02,.16,.02);br.position.set(-.05+(j?.06:-.06),.38+j*.1,(.15+j*.03)*k2);br.rotation.z=j?-.7:.7;h.add(br)}}
     if(o.horn==='buffalo'){const hn=mesh(new THREE.TorusGeometry(.22,.05,6,12,Math.PI*.9),M(0x5a5a5a));hn.position.set(-.05,.12,.2*k2);hn.rotation.set(0,Math.PI/2,k2>0?.4:-.4+Math.PI);h.add(hn)}}
   if(o.beard){const bd=mesh(G.cone,M(0xf0f0f0));bd.scale.set(.05,.15,.05);bd.rotation.x=Math.PI;bd.position.set(.15,-.22,0);h.add(bd)}
   eyes(h,.2*o.hs,.06,.12*o.hs,.035);
@@ -772,7 +823,19 @@ function birdBig(k,adult){if(k==='turkey'&&adult){const g=birdModel('chick',true
 function beeModel(){const g=new THREE.Group();const hv=new THREE.Group();g.add(hv);for(let i=0;i<3;i++){const m=mesh(G.box,M(i%2?0xffd040:0xffffff));m.scale.set(.6,.25,.45);m.position.y=.13+i*.25;hv.add(m)}const rf=mesh(G.box,M(0x8a5a2a));rf.scale.set(.72,.06,.55);rf.position.y=.78;hv.add(rf);
   const bees=[];for(let i=0;i<3;i++){const b=sprite('🐝',.28);g.add(b);bees.push(b)}g.userData={bees,kind:'bee'};return g}
 function animalModel(a){const adult=a.age>=1,k=a.k;let m;
-  if(k==='cow')m=cowModel(!adult);else if(k==='pig')m=pigModel(!adult);else if(k==='bee')m=beeModel();
+  if(CHIBI[k]){m=CHIBI[k](adult);if(!adult)m.scale.multiplyScalar(.65);return m}
+  if(k==='cow')m=cowModel(!adult);else if(k==='pig')m=pigModel(!adult);else if(k==='bee'||k==='queenbee'){m=beeModel();if(k==='queenbee'){const cr=sprite('👑',.32);cr.position.y=1.05;m.add(cr)}}
+  else if(['silkie','guinea','goldhen','pigeon'].includes(k)){m=birdModel('chick',adult||k==='pigeon');m.userData.body.children[0].material=M({silkie:0x2e2e36,guinea:0x5a6274,goldhen:0xffc83a,pigeon:0x9aa4b8}[k]);if(k==='guinea')for(let i=0;i<8;i++){const d=mesh(G.sph,M(0xffffff));d.scale.setScalar(.035);const a=i*.8;d.position.set(Math.cos(a)*.15,.42+Math.sin(i*1.7)*.1,Math.sin(a)*.2);m.userData.body.add(d)}if(k==='pigeon')m.scale.multiplyScalar(adult?.75:.5);if(k==='goldhen'&&adult){const s2=sprite('✨',.35);s2.position.y=.9;m.add(s2)}}
+  else if(k==='muscovy'){m=birdModel('duck',adult);m.userData.body.children[0].material=M(0x34343a)}
+  else if(k==='peacock'){m=birdModel('chick',true);const u=m.userData;u.body.children[0].material=M(0x2a6ad8);if(adult)for(let i=0;i<9;i++){const f=mesh(G.sph,M(i%2?0x2fa86a:0x3fc0a0));f.scale.set(.03,.5,.14);f.position.set(-.34,.7,0);f.rotation.x=(i-4)*.3;u.body.add(f);const e=mesh(G.sph,M(0x1a3a9a));e.scale.setScalar(.05);e.position.set(-.36,.7+Math.cos((i-4)*.3)*.42,Math.sin((i-4)*.3)*.42);u.body.add(e)}m.scale.multiplyScalar(adult?1.2:.7)}
+  else if(k==='emu'){m=birdBig('ostrich',adult);m.traverse(o=>{if(o.isMesh&&o.material.color&&(o.material.color.getHex()===0x2a2a2a))o.material=M(0x6a5038)})}
+  else if(k==='blackpig'||k==='iberico')m=quadModel({body:k==='blackpig'?0x2a2a2e:0x6a4038,snout:k==='blackpig'?0x4a4a52:0x9a6a5a,len:.85,thick:1,hs:1,ear:'',leg:.6});
+  else if(k==='deer'||k==='reindeer'){m=quadModel({body:k==='deer'?0xc0803a:0x8a6a4a,len:.9,hs:.85,neck:.35,ear:'',tail:'puff',horn:adult?'antler':''});if(k==='deer')for(let i=0;i<7;i++){const d=mesh(G.sph,M(0xfff4e0));d.scale.setScalar(.06);d.position.set((i%4-1.5)*.22,.95+(i<4?.12:0),i%2?.22:-.22);m.userData.body.add(d)}}
+  else if(k==='horse'||k==='whitehorse'||k==='donkey')m=quadModel({body:k==='horse'?0x8a5a2a:k==='donkey'?0x8a8a90:0xf6f6f6,head:k==='donkey'?0x8a8a90:undefined,len:k==='donkey'?.85:1.05,thick:.95,hs:1,neck:k==='donkey'?.35:.6,ear:k==='donkey'?'long':''});
+  else if(k==='camel'){m=quadModel({body:0xd8b070,len:1,hs:.9,neck:.7});const h=mesh(G.sph,M(0xd0a868));h.scale.set(.32,.3,.3);h.position.set(0,1.45,0);m.userData.body.add(h)}
+  else if(k==='yak'||k==='wagyu')m=quadModel({body:k==='yak'?0x3a2a24:0x241812,len:1.05,thick:1.15,hs:1.1,horn:'cow',fluffy:k==='yak'?1:0});
+  else if(k==='angora'){m=quadModel({body:0xfffaf2,len:.5,thick:.85,hs:1.1,ear:'long',tail:'puff',leg:.45,fluffy:1});m.scale.multiplyScalar(.75)}
+  else if(k==='blackgoat')m=quadModel({body:0x2a2a2a,len:.8,thick:.75,hs:.9,horn:'goat',beard:1,tail:'puff',ear:''});
   else if(['turkey','quail','ostrich'].includes(k))m=birdBig(k,adult);
   else if(k==='goat')m=quadModel({body:0xf4f0e8,len:.8,thick:.75,hs:.9,horn:'goat',beard:1,tail:'puff',ear:''});
   else if(k==='sheep')m=quadModel({body:adult?0xfaf8f0:0xfaf8f0,head:0x3a3a3a,legc:0x3a3a3a,fluffy:1,len:.8,hs:.85,tail:'puff'});
@@ -781,7 +844,7 @@ function animalModel(a){const adult=a.age>=1,k=a.k;let m;
   else if(k==='beef')m=quadModel({body:0x8a4a2a,head:0x8a4a2a,snout:0xf0c0a8,len:1,thick:1.1,hs:1.1,horn:'cow'});
   else if(k==='buffalo')m=quadModel({body:0x4a4a52,len:1.05,thick:1.15,hs:1.15,horn:'buffalo',snout:0x5a5a62});
   else m=birdModel(k,adult);
-  if(!adult&&!['cow','pig','bee','ostrich','quail','turkey','chick','duck','goose'].includes(k))m.scale.multiplyScalar(.6);
+  if(!adult&&!['cow','pig','bee','queenbee','ostrich','quail','turkey','chick','duck','goose','silkie','guinea','goldhen','pigeon','muscovy','peacock','emu'].includes(k))m.scale.multiplyScalar(.6);
   if(k==='turkey'&&!adult)m.scale.setScalar(.7);return m}
 // 收購站店員
 function makeClerk(){const g=new THREE.Group();const body=mesh(new THREE.CylinderGeometry(.28,.36,.7,14),M(0x5cb85c));body.position.y=.65;g.add(body);const ap=mesh(G.box,M(0xffffff));ap.scale.set(.42,.45,.06);ap.position.set(0,.6,.3);g.add(ap);
@@ -904,6 +967,90 @@ const pin=new THREE.Group();{const c=mesh(G.cone,M(0xff5a5a),false);c.scale.set(
 // 水管
 const hoseMat=M(0x2fae5a);let hoseMesh=null;
 
+/* ======================= Q 版呆萌動物（中後期新動物：大頭、大眼睛、腮紅，一眼就認得出來） ======================= */
+function cEyes(h,x,y,z,s){for(const k of [-1,1]){const w=mesh(G.sph,M(0xffffff),false);w.scale.set(s*.6,s*1.15,s*1.15);w.position.set(x-.01,y,z*k);h.add(w);const e=mesh(G.sph,M(0x1a1a22),false);e.scale.set(s*.55,s,s);e.position.set(x+s*.25,y-s*.05,z*k);h.add(e);
+  const hl=mesh(G.sph,M(0xffffff),false);hl.scale.setScalar(s*.38);hl.position.set(x+s*.62,y+s*.35,z*k+s*.25*k);h.add(hl);const hl2=mesh(G.sph,M(0xffffff),false);hl2.scale.setScalar(s*.18);hl2.position.set(x+s*.6,y-s*.35,z*k-s*.2*k);h.add(hl2)}}
+function cBlush(h,x,y,z,s){for(const k of [-1,1]){const b=mesh(G.sph,M(0xff9db2),false);b.scale.set(s*.25,s*.5,s*.75);b.position.set(x,y,z*k);h.add(b)}}
+// 四隻腳的 Q 版
+function chibiQuad(o){const g=new THREE.Group(),b=new THREE.Group();g.add(b);const bc=o.body,hc=o.head||bc,lh=o.legH||.32,len=o.len||1,bh=o.h||.62,hs=o.hs||1;
+  const body=mesh(G.sph,M(bc));body.scale.set(.5*len,.38*bh/.62,.4);body.position.y=lh+.3;b.add(body);
+  if(o.belly){const be=mesh(G.sph,M(o.belly));be.scale.set(.36*len,.26,.33);be.position.set(.04,lh+.24,0);b.add(be)}
+  if(o.spots)for(let i=0;i<o.spots[1];i++){const a=i*2.4,y=lh+.38+Math.sin(i*1.9)*.12;const sp=mesh(G.sph,M(o.spots[0]),false);sp.scale.set(.07,.06,.03);sp.position.set(Math.cos(a)*.28*len,y,(i%2?1:-1)*.36);b.add(sp);if(o.spots[2]){const s2=sp.clone();s2.position.y+=.1;b.add(s2)}}
+  if(o.fluff){for(let i=0;i<10;i++){const a=i/10*6.28;const f=mesh(G.cone,M(o.fluff));f.scale.set(.1,.26,.1);f.rotation.x=Math.PI;f.position.set(Math.cos(a)*.42*len,lh+.08,Math.sin(a)*.34);b.add(f)}}
+  if(o.puffs)for(let i=0;i<8;i++){const f=mesh(G.sph,M(bc));f.scale.setScalar(.2);f.position.set((i%4-1.5)*.2*len,lh+.3+(i<4?.2:-.05),i<4?(i%2?.12:-.12):(i%2?.3:-.3));b.add(f)}
+  if(o.hump){const hp=mesh(G.sph,M(o.hump));hp.scale.set(.24,.26,.26);hp.position.set(-.05,lh+.62,0);b.add(hp)}
+  const nk=o.neck||0;const h=new THREE.Group();h.position.set(.42*len+nk*.12,lh+.52+nk*.55,0);b.add(h);
+  if(nk){const n=mesh(G.cyl,M(o.neckC||bc));n.scale.set(.13,.3+nk*.5,.14);n.position.set(.38*len+nk*.05,lh+.42+nk*.28,0);n.rotation.z=-.35;b.add(n)}
+  if(o.mane){for(let i=0;i<5;i++){const m=mesh(G.sph,M(o.mane));m.scale.set(.07,.1,.05);m.position.set(.3*len-i*.02+nk*.04,lh+.6+nk*.5-i*.1+.1,0);b.add(m)}const fr=mesh(G.sph,M(o.mane));fr.scale.set(.08,.08,.12);fr.position.set(.0,.3*hs,0);h.add(fr)}
+  const hd=mesh(G.sph,M(hc));hd.scale.set(.33*hs,.3*hs,.31*hs);h.add(hd);
+  const sn=o.snout||'small';
+  if(sn==='pig'){const d=mesh(G.cyl,M(o.snoutC||0xff8fae));d.scale.set(.13*hs,.06,.13*hs);d.rotation.z=Math.PI/2;d.position.set(.32*hs,-.06*hs,0);h.add(d);for(const k of [-1,1]){const nh=mesh(G.sph,M(0x5a2a3a),false);nh.scale.setScalar(.025);nh.position.set(.36*hs,-.05*hs,.045*k);h.add(nh)}}
+  else if(sn==='long'){const d=mesh(G.sph,M(o.snoutC||hc));d.scale.set(.22*hs,.16*hs,.17*hs);d.position.set(.26*hs,-.1*hs,0);h.add(d);for(const k of [-1,1]){const nh=mesh(G.sph,M(0x3a2a2a),false);nh.scale.setScalar(.025);nh.position.set(.45*hs,-.08*hs,.06*k);h.add(nh)}}
+  else{const d=mesh(G.sph,M(o.snoutC||hc));d.scale.set(.14*hs,.11*hs,.15*hs);d.position.set(.27*hs,-.09*hs,0);h.add(d)}
+  if(o.nose){const n=mesh(G.sph,M(o.nose),false);n.scale.setScalar(.075*hs);n.position.set((sn==='long'?.47:.38)*hs,-.05*hs,0);h.add(n);if(o.nose===0xff2a2a){const gl=sprite('✨',.22);gl.position.set(.55*hs,.02,0);h.add(gl)}}
+  for(const k of [-1,1]){const ec=o.earC||hc;
+    if(o.ear==='long'){const e=mesh(G.cap,M(ec));e.scale.set(.07,.32,.05);e.position.set(-.06,.36*hs,.12*k);e.rotation.x=.12*k;h.add(e);const ei=mesh(G.cap,M(0xffc0d0),false);ei.scale.set(.04,.26,.02);ei.position.set(-.03,.36*hs,.135*k);ei.rotation.x=.12*k;h.add(ei)}
+    else if(o.ear==='floppy'){const e=mesh(G.sph,M(ec));e.scale.set(.09,.05,.17);e.position.set(-.02,.1*hs,.3*k*hs);e.rotation.x=.9*k;h.add(e)}
+    else if(o.ear==='point'){const e=mesh(G.cone,M(ec));e.scale.set(.07,.16,.05);e.position.set(-.06,.32*hs,.17*k*hs);e.rotation.x=.35*k;h.add(e)}
+    else if(o.ear!=='none'){const e=mesh(G.sph,M(ec));e.scale.set(.06,.1,.16);e.position.set(-.06,.16*hs,.3*k*hs);e.rotation.x=.7*k;h.add(e)}
+    if(o.horn==='cow'||o.horn==='big'){const hn=mesh(G.cone,M(o.hornC||0xf6e8c8));const big=o.horn==='big';hn.scale.set(big?.07:.05,big?.32:.16,big?.07:.05);hn.position.set(-.06,(big?.32:.28)*hs,(big?.26:.2)*k*hs);hn.rotation.x=-(big?.9:.4)*k;h.add(hn)}
+    if(o.horn==='goat'){const hn=mesh(new THREE.TorusGeometry(.12,.035,6,10,Math.PI*1.1),M(o.hornC||0xb8a888));hn.position.set(-.1,.24*hs,.12*k);hn.rotation.set(0,Math.PI/2,0);h.add(hn)}
+    if(o.horn==='antler'||o.horn==='bigantler'){const am=M(0xc8a070);const big=o.horn==='bigantler';const st=mesh(G.cyl,am);st.scale.set(.03,big?.42:.3,.03);st.position.set(-.05,(big?.48:.42)*hs,.13*k);st.rotation.x=.35*k;h.add(st);
+      for(let j=0;j<(big?3:2);j++){const br=mesh(G.cyl,am);br.scale.set(.025,big?.2:.15,.025);br.position.set(-.05+(j%2?.08:-.06),(.48+j*.1)*hs,(.18+j*.04)*k);br.rotation.z=j%2?-.8:.8;h.add(br)}}}
+  if(o.beard){const bd=mesh(G.cone,M(o.beardC||0xf0f0f0));bd.scale.set(.05,.14,.05);bd.rotation.x=Math.PI;bd.position.set(.26*hs,-.28*hs,0);h.add(bd)}
+  if(o.tuft){const t=mesh(G.sph,M(o.tuft));t.scale.set(.12,.1,.12);t.position.set(-.02,.3*hs,0);h.add(t)}
+  if(o.tusk)for(const k of [-1,1]){const t=mesh(G.cone,M(0xffffff));t.scale.set(.025,.09,.025);t.position.set(.34*hs,-.14*hs,.08*k);t.rotation.z=-.4;h.add(t)}
+  cEyes(h,.24*hs,.05*hs,.13*hs,.065*hs);cBlush(h,.26*hs,-.08*hs,.2*hs,.1*hs);
+  const legs=[];for(const [x,z] of [[.26*len,.17],[.26*len,-.17],[-.26*len,.17],[-.26*len,-.17]]){const l=new THREE.Group();l.position.set(x,lh,z);const lm=mesh(G.cyl,M(o.legC||bc));lm.scale.set(.09,lh,.09);lm.position.y=-lh/2;const hf=mesh(G.cyl,M(o.hoofC||0x4a3a3a));hf.scale.set(.1,.06,.1);hf.position.y=-lh+.03;l.add(lm,hf);g.add(l);legs.push(l)}
+  const tt=o.tail||'puff';let tl;if(tt==='puff'){tl=mesh(G.sph,M(o.tailC||0xffffff));tl.scale.setScalar(.1)}else if(tt==='curly'){tl=mesh(new THREE.TorusGeometry(.06,.02,6,10),M(o.tailC||bc))}else{tl=mesh(G.cap,M(o.tailC||bc));tl.scale.set(.07,.3,.07);tl.rotation.z=.6}tl.position.set(-.5*len,lh+.4,0);b.add(tl);
+  g.userData={legs,body:b,head:h};return g}
+// 鳥類的 Q 版
+function chibiBird(o){const g=new THREE.Group(),b=new THREE.Group();g.add(b);const bc=o.body,lh=o.legH||.16;
+  const body=mesh(G.sph,M(bc));body.scale.set(.3,.27,.26);body.position.y=lh+.22;b.add(body);
+  if(o.belly){const be=mesh(G.sph,M(o.belly));be.scale.set(.2,.18,.2);be.position.set(.1,lh+.17,0);b.add(be)}
+  if(o.dots)for(let i=0;i<12;i++){const a=i*1.3;const d=mesh(G.sph,M(o.dots),false);d.scale.setScalar(.025);d.position.set(Math.cos(a)*.2-.03,lh+.24+Math.sin(i*2.1)*.13,(i%2?1:-1)*(.2+Math.abs(Math.sin(a))*.05));b.add(d)}
+  if(o.puff)for(let i=0;i<7;i++){const f=mesh(G.sph,M(bc));f.scale.setScalar(.12);const a=i*.9;f.position.set(Math.cos(a)*.2-.03,lh+.27+Math.sin(i*1.7)*.08,Math.sin(a)*.18);b.add(f)}
+  for(const k of [-1,1]){const w=mesh(G.sph,M(o.wing||bc));w.scale.set(.16,.11,.05);w.position.set(-.03,lh+.24,.25*k);w.rotation.z=.4;b.add(w)}
+  if(o.tail==='fan'){for(let i=0;i<5;i++){const f=mesh(G.sph,M(o.tailC||bc));f.scale.set(.03,.2,.07);f.position.set(-.28,lh+.36,0);f.rotation.x=(i-2)*.35;f.rotation.z=.5;b.add(f)}}
+  else if(o.tail==='peacock'){for(let i=0;i<11;i++){const a=(i-5)*.26;const f=mesh(G.sph,M(i%2?0x2fa86a:0x3fc0a0));f.scale.set(.03,.55,.15);f.position.set(-.3,lh+.32,0);f.rotation.x=a;f.rotation.z=.25;b.add(f);const e=mesh(G.sph,M(0x1a3aa0),false);e.scale.set(.03,.07,.07);e.position.set(-.33,lh+.32+Math.cos(a)*.48,Math.sin(a)*.48);b.add(e);const e2=mesh(G.sph,M(0xffd040),false);e2.scale.set(.031,.035,.035);e2.position.copy(e.position);e2.position.x-=.005;b.add(e2)}}
+  else{const t=mesh(G.cone,M(o.tailC||bc));t.scale.set(.09,.16,.09);t.position.set(-.3,lh+.32,0);t.rotation.z=1;b.add(t)}
+  const nk=o.neck||0;if(nk){const n=mesh(G.cyl,M(o.neckC||bc));n.scale.set(.07,nk,.07);n.position.set(.17,lh+.36+nk/2,0);b.add(n)}
+  if(o.ring){const r=mesh(new THREE.TorusGeometry(.1,.035,6,14),M(o.ring));r.rotation.x=Math.PI/2;r.rotation.z=.3;r.position.set(.16,lh+.4,0);b.add(r)}
+  const h=new THREE.Group();h.position.set(.18,lh+.48+nk,0);b.add(h);const hd=mesh(G.sph,M(o.head||bc));hd.scale.setScalar(.2);h.add(hd);
+  const bk=mesh(G.cone,M(o.beak||0xffa020));bk.scale.set(.05,.11,.05);bk.rotation.z=-Math.PI/2;bk.position.set(.21,-.02,0);h.add(bk);
+  if(o.flatBeak){bk.scale.set(.06,.13,.1)}
+  if(o.comb){for(let i=0;i<3;i++){const c=mesh(G.sph,M(o.comb));c.scale.setScalar(.055);c.position.set(-.04+i*.06,.19,0);h.add(c)}const wt=mesh(G.sph,M(o.comb));wt.scale.set(.035,.06,.035);wt.position.set(.15,-.13,0);h.add(wt)}
+  if(o.wattle){const wt=mesh(G.sph,M(o.wattle));wt.scale.set(.05,.07,.05);wt.position.set(.14,-.13,0);h.add(wt)}
+  if(o.face){const f=mesh(G.sph,M(o.face),false);f.scale.set(.1,.11,.16);f.position.set(.12,0,0);h.add(f)}
+  if(o.crest==='pom'){for(let i=0;i<6;i++){const p=mesh(G.sph,M(o.crestC||bc));p.scale.setScalar(.09);const a=i*1.05;p.position.set(-.03+Math.cos(a)*.07,.2+Math.abs(Math.sin(a))*.04,Math.sin(a)*.08);h.add(p)}}
+  if(o.crest==='fan'){for(let i=0;i<4;i++){const s=mesh(G.cyl,M(0x2a4aa8));s.scale.set(.01,.13,.01);s.position.set(-.02,.26,(i-1.5)*.04);s.rotation.x=(i-1.5)*.25;h.add(s);const t=mesh(G.sph,M(0x2a6ad8));t.scale.setScalar(.03);t.position.set(-.02,.33,(i-1.5)*.06);h.add(t)}}
+  if(o.crown){const c=sprite('👑',.25);c.position.set(0,.3,0);h.add(c)}
+  cEyes(h,.12,.04,.09,.05);cBlush(h,.13,-.05,.14,.08);
+  const legs=[];for(const k of [-1,1]){const l=new THREE.Group();l.position.set(0,lh,.09*k);const lm=mesh(G.cyl,M(o.legC||0xffa020));lm.scale.set(.03,lh,.03);lm.position.y=-lh/2;const ft=mesh(G.box,M(o.legC||0xffa020));ft.scale.set(.11,.02,o.flatBeak?.1:.05);ft.position.set(.04,-lh+.01,0);l.add(lm,ft);g.add(l);legs.push(l)}
+  if(o.sparkle){const s=sprite('✨',.3);s.position.set(0,lh+.85+nk,0);g.add(s)}
+  g.userData={legs,body:b,head:h};return g}
+// 每一種新動物的樣子
+var CHIBI={
+ silkie:()=>chibiBird({body:0xffffff,puff:1,crest:'pom',crestC:0xffffff,face:0x2a2a3a,head:0xffffff,beak:0x4a4a5a,legC:0x5a5a6a,comb:0x6a2a5a}),
+ muscovy:()=>chibiBird({body:0x2e2e36,belly:0xffffff,wing:0x3a5a4a,face:0xe53935,flatBeak:1,beak:0xf0c080}),
+ pigeon:()=>{const m=chibiBird({body:0x9aa4b8,wing:0x7a8498,head:0x8a94a8,ring:0x6ac08a,beak:0x3a3a3a,legC:0xe05a6a,tail:'short',tailC:0x5a6478});m.scale.setScalar(.8);return m},
+ blackpig:()=>chibiQuad({body:0x2e2e34,belly:0x3e3e46,snout:'pig',snoutC:0x5a5a66,ear:'floppy',len:1.1,legH:.22,tail:'curly'}),
+ deer:a=>chibiQuad({body:0xc8843a,belly:0xfff0d8,spots:[0xfff4e0,8,1],ear:'point',earC:0xc8843a,neck:.35,horn:a?'antler':'',legH:.42,tail:'puff',snoutC:0xe8c8a0}),
+ guinea:()=>chibiBird({body:0x4a5266,dots:0xffffff,head:0x9ac8f0,wattle:0xe53935,crest:'',beak:0xe8c890,legC:0x5a5a6a}),
+ angora:()=>{const m=chibiQuad({body:0xfffaf2,puffs:1,ear:'long',earC:0xfff0e8,len:.8,legH:.14,hs:1.05,tail:'puff'});m.scale.setScalar(.75);return m},
+ horse:()=>chibiQuad({body:0x9a5a2a,mane:0x3a2210,neck:.5,ear:'point',snout:'long',snoutC:0xb87a4a,legH:.5,tail:'long',tailC:0x3a2210,len:1.15,hoofC:0x2a2020}),
+ donkey:()=>chibiQuad({body:0x8a8a92,belly:0xd8d8d8,mane:0x4a4a52,neck:.35,ear:'long',earC:0x8a8a92,snout:'long',snoutC:0xe8e8e8,legH:.38,tail:'long',tailC:0x4a4a52}),
+ peacock:a=>chibiBird({body:0x2a62d8,head:0x2a6ad8,wing:0x3a8a6a,crest:'fan',tail:a?'peacock':'short',tailC:0x3a8a6a,legH:.26,neck:.12,neckC:0x2a6ad8,beak:0xd8c8a0,legC:0x8a8a8a}),
+ yak:a=>chibiQuad({body:0x3a2a22,fluff:0x2a1e18,horn:a?'big':'',hornC:0xe8e0d0,ear:'round',snoutC:0x5a4a40,len:1.2,legH:.28,tail:'long',tailC:0x2a1e18,tuft:0x2a1e18}),
+ wagyu:a=>chibiQuad({body:0x2a1a14,belly:0x3a2a22,horn:a?'cow':'',ear:'round',snoutC:0x6a4a40,len:1.2,legH:.34,tail:'long',hoofC:0x1a1010}),
+ emu:()=>chibiBird({body:0x6a5238,puff:1,head:0x2f4a6a,neck:.35,neckC:0x5a7a9a,legH:.45,beak:0x3a3a3a,legC:0x6a6a6a,tail:'short',tailC:0x5a4228}),
+ camel:()=>chibiQuad({body:0xd8b070,hump:0xd0a462,neck:.6,ear:'round',snout:'long',snoutC:0xe8c890,legH:.5,len:1.1,tail:'long',tuft:0xc09050}),
+ reindeer:a=>chibiQuad({body:0x8a6040,belly:0xf4ece0,neckC:0xf4ece0,neck:.3,ear:'point',horn:a?'bigantler':'antler',nose:0xff2a2a,legH:.42,tail:'puff'}),
+ blackgoat:a=>chibiQuad({body:0x2a2a2c,horn:a?'goat':'',hornC:0x8a8070,beard:1,beardC:0x4a4a4c,ear:'floppy',legH:.34,tail:'puff',tailC:0x2a2a2c,len:.95}),
+ goldhen:()=>chibiBird({body:0xffc83a,wing:0xffa820,head:0xffd85a,comb:0xe53935,tail:'fan',tailC:0xff9a10,sparkle:1}),
+ iberico:()=>chibiQuad({body:0x6a4a44,belly:0x7a5a52,snout:'pig',snoutC:0x9a7a70,ear:'floppy',len:1.15,legH:.26,hoofC:0x111111,legC:0x3a2a28,tail:'curly'}),
+ whitehorse:()=>chibiQuad({body:0xfafafa,mane:0xffb8e0,neck:.5,ear:'point',snout:'long',snoutC:0xffeef4,legH:.5,tail:'long',tailC:0xffb8e0,len:1.15,hoofC:0xd8c060})};
+
 /* ======================= 音效 ======================= */
 const A={ctx:null};
 function initAudio(){if(A.ctx){if(A.ctx.state==='suspended')A.ctx.resume();return}try{A.ctx=new (window.AudioContext||window.webkitAudioContext)();A.out=A.ctx.createGain();A.out.gain.value=S.snd?.7:0;A.out.connect(A.ctx.destination);const b=A.ctx.createBuffer(1,A.ctx.sampleRate*2,A.ctx.sampleRate);const d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;A.noise=b}catch(e){}}
@@ -935,7 +1082,7 @@ function closePanel(){$('#modal').classList.remove('on')}
 $('#modal').onclick=e=>{if(e.target.id==='modal')closePanel()};
 function banner(msg,ms=7000){const b=$('#banner');b.innerHTML=msg;b.style.display='block';clearTimeout(banner.t);banner.t=setTimeout(()=>b.style.display='none',ms)}
 function bumpMoney(){$('#money').animate([{transform:'scale(1.15)'},{transform:'scale(1)'}],{duration:200})}
-function earn(v,kind){S.money+=v;if(EMBED)try{parent.postMessage({t:'earn',v},'*')}catch(e){}const lv0=farmLv();S.earn=(S.earn||0)+v;S.flow.push([S.t,v,kind]);if(farmLv()>lv0){setTimeout(()=>{SFX.fanfare();confetti(P.pos,80);banner(`🎉 農場升到 <b>等級 ${farmLv()}</b>！新的作物、動物、養殖場解鎖了，去商店看看`,8000)},400)}payDebt()}
+function earn(v,kind){S.money+=v;if(EMBED)try{parent.postMessage({t:'earn',v},'*')}catch(e){}const lv0=farmLv();S.earn=(S.earn||0)+v;S.flow.push([S.t,v,kind]);if(farmLv()>lv0){setTimeout(()=>{SFX.fanfare();confetti(P.pos,80);banner(`🎉 農場升到 <b>等級 ${farmLv()}/${LV_MAX}</b>！${lvUnlocks(farmLv())}`,9000)},400)}payDebt()}
 function spend(v,kind){S.money-=v;S.flow.push([S.t,-v,kind])}
 function payDebt(){if(S.debt>0&&S.money>=S.debt){S.money-=S.debt;S.flow.push([S.t,-S.debt,'debt']);S.debt=0;if(S.strike){S.strike=0;toast('💪 欠款付清了！員工、機器恢復工作',3500)}}}
 
@@ -945,14 +1092,14 @@ const penGate=k=>{const p=PENS[k];return p?V(p.x,0,p.z+p.d/2+1.3):null};
 const TUT=[
  {k:'buySeed',t:'到東邊的「🌱 種子店」買種子',at:()=>SHOPS.seed.ring},
  {k:'plant',t:'走進田裡播種（或按田邊木牌的「🌱 一鍵播種」）',at:()=>findField(s=>s.st==='empty')},
- {k:'water',t:'去水井拿水桶，站到乾掉的田上澆水',at:()=>S.hand.includes('water')?findField(s=>s.st==='grow'&&s.w<.5):V(-7,0,3.6),skipWet:1,need:()=>PLOTS.some(p=>S.plots[p.id].st==='grow'),wait:'先播種，等田地乾了再澆水'},
+ {k:'water',t:'有田快乾了！去水井拿水桶，站到那塊田上澆水',at:()=>S.hand.includes('water')?findField(s=>s.st==='grow'&&s.w<.35):V(-7,0,3.6),skipWet:1,need:()=>PLOTS.some(p=>{const s=S.plots[p.id];return s.st==='grow'&&s.w<.35})},
  {k:'harvest',t:'作物成熟後站上去採收（或按「✅ 一鍵採收」）',at:()=>findField(s=>s.st==='ripe'||s.st==='wither'),wait:'等作物長大成熟（右上「×1」可以加速測試）'},
  {k:'sell',t:'把菜籃子裡的東西拿去收購站賣（可以按「🧺 一鍵賣貨」）',at:()=>S.basket.length?V(0,0,2.2):null,wait:'先採收作物放進菜籃子'},
  {k:'buyAnimal',t:'去「🐣 繁殖場」買小動物',at:()=>SHOPS.breed.ring},
  {k:'release',t:'把小動物帶回養殖場，站上粉紅色圈圈放進去',at:()=>{const a=S.cage[0]||S.leash[0];return a?penGate(ANIM[a.k].pen):null},wait:'先去繁殖場買小動物'},
- {k:'feed',t:'去飼料桶拿飼料，放進養殖場的飼料槽',at:()=>S.hand.some(t=>t==='feed'||t==='hay')?penGate(ANIM[(S.animals[0]||{k:'chick'}).k].pen):V(7,0,3.6)},
+ {k:'feed',t:'去飼料桶拿飼料，放進養殖場的飼料槽',at:()=>{const pk=ANIM[(S.animals[0]||{k:'chick'}).k].pen,fd=(PEN_T[pk].food[0]==='hay'?'hay':'feed');if(S.hand.some(t=>PEN_T[pk].food.includes(t)))return penGate(pk);if((S.stock[fd]||0)<=0)return SHOPS.feed.ring;return fd==='hay'?V(10.5,0,3.4):V(7,0,3.6)},tx:()=>{const pk=ANIM[(S.animals[0]||{k:'chick'}).k].pen,fd=(PEN_T[pk].food[0]==='hay'?'hay':'feed');return (S.stock[fd]||0)<=0&&!S.hand.some(t=>PEN_T[pk].food.includes(t))?'飼料用完了，先去「🥫 飼料行」買飼料':''}},
  {k:'collect',t:'收雞蛋、鮮奶等產品，再拿去賣',at:()=>{for(const k in PENS){const p=PENS[k];if(p.ring.take&&p.ring.take.pile.some(x=>S.piles[k].some(it=>it[1]===x)))return penGate(k)}return null},wait:'動物吃飽後會慢慢生產（雞蛋、鮮奶…），出來了再去收'}];
-function tutDo(k){if(S.tutDone)return;S.tut[k]=(S.tut[k]||0)+1;if(TUT.every(s=>(S.tut[s.k]||0)>=2)){S.tutDone=1;SFX.fanfare();confetti(P.pos,60);toast('🎓 新手引導完成！接下來就靠你自己經營農場囉～',4500)}}
+function tutDo(k){S.tc=S.tc||{};S.tc[k]=(S.tc[k]||0)+1;if(S.tutDone)return;S.tut[k]=(S.tut[k]||0)+1;if(TUT.every(s=>(S.tut[s.k]||0)>=2)){S.tutDone=1;SFX.fanfare();confetti(P.pos,60);toast('🎓 新手引導完成！接下來就靠你自己經營農場囉～',4500)}}
 function tutNow(){if(S.tutDone)return null;const wet=curW().wet;for(const s of TUT){if((S.tut[s.k]||0)>=2)continue;if(s.skipWet&&wet)continue;if(s.need&&!s.need())continue;return s}return null}
 
 /* ======================= 每一步：作物、動物、天氣、自動化、帳單 ======================= */
@@ -979,7 +1126,7 @@ function step(dt,quiet){const OB=outB();const PROT=OFFSIM&&prof().protect;const 
   if(w.typhoon&&k0<.5&&k1>=.5&&!PROT){let dmg=0;PLOTS.forEach((p,i)=>{const s=S.plots[p.id],c=CROPS[s.c];if(!c||covered(p.f)||!c.ty)return;if(!(s.st==='ripe'||s.st==='wither'||(s.st==='grow'&&s.g>.4)))return;const r=srand(pi*97+i);if(r<.3){s.st='broken';s.rt=0;dmg++}else if(r<.65){s.st=s.st==='wither'?'rot':'wither';s.rt=0;dmg++}});
     if(dmg&&!quiet){SFX.bad();banner(`🌀 颱風最強的時候，${dmg} 格作物倒伏、田地損壞！站上去可以修復`)}}
   // 龍捲風
-  if(S.torAt===pi&&k1>=.4&&!S.tor&&!OFFSIM){S.torAt=-1;const z=rand(8,28);S.tor={x:-34,z,dz:rand(-.25,.25),life:40};if(!quiet){SFX.bad();banner('🌪️ 龍捲風出現了！快躲進家裡！龍捲風經過的田地會損壞',6000)}}
+  if(S.torAt===pi&&k1>=.4&&!S.tor&&!OFFSIM&&!TUTON){S.torAt=-1;const z=rand(8,28);S.tor={x:-34,z,dz:rand(-.25,.25),life:40};if(!quiet){SFX.bad();banner('🌪️ 龍捲風出現了！快躲進家裡！龍捲風經過的田地會損壞',6000)}}
   if(S.tor){const T=S.tor;const rd=dt/TS();T.x+=rd*1.7;T.z+=T.dz*rd;T.life-=rd;PLOTS.forEach(p=>{const s=S.plots[p.id];if(covered(p.f)||s.st==='broken')return;if(Math.hypot(p.x-T.x,p.z-T.z)<1.8&&Math.random()<rd*2){s.st='broken';s.c=s.c||'';s.rt=0;if(!quiet)puff(V(p.x,.6,p.z),12,0x8a7a5a,.2)}});if(T.x>36||T.life<=0){S.tor=null;if(!quiet)toast('🌪️ 龍捲風過去了，看看哪些田需要修復',3500)}}
   const night=hourOf(S.t)>19||hourOf(S.t)<5;
   for(const p of PLOTS){const s=S.plots[p.id],c=CROPS[s.c];const fi=p.f.i;
@@ -989,7 +1136,7 @@ function step(dt,quiet){const OB=outB();const PROT=OFFSIM&&prof().protect;const 
     else if(s.st==='ripe'){if(PROT)continue;s.rt+=dt;if(!quiet&&!s.warned&&s.rt>=ripeKeep(s)*.7){s.warned=1;warnWither(p)}if(s.rt>=ripeKeep(s)){s.st='wither';s.rt=0}}
     else if(s.st==='wither'){if(PROT)continue;s.rt+=dt;if(s.rt>=witherKeep(s)){s.st='rot';s.rt=0}}}
   // 烏鴉偷吃：成長中、成熟的作物會被啄（有布棚的田不會）
-  S.crows=S.crows||[];if(OFFSIM)S.crows=[];S.crowT=(S.crowT==null?120:S.crowT)-dt;if(S.crowT<=0&&!OFFSIM){S.crowT=rand(600,1500)*TS();const hr2=hourOf(S.t);const cand=PLOTS.filter(p=>{const s=S.plots[p.id];return ((s.st==='grow'&&s.g>.2)||s.st==='ripe')&&!covered(p.f)});
+  S.crows=S.crows||[];if(OFFSIM)S.crows=[];S.crowT=(S.crowT==null?120:S.crowT)-(TUTON?0:dt);if(S.crowT<=0&&!OFFSIM){S.crowT=rand(600,1500)*TS();const hr2=hourOf(S.t);const cand=PLOTS.filter(p=>{const s=S.plots[p.id];return ((s.st==='grow'&&s.g>.2)||s.st==='ripe')&&!covered(p.f)});
     if(cand.length&&!w.wet&&hr2>6&&hr2<19&&S.crows.length<6){const n=1+Math.floor(Math.random()*3);for(let i=0;i<n;i++){const p=cand[Math.floor(Math.random()*cand.length)];S.crows.push({id:(Math.random()*1e9)|0,pi:p.id,t:0})}if(!quiet)toast('🐦‍⬛ 烏鴉飛來偷吃作物了！走過去把牠們趕走（寵物也會幫忙）',3500)}}
   for(let i=S.crows.length-1;i>=0;i--){const c=S.crows[i];c.t+=dt/TS();const s=S.plots[c.pi];if(!s||s.st==='empty'||s.st==='rot'){S.crows.splice(i,1);continue}if(c.t>=30){if(s.st==='ripe'){s.st='wither';s.rt=0}else if(s.st==='grow')s.g=Math.max(0,s.g-.35);S.crows.splice(i,1)}}
   // 動物（天災時躲進小屋，不生產）
@@ -998,8 +1145,8 @@ function step(dt,quiet){const OB=outB();const PROT=OFFSIM&&prof().protect;const 
     const cyc=penDur(pk);if(d.eat){if(a.food<=0&&S.trough[pk]>0){S.trough[pk]--;a.food=cyc*(1+(OB.eat||0))}}else a.food=1;
     if(a.food>0){if(d.eat)a.food-=dt;if(shelter&&!OFFSIM)continue;
       if(a.age<1){a.age=Math.min(1,a.age+dt/(d.grow*6)*mul*(S.t<(S.boostUntil||0)?1.5:1));if(a.age>=1&&!quiet){toast(`${d.em} 有一隻${d.baby}長大了！${d.prod?'開始會生產'+ITEMS[d.prod].n:'可以牽去收購站賣'}`);SFX.ding()}}
-      else if(d.prod){const bonus=a.k==='bee'?1+.5*Math.min(2,PLOTS.filter(p=>S.plots[p.id].c==='sunflower'&&S.plots[p.id].st!=='empty').length/6):1;a.prog=(a.prog||0)+dt/cyc*(OFFSIM?1:mul);if(a.prog>=1){a.prog=0;a.acc=(a.acc||0)+durOf(cyc).m*(240/d.prodT)*bonus*(1+(OB.animal||0))*(['wool','goatmilk','alpacawool'].includes(d.prod)?1+(OB.wool||0):1);while(a.acc>=1&&S.piles[pk].length<60){a.acc--;S.piles[pk].push([S.t,d.prod])}}}}}
-  for(const pk in S.piles){const L=S.piles[pk];let bad=0;for(let i=L.length-1;i>=0;i--){if(PROT){L[i][0]+=dt;continue}if(['wool','alpacawool','honey'].includes(L[i][1]))continue;if(S.t-L[i][0]>spoilSec(pk)*(1+(OB.spoil||0))){L.splice(i,1);bad++}}if(bad&&!quiet){SFX.bad();toast(`🥚 ${PEN_T[pk].n}有 ${bad} 份產品放太久壞掉了！（買「自動收集機」或雇牧場工就不會壞）`,3800)}}
+      else if(d.prod){const bonus=ANIM[a.k].pen==='apiary'?1+.5*Math.min(2,PLOTS.filter(p=>S.plots[p.id].c==='sunflower'&&S.plots[p.id].st!=='empty').length/6):1;a.prog=(a.prog||0)+dt/cyc*(OFFSIM?1:mul);if(a.prog>=1){a.prog=0;a.acc=(a.acc||0)+durOf(cyc).m*(240/d.prodT)*bonus*(1+(OB.animal||0))*(['wool','goatmilk','alpacawool','angora'].includes(d.prod)?1+(OB.wool||0):1);while(a.acc>=1&&S.piles[pk].length<60){a.acc--;S.piles[pk].push([S.t,d.prod])}}}}}
+  for(const pk in S.piles){const L=S.piles[pk];let bad=0;for(let i=L.length-1;i>=0;i--){if(PROT){L[i][0]+=dt;continue}if(NOSPOIL(L[i][1]))continue;if(S.t-L[i][0]>spoilSec(pk)*(1+(OB.spoil||0))){L.splice(i,1);bad++}}if(bad&&!quiet){SFX.bad();toast(`🥚 ${PEN_T[pk].n}有 ${bad} 份產品放太久壞掉了！（買「自動收集機」或雇牧場工就不會壞）`,3800)}}
   // ===== 自動化 =====
   for(const f of FIELDS){const fi=f.i;const ps=PLOTS.filter(p=>p.f===f);
     if(fmOn(fi,'sprinkler')||staffOn('waterer',fi)||fmOn(fi,'sprinkler0'))ps.forEach(p=>{const s=S.plots[p.id];if(fmOn(fi,'sprinkler')||s.w<.3)s.w=1});
@@ -1021,9 +1168,9 @@ function step(dt,quiet){const OB=outB();const PROT=OFFSIM&&prof().protect;const 
   const day=dayOf(S.t-DAY*.25);if(S.day<0)S.day=day;if(day>S.day){S.day=day;payBills(quiet)}
   // ===== 隨機事件 =====
   if(S.ev&&S.t>S.ev.until){if(!quiet)toast(`${S.ev.em}「${S.ev.t}」結束了`);S.ev=null}
-  S.evT-=dt;if(S.evT<=0&&FIELDS.length){S.evT=DAY*rand(1.3,2.4);if(S.earn>300)startEvent(quiet)}}
-function billInfo(){let rent=0;LOTS.forEach(L=>{if(lotState(L.id).st==='rent')rent+=LOT_PRICE[L.kind].rent});
-  let wage=0;STAFF.forEach(st=>{wage+=Object.keys(S.staff[st.id]||{}).length*st.wage});
+  if(!TUTON)S.evT-=dt;if(S.evT<=0&&FIELDS.length){S.evT=DAY*rand(1.3,2.4);if(S.earn>300)startEvent(quiet)}}
+function billInfo(){let rent=0;LOTS.forEach(L=>{if(lotState(L.id).st==='rent')rent+=lotPrice(L).rent});
+  let wage=0;STAFF.forEach(st=>{wage+=Object.keys(S.staff[st.id]||{}).length*st.wage});wage+=Object.keys((S.guard||{}).dog||{}).length*10;
   let power=0;for(const fi in S.fm)FIELD_MACH.forEach(m=>{if(S.fm[fi][m.id])power+=m.day});for(const pk in S.pm)PEN_MACH.forEach(m=>{if(S.pm[pk][m.id])power+=m.day});GLOBAL_MACH.forEach(m=>{if(S.gm[m.id])power+=m.day});
   const water=FIELDS.filter(f=>PLOTS.some(p=>p.f===f&&S.plots[p.id].st!=='empty')).length*3;const k=prof().bill;rent=Math.round(rent*k);wage=Math.round(wage*k);power=Math.round(power*k);return {rent,wage,power,water,total:rent+wage+power+water}}
 function payBills(quiet){const b=billInfo();
@@ -1047,8 +1194,8 @@ function syncHand(){if(ACTOR)return;const a=P.o.userData.anchor;while(handMeshes
   handMeshes.forEach((m,i)=>{if(m.userData.type!==S.hand[i]){a.remove(m);handMeshes[i]=makeItem(S.hand[i]);a.add(handMeshes[i])}handMeshes[i].position.set(0,i*ITEM_H,0)})}
 let basketKey='';function syncBasket(){if(ACTOR)return;const k=S.basket.length+':'+S.basket.slice(-12).join(',');if(k===basketKey)return;basketKey=k;const f=P.o.userData.fillG;f.clear();const n=Math.min(14,S.basket.length);
   for(let i=0;i<n;i++){const t=S.basket[S.basket.length-1-i];const m=miniItem(t);const a=i*2.4,r=i<6?.14:.22;m.position.set(Math.cos(a)*r*(i?1:0),-.15+Math.min(.32,i*.025),Math.sin(a)*r*(i?1:0));f.add(m)}}
-let cageKey='';const cageVis=[];function syncCage(){if(ACTOR)return;const k=S.cage.map(a=>a.k+(a.age>=1?'A':'B')).join(',');const u=P.o.userData;u.cage.visible=S.cage.length>0;if(k===cageKey)return;cageKey=k;u.cageIn.clear();cageVis.length=0;
-  S.cage.forEach((a,i)=>{const m=animalModel(a);m.scale.multiplyScalar(a.k==='bee'?.25:.33);m.position.set((i%4-1.5)*.1,0,(Math.floor(i/4)-.5)*.12);m.rotation.y=rand(0,6);u.cageIn.add(m);cageVis.push(m)})}
+let cageKey='';const cageVis=[];function syncCage(){if(ACTOR)return;const k=S.cage.map(a=>a.k+(a.age>=1?'A':'B')).join(',');const u=P.o.userData;u.cage.visible=false;if(!u.bkA){u.bkA=new THREE.Group();u.bkA.position.y=.36;u.basket.add(u.bkA)}if(k===cageKey)return;cageKey=k;u.bkA.clear();cageVis.length=0;
+  S.cage.forEach((a,i)=>{const m=animalModel(a);m.scale.multiplyScalar(ANIM[a.k].pen==='apiary'?.3:.6);const an=i*2.4,r=i?.16:0;m.position.set(Math.cos(an)*r,(i>=4?.12:0),Math.sin(an)*r);m.rotation.y=Math.PI/4+rand(-.6,.6);u.bkA.add(m);cageVis.push(m)})}
 const LEASH=[];const ropeMat=new THREE.LineBasicMaterial({color:0x8a5a2a});
 function syncLeash(){if(ACTOR)return;while(LEASH.length>S.leash.length){const l=LEASH.pop();scene.remove(l.o,l.line)}S.leash.forEach((a,i)=>{const key=a.k+(a.age>=1?'A':'B');let l=LEASH[i];if(l&&l.key!==key){scene.remove(l.o,l.line);l=null}
   if(!l){const o=animalModel(a);o.position.copy(P.pos).add(V(-1-i,0,-1));scene.add(o);const line=new THREE.Line(new THREE.BufferGeometry().setFromPoints([V(),V()]),ropeMat);scene.add(line);l=LEASH[i]={o,line,key};puff(o.position.clone().add(V(0,.5,0)),8)}})}
@@ -1066,7 +1213,7 @@ const AV=new Map();
 function syncAnimals(){const ids=new Set(S.animals.map(a=>a.id));for(const [id,v] of AV)if(!ids.has(id)){scene.remove(v.o);dropL(v.L);AV.delete(id)}
   for(const a of S.animals){let v=AV.get(a.id);const key=a.k+(a.age>=1?'A':'B');const pen=PENS[ANIM[a.k].pen];if(!pen)continue;
     if(v&&v.key!==key){const pos=v.o.position.clone();scene.remove(v.o);v.o=animalModel(a);v.o.userData.aid=a.id;v.o.position.copy(pos);scene.add(v.o);v.key=key;puff(pos.clone().add(V(0,.6,0)),12,0xfff3a0)}
-    if(!v){const o=animalModel(a);o.userData.aid=a.id;o.position.set(pen.x+rand(-pen.w/3,pen.w/3),0,pen.z+rand(-pen.d/3,pen.d/3)+.5);if(a.k==='bee')o.position.set(pen.shed.position.x+(S.animals.filter(x=>x.k==='bee').indexOf(a))*1.2+3.5,0,pen.shed.position.z+.5);scene.add(o);v={o,key,tx:o.position.x,tz:o.position.z,wt:0,L:label('',V(0,0,0),9)};AV.set(a.id,v)}}}
+    if(!v){const o=animalModel(a);o.userData.aid=a.id;o.position.set(pen.x+rand(-pen.w/3,pen.w/3),0,pen.z+rand(-pen.d/3,pen.d/3)+.5);if(ANIM[a.k].pen==='apiary')o.position.set(pen.shed.position.x+(S.animals.filter(x=>ANIM[x.k].pen==='apiary').indexOf(a)%5)*1.2+3.5,0,pen.shed.position.z+.5);scene.add(o);v={o,key,tx:o.position.x,tz:o.position.z,wt:0,L:label('',V(0,0,0),9)};AV.set(a.id,v)}}}
 syncAnimals();
 
 /* ======================= 拿取、放下 ======================= */
@@ -1119,21 +1266,29 @@ addRing({kind:'well',x:-7,z:3.6,t:'💧 水井'});
 addRing({kind:'faucet',x:-4.6,z:3.5,t:'🚿 水龍頭'});
 addRing({kind:'src',item:'feed',x:7,z:3.6,t:'飼料桶'});
 addRing({kind:'src',item:'hay',x:10.5,z:3.4,t:'乾草堆'});
+// 回收桶：手上多拿的飼料、乾草放回倉庫；水桶倒掉
+{const g=new THREE.Group();g.position.set(8.75,0,2.1);scene.add(g);const bd=mesh(new THREE.CylinderGeometry(.42,.34,.85,14),M(0x3fae5a));bd.position.y=.43;g.add(bd);const lid=mesh(new THREE.CylinderGeometry(.46,.46,.08,14),M(0x2f8a45));lid.position.y=.88;g.add(lid);
+  const sp=sprite('♻️',.55);sp.position.set(0,1.35,0);g.add(sp);RECYC=RECYC||{};RECYC.g=g;BLOCKS.push([8.75,2.1,.9,.9])}
+addRing({kind:'recycle',x:8.75,z:4.7,t:'回收桶'});
 const homeRing=RINGS.find(r=>r.kind==='home');
 // 土地的圈圈
 const LOTR={};
 function lotRing(L){const ls=lotState(L.id);if(LOTR[L.id]){dropRing(LOTR[L.id]);delete LOTR[L.id]}if(L.kind==='field'&&ls.done)return;if(L.kind==='pen'&&ls.pen)return;const d=L.kind==='field'?4.2:7;LOTR[L.id]=addRing({kind:ls.done?'build':'lot',lot:L.id,x:L.x,z:L.z+d/2+1.1,t:''})}
 LOTS.forEach(lotRing);
-const newAnimal=k=>({id:nid++,k,age:k==='bee'?1:0,food:0,prog:0});
+const newAnimal=k=>({id:nid++,k,age:ANIM[k].pen==='apiary'?1:0,food:0,prog:0});
 function pay(p,kind){if(S.money<p){hint('money'+p,`💸 錢不夠！需要 💵${p}，你有 💵${Math.floor(S.money)}`);return false}spend(p,kind);SFX.buy();bumpMoney();return true}
 const hasSellable=()=>S.basket.some(t=>ITEMS[t].p>0)||S.cage.some(a=>a.age>=1&&ANIM[a.k].sell)||S.leash.some(a=>a.age>=1&&ANIM[a.k].sell);
 
 /* ======================= 站在圈圈上的動作 ======================= */
+var RECYC=RECYC||{};
 function ringAction(r,dt){r.cd-=dt;if(r.cd>0)return;
   switch(r.kind){
   case 'market':return marketAct(r);
   case 'well':{if(r.stay<.2)return;if(handFull()){if(!r.used){r.used=1;if(!S.hand.includes('water'))hint('hfull','✋ 手上拿滿了，先放下其他東西')}return}addHand('water',V(-7,1,1.5));r.used=1;r.cd=.15;return}
   case 'faucet':{if(r.opened||r.stay<.3)return;r.opened=1;if(!S.own.hose){hint('nohose','🚿 要先在「🔧 五金農具行」買水管');return}P.hose=!P.hose;SFX.click();toast(P.hose?'🚿 拉出水管了！走過的田地會自動澆水（最遠 26 公尺）':'🚿 把水管收回去了');return}
+  case 'recycle':{if(r.stay<.2)return;const h=takeHand(t=>t==='feed'||t==='hay'||t==='water');if(!h){if(!r.used){r.used=1;hint('recy0','♻️ 手上沒有可以回收的東西（飼料、乾草、水桶）')}return}
+    if(h.t==='water'){flyAway('water',h.wp,V(8.75,1,2.1));for(let i=0;i<5;i++)particle(V(8.75+rand(-.3,.3),1,2.1+rand(-.3,.3)),V(0,-1,0),0x5cb8ff,.05,.4,-6)}else{S.stock[h.t]=Math.min(STOCK_MAX,(S.stock[h.t]||0)+1);flyAway(h.t,h.wp,h.t==='feed'?V(7,1,1.5):V(10.5,1,1.3))}
+    SFX.place();r.cd=.12;if(!S.hand.length)toast('♻️ 手上的東西都回收好了（飼料、乾草放回倉庫）',1800);RECYC.bump=.3;tutDo('recycle');return}
   case 'src':{if(r.stay<.2)return;const k=r.item;if(S.stock[k]<=0){if(!r.used){r.used=1;hint('nostock'+k,`${ITEMS[k].em} ${ITEMS[k].n}用完了！去「🥫 飼料行」買`)}return}if(handFull()){if(!r.used){r.used=1;hint('hfull','✋ 手上拿滿了')}return}S.stock[k]--;addHand(k,V(r.x,1.1,r.z-2));r.used=1;r.cd=.15;return}
   case 'trough':{const T=PEN_T[r.pen];if(S.trough[r.pen]>=10){if(!r.used){r.used=1;toast(`🥣 ${T.n}的飼料槽已經滿了`,1500)}return}
     let h=takeHand(t=>T.food.includes(t)),from;if(h)from=h.wp;else{h=takeBasket(t=>T.food.includes(t));if(h)from=h.wp}
@@ -1164,7 +1319,19 @@ function marketAct(r){if(r.stay<.15)return;
   if(r.n&&!r.done){r.done=1;clerkSay(pickL('bye')+`<br>一共 💵${r.sum}`,3200);toast(`💰 賣了 ${r.n} 件，收入 💵${r.sum}`);tutDo('sell');bumpMoney();P.auto=null}}
 
 /* ======================= 走路帶路 ======================= */
-function goTo(pos){const pts=[];for(const k in PENS){const p=PENS[k];if(Math.abs(P.pos.x-p.x)<p.w/2&&Math.abs(P.pos.z-p.z)<p.d/2)pts.push(V(p.x,0,p.z+p.d/2+1.2))}pts.push(pos.clone());P.auto={pts};toast('🚶 自動走過去（自己移動就會取消）',1800)}
+// 自動走路：用格子找路，繞過圍籬、房子、商店
+function walkable(x,z){const q=V(x,0,z);const h=P.hose;P.hose=false;collide(q);P.hose=h;return Math.abs(q.x-x)<.05&&Math.abs(q.z-z)<.05}
+function findPath(from,to){const X0=-46,Z0=-42,NX=87,NZ=89,id=(i,j)=>j*NX+i;const ci=x=>clamp(Math.round(x-X0),0,NX-1),cj=z=>clamp(Math.round(z-Z0),0,NZ-1);
+  const ok=new Uint8Array(NX*NZ);const free=(i,j)=>{const k=id(i,j);if(!ok[k])ok[k]=walkable(i+X0,j+Z0)?1:2;return ok[k]===1};
+  const near=(x,z)=>{let bi=ci(x),bj=cj(z);if(free(bi,bj))return [bi,bj];for(let r=1;r<6;r++)for(let a=-r;a<=r;a++)for(const [di,dj] of [[a,-r],[a,r],[-r,a],[r,a]]){const i=bi+di,j=bj+dj;if(i>=0&&j>=0&&i<NX&&j<NZ&&free(i,j))return [i,j]}return [bi,bj]};
+  const [si,sj]=near(from.x,from.z),[ti,tj]=near(to.x,to.z);const g=new Float32Array(NX*NZ).fill(1e9),par=new Int32Array(NX*NZ).fill(-1),done=new Uint8Array(NX*NZ);const open=[[0,si,sj]];g[id(si,sj)]=0;let found=false,n=0;
+  while(open.length&&n++<9000){let bi=0;for(let k=1;k<open.length;k++)if(open[k][0]<open[bi][0])bi=k;const [,i,j]=open.splice(bi,1)[0];const k0=id(i,j);if(done[k0])continue;done[k0]=1;if(i===ti&&j===tj){found=true;break}
+    for(const [di,dj,c] of [[1,0,1],[-1,0,1],[0,1,1],[0,-1,1],[1,1,1.41],[1,-1,1.41],[-1,1,1.41],[-1,-1,1.41]]){const a=i+di,b=j+dj;if(a<0||b<0||a>=NX||b>=NZ||!free(a,b))continue;if(di&&dj&&(!free(i+di,j)||!free(i,j+dj)))continue;if(!walkable(i+X0+di*.25,j+Z0+dj*.25)||!walkable(i+X0+di*.5,j+Z0+dj*.5)||!walkable(i+X0+di*.75,j+Z0+dj*.75))continue;const k=id(a,b),ng=g[k0]+c;if(ng<g[k]){g[k]=ng;par[k]=k0;open.push([ng+Math.hypot(ti-a,tj-b),a,b])}}}
+  if(!found)return [to.clone()];const cells=[];for(let k=id(ti,tj);k>=0;k=par[k])cells.unshift(V(k%NX+X0,0,Math.floor(k/NX)+Z0));
+  const clear=(a,b)=>{const L=a.distanceTo(b),m=Math.ceil(L/.2);for(let t=1;t<m;t++){const q=a.clone().lerp(b,t/m);if(!walkable(q.x,q.z))return false}return true};
+  const out=[];let cur=from.clone();let k=0;while(k<cells.length-1){let far=k+1;for(let m=cells.length-1;m>k+1;m--)if(clear(cur,cells[m])){far=m;break}out.push(cells[far]);cur=cells[far];k=far}
+  if(out.length)out.pop();out.push(to.clone());return out}
+function goTo(pos){P.auto={pts:findPath(P.pos,pos)};toast('🚶 自動走過去（自己移動就會取消）',1800)}
 
 /* ======================= 我的家（避雨、避雷） ======================= */
 function doorAnim(){anim(1.3,k=>HOME.door.rotation.y=-Math.sin(k*Math.PI)*1.7)}
@@ -1212,8 +1379,8 @@ function enterHome(){if(S.inHome)return;basketDown();S.inHome=1;P.auto=null;P.ho
 function exitHome(walk=true){S.inHome=0;setTimeout(basketUp,250);$('#homeUI').style.display='none';HAI.mode='';setPose('stand');HOME.wdDoors.forEach(d=>d.rotation.y=0);HOME.roof.visible=true;HOME.cut.forEach(m=>m.visible=true);P.o.userData.anchor.visible=true;
   doorAnim();SFX.door();P.pos.set(HOME.x,0,HOME.z+2.55);P.dir=0;P.o.rotation.y=0;P.o.visible=true;LEASH.forEach(l=>{l.o.visible=true;l.line.visible=true;l.o.position.copy(P.pos)});homeRing.opened=1;P.onR=homeRing;if(walk)P.auto={pts:[V(HOME.x,0,HOME.z+4.9)]};puff(P.pos.clone().add(V(0,.6,.4)),8)}
 function homeUI(force){if(!S.inHome)return;const w=curW(),bad=w.bolt||w.typhoon||S.tor;const sp=HSPOT[HAI.spot];const act=HAI.mode==='do'&&sp?`${sp.em} ${sp.t}`:'🚶 在家裡走來走去';
-  const h=`<div class="box hm"><b>🏠 在家裡</b>　<span class="act">${act}</span><br><small>${bad?`外面${S.tor?'🌪️ 龍捲風':w.em+' '+w.n}，待在家裡很安全 👍`:`外面天氣：${w.em} ${w.n}`}　作物、動物、員工都繼續運作</small><div class="hbtn"><button class="hb b" id="bWard">👗 衣櫥</button><button class="hb y" id="bDecor">🛋️ 裝潢</button><button class="hb b" id="bFridge">🧊 冰箱</button><button class="hb" id="bOut">🚪 出門</button></div></div>`;
-  const e=$('#homeUI');if(e.dataset.h!==h){e.dataset.h=h;e.innerHTML=h;$('#bOut').onclick=()=>{SFX.click();exitHome()};$('#bWard').onclick=()=>{SFX.click();openWardrobe()};$('#bDecor').onclick=()=>{SFX.click();openShop('decor')};$('#bFridge').onclick=()=>{SFX.click();openShop('fridge')}}}
+  const h=`<div class="box hm"><b>🏠 在家裡</b>　<span class="act">${act}</span><br><small>${bad?`外面${S.tor?'🌪️ 龍捲風':w.em+' '+w.n}，待在家裡很安全 👍`:`外面天氣：${w.em} ${w.n}`}　作物、動物、員工都繼續運作</small><div class="hbtn"><button class="hb b" id="bWard">👗 衣櫥</button><button class="hb y" id="bDecor">🛋️ 裝潢</button><button class="hb b" id="bFridge">🧊 冰箱</button><button class="hb rec" id="bRec">📋 紀錄看板</button><button class="hb" id="bOut">🚪 出門</button></div></div>`;
+  const e=$('#homeUI');if(e.dataset.h!==h){e.dataset.h=h;e.innerHTML=h;$('#bOut').onclick=()=>{SFX.click();exitHome()};$('#bWard').onclick=()=>{SFX.click();openWardrobe()};$('#bDecor').onclick=()=>{SFX.click();openShop('decor')};$('#bFridge').onclick=()=>{SFX.click();openShop('fridge')};$('#bRec').onclick=()=>{SFX.click();openRecord()}}}
 
 /* ======================= 衣櫥：換裝（有即時預覽） ======================= */
 let WP=null;
@@ -1241,34 +1408,36 @@ const cropFlags=c=>[c.cold?'🥶怕冷':'',c.heat?'🥵怕熱':'',c.ty?'🌀怕�
 const feedP=k=>Math.max(1,Math.round({feed:3,hay:2}[k]*evMod('feed')));const STOCK_MAX=200;
 const SHOP_HTML={
  seed(){const se=seasonOf(S.t),lv=farmLv();const ks=Object.keys(CROPS).sort((a,b)=>((CROPS[a].lv||1)>lv)-((CROPS[b].lv||1)>lv)||okSeason(CROPS[b],se)-okSeason(CROPS[a],se)||(CROPS[a].lv||1)-(CROPS[b].lv||1));
-  return `<h2>🌱 種子店</h2><div>現在是 <b>${SEASON[se]}天</b>　農場 ⭐等級 ${lv}　每種種子最多帶 ${SEED_MAX} 包，種一格用一包。</div><div class="goods">${ks.map(k=>{const c=CROPS[k],lock=(c.lv||1)>lv,have=S.seeds[k]||0,ok=okSeason(c,se);
-   return card(c.em,c.n+(c.tree?'（果樹）':''),`種子 💵${c.seed}／包　身上有 ${have} 包<br>⏱️ 種植時間：20 分鐘～8 小時自己選${c.tree?'（果樹收完會再結果）':''}<br>📅 季節：${c.se.map(i=>SEASON[i]).join('、')}${ok?' ✔':' <span style="color:#c0392b">（現在不能種）</span>'}<br>💰 預估（種 ${durName(durOf(S.dur||7200).s)}）：每格收 ${Math.round(c.yield*durOf(S.dur||7200).m)} 個，可賣 💵${Math.round(c.yield*durOf(S.dur||7200).m)*c.price}<br>${cropFlags(c)}`,
+  return `<h2>🌱 種子店</h2><div>現在是 <b>${SEASON[se]}天</b>　農場 ⭐等級 ${lv}　每種種子最多帶 ${SEED_MAX} 包，種一格用一包。</div>${(()=>{const h=Object.keys(S.seeds).filter(k=>S.seeds[k]>0);return `<div style="margin:6px 0;padding:8px 10px;background:#f2ffe4;border:2px solid #9ad06a;border-radius:12px;font-size:15px">🎒 <b>你身上的種子</b>：${h.length?h.map(k=>`${CROPS[k].em}${CROPS[k].n} <b>${S.seeds[k]}</b> 包`).join('　'):'一包都沒有'}</div>`})()}<div class="goods">${ks.map(k=>{const c=CROPS[k],lock=(c.lv||1)>lv,have=S.seeds[k]||0,ok=okSeason(c,se);
+   return card(c.em,c.n+(c.tree?'（果樹）':''),`種子 💵${c.seed}／包　<b style="color:#2f7a1a">身上有 ${have} 包</b><br>⏱️ 種植時間：20 分鐘～8 小時自己選${c.tree?'（果樹收完會再結果）':''}<br>📅 季節：${c.se.map(i=>SEASON[i]).join('、')}${ok?' ✔':' <span style="color:#c0392b">（現在不能種）</span>'}<br>💰 預估（種 ${durName(durOf(S.dur||7200).s)}）：每格收 ${Math.round(c.yield*durOf(S.dur||7200).m)} 個，可賣 💵${Math.round(c.yield*durOf(S.dur||7200).m)*c.price}<br>${cropFlags(c)}`,
     lock?`<button disabled>🔒 等級 ${c.lv}</button>`:`<button data-a="seed" data-v="${k}:1" ${have>=SEED_MAX?'disabled':''}>買 1 包</button><button data-a="seed" data-v="${k}:6" ${have>=SEED_MAX?'disabled':''}>買 6 包<br><small>💵${c.seed*6}</small></button>`,lock)}).join('')}</div>`},
  feed(){return `<h2>🥫 飼料行</h2><div>買的飼料、乾草會送到廣場的「🌰 飼料桶」和「🌾 乾草堆」，要用時站上去拿。倉庫最多放 ${STOCK_MAX} 份。${evMod('feed')<1?'<br>🏷️ <b style="color:#c0392b">週年慶 6 折中！</b>':''}<br>💡 有些動物也吃作物（玉米、地瓜、牧草…），可以直接從菜籃子放進飼料槽。</div><div class="goods">${['feed','hay'].map(k=>{const it=ITEMS[k],p=feedP(k);const who=Object.keys(PEN_T).filter(pk=>PEN_T[pk].food.includes(k)).map(pk=>PEN_T[pk].em+PEN_T[pk].n).join('、');
    return card(it.em,it.n,`每份 💵${p}　倉庫裡 <b>${S.stock[k]}</b>/${STOCK_MAX}<br>🐾 給這些地方吃：${who}<br>放 1 份進飼料槽，動物可以吃一陣子`,`<button data-a="feed" data-v="${k}:10" ${S.stock[k]>=STOCK_MAX?'disabled':''}>買 10 份<br><small>💵${p*10}</small></button><button data-a="feed" data-v="${k}:50" ${S.stock[k]>=STOCK_MAX?'disabled':''}>買 50 份<br><small>💵${p*50}</small></button>`)}).join('')}</div>`},
  tool(){return `<h2>🔧 五金農具行</h2><h3>🧰 農具（買一次就一直有）</h3><div class="goods">${TOOLS.map(t=>card(t.em,t.n,`${t.d}<br>價格 💵${t.p}`,S.own[t.id]?'<button disabled>✔ 已經有了</button>':`<button data-a="tool" data-v="${t.id}">買 💵${t.p}</button>`)).join('')}</div>
   <h3>🪵 養殖場材料（蓋一座養殖場：每種各 1 個）</h3><div class="goods">${MATS.map(m=>card(m.em,m.n,`${m.d}<br>價格 💵${m.p}　身上有 <b>${S.mats[m.id]||0}</b> 個`,`<button data-a="mat" data-v="${m.id}">買 1 個</button>`)).join('')}</div>
-  <div class="chooser"><button data-a="matset" data-v="1">📦 一次買齊一座養殖場的材料（💵${MATS.reduce((a,m)=>a+m.p,0)}）</button></div>`},
- breed(){const lv=farmLv();return `<h2>🐣 繁殖場</h2><div>買來的小動物：小隻的放進<b>手提籠子</b>（${S.cage.length}/${cap.cage()}），大隻的用<b>繩子牽著</b>（${S.leash.length}/${cap.leash()}），親手帶回養殖場門口的粉紅圈圈放進去。</div><div class="goods">${Object.keys(ANIM).map(k=>{const d=ANIM[k],T=PEN_T[d.pen];const lock=(d.lv||1)>lv;const n=ownedCount(k);let why='';
-   if(lock)why=`🔒 等級 ${d.lv}`;else if(!PENS[d.pen])why=`要先蓋「${T.n}」`;else if(n>=d.max)why='已經養滿了';else if(d.carry==='cage'?S.cage.length>=cap.cage():S.leash.length>=cap.leash())why=d.carry==='cage'?'籠子滿了':'手上牽滿了';
+  <div class="chooser"><button data-a="matset" data-v="1">📦 一次買齊一座養殖場的材料（💵${MATS.reduce((a,m)=>a+m.p,0)}）</button></div>${guardShop()}`},
+ breed(){const lv=farmLv();return `<h2>🐣 繁殖場</h2><div>買來的小動物：小隻的放進<b>手提籠子</b>（${S.cage.length}/${cap.cage()}），大隻的用<b>繩子牽著</b>（${S.leash.length}/${cap.leash()}），親手帶回養殖場門口的粉紅圈圈放進去。</div><div class="goods">${Object.keys(ANIM).sort((a,b)=>((ANIM[a].lv||1)>lv)-((ANIM[b].lv||1)>lv)||(ANIM[a].lv||1)-(ANIM[b].lv||1)).filter(k=>(ANIM[k].lv||1)<=lv+6).map(k=>{const d=ANIM[k],T=PEN_T[d.pen];const lock=(d.lv||1)>lv;const n=ownedCount(k);let why='';
+   if(lock)why=`🔒 等級 ${d.lv}`;else if(!PENS[d.pen])why=`要先蓋「${T.n}」`;else if(n>=animMax(k))why='已經養滿了';else if(d.carry==='cage'?S.cage.length>=cap.cage():S.leash.length>=cap.leash())why=d.carry==='cage'?'籠子滿了':'手上牽滿了';
    const prod=d.prod?`生產 ${ITEMS[d.prod].em}${ITEMS[d.prod].n}（每 ${fmtDur(penDur(d.pen))} 約 ${(durOf(penDur(d.pen)).m*240/d.prodT).toFixed(1)} 份，每份 💵${ITEMS[d.prod].p}）`:`長大後可以賣 💵${d.sell}`;
-   return card(d.bem,`${d.baby}`,`💵${d.buy}　已經有 ${n}/${d.max} 隻<br>⏳ 長大：${fmtDur(d.grow*6)}　🏠 住：${T.em}${T.n}<br>💰 ${prod}<br>🥣 吃：${FOOD_NAME(T.food)}<br>${d.carry==='cage'?'🪺 用籠子提回去':'🪢 用繩子牽回去'}`,why?`<button disabled>${why}</button>`:`<button data-a="animal" data-v="${k}">買 💵${d.buy}</button>`,lock||!!why)}).join('')}</div>`},
+   return card(d.bem,`${d.baby}`,`💵${d.buy}　已經有 ${n}/${animMax(k)} 隻<br>⏳ 長大：${fmtDur(d.grow*6)}　🏠 住：${T.em}${T.n}<br>💰 ${prod}<br>🥣 吃：${FOOD_NAME(T.food)}<br>${d.carry==='cage'?'🪺 用籠子提回去':'🪢 用繩子牽回去'}`,why?`<button disabled>${why}</button>`:`<button data-a="animal" data-v="${k}">買 💵${d.buy}</button>`,lock||!!why)}).join('')}</div>${dogShop()}`},
  car(){const fl=FIELDS.slice().sort((a,b)=>a.i-b.i);const chips=(act,id,list,p)=>list.map(([key,name,on])=>`<button data-a="${act}" data-v="${id}:${key}" class="${on?'on':''}" ${on?'disabled':''}>${on?'✔ ':''}${name}</button>`).join('');
   return `<h2>🚜 農機車行</h2><h3>🚲 交通工具（移動更快、菜籃子多載）</h3><div class="goods">${VEH.map(v=>{const own=S.own['v_'+v.id];return card(v.em,v.n,`${v.d}<br>價格 💵${v.p}`,own?(S.veh===v.id?'<button data-a="veh" data-v="">✔ 騎乘中<br><small>點一下下車</small></button>':`<button data-a="veh" data-v="${v.id}">騎這台</button>`):`<button data-a="buyVeh" data-v="${v.id}">買 💵${v.p}</button>`)}).join('')}</div>
   <h3>🌾 田地機器（每塊田一台，選要裝在哪塊田；每天付電費）</h3><div class="goods">${FIELD_MACH.map(m=>card(m.em,m.n,`${m.d}<br>每台 💵${m.p}　每天電費 💵${m.day}`,chips('fm',m.id,fl.map(f=>[f.i,`第${f.i+1}塊田`,!!(S.fm[f.i]&&S.fm[f.i][m.id])])),0,1)).join('')}</div>
   <h3>🐄 養殖場機器</h3><div class="goods">${PEN_MACH.map(m=>card(m.em,m.n,`${m.d}<br>每台 💵${m.p}　每天電費 💵${m.day}`,chips('pm',m.id,Object.keys(PENS).filter(k=>m.id!=='feeder'||PEN_T[k].food.length).map(k=>[k,PEN_T[k].n,!!(S.pm[k]&&S.pm[k][m.id])])),0,1)).join('')}</div>
   <h3>🚚 整座農場</h3><div class="goods">${GLOBAL_MACH.map(m=>card(m.em,m.n,`${m.d}<br>💵${m.p}　每天油錢 💵${m.day}`,S.gm[m.id]?'<button disabled>✔ 已經有了</button>':`<button data-a="gm" data-v="${m.id}">買 💵${m.p}</button>`)).join('')}</div>`},
  labor(){const fl=FIELDS.slice().sort((a,b)=>a.i-b.i);const chips=(id,list)=>list.map(([key,name,on])=>`<button data-a="staff" data-v="${id}:${key}" class="${on?'on':''}">${on?'✔ ':''}${name}</button>`).join('');
-  return `<h2>👷 人力仲介</h2><div>雇來的員工每天早上 6 點領薪水（雇用當下先付第一天）。點「✔」的名字可以解雇。${S.strike?'<br>⚠️ <b style="color:#c0392b">有欠款，員工暫時停工中</b>':''}</div><div class="goods">${STAFF.map(st=>{const has=S.staff[st.id]||{};let list;
+  return `<h2>👷 人力仲介</h2><div>雇來的員工每天早上 6 點領薪水（雇用當下先付第一天）。點「✔」的名字可以解雇。${S.strike?'<br>⚠️ <b style="color:#c0392b">有欠款，員工暫時停工中</b>':''}</div><div class="goods">${STAFF.map(st=>{const has=S.staff[st.id]||{};let list;if((st.lv||1)>farmLv())return card(st.em,st.n,`${st.d}<br>🔒 等級 ${st.lv} 開放`,`<button disabled>🔒 等級 ${st.lv}</button>`,true);
    if(st.per==='field')list=fl.map(f=>[f.i,`第${f.i+1}塊田`,!!has[f.i]]);else if(st.per==='pen')list=Object.keys(PENS).map(k=>[k,PEN_T[k].n,!!has[k]]);else list=[['farm','整座農場',!!has.farm]];
    return card(st.em,st.n,`${st.d}<br>每人每天薪水 💵${st.wage}`,chips(st.id,list),0,1)}).join('')}</div>`},
- land(){return `<h2>🏛️ 地政事務所</h2><div>📝 <b>租地</b>：每天早上付租金。💰 <b>買地</b>：一次付清（大約 20 天的租金），之後就不用付租金。<br>租或買之後要先<b>開墾</b>：清掉雜草、石頭、樹頭，農地會變成田，建地可以蓋養殖場。</div><div class="goods">${LOTS.map(L=>{const ls=lotState(L.id),pr=LOT_PRICE[L.kind];const nm=L.kind==='field'?`農地 ${L.id}`:`建地 ${L.id}`;let st,b='';
+ land(){return `<h2>🏛️ 地政事務所</h2><div>📝 <b>租地</b>：每天早上付租金。💰 <b>買地</b>：一次付清（大約 20 天的租金），之後就不用付租金。<br>租或買之後要先<b>開墾</b>：清掉雜草、石頭、樹頭，農地會變成田，建地可以蓋養殖場。</div><div class="goods">${LOTS.map(L=>{const ls=lotState(L.id),pr=lotPrice(L);const nm=L.kind==='field'?`農地 ${L.id}`:`建地 ${L.id}`;let st,b='';
+   if(ls.st==='wild'&&(L.lv||1)>farmLv())return card('🔒',nm,`等級 ${L.lv} 開放<br>${L.kind==='field'?'開墾後變成一塊 6 格的田':'開墾後可以蓋一座養殖場'}`,`<button disabled>🔒 等級 ${L.lv}</button>`,true);
    if(ls.st==='wild'){st=`還沒有人用<br>${L.kind==='field'?'開墾後變成一塊 6 格的田':'開墾後可以蓋一座養殖場'}`;b=`<button data-a="rent" data-v="${L.id}">租<br><small>💵${pr.rent}/天</small></button><button data-a="buyLot" data-v="${L.id}">買<br><small>💵${pr.buy}</small></button>`}
    else{st=ls.st==='own'?'✅ 已經買下':`📝 租用中（每天 💵${pr.rent}）`;if(ls.st==='rent')b+=`<button data-a="buyLot" data-v="${L.id}">改成買下<br><small>💵${pr.buy}</small></button>`;
     if(!ls.done){st+=`<br>⛏️ 開墾中：還剩 ${(ls.cl||[]).filter(o=>!o.gone).length} 處要清`;b+=`<button data-a="crew" data-v="${L.id}">👷 開墾隊<br><small>💵${CREW}</small></button><button data-a="goLot" data-v="${L.id}">📍 帶我去</button>`}
     else if(L.kind==='pen'&&!ls.pen){st+='<br>🔨 可以蓋養殖場了';b+=`<button data-a="goLot" data-v="${L.id}">📍 帶我去</button>`}
     else st+=`<br>${L.kind==='field'?`🌱 已經是「第 ${6+FIELD_LOTS().indexOf(L)+1} 塊田」`:`🐾 已經蓋好「${PEN_T[ls.pen].n}」`}`}
-   return card(L.kind==='field'?'🟫':'🏗️',nm,st,b||'<button disabled>✔</button>')}).join('')}</div>`}};
+   return card(L.kind==='field'?'🟫':'🏗️',nm,st,b||'<button disabled>✔</button>')}).join('')}</div><h3 style="margin:10px 0 4px">🐾 養殖場擴建</h3><div>每擴建一次，這種養殖場可以多養 <b>50%</b> 的動物（最多 3 次）。</div><div class="goods">${Object.keys(PENS).map(pk=>{const T=PEN_T[pk],u=(S.penUp||{})[pk]||0,nx=PEN_UP[u];const lv=farmLv();
+   return card(T.em,`${T.n}　${'⭐'.repeat(u)}${'☆'.repeat(3-u)}`,`現在可以養：${Object.keys(ANIM).filter(k=>ANIM[k].pen===pk&&(ANIM[k].lv||1)<=lv).map(k=>`${ANIM[k].em}${animMax(k)}`).join('　')}${nx?`<br>下一次擴建：等級 ${nx.lv}、💵${nx.p}`:'<br>✅ 已經擴建到最大'}`,!nx?'<button disabled>✔ 最大</button>':nx.lv>lv?`<button disabled>🔒 等級 ${nx.lv}</button>`:`<button data-a="penUp" data-v="${pk}">擴建<br><small>💵${nx.p}</small></button>`)}).join('')}</div>`}};
 const ACT={
  seed(v){const [k,n]=v.split(':');const c=CROPS[k];const m=Math.min(+n,SEED_MAX-(S.seeds[k]||0));if(m<=0)return;if(!pay(c.seed*m,'seed'))return;S.seeds[k]=(S.seeds[k]||0)+m;if(!S.sel)S.sel=k;toast(`🌱 買了 ${m} 包${c.n}種子`);tutDo('buySeed')},
  feed(v){const [k,n]=v.split(':');const m=Math.min(+n,STOCK_MAX-S.stock[k]);if(m<=0)return;if(!pay(feedP(k)*m,'feed'))return;S.stock[k]+=m;toast(`${ITEMS[k].em} 買了 ${m} 份${ITEMS[k].n}，送到廣場的${k==='feed'?'飼料桶':'乾草堆'}了`);for(let i=0;i<5;i++)setTimeout(()=>flyAway(k,V(SHOPS.feed.x,1.5,SHOPS.feed.z),V(k==='feed'?7:10.5,1.3,1.5)),i*120)},
@@ -1281,17 +1450,22 @@ const ACT={
  fm(v){const [id,fi]=v.split(':');const m=FIELD_MACH.find(x=>x.id===id);if(!pay(m.p,'build'))return;(S.fm[fi]=S.fm[fi]||{})[id]=1;machPop(FI(fi));toast(`${m.em} 第 ${+fi+1} 塊田裝好${m.n}了！`);if(id==='tractor'&&!S.autoCrop[fi]){if(ACTOR){ACTOR.ui=['auto',+fi];return}setTimeout(()=>autoCropSet(+fi),300);return false}},
  pm(v){const [id,pk]=v.split(':');const m=PEN_MACH.find(x=>x.id===id);if(!pay(m.p,'build'))return;(S.pm[pk]=S.pm[pk]||{})[id]=1;toast(`${m.em} ${PEN_T[pk].n}裝好${m.n}了！`)},
  gm(id){const m=GLOBAL_MACH.find(x=>x.id===id);if(!pay(m.p,'build'))return;S.gm[id]=1;toast(`${m.em} 買了${m.n}！停在廣場東邊，會定時自動載貨去賣`,4000)},
- staff(v){const [id,key]=v.split(':');const st=STAFF.find(x=>x.id===id);const h=S.staff[id]=S.staff[id]||{};
+ staff(v){const [id,key]=v.split(':');const st=STAFF.find(x=>x.id===id);if((st.lv||1)>farmLv())return;const h=S.staff[id]=S.staff[id]||{};
   if(h[key]){delete h[key];SFX.click();toast(`${st.em} 解雇了一位${st.n}`);return}if(!pay(st.wage,'staff'))return;h[key]=1;toast(`${st.em} 雇了一位${st.n}！`);if(id==='farmer'&&!S.autoCrop[key]){if(ACTOR){ACTOR.ui=['auto',+key];return}setTimeout(()=>autoCropSet(+key),300);return false}},
- rent(id){const L=LOTS.find(l=>l.id===id);if(!pay(LOT_PRICE[L.kind].rent,'land'))return;lotState(id).st='rent';lotRing(L);toast(`📝 租下 ${id} 了！先去開墾（第一天租金已付）`,3500)},
- buyLot(id){const L=LOTS.find(l=>l.id===id);if(!pay(LOT_PRICE[L.kind].buy,'land'))return;lotState(id).st='own';lotRing(L);SFX.fanfare();toast(`💰 買下 ${id} 了！以後不用付租金`,3500)},
+ guard(v){const [k,t]=v.split(':');const G2=S.guard||(S.guard={fence:{},lamp:{},dog:{}});const d=GUARD[k];if(d.lv>farmLv())return;
+   if(k==='fence'||k==='iron'){const cur=G2.fence[t];const price=k==='iron'&&cur==='fence'?d.p-GUARD.fence.p:d.p;if(cur===k||(cur==='iron'))return;if(!pay(price,'shop'))return;G2.fence[t]=k;const f=FI(+t);if(f){confetti(V(f.x,1,f.z),40)}toast(`${d.em} ${f?f.name:''}圍好${d.n}了！`)}
+   else if(k==='lamp'){if(G2.lamp[t])return;if(!pay(d.p,'shop'))return;G2.lamp[t]=1;toast('💡 路燈裝好了！晚上會亮起來')}
+   else if(k==='dog'){if(G2.dog[t])return;if(!pay(d.p,'shop'))return;G2.dog[t]=1;SFX.fanfare();toast(`🐕‍🦺 護衛犬開始顧「${PEN_T[t].n}」了！`)}SFX.place()},
+ penUp(pk){S.penUp=S.penUp||{};const u=S.penUp[pk]||0,nx=PEN_UP[u];if(!nx||nx.lv>farmLv())return;if(!pay(nx.p,'land'))return;S.penUp[pk]=u+1;SFX.fanfare();const p=PENS[pk];if(p)confetti(V(p.x,1,p.z),60);toast(`🎉 ${PEN_T[pk].n}擴建好了！（${'⭐'.repeat(u+1)}）可以養更多動物`,3200)},
+ rent(id){const L=LOTS.find(l=>l.id===id);if(!pay(lotPrice(L).rent,'land'))return;lotState(id).st='rent';lotRing(L);toast(`📝 租下 ${id} 了！先去開墾（第一天租金已付）`,3500)},
+ buyLot(id){const L=LOTS.find(l=>l.id===id);if(!pay(lotPrice(L).buy,'land'))return;lotState(id).st='own';lotRing(L);SFX.fanfare();toast(`💰 買下 ${id} 了！以後不用付租金`,3500)},
  crew(id){if(!pay(CREW,'land'))return;if(!ACTOR)closePanel();crewClear(LOTS.find(l=>l.id===id));return false},
  goLot(id){closePanel();const r=LOTR[id];if(r)goTo(V(r.x,0,r.z));else{const L=LOTS.find(l=>l.id===id);goTo(V(L.x,0,L.z))}return false}};
 
 // 每種購買的確認文字
 const ACT_Q={
- seed(v){const [k,n]=v.split(':');const c=CROPS[k];return `確定買 <b>${n} 包 ${c.em}${c.n}種子</b>嗎？<br>共 💵${c.seed*n}`},
- feed(v){const [k,n]=v.split(':');return `確定買 <b>${n} 份${ITEMS[k].em}${ITEMS[k].n}</b>嗎？<br>共 💵${feedP(k)*n}`},
+ seed(v){const [k,n]=v.split(':');const c=CROPS[k];return `確定買 <b>${n} 包 ${c.em}${c.n}種子</b>嗎？<br>共 💵${c.seed*n}<br><span style="font-size:15px;color:#5a7a3a">🎒 你現在身上有 ${S.seeds[k]||0} 包，買完會有 ${(S.seeds[k]||0)+(+n)} 包</span>`},
+ feed(v){const [k,n]=v.split(':');return `確定買 <b>${n} 份${ITEMS[k].em}${ITEMS[k].n}</b>嗎？<br>共 💵${feedP(k)*n}<br><span style="font-size:15px;color:#5a7a3a">📦 倉庫現在有 ${S.stock[k]||0} 份</span>`},
  tool(id){const t=TOOLS.find(x=>x.id===id);return `確定買 <b>${t.em}${t.n}</b> 嗎？<br>💵${t.p}`},
  mat(id){const m=MATS.find(x=>x.id===id);return `確定買 1 個 <b>${m.em}${m.n}</b> 嗎？<br>💵${m.p}`},
  matset(){return `確定一次買齊一座養殖場的材料嗎？<br>共 💵${MATS.reduce((a,m)=>a+m.p,0)}`},
@@ -1301,8 +1475,10 @@ const ACT_Q={
  pm(v){const [id,pk]=v.split(':');const m=PEN_MACH.find(x=>x.id===id);return `確定在 <b>${PEN_T[pk].n}</b>裝 <b>${m.em}${m.n}</b> 嗎？<br>💵${m.p}，每天電費 💵${m.day}`},
  gm(id){const m=GLOBAL_MACH.find(x=>x.id===id);return `確定買 <b>${m.em}${m.n}</b> 嗎？<br>💵${m.p}，每天油錢 💵${m.day}`},
  staff(v){const [id,key]=v.split(':');const st=STAFF.find(x=>x.id===id);const place=st.per==='field'?`第 ${+key+1} 塊田`:st.per==='pen'?PEN_T[key].n:'整座農場';return (S.staff[id]||{})[key]?`確定要解雇負責 <b>${place}</b> 的${st.em}${st.n}嗎？`:`確定雇一位 <b>${st.em}${st.n}</b> 負責 <b>${place}</b> 嗎？<br>每天薪水 💵${st.wage}（現在先付第一天）`},
- rent(id){const L=LOTS.find(l=>l.id===id);return `確定<b>租下 ${id}</b> 嗎？<br>每天租金 💵${LOT_PRICE[L.kind].rent}（現在先付第一天）`},
- buyLot(id){const L=LOTS.find(l=>l.id===id);return `確定<b>買下 ${id}</b> 嗎？<br>💵${LOT_PRICE[L.kind].buy}，買了以後就不用付租金`},
+ guard(v){const [k,t]=v.split(':');const d=GUARD[k];const G2=S.guard||{};const where=k==='dog'?PEN_T[t].n:t[0]==='p'&&k==='lamp'?PEN_T[t.slice(1)].n:`第 ${+(k==='lamp'?t.slice(1):t)+1} 塊田`;const price=k==='iron'&&(G2.fence||{})[t]==='fence'?d.p-GUARD.fence.p:d.p;return `確定在 <b>${where}</b> ${k==='dog'?'養':'裝'} <b>${d.em}${d.n}</b> 嗎？<br>💵${price}${d.day?`，之後每天 💵${d.day}`:''}`},
+ penUp(pk){const u=(S.penUp||{})[pk]||0,nx=PEN_UP[u];return `確定擴建 <b>${PEN_T[pk].em}${PEN_T[pk].n}</b> 嗎？<br>💵${nx.p}，每種動物可以多養 50%`},
+ rent(id){const L=LOTS.find(l=>l.id===id);return `確定<b>租下 ${id}</b> 嗎？<br>每天租金 💵${lotPrice(L).rent}（現在先付第一天）`},
+ buyLot(id){const L=LOTS.find(l=>l.id===id);return `確定<b>買下 ${id}</b> 嗎？<br>💵${lotPrice(L).buy}，買了以後就不用付租金`},
  crew(id){return `確定請<b>開墾隊</b>來開墾 ${id} 嗎？<br>💵${CREW}`},
  pet(id){const p=PETS.find(x=>x.id===id);return `確定買 <b>${p.em}${p.n}</b> 嗎？<br>💵${p.p}`},
  ditem(id){const x=DECOR_ITEM.find(w=>w.id===id);return `確定買 <b>${x.em}${x.n}</b> 嗎？<br>💵${x.p}`},
@@ -1349,7 +1525,8 @@ function offlineSim(){const away=(Date.now()-(S.last||Date.now()))/1000;if(S.pau
   const offEarn=Math.max(0,S.earn-e0);let bill=Math.min(S.offBill||0,Math.max(offEarn,S.offDay||0));bill=Math.max(0,Math.min(bill,Math.floor(S.money)));if(bill)spend(bill,'bill');const billAll=S.offBill||0;S.offBill=0;
   // 歡迎回來：離線 2 小時以上，接下來 30 分鐘作物、動物長得比較快
   if(away>=7200)S.boostUntil=S.t+1800;
-  return {away,sim:sim/TS(),bill,billAll,boost:away>=7200,money:Math.floor(S.money-m0),earn:Math.floor(S.earn-e0),boxes:cnt(),ripe:PLOTS.filter(p=>S.plots[p.id].st==='ripe').length,wither:PLOTS.filter(p=>['wither','rot'].includes(S.plots[p.id].st)).length,hungry:S.animals.filter(a=>a.food<=0&&ANIM[a.k].eat).length,ripe0}}
+  const wl=prof().protect?[]:wildOffline(sim);
+  return {wl,away,sim:sim/TS(),bill,billAll,boost:away>=7200,money:Math.floor(S.money-m0),earn:Math.floor(S.earn-e0),boxes:cnt(),ripe:PLOTS.filter(p=>S.plots[p.id].st==='ripe').length,wither:PLOTS.filter(p=>['wither','rot'].includes(S.plots[p.id].st)).length,hungry:S.animals.filter(a=>a.food<=0&&ANIM[a.k].eat).length,ripe0}}
 const fmtAway=s=>s>=3600?`${Math.floor(s/3600)} 小時 ${Math.floor(s%3600/60)} 分`:`${Math.max(1,Math.floor(s/60))} 分鐘`;
 
 /* ======================= 待處理事項（右側清單＋彩色帶路箭頭） ======================= */
@@ -1366,7 +1543,7 @@ function buildTasks(){const L=[];const w=curW(),pi=Math.floor(S.t/PERIOD);const 
     if(soon.length){const s=S.plots[soon[0].id],c=CROPS[s.c];L.push({k:'soon'+f.i,type:'warn',t:`⚠️ ${f.name} ${soon.length} 格快枯萎`,s:`${c.em}${c.n}，${fmt(ripeKeep(s)-s.rt)} 後枯萎`,pos:fc})}
     const ripe=st.filter(s=>s.st==='ripe').length-soon.length;if(ripe>0)L.push({k:'rip'+f.i,type:'harvest',t:`✅ ${f.name} ${ripe} 格可以採收`,s:[...new Set(st.filter(s=>s.st==='ripe').map(s=>CROPS[s.c].em+CROPS[s.c].n))].join('、'),pos:fc});
     const wi=st.filter(s=>s.st==='wither').length,ro=st.filter(s=>s.st==='rot').length,br=st.filter(s=>s.st==='broken').length;if(wi||ro||br)L.push({k:'wit'+f.i,type:'warn',t:`🥀 ${f.name}${wi?` ${wi} 格枯萎`:''}${ro?` ${ro} 格壞掉`:''}${br?` ${br} 格損壞`:''}`,s:br?'站上去就會修復田地':wi?'枯萎的只能賣 4 成，快收！':'站上去清掉，才能再種',pos:fc});
-    const dry=st.filter(s=>s.st==='grow'&&s.w<=0).length;if(dry)L.push({k:'dry'+f.i,type:'dry',t:`💧 ${f.name} ${dry} 格乾掉了`,s:'沒水作物會停止生長',pos:fc});
+    const dry=st.filter(s=>s.st==='grow'&&s.w<=0).length;if(dry)L.push({k:'dry'+f.i,type:'dry',t:`💧 ${f.name} ${dry} 格乾掉了`,s:'沒水作物會停止生長',pos:fc});else{const low=st.filter(s=>s.st==='grow'&&s.w>0&&s.w<=.3).length;if(low)L.push({k:'low'+f.i,type:'dry',t:`💧 ${f.name} ${low} 格快乾了`,s:'去水井拿水桶來澆，乾掉就會停止生長',pos:fc})}
     if(S.ev&&S.ev.pest&&S.ev.fi===f.i)L.push({k:'pest'+f.i,type:'warn',t:`🐛 ${f.name}有病蟲害`,s:'走到田邊按木牌上的「噴藥」',pos:fc});
     const bx=S.boxes[f.i].length;if(bx)L.push({k:'box'+f.i,type:'box',t:`📦 ${f.name}集貨箱有 ${bx} 個`,s:'站上去裝進菜籃子，再拿去賣',pos:V(f.x+3.4,0,f.z+1.9)})});
   for(const k in PENS){const pen=PENS[k],T=PEN_T[k];const an=S.animals.filter(a=>ANIM[a.k].pen===k);const hungry=an.filter(a=>a.food<=0&&ANIM[a.k].eat).length;
@@ -1418,7 +1595,11 @@ $('#bInfo').onclick=()=>{SFX.click();openPanel(`<h2>📖 遊戲說明${EMBED?'':
  🧾 <b>每天早上 6 點</b>付土地租金、薪水、電費、水費；錢不夠會欠款，員工和機器停工。<br>
  🌀 <b>天災</b>：颱風風雨會慢慢變強，高大的作物會倒伏；大雷雨會打雷（在外面可能被雷打到）；龍捲風經過的田會損壞。快躲進<b>🏠 我的家</b>！動物會自己躲進小屋，天災過了再出來。<br>
  ⏱️ <b>時間</b>：遊戲裡 1 天＝現實 1 小時，一季 6 小時，天氣每 30 分鐘變一次。種田、養動物都可以選 20 分鐘～8 小時，「☰ 更多」→「⚙️ 經營模式」可以選低、中、高收益。<br>
- ⭐ <b>農場等級</b>：賺越多錢等級越高，解鎖新作物、新動物、新養殖場。<br>
+ ⭐ <b>農場等級</b>（最高 40 級）：賺越多錢等級越高，解鎖新作物、新動物、新養殖場、新土地、養殖場擴建。<br>
+ 🟫 <b>田地顏色</b>：深咖啡＝滿水、微缺水、快乾了（頭上出現 💧）、淺黃＝乾枯停止生長（頭上出現 💧❗）。靠近田地時左邊會出現顏色表。<br>
+ ♻️ <b>回收桶</b>：在飼料桶和乾草堆中間，手上多拿的飼料、乾草放回倉庫，水桶倒掉。<br>
+ 📋 <b>紀錄看板</b>：回家後按「📋 紀錄看板」或點牆上的看板，看所有田地、動物還要多久、缺不缺水和飼料。<br>
+ 🐗 <b>野生動物</b>（等級 3 以後）：山豬、猴子、狐狸、黑熊會跑進來偷吃，走到旁邊就會跑掉。可以裝圍欄、鐵柵欄、路燈（五金行），養護衛犬（繁殖場），雇獵人、巡邏隊（人力仲介）。<br>
  ${EMBED?'🎡 「☰ 更多」裡有遊樂場，玩法跟其他系列一樣；工作時右邊也會隨機跳出獎金小遊戲。':'⏩「×1」按鈕是<b>測試用</b>，可以加快時間；「🧪 測試天災」可以馬上叫出颱風、龍捲風。'}</div>`)};
 // 種子欄、手上和籃子
 let seedKey='',carryKey='';
@@ -1433,15 +1614,18 @@ function renderBottom(){const sk=JSON.stringify(S.seeds)+S.sel+S.dur;if(sk!==see
 /* ======================= 輸入 ======================= */
 const keys={};addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true});addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
 const cv=renderer.domElement;const joy={on:false,id:null,dx:0,dy:0};
-cv.addEventListener('pointerdown',e=>{if(S.inHome){const rc=new THREE.Raycaster();rc.setFromCamera(new THREE.Vector2(e.clientX/W*2-1,-(e.clientY/H)*2+1),camera);if(rc.intersectObject(HOME.wd,true).length){SFX.click();openWardrobe()}else if(HOME.fridge&&rc.intersectObject(HOME.fridge,true).length){SFX.click();openShop('fridge')}return}if(joy.on)return;joy.on=true;joy.id=e.pointerId;joy.sx=e.clientX;joy.sy=e.clientY;joy.dx=joy.dy=0;const j=$('#joy');j.style.display='block';j.style.left=e.clientX+'px';j.style.top=e.clientY+'px';j.firstChild.style.transform='';try{cv.setPointerCapture(e.pointerId)}catch(_){}$('#btns').classList.remove('open')});
+cv.addEventListener('pointerdown',e=>{if(S.inHome){const rc=new THREE.Raycaster();rc.setFromCamera(new THREE.Vector2(e.clientX/W*2-1,-(e.clientY/H)*2+1),camera);if(HOME.board&&rc.intersectObject(HOME.board,true).length){SFX.click();openRecord()}else if(rc.intersectObject(HOME.wd,true).length){SFX.click();openWardrobe()}else if(HOME.fridge&&rc.intersectObject(HOME.fridge,true).length){SFX.click();openShop('fridge')}return}if(joy.on)return;joy.on=true;joy.id=e.pointerId;joy.sx=e.clientX;joy.sy=e.clientY;joy.dx=joy.dy=0;const j=$('#joy');j.style.display='block';j.style.left=e.clientX+'px';j.style.top=e.clientY+'px';j.firstChild.style.transform='';try{cv.setPointerCapture(e.pointerId)}catch(_){}$('#btns').classList.remove('open')});
 cv.addEventListener('pointermove',e=>{if(!joy.on||e.pointerId!==joy.id)return;let dx=e.clientX-joy.sx,dy=e.clientY-joy.sy;const L=Math.hypot(dx,dy),R=48;if(L>R){dx*=R/L;dy*=R/L}joy.dx=dx/R;joy.dy=dy/R;$('#joy').firstChild.style.transform=`translate(${dx}px,${dy}px)`});
 const endJ=e=>{if(e.pointerId===joy.id){joy.on=false;joy.dx=joy.dy=0;$('#joy').style.display='none';joy.id=null}};cv.addEventListener('pointerup',endJ);cv.addEventListener('pointercancel',endJ);
 const SR=V(1,0,-1).normalize(),SD=V(1,0,1).normalize();
 function input(){let x=0,y=0;if(keys.a||keys.arrowleft)x--;if(keys.d||keys.arrowright)x++;if(keys.w||keys.arrowup)y--;if(keys.s||keys.arrowdown)y++;if(joy.on&&Math.hypot(joy.dx,joy.dy)>.15){x+=joy.dx;y+=joy.dy}const L=Math.hypot(x,y);if(L>1){x/=L;y/=L}return [x,y]}
-function collide(p){p.x=clamp(p.x,-46,40);p.z=clamp(p.z,-32,34);
+function collide(p){p.x=clamp(p.x,-46,40);p.z=clamp(p.z,-42,46);
   for(const k in PENS){const q=PENS[k];const x0=q.x-q.w/2,x1=q.x+q.w/2,z0=q.z-q.d/2,z1=q.z+q.d/2;if(!(p.x>x0-.45&&p.x<x1+.45&&p.z>z0-.45&&p.z<z1+.45))continue;
     if(Math.abs(p.x-q.x)<1.4&&Math.abs(p.z-z1)<.6)continue;const dl=Math.abs(p.x-x0),dr=Math.abs(p.x-x1),dt2=Math.abs(p.z-z0),db=Math.abs(p.z-z1);const m=Math.min(dl,dr,dt2,db);if(m>.45)continue;
     if(m===dl)p.x=p.x<x0?x0-.45:x0+.45;else if(m===dr)p.x=p.x>x1?x1+.45:x1-.45;else if(m===dt2)p.z=p.z<z0?z0-.45:z0+.45;else p.z=p.z>z1?z1+.45:z1-.45}
+  if(typeof fenceRects==='function')for(const q of fenceRects()){const x0=q.x-q.w/2,x1=q.x+q.w/2,z0=q.z-q.d/2,z1=q.z+q.d/2;if(!(p.x>x0-.45&&p.x<x1+.45&&p.z>z0-.45&&p.z<z1+.45))continue;
+    if(Math.abs(p.x-q.x)<1.4&&Math.abs(p.z-z1)<.6)continue;const dl=Math.abs(p.x-x0),dr=Math.abs(p.x-x1),dt2=Math.abs(p.z-z0),db=Math.abs(p.z-z1);const m=Math.min(dl,dr,dt2,db);if(m>.45)continue;
+    if(m===dl)p.x=p.x<=x0?x0-.45:x0+.45;else if(m===dr)p.x=p.x>=x1?x1+.45:x1-.45;else if(m===dt2)p.z=p.z<=z0?z0-.45:z0+.45;else p.z=p.z>=z1?z1+.45:z1-.45}
   for(const [x,z,w,d] of BLOCKS){const hw=w/2+.35,hd=d/2+.35;if(Math.abs(p.x-x)<hw&&Math.abs(p.z-z)<hd){const ox=hw-Math.abs(p.x-x),oz=hd-Math.abs(p.z-z);if(ox<oz)p.x=x+Math.sign(p.x-x||1)*hw;else p.z=z+Math.sign(p.z-z||1)*hd}}
   if(P.hose){const dx=p.x-FAUCET.x,dz=p.z-FAUCET.z,d=Math.hypot(dx,dz);if(d>26){p.x=FAUCET.x+dx/d*26;p.z=FAUCET.z+dz/d*26;hint('hoselen','🚿 水管只有 26 公尺，拉不到更遠了')}}}
 
@@ -1554,16 +1738,16 @@ function frameBody(){if(EMBED&&HOLD){clock.getDelta();return}const rdt=Math.min(
   const windy=(w.typhoon||wk==='storm')?lv:0;
   for(const p of PLOTS){const s=S.plots[p.id],c=CROPS[s.c];const stage=s.st==='grow'?(s.g<.33?0:s.g<.7?1:2):3;const vk=s.st==='empty'?'':s.c+s.st+stage;
     if(vk!==p.vk){const was=p.vk;p.vk=vk;p.g.clear();if(s.st!=='empty')p.g.add(cropModel(s.c,stage,s.st));if(s.st==='broken'&&was!=='')puff(V(p.x,.5,p.z),10,0x8a7a5a,.15)}
-    p.soil.material=s.st==='broken'?SOIL.broken:c&&c.paddy&&s.w>.3?SOIL.paddy:s.w>.25?SOIL.wet:SOIL.dry;p.g.position.y=s.st==='ripe'?.18+Math.abs(Math.sin(wTime*3+p.x))*.04:.18;
+    p.soil.material=s.st==='broken'?SOIL.broken:c&&c.paddy&&s.w>.3?SOIL.paddy:soilOf(s.w);p.g.position.y=s.st==='ripe'?.18+Math.abs(Math.sin(wTime*3+p.x))*.04:.18;
     if(windy&&!covered(p.f))p.g.rotation.z=Math.sin(wTime*(5+windy*4)+p.x)*.07*(1+windy*2.5);else p.g.rotation.z*=.9;
-    let h='',cls='';const near=Math.hypot(P.pos.x-p.x,P.pos.z-p.z)<2.6;
+    let h='',cls='';const near=Math.hypot(P.pos.x-p.x,P.pos.z-p.z)<1.15;
     if(s.st==='broken'){cls='dead';h=near?'🔨 田地損壞了，站上去修復':'🔨'}
-    else if(s.st==='grow'){const rate=(s.w>0?1:0)*(w.hot&&c.heat?.7:1)*(w.cold&&c.cold&&!covered(p.f)?0:1)*(S.t<(S.boostUntil||0)?1.5:1);if(s.w<=0){cls='dry';h=near?`${c.em} 💧 乾掉了！停止生長`:'💧'}else if(near){h=`${c.em}${c.n} ${Math.floor(s.g*100)}%<br>還要 ${rate?fmt((1-s.g)*plotDur(s)/rate)+`<br><small>現實時間 ${realAt((1-s.g)*plotDur(s)/rate)} 成熟</small>`:'－'}`;if(s.w<.35)h+='<br>💧 快乾了'}}
+    else if(s.st==='grow'){const rate=(s.w>0?1:0)*(w.hot&&c.heat?.7:1)*(w.cold&&c.cold&&!covered(p.f)?0:1)*(S.t<(S.boostUntil||0)?1.5:1);if(s.w<=0){cls='dry';h=near?`${c.em} 💧 乾掉了！停止生長`:'💧❗'}else if(s.w<=.3&&!near){cls='low';h='💧'}else if(near){h=`${c.em}${c.n} ${Math.floor(s.g*100)}%<br>還要 ${rate?fmt((1-s.g)*plotDur(s)/rate)+`<br><small>現實時間 ${realAt((1-s.g)*plotDur(s)/rate)} 成熟</small>`:'－'}`;if(s.w<=.3)h+='<br>💧 快乾了，要澆水'}}
     else if(s.st==='ripe'){cls='ripe';const left=ripeKeep(s)-s.rt;if(left<ripeKeep(s)*.4)cls='warn';h=near?`✅ ${c.n}可以採收！<br>${fmt(left)} 後會枯萎`:(cls==='warn'?'⚠️':'✅')}
     else if(s.st==='wither'){cls='warn';h=near?`🥀 ${c.n}枯萎了（賣 4 成）<br>${fmt(witherKeep(s)-s.rt)} 後壞掉`:'🥀'}
     else if(s.st==='rot'){cls='dead';h=near?'💀 壞掉了，站上去清除':'💀'}
     else if(P.plot===p){const k=pickSeed();h=k?`🌱 站著就會播種：${CROPS[k].em}${CROPS[k].n}`:'🌱 空田（沒有種子）'}
-    p.L.near=h?16:0;setL(p.L,h?`<div class="pl ${cls}">${h}</div>`:'')}
+    p.L.near=h?(cls==='dry'||cls==='low'?70:16):0;setL(p.L,h?`<div class="pl ${cls}">${h}</div>`:'')}
   // 田邊木牌（正面朝畫面，成熟變金黃色、快枯萎變橘紅色）
   FIELDS.forEach(f=>{f.board.rotation.y=Math.atan2(camera.position.x-f.board.position.x,camera.position.z-f.board.position.z);const ps=PLOTS.filter(p=>p.f===f).map(p=>S.plots[p.id]);
     const crops=[...new Set(ps.filter(s=>s.c).map(s=>s.c))];const name=crops.length?crops.map(k=>CROPS[k].em+CROPS[k].n).join('、'):'（還沒種）';const near=fieldNear(f);
@@ -1581,7 +1765,7 @@ function frameBody(){if(EMBED&&HOLD){clock.getDelta();return}const rdt=Math.min(
   // 動物（天災時自動躲進小屋，結束後走出來）
   const shelter=(w.shelter&&lv>.45)||!!S.tor;
   for(const a of S.animals){const v=AV.get(a.id);if(!v)continue;const pen=PENS[ANIM[a.k].pen];if(!pen)continue;
-    if(a.k==='bee'){const bs=v.o.userData.bees||[];bs.forEach((b,i)=>{b.visible=!shelter;b.position.set(Math.cos(wTime*2+i*2.1)*.7,.8+Math.sin(wTime*3+i)*.25,Math.sin(wTime*2+i*2.1)*.7)});continue}
+    if(ANIM[a.k].pen==='apiary'){const bs=v.o.userData.bees||[];bs.forEach((b,i)=>{b.visible=!shelter;b.position.set(Math.cos(wTime*2+i*2.1)*.7,.8+Math.sin(wTime*3+i)*.25,Math.sin(wTime*2+i*2.1)*.7)});continue}
     if(shelter){v.tx=pen.door.x;v.tz=pen.door.z-.6;v.wt=1}else if(v.hid){v.hid=0;v.o.visible=true;v.o.position.set(pen.door.x,0,pen.door.z);v.tx=pen.door.x+rand(-1,1);v.tz=pen.door.z+1.5;v.wt=2;puff(v.o.position.clone().add(V(0,.4,0)),6)}
     v.wt-=rdt;if(v.wt<=0&&!shelter){v.wt=rand(2,6);v.tx=pen.x+rand(-pen.w/2+1,pen.w/2-1);v.tz=pen.z+rand(-pen.d/2+1.2,pen.d/2-1)}
     const dx=v.tx-v.o.position.x,dz=v.tz-v.o.position.z,d=Math.hypot(dx,dz);const sp=(a.k==='cow'||a.k==='beef'||a.k==='buffalo'?.8:a.k==='pig'?1:1.2)*(shelter?2.2:1);const moving=d>.1;
@@ -1590,7 +1774,7 @@ function frameBody(){if(EMBED&&HOLD){clock.getDelta();return}const rdt=Math.min(
     const d2=ANIM[a.k];const hungry=a.food<=0&&d2.eat;const nearP=Math.hypot(P.pos.x-v.o.position.x,P.pos.z-v.o.position.z)<9;let h='';
     if(v.hid)h='';else if(hungry)h='😣 肚子餓';else if(nearP){if(a.age<1)h=`${d2.bem} 長大中 ${Math.floor(a.age*100)}%`;else if(d2.prod)h=`${ITEMS[d2.prod].em} ${Math.floor((a.prog||0)*100)}%`;else h='✅ 長大了，可以賣'}
     v.L.pos=v.o.position.clone().setY((['cow','beef','buffalo','ostrich','alpaca'].includes(a.k)?2:a.k==='pig'?1.3:1.1)*(a.age>=1?1:.7));v.L.near=h?14:0;setL(v.L,h?`<div class="pl ${hungry?'warn':''}">${h}</div>`:'')}
-  for(const k in PENS){const p=PENS[k];p.trough.scale.z=.05+.4*(S.trough[k]/10);p.trough.visible=S.trough[k]>0;const hidden=shelter&&S.animals.some(a=>ANIM[a.k].pen===k&&a.k!=='bee');const pn=Math.hypot(P.pos.x-p.x,P.pos.z-p.z)<Math.max(p.w,p.d)*.75;p.L.el.classList.toggle('act',pn&&!S.inHome);const tl=troughLeft(k);setL(p.L,`<div class="shop" style="border-color:#ffb36b;color:#8a4a10">${PEN_T[k].em} ${PEN_T[k].n}<br><small>⏱️ 每 ${fmtDur(penDur(k))} 生產${tl!=null?`　🥣 還能吃 ${fmtDur(Math.max(0,tl))}`:''}</small>${hidden?'<br><small>🏠 動物躲進小屋避難中</small>':''}${pn?`<div class="bt"><button data-pen="${k}">⏱️ 改生產時間</button></div>`:''}</div>`)}
+  for(const k in PENS){const p=PENS[k];p.trough.scale.z=.05+.4*(S.trough[k]/10);p.trough.visible=S.trough[k]>0;const hidden=shelter&&S.animals.some(a=>ANIM[a.k].pen===k&&ANIM[a.k].pen!=='apiary');const pn=Math.hypot(P.pos.x-p.x,P.pos.z-p.z)<Math.max(p.w,p.d)*.75;p.L.el.classList.toggle('act',pn&&!S.inHome);const tl=troughLeft(k);setL(p.L,`<div class="shop" style="border-color:#ffb36b;color:#8a4a10">${PEN_T[k].em} ${PEN_T[k].n}<br><small>⏱️ 每 ${fmtDur(penDur(k))} 生產${tl!=null?`　🥣 還能吃 ${fmtDur(Math.max(0,tl))}`:''}</small>${hidden?'<br><small>🏠 動物躲進小屋避難中</small>':''}${pn?`<div class="bt"><button data-pen="${k}">⏱️ 改生產時間</button></div>`:''}</div>`)}
   // 倉庫（飼料桶、乾草堆）
   STOCKV.feed.visible=S.stock.feed>0;STOCKV.feed.position.y=.12+.9*Math.min(1,S.stock.feed/80);const hb=Math.min(9,Math.ceil(S.stock.hay/10));if(STOCKV.hay.children.length!==hb){STOCKV.hay.clear();for(let i=0;i<hb;i++){const b=mesh(G.box,M(0xe8c868));b.scale.set(.85,.45,.55);b.position.set((i%3-1)*.9,.23+Math.floor(i/3)*.46,0);STOCKV.hay.add(b);const s=mesh(G.box,M(0xb8962a),false);s.scale.set(.04,.47,.57);s.position.copy(b.position);STOCKV.hay.add(s)}}
   // 圈圈文字
@@ -1602,11 +1786,12 @@ function frameBody(){if(EMBED&&HOLD){clock.getDelta();return}const rdt=Math.min(
     else if(r.kind==='box')h=`📦 集貨箱 ${S.boxes[r.f].length}/60`;else if(r.kind==='market'){h='💰 收購站<br><small>站著就會賣</small>';c='sell'}
     else if(r.kind==='well')h='💧 水井<br><small>站著拿水桶</small>';else if(r.kind==='faucet')h=S.own.hose?(P.hose?'🚿 站這裡收水管':'🚿 站這裡拿水管'):'🚿 水龍頭<br><small>要先買水管</small>';
     else if(r.kind==='src'){const sl=stockLeft(r.item);h=`${ITEMS[r.item].em} ${r.t} ${S.stock[r.item]} 份${sl!=null?`<br><small>⏳ 大約夠餵 ${sl>0?fmtDur(sl)+`（到 ${realAt(sl)}）`:'0'}</small>`:''}<br><small>${S.stock[r.item]?'站著拿':'用完了，去飼料行買'}</small>`;if(!S.stock[r.item])c='warn'}
+    else if(r.kind==='recycle'){const n=S.hand.filter(t=>t==='feed'||t==='hay'||t==='water').length;h=`♻️ 回收桶<br><small>${n?`站著把手上 ${n} 個放回倉庫`:'手上多的飼料、乾草放回倉庫'}</small>`}
     else if(r.kind==='home')h=S.inHome?'':'🏠 我的家<br><small>站這裡進屋</small>';else if(r.kind==='build'){h='🔨 站這裡蓋養殖場';c='rel'}
     else if(r.kind==='lot'){const ls=lotState(r.lot);h=ls.st==='wild'?`🏷️ ${r.lot} 待租售`:`⛏️ 開墾中`}
     r.L.near=h?16:0;setL(r.L,h?`<div class="ring ${c}">${h}</div>`:'')});
   for(const id in LOTV){const Lt=LOTS.find(l=>l.id===id),ls=lotState(id),v=LOTV[id];const nm=Lt.kind==='field'?'農地':'建地';const left=(ls.cl||[]).filter(o=>!o.gone).length;
-    setL(v.L,`<div class="sign lot">${ls.st==='wild'?`🏷️ ${nm} ${id}<br><small>到地政事務所租或買</small>`:!ls.done?`⛏️ ${nm} ${id} 開墾中<br><small>還剩 ${left} 處（站上去清掉）</small>`:`🔨 建地 ${id}<br><small>可以蓋養殖場</small>`}</div>`)}
+    setL(v.L,`<div class="sign lot">${ls.st==='wild'?((Lt.lv||1)>farmLv()?`🔒 ${nm} ${id}<br><small>等級 ${Lt.lv} 開放</small>`:`🏷️ ${nm} ${id}<br><small>到地政事務所租或買</small>`):!ls.done?`⛏️ ${nm} ${id} 開墾中<br><small>還剩 ${left} 處（站上去清掉）</small>`:`🔨 建地 ${id}<br><small>可以蓋養殖場</small>`}</div>`)}
   // 員工
   syncWorkers();for(const [id,wk2] of WK){wk2.wt-=rdt;const st=wk2.st;let tgt=null;
     if(st.per==='field'){const f=FI(wk2.key);if(f&&wk2.wt<=0){wk2.wt=rand(2,4);const ps=PLOTS.filter(p=>p.f===f);const pp=ps[Math.floor(rand(0,ps.length))];wk2.tx=pp.x+rand(-.3,.3);wk2.tz=pp.z+.9}}
@@ -1631,7 +1816,7 @@ function frameBody(){if(EMBED&&HOLD){clock.getDelta();return}const rdt=Math.min(
   boltTick(rdt);torTick(rdt);
   // ===== 晚上：外面變暗，人物周圍跟白天一樣亮 =====
   const ne=$('#night');if(night>.02&&!S.inHome&&RUN){const [px,py]=project(P.pos.clone().setY(.7));const [qx,qy]=project(P.pos.clone().add(V(2.6,.7,0)));const rr=Math.max(60,Math.hypot(qx-px,qy-py));
-    ne.style.background=`radial-gradient(circle at ${px|0}px ${py|0}px, rgba(10,22,64,0) ${rr*.85|0}px, rgba(10,22,64,.6) ${rr*1.35|0}px, #0a1640 ${rr*2|0}px)`}else ne.style.background='#0a1640';ne.style.opacity=(night*(S.inHome?.25:.72)).toFixed(2);
+    nightDraw(ne,px,py,rr,night)}else{ne.style.background='#0a1640';if(NIGHTC)NIGHTC.getContext('2d').clearRect(0,0,NIGHTC.width,NIGHTC.height)}ne.style.opacity=(night*(S.inHome?.25:.72)).toFixed(2);
   spot.intensity=0;beam.material.opacity=0;halo.material.opacity=0;
   HOME.win&&HOME.win.forEach(m=>m.material.color.setHex(night>.4||S.inHome?0xffd860:0xffe8a0));
   SPIN.forEach(g=>g.rotation.z+=rdt*1.2);FLAGS.forEach((f,i)=>{f.rotation.y=Math.sin(wTime*3+i)*.35;f.children[0].rotation.y=Math.sin(wTime*5+i)*.2});
@@ -1642,7 +1827,7 @@ function frameBody(){if(EMBED&&HOLD){clock.getDelta();return}const rdt=Math.min(
   frameExtras(rdt);netFrame(rdt);wardTick(rdt);stepAnims(rdt);updateFlights(rdt);updateParts(rdt);drawArrows();renderer.render(scene,camera);
   P.tag.pos=P.pos.clone().setY(S.veh?2.6:2.15);P.tag.near=S.inHome?0:99;setL(P.tag,P.stun>0?'<span class="ptag">💫 頭暈中…</span>':`<span class="ptag">${esc(PNAME||'我的農場')}</span>`);
   {const [hx,hy]=project(P.pos.clone().setY(1.7)),[fx,fy]=project(P.pos.clone().setY(0));PB[0]=hx-22;PB[2]=hx+22;PB[1]=hy-6;PB[3]=fy+4}
-  for(const L of LABELS){const d=Math.hypot(L.pos.x-P.pos.x,L.pos.z-P.pos.z);if(!L.near||d>L.near||!L.html){L.el.style.display='none';continue}const [x,y,ok]=project(L.pos);if(!ok){L.el.style.display='none';continue}L.el.style.display='';L.el.style.transform=`translate(${x|0}px,${y|0}px) translate(-50%,-100%)`;
+  for(const L of LABELS){const d=Math.hypot(L.pos.x-P.pos.x,L.pos.z-P.pos.z);const nr=L.near>=50?L.near:Math.min(L.near,7);if(!L.near||d>nr||!L.html){L.el.style.display='none';continue}const [x,y,ok]=project(L.pos);if(!ok){L.el.style.display='none';continue}L.el.style.display='';L.el.style.transform=`translate(${x|0}px,${y|0}px) translate(-50%,-100%)`;
     if(L!==P.tag){if(L.mh!==L.html){L.mh=L.html;L.w=L.el.offsetWidth;L.h=L.el.offsetHeight}const hit=!S.inHome&&x+L.w/2>PB[0]&&x-L.w/2<PB[2]&&y>PB[1]&&y-L.h<PB[3];if(hit!==!!L.fd){L.fd=hit;L.el.classList.toggle('fade',hit)}}}
   taskT-=rdt;if(taskT<=0){taskT=.5;TASKS=buildTasks();renderTodo();layoutHUD();homeUI();if(S.flow.length>400)S.flow=S.flow.filter(f=>S.t-f[0]<DAY*3)}
   hud(w,wk,se,hr,night);renderBottom()}
@@ -1657,7 +1842,7 @@ function hud(w,wk,se,hr,night){const day=dayOf(S.t),dIn=day%DAYS_PER_SEASON+1,ye
   const mh=`💵 ${moneyShown.toLocaleString()}<span class="lv">⭐ 農場等級 ${lv}/${LV_MAX}${nx?`<i style="width:${Math.min(100,(S.earn-(LV_EARN[lv-1]||0))/(nx-(LV_EARN[lv-1]||0))*100)|0}%"></i>`:''}</span>${S.debt?`<span class="debt">欠款 💵${S.debt}</span>`:''}`;const me=$('#money');if(me.dataset.h!==mh){me.dataset.h=mh;me.innerHTML=mh}
   const nx2=weatherAt(pi+1);if(WEATHER[nx2].typhoon&&wk!=='typhoon'&&hud.wt!==pi){hud.wt=pi;banner(`🌀 颱風警報！約 ${fmt(PERIOD-S.t%PERIOD)} 後颱風來襲，風雨會越來越強，快把成熟的作物收起來！`);SFX.bad()}
   else if(WEATHER[nx2].cold&&!w.cold&&hud.wc!==pi){hud.wc=pi;banner(`🥶 寒流要來了！約 ${fmt(PERIOD-S.t%PERIOD)} 後降溫，怕冷的作物可能凍傷`)}
-  const tu=tutNow();let g;if(tu){const i=TUT.indexOf(tu);const p=tu.at();g=`📘 ${p||!tu.wait?tu.t:'⏳ '+tu.wait}<span class="tut">新手引導 ${i+1}/${TUT.length}　這一步第 ${Math.min(2,(S.tut[tu.k]||0)+1)}/2 次${p?'（跟著黃色箭頭走）':''}</span>`}else g=TASKS[0]?`👉 ${TASKS[0].t}`:'🌾 農場一切順利！';
+  const tu=tutNow();let g;if(tu){const i=TUT.indexOf(tu);const p=tu.at();g=`📘 ${p||!tu.wait?((tu.tx&&tu.tx())||tu.t):'⏳ '+tu.wait}<span class="tut">新手引導 ${i+1}/${TUT.length}　這一步第 ${Math.min(2,(S.tut[tu.k]||0)+1)}/2 次${p?'（跟著黃色箭頭走）':''}</span>`}else g=TASKS[0]?`👉 ${TASKS[0].t}`:'🌾 農場一切順利！';
   const ge=$('#goal');if(ge.dataset.h!==g){ge.dataset.h=g;ge.innerHTML=g}}
 const lv2txt=v=>v<.4?'風雨漸漸變強':v<.85?'風雨很強':'風雨最強';
 
@@ -1666,7 +1851,7 @@ const OFF=NETG?null:offlineSim();syncAnimals();
 if(OFF&&OFF.away>=60&&!S.inHome){P.o.visible=false;P.pos.set(HOME.x,0,HOME.z+2.55)}
 function showBack(OFF){setTimeout(()=>openPanel(`<h2>👋 歡迎回來！</h2><div>你離開了 <b>${fmtAway(OFF.away)}</b>${OFF.away>OFF.sim?`（最多計算 ${TS()>1?6:24} 小時）`:''}，這段時間農場繼續運作：<br>
   💵 錢的變化：<b style="color:${OFF.money>=0?'#2a7a30':'#c0392b'}">${OFF.money>=0?'+':''}${OFF.money}</b>（離線收入 💵${OFF.earn}）<br>🧾 離線帳單：只扣了 💵${OFF.bill}${OFF.billAll>OFF.bill?`（原本 💵${OFF.billAll}，離線時最多只扣 1 天或離線賺到的錢，不會欠款）`:''}<br>${prof().protect?'🛡️ 離線保護：成熟的作物還在等你、產品沒有壞<br>':''}${OFF.boost?'🚀 歡迎回來加成：接下來 30 分鐘，作物和動物長得快 1.5 倍！<br>':''}
-  ${OFF.ripe?`✅ 有 ${OFF.ripe} 格作物成熟等你採收<br>`:''}${OFF.wither?`🥀 有 ${OFF.wither} 格枯萎或壞掉了<br>`:''}${OFF.boxes?`📦 集貨箱、冷藏箱裡有 ${OFF.boxes} 件貨<br>`:''}${OFF.hungry?`😣 有 ${OFF.hungry} 隻動物肚子餓<br>`:''}${S.debt?`⚠️ 欠款 💵${S.debt}<br>`:''}
+  ${OFF.ripe?`✅ 有 ${OFF.ripe} 格作物成熟等你採收<br>`:''}${OFF.wither?`🥀 有 ${OFF.wither} 格枯萎或壞掉了<br>`:''}${OFF.boxes?`📦 集貨箱、冷藏箱裡有 ${OFF.boxes} 件貨<br>`:''}${OFF.hungry?`😣 有 ${OFF.hungry} 隻動物肚子餓<br>`:''}${OFF.wl&&OFF.wl.length?`<div style="margin:4px 0;padding:6px 8px;background:#fff0ec;border-radius:10px;color:#a03010">🐗 <b>離線時野生動物來過</b>（衝刺／極速經營沒有離線保護）：<br>${OFF.wl.join('<br>')}</div>`:''}${S.debt?`⚠️ 欠款 💵${S.debt}<br>`:''}
   🌾 繼續經營你的農場吧！</div>`),1200)}
 function firstStart(){if(S.paused)setPause(true);
 if(S.inHome){S.inHome=0;P.pos.set(HOME.x,0,HOME.z+2.55);enterHome()}
@@ -1696,7 +1881,7 @@ if(EMBED){['#bSpeed','#bReset'].forEach(q=>$(q).remove());S.speed=1;$('#credit')
   fb.onclick=()=>{SFX.click();$('#btns').classList.remove('open');parent.postMessage({t:'fun',money:Math.floor(S.money)},'*')};
   $('#bExit').onclick=()=>{SFX.click();$('#btns').classList.remove('open');closePanel();holdFarm();parent.postMessage({t:'exit'},'*')};
   $('#bFS').onclick=()=>{SFX.click();parent.postMessage({t:'fs'},'*')};
-  setInterval(()=>{try{parent.postMessage({t:'sync',money:Math.floor(S.money),paused:!!(S.paused||HOLD)},'*')}catch(e){}},1000);
+  setInterval(()=>{try{parent.postMessage({t:'sync',money:Math.floor(S.money),paused:!!(S.paused||HOLD),lv:NETG?0:farmLv()},'*')}catch(e){}},1000);
   addEventListener('message',e=>{const m=e.data;if(!m||e.source!==parent)return;
     if(m.t==='money'){if(NETG)netCmd({c:'money',d:m.d});else{S.money+=m.d;S.flow.push([S.t,m.d,'fun'])}bumpMoney()}
     else if(m.t==='coop'){setTimeout(()=>coopPanel(m.cap),400)}
@@ -1723,9 +1908,9 @@ if(!EMBED)$('#bExit').onclick=()=>{SFX.click();$('#btns').classList.remove('open
 function layoutHUD(){const mob=W<=700;const r=q=>$(q).getBoundingClientRect();const b=$('#btns'),g=$('#goal'),t=$('#todo'),bn=$('#banner');const bt=r('#bottom').top;
   if(mob){const top=Math.max(r('#clock').bottom,r('#money').bottom)+6;b.style.top=top+'px';const gt=r('#btns').bottom+6;g.style.top=gt+'px';const tt=r('#goal').bottom+6;t.style.top=tt+'px';t.style.maxHeight=Math.max(90,bt-tt-10)+'px';bn.style.top=(tt+4)+'px';$('#toast').style.top=(tt+4)+'px';const nc=$('#netChip');if(nc){nc.style.top=tt+'px';t.style.top=(tt+nc.offsetHeight+6)+'px'}}
   else{b.style.top=(r('#money').bottom+6)+'px';const tt=r('#btns').bottom+8;t.style.top=tt+'px';t.style.maxHeight=Math.max(120,bt-tt-12)+'px';g.style.top='8px';bn.style.top=(r('#goal').bottom+6)+'px';const nc=$('#netChip');if(nc)nc.style.top=(r('#clock').bottom+6)+'px'}}
-RUN=true;started=true;firstStart();fsLabel();setTimeout(()=>{dailyGift();if(!S.profileSet&&!NETG)setTimeout(()=>{if(!$('#modal').classList.contains('on'))profilePanel(1);else S.profileAsk=1},5000)},1500);
+RUN=true;started=true;if(HOSTCAP)setTimeout(()=>{if(!NET.role)hostCreate(HOSTCAP)},700);firstStart();fsLabel();setTimeout(()=>{dailyGift();if(!S.profileSet&&!NETG)setTimeout(()=>{if(!$('#modal').classList.contains('on'))profilePanel(1);else S.profileAsk=1},5000)},1500);
 frame();layoutHUD();
-window.__F={S,step,PLOTS,P,syncAnimals,FIELDS,oneSow,oneReap,RINGS,SHOPS,PENS,LOTS,finishLot,ACT,openShop,enterHome,exitHome,strike,ledger,buildPanel,outB,offlineSim,OCC,showPets:()=>{PETS.forEach((p,i)=>{const o=petModel(p.id);o.position.set(P.pos.x-6+i*1.1,0,P.pos.z);o.rotation.y=.6;scene.add(o)})},layoutHUD,weatherAt,stormLevel,FI};
+window.__F={collideT:collide,get nightDraw(){return nightDraw},get GUARDV(){return GUARDV},get curNight(){return curNight},animalModel,scene,get wildSpawn(){return wildSpawn},get HUNTER(){return HUNTER},get PATROL(){return PATROL},goTo,findPath,closePanel,S,step,PLOTS,P,syncAnimals,FIELDS,oneSow,oneReap,RINGS,SHOPS,PENS,LOTS,finishLot,ACT,openShop,enterHome,exitHome,strike,ledger,buildPanel,outB,offlineSim,OCC,showPets:()=>{PETS.forEach((p,i)=>{const o=petModel(p.id);o.position.set(P.pos.x-6+i*1.1,0,P.pos.z);o.rotation.y=.6;scene.add(o)})},layoutHUD,weatherAt,stormLevel,FI};
 
 /* ======================= 寵物、烏鴉、家裡裝潢、倉庫冰箱、畫面遠近 ======================= */
 var PETX=null,CROWV=null,DECOR_KEY='';
@@ -1840,7 +2025,7 @@ function syncDecor(){homeDecorInit();const D=S.decor||(S.decor={own:[],wall:'cre
   if(has('tank')){b(.45,.55,.85,0x8a5a3a,3.25,.28,.2);const gl=mesh(G.box,new THREE.MeshLambertMaterial({color:0x8fd8ff,transparent:true,opacity:.45}));gl.scale.set(.42,.45,.8);gl.position.set(3.25,.78,.2);g.add(gl);HOME.fish=[];for(let i=0;i<3;i++){const f=mesh(G.sph,M([0xff8a2a,0xffd040,0xff5a8a][i]),false);f.scale.set(.03,.03,.06);f.position.set(3.25,.7+i*.08,.2);g.add(f);HOME.fish.push(f)}}
   if(has('rug')){const r=mesh(G.cyl,M(0xff9a6a),false);r.scale.set(1.2,.01,.9);r.position.set(.25,.092,.45);g.add(r)}}
 function homeDecorTick(rdt){syncDecor();if(HOME.fish&&HOME.fish.length&&HOME.fish[0].parent)HOME.fish.forEach((f,i)=>{const a=wTime*(.8+i*.3)+i*2;f.position.z=.2+Math.sin(a)*.3;f.position.x=3.25+Math.cos(a*1.3)*.1;f.rotation.y=Math.cos(a)>0?0:Math.PI});if(HOME.clockHand&&HOME.clockHand.parent)HOME.clockHand.rotation.x=-hourOf(S.t)/12*Math.PI*2}
-function frameExtras(rdt){homeBeds();digTick(rdt);petTick(rdt);remotePetTick(rdt);crowTick(rdt);homeDecorTick(rdt)}
+function frameExtras(rdt){f7Tick(rdt);homeBeds();digTick(rdt);petTick(rdt);remotePetTick(rdt);crowTick(rdt);homeDecorTick(rdt)}
 Object.assign(SHOP_HTML,{
  fridge(){const bc={};S.basket.forEach(t=>{if(ITEMS[t]&&ITEMS[t].p>0)bc[t]=(bc[t]||0)+1});const fz=S.fridge||(S.fridge={});const tot=Object.values(fz).reduce((a,b)=>a+b,0);
   return `<h2>🧊 倉庫冰箱</h2><div>放進冰箱的作物、雞蛋、鮮奶<b>不會枯萎、不會壞</b>。菜籃子滿了可以先放這裡，等收購價上漲再拿出來賣。　容量 <b>${tot}</b>/${fridgeCap()}</div>${(()=>{const up=FRIDGE_UP.find(u=>u[0]>fridgeCap());return up?`<div class="chips"><button class="on" data-a="fup" data-v="${up[0]}">⬆️ 擴充冰箱到 ${up[0]} 個（💵${up[1]}）</button></div>`:'<div style="color:#2a7a30;font-size:13px">✔ 冰箱已經擴充到最大（500 個）</div>'})()}
@@ -1900,7 +2085,7 @@ function digTick(rdt){if(!HOE||!DIG_T)return;if(P.digT>0){P.digT-=rdt}else if(HO
 /* ======================= 連線合作（房主＋朋友，最多 4 人一起經營房主的農場） ======================= */
 // 房主負責計算整座農場；朋友把自己的位置、動作傳給房主，房主每 0.4 秒把農場狀態傳回給大家。
 var NET={ws:null,role:'',code:'',uid:'',slot:0,cap:2,members:[],hostUid:'',remote:new Map(),guests:new Map(),ppT:0,ssT:0,flowT:0,reShop:0,lastPP:'',hostGone:false};
-const NET_KEYS=['money','t','seed','plots','boxes','animals','trough','piles','pbox','seeds','own','mats','fm','pm','gm','staff','stock','pens','autoCrop','tut','tutDone','lastP','earn','debt','strike','ev','evT','day','tor','torAt','forceW','paused','stats','gc','crows','fridge','decor','fridgeCap','penDur','autoDur','profile','boostUntil'];
+const NET_KEYS=['wild','guard','penUp','wildT','tc','money','t','seed','plots','boxes','animals','trough','piles','pbox','seeds','own','mats','fm','pm','gm','staff','stock','pens','autoCrop','tut','tutDone','lastP','earn','debt','strike','ev','evT','day','tor','torAt','forceW','paused','stats','gc','crows','fridge','decor','fridgeCap','penDur','autoDur','profile','boostUntil'];
 const NET_COL=['#2f6fd1','#e0507e','#2fa84f','#e08a1a'];
 function netOK(){return location.protocol==='http:'||location.protocol==='https:'}
 function netSend(o){if(NET.ws&&NET.ws.readyState===1)NET.ws.send(JSON.stringify(o))}
@@ -1914,21 +2099,22 @@ function netConnect(first){if(!netOK()){netErr('這個網址不能連線。連�
   ws.onclose=()=>{if(NET.ws!==ws)return;NET.ws=null;netChip();if(NET.role)setTimeout(()=>{if(NET.role&&!NET.ws)netResume()},2500)}}
 function netResume(){if(NET.role==='host')netConnect(()=>netSend({t:'create',cap:NET.cap,uid:NET.uid,name:PNAME||'房主',code:NET.code}));else if(NET.role==='guest')netConnect(()=>netSend({t:'join',code:NET.code,uid:NET.uid,name:PNAME||'朋友'}))}
 function netErr(t){const e=$('#netErr');if(e)e.textContent='⚠️ '+t;else toast('⚠️ '+t,4000)}
-function hostCreate(cap){NET.cap=cap;netConnect(()=>netSend({t:'create',cap,uid:netBaseUid(),name:PNAME||'房主',code:S.myCode||''}))}
+// 當房主：切換到「合作農場」的存檔（和單人農場分開）
+function hostCreate(cap){if(HOSTCAP!==cap){save();const q=new URLSearchParams(location.search);q.delete('coop');q.set('host',cap);location.replace(location.pathname+'?'+q.toString());return}NET.cap=cap;netConnect(()=>netSend({t:'create',cap,uid:netBaseUid(),name:PNAME||'房主',code:S.myCode||''}))}
 function guestJoin(code){if(!/^\d{4}$/.test(code)){netErr('請輸入 4 位數房號');return}let uid=netBaseUid();try{uid=sessionStorage.getItem(netUidKey(code))||uid}catch(e){}
   NET.code=code;netConnect(()=>netSend({t:'join',code,uid,name:PNAME||'朋友'}))}
 function netMembers(list){NET.members=list||[];const h=NET.members.find(x=>x.slot===0);NET.hostUid=h?h.uid:''}
 function netMsg(m){switch(m.t){
   case 'created':case 'joined':{NET.code=m.code;NET.cap=m.cap;NET.uid=m.uid;NET.slot=m.slot;netMembers(m.members);try{sessionStorage.setItem(netUidKey(m.code),m.uid)}catch(e){}
-    if(m.slot===0){NET.role='host';S.myCode=m.code;save();closePanel();netChip();toast(`🏠 房間建立好了！房號 <b>${m.code}</b>，請朋友在「👥 連線合作」輸入這個號碼`,6000);SFX.fanfare()}
+    if(m.slot===0){NET.role='host';S.myCode=m.code;coopAddMember(NET.uid,PNAME||'房主');save();closePanel();netChip();toast(`🏠 房間建立好了！房號 <b>${m.code}</b>，請朋友在「👥 連線合作」輸入這個號碼`,6000);SFX.fanfare()}
     else{NET.role='guest';NET.hostGone=!NET.members.some(x=>x.slot===0&&x.on);if(NETG){netSend({t:'hello',_to:NET.hostUid});netChip();hostWait()}else{netSend({t:'want',_to:NET.hostUid});toast('📡 正在下載房主的農場…',4000)}}break}
   case 'peer':{const i=NET.members.findIndex(x=>x.uid===m.uid);const it={uid:m.uid,name:m.name,slot:m.slot,on:true};if(i>=0)NET.members[i]=it;else NET.members.push(it);if(m.slot===0){NET.hostUid=m.uid;NET.hostGone=false;hostWait();if(NETG)netSend({t:'hello',_to:m.uid})}
     if(NET.role==='host'){toast(`👋 ${esc(m.name)} 加入農場了！`,3000);SFX.ding()}netChip();break}
   case 'gone':{const it=NET.members.find(x=>x.uid===m.uid);if(it)it.on=false;const r=NET.remote.get(m.uid);if(r){scene.remove(r.o);if(r.petO)scene.remove(r.petO);if(r.doorB)scene.remove(r.doorB);dropL(r.L);NET.remote.delete(m.uid)}
     if(NET.role==='host'){const g=NET.guests.get(m.uid);if(g)g.on=false;toast(`👋 ${esc(m.name||'朋友')} 離開了`,2500)}else if(m.host){NET.hostGone=true;hostWait()}netChip();break}
-  case 'want':if(NET.role==='host'){const g=netGuest(m._f,m.name);S.px=P.pos.x;S.pz=P.pos.z;const full=JSON.parse(JSON.stringify(S));full.hand=g.c.hand;full.basket=g.c.basket;full.cage=g.c.cage;full.leash=g.c.leash;full.veh=g.c.veh||'';full.px=P.pos.x+1.5;full.pz=P.pos.z+1;full.inHome=0;full.welcome=1;full.paused=S.paused;
+  case 'want':if(NET.role==='host'){const g=netGuest(m._f,m.name);coopAddMember(m._f,m.name);S.px=P.pos.x;S.pz=P.pos.z;const full=JSON.parse(JSON.stringify(S));full.hand=g.c.hand;full.basket=g.c.basket;full.cage=g.c.cage;full.leash=g.c.leash;full.veh=g.c.veh||'';full.px=P.pos.x+1.5;full.pz=P.pos.z+1;full.inHome=0;full.welcome=1;full.paused=S.paused;
     netSend({t:'full',_to:m._f,s:full})}break;
-  case 'hello':if(NET.role==='host'){netGuest(m._f).on=true;NET.ssT=0}break;
+  case 'hello':if(NET.role==='host'){netGuest(m._f).on=true;NET.ssT=0;coopAddMember(m._f)}break;
   case 'full':if(!NETG&&NET.role==='guest'){try{localStorage.setItem('zzdh_farm_guest',JSON.stringify(m.s))}catch(e){toast('⚠️ 手機空間不夠，無法下載農場');return}save();
     const q=new URLSearchParams(location.search);q.set('guest',NET.code);try{NET.ws.close()}catch(e){}NET.role='';location.replace(location.pathname+'?'+q.toString())}break;
   case 'pp':netRemote(m);if(NET.role==='host'){const g=NET.guests.get(m._f);if(g){g.pos.set(m.x,0,m.z);g.hose=!!m.hose;g.sel=m.sel||'';g.inHome=!!m.home;g.auto=!!m.auto;g.on=true;g.name=m.nm||g.name;g.of=m.of;g.du=m.du;g.pet=m.pk?{x:m.px,z:m.pz}:null}}break;
@@ -1980,10 +2166,10 @@ function hostWait(){const e=$('#hostWait');if(NET.role==='guest'&&NET.hostGone){
 function netRemote(m){if(m._f===NET.uid)return;let r=NET.remote.get(m._f);if(!r){const o=makeFarmer();o.position.set(m.x,0,m.z);r={o,L:label('',V(0,0,0),99),tx:m.x,tz:m.z,d:m.d,k:'',slot:m._s||1,t:0};NET.remote.set(m._f,r);puff(o.position.clone().add(V(0,.6,0)),10)}
   if(m.of&&m.of!==r.of){r.of=m.of;applyOutfit(r.o,m.of)}if(m.of&&m.of!=='farmer'&&m.of===WARD.wear&&(m._s||0)<NET.slot){const o=OUTFITS.find(x=>x.id===m.of);WARD.wear='farmer';saveWard();applyOutfit(P.o,'farmer');toast(`👕 「${o.n}」${esc(m.nm||'朋友')}已經穿了，你先換回經典農夫裝（同一套只能一個人穿）`,4500)}remotePet(r,m);r.tx=m.x;r.tz=m.z;r.d=m.d;r.mv=m.mv;r.home=m.home;r.hs=m.hs;r.hm=m.hm;r.nm=m.nm;r.st=m.st;r.slot=m._s||0;const key=(m.h||[]).join()+'|'+m.b+'|'+m.cg+'|'+m.veh;if(key!==r.k){r.k=key;const u=r.o.userData;u.anchor.clear();(m.h||[]).slice(0,8).forEach((t,i)=>{if(!ITEMS[t])return;const it=makeItem(t);it.position.y=i*ITEM_H;u.anchor.add(it)});
     u.fillG.clear();for(let i=0;i<Math.min(10,m.b||0);i++){const it=miniItem('grass');it.material=M(0xd8b060);const a=i*2.4,rr=i?.15:0;it.position.set(Math.cos(a)*rr,-.15+i*.03,Math.sin(a)*rr);u.fillG.add(it)}
-    u.cage.visible=(m.cg||0)>0;if(r.veh){r.o.remove(r.veh);r.veh=null}if(m.veh){r.veh=vehicleModel(m.veh);r.o.add(r.veh)}r.vy={bike:.32,trike:.42,truck:.75}[m.veh]||0}}
+    u.cage.visible=false;if(!u.bkA){u.bkA=new THREE.Group();u.bkA.position.y=.36;u.basket.add(u.bkA)}u.bkA.clear();String(m.cg||'').split(',').filter(x=>x&&ANIM[x.slice(0,-1)]).forEach((x,i)=>{const a={k:x.slice(0,-1),age:x.endsWith('A')?1:0};const am=animalModel(a);am.scale.multiplyScalar(ANIM[a.k].pen==='apiary'?.3:.6);const an=i*2.4,rr=i?.16:0;am.position.set(Math.cos(an)*rr,i>=4?.12:0,Math.sin(an)*rr);am.rotation.y=Math.PI/4;u.bkA.add(am)});if(r.veh){r.o.remove(r.veh);r.veh=null}if(m.veh){r.veh=vehicleModel(m.veh);r.o.add(r.veh)}r.vy={bike:.32,trike:.42,truck:.75}[m.veh]||0}}
 function netFrame(rdt){if(!NET||!NET.role)return;
   // 傳送自己的位置
-  NET.ppT-=rdt;if(NET.ppT<=0&&NET.ws){NET.ppT=.1;const pp={t:'pp',x:+P.pos.x.toFixed(2),z:+P.pos.z.toFixed(2),d:+P.dir.toFixed(2),mv:(keys.w||keys.a||keys.s||keys.d||joy.on||P.auto)?1:0,home:S.inHome?1:0,hose:P.hose?1:0,sel:S.sel,auto:P.auto?1:0,h:S.hand.slice(0,8),b:S.basket.length,cg:S.cage.length,veh:S.veh,nm:PNAME||(NET.role==='host'?'房主':'朋友'),st:P.stun>0?1:0,of:WARD.wear,du:S.dur,hs:S.inHome?HAI.spot:'',hm:S.inHome&&HAI.mode==='do'?1:0,pk:PETX&&PETX.o&&!S.inHome?PETW.cur:'',px:PETX&&PETX.o?+PETX.o.position.x.toFixed(2):0,pz:PETX&&PETX.o?+PETX.o.position.z.toFixed(2):0};
+  NET.ppT-=rdt;if(NET.ppT<=0&&NET.ws){NET.ppT=.1;const pp={t:'pp',x:+P.pos.x.toFixed(2),z:+P.pos.z.toFixed(2),d:+P.dir.toFixed(2),mv:(keys.w||keys.a||keys.s||keys.d||joy.on||P.auto)?1:0,home:S.inHome?1:0,hose:P.hose?1:0,sel:S.sel,auto:P.auto?1:0,h:S.hand.slice(0,8),b:S.basket.length,cg:S.cage.map(a=>a.k+(a.age>=1?'A':'B')).join(','),veh:S.veh,nm:PNAME||(NET.role==='host'?'房主':'朋友'),st:P.stun>0?1:0,of:WARD.wear,du:S.dur,hs:S.inHome?HAI.spot:'',hm:S.inHome&&HAI.mode==='do'?1:0,pk:PETX&&PETX.o&&!S.inHome?PETW.cur:'',px:PETX&&PETX.o?+PETX.o.position.x.toFixed(2):0,pz:PETX&&PETX.o?+PETX.o.position.z.toFixed(2):0};
     const k=JSON.stringify(pp);if(k!==NET.lastPP||Math.random()<.05){NET.lastPP=k;netSend(pp)}}
   if(NET.role==='host'){netHostTick(rdt);NET.ssT-=rdt;NET.flowT-=rdt;if(NET.ssT<=0&&NET.guests.size){NET.ssT=.4;const wf=NET.flowT<=0;if(wf)NET.flowT=3;netSend({t:'ss',s:snapOut(wf)})}}
   for(const r of NET.remote.values()){const o=r.o,u=o.userData;o.visible=!r.home||!!S.inHome;u.basket.visible=!r.home;
@@ -1997,15 +2183,15 @@ function netFrame(rdt){if(!NET||!NET.role)return;
 /* ===== 介面：連線合作視窗、房號小標籤 ===== */
 function coopPanel(cap){if(NET.role){const list=NET.members.slice().sort((a,b)=>a.slot-b.slot).map(x=>`<div style="padding:3px 0">${x.slot===0?'👑':'🧑‍🌾'} <b style="color:${NET_COL[x.slot%4]}">${esc(x.name||'')}</b>${x.uid===NET.uid?'（我）':''}　${x.on?'🟢 在線上':'⚪ 離線中'}</div>`).join('');
     openPanel(`<h2>👥 連線合作中</h2><div>房號：<b style="font-size:22px;letter-spacing:4px;color:#e0507e">${NET.code}</b>　（最多 ${NET.cap} 人）<br>${NET.role==='host'?'你是<b>房主</b>，大家經營的是你的農場。':'你在<b>房主的農場</b>幫忙，不會影響你自己的存檔。'}</div><div style="margin:8px 0">${list}</div>
-     <div class="chooser"><button id="netLeave">🚪 ${NET.role==='host'?'關閉房間（朋友會先暫停）':'離開房間，回到自己的農場'}</button></div>`,()=>$('#netLeave').onclick=()=>{closePanel();netLeave()});return}
+     ${NET.role==='host'?coopResetHtml():''}<div class="chooser"><button id="netLeave">🚪 ${NET.role==='host'?'關閉房間，回到自己的單人農場':'離開房間，回到自己的農場'}</button></div>`,()=>{$('#netLeave').onclick=()=>{closePanel();netLeave()};coopResetBind()});return}
   openPanel(`<h2>👥 連線合作</h2><div>和朋友用不同的手機、電腦，一起經營<b>房主的農場</b>：大家可以一起種田、採收、餵動物、賣貨，賺的錢都進同一個農場。</div>
-   <h3>🏠 我當房主（大家來我的農場）</h3><div class="chooser"><button id="mk2">👥 建立雙人房間（2 人）</button><button id="mk4">👨‍👩‍👧‍👦 建立多人房間（最多 4 人）</button></div>
+   <h3>🏠 我當房主（大家來我的合作農場）</h3><div style="font-size:13px;color:#7a5a3a">雙人、多人的合作農場和你的單人農場是<b>分開的存檔</b>。</div><div class="chooser"><button id="mk2">👥 建立雙人房間（2 人）</button><button id="mk4">👨‍👩‍👧‍👦 建立多人房間（最多 4 人）</button></div>
    <div style="font-size:13px">📌 你的固定房號：<b style="font-size:18px;letter-spacing:3px;color:#e0507e">${S.myCode||'（第一次建立時產生）'}</b>　每次建立都用同一個號碼，朋友明天也能用同一個號碼回來。</div>
    <h3>🚪 加入朋友的農場</h3><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><input id="netCode" maxlength="4" inputmode="numeric" placeholder="房號" style="font-size:20px;width:110px;padding:6px 10px;border-radius:12px;border:2px solid #9ccf6a;letter-spacing:4px;font-family:inherit"><button class="hb b" id="netGo" style="font-size:16px;padding:7px 16px">加入</button></div>
    <div id="netErr" style="color:#c0392b;font-size:13px;min-height:18px"></div><div style="font-size:12px;color:#7a6a4a">💡 斷線時用同一個房號再加入就能回來；房間沒人超過 30 分鐘才會關閉。</div>`,
    ()=>{$('#mk2').onclick=()=>{SFX.click();hostCreate(2)};$('#mk4').onclick=()=>{SFX.click();hostCreate(4)};$('#netGo').onclick=()=>{SFX.click();guestJoin($('#netCode').value.trim())};$('#netCode').onkeydown=e=>{if(e.key==='Enter')$('#netGo').click()};if(cap)setTimeout(()=>{const b=$(cap===4?'#mk4':'#mk2');if(b)b.animate([{transform:'scale(1.06)'},{transform:'scale(1)'}],{duration:500,iterations:3})},200)})}
 function netLeave(){netSend({t:'leave'});const was=NET.role;NET.role='';try{NET.ws&&NET.ws.close()}catch(e){}NET.ws=null;for(const r of NET.remote.values()){scene.remove(r.o);if(r.petO)scene.remove(r.petO);if(r.doorB)scene.remove(r.doorB);dropL(r.L)}NET.remote.clear();NET.guests.clear();netChip();hostWait();
-  if(NETG){const q=new URLSearchParams(location.search);q.delete('guest');location.replace(location.pathname+(q.toString()?'?'+q.toString():''))}else if(was)toast('🚪 已經關閉房間',2000)}
+  if(NETG){const q=new URLSearchParams(location.search);q.delete('guest');location.replace(location.pathname+(q.toString()?'?'+q.toString():''))}else if(HOSTCAP&&was==='host'){save();const q=new URLSearchParams(location.search);q.delete('host');q.delete('coop');location.replace(location.pathname+(q.toString()?'?'+q.toString():''))}else if(was)toast('🚪 已經關閉房間',2000)}
 function netChip(){let c=$('#netChip');if(!NET.role&&!NETG){if(c)c.remove();return}if(!c){c=document.createElement('div');c.id='netChip';c.className='box';$('#hud').appendChild(c);c.onclick=()=>{SFX.click();coopPanel()}}
   const on=NET.members.filter(x=>x.on).length;c.innerHTML=`${NET.ws?'🟢':'🔴'} 👥 房號 ${NET.code||'…'}　${on}/${NET.cap}${NET.role==='guest'?'<small>（房主的農場）</small>':''}`;layoutHUD()}
 {const b=document.createElement('button');b.className='hb b more';b.id='bCoop';b.textContent='👥 連線合作';$('#btns').insertBefore(b,$('#bExit'));b.onclick=()=>{SFX.click();$('#btns').classList.remove('open');coopPanel()}}
@@ -2016,6 +2202,340 @@ if(NETG){const be=$('#bExit');const oe=be.onclick;be.onclick=()=>{netSend({t:'le
   $('#credit').textContent='👥 你在房主的農場幫忙（不會影響自己的存檔）';NET.role='guest';NET.code=QS.get('guest');NET.hostGone=false;netChip();guestJoin(NET.code)}
 else if(QS.get('coop'))setTimeout(()=>coopPanel(+QS.get('coop')),900);
 window.__N=NET;
+
+// ===== 合作農場的「原本玩家」和重置規則 =====
+// 第一次一起玩的玩家（雙人 2 位、多人最多 4 位）記下來；要重置，原本的玩家都要在線上
+function coopAddMember(uid,name){if(!HOSTCAP||!uid)return;S.coopUids=S.coopUids||[];S.coopNames=S.coopNames||{};if(name)S.coopNames[uid]=name;if(S.coopUids.includes(uid)||S.coopUids.length>=HOSTCAP)return;S.coopUids.push(uid);save()}
+function coopResetCheck(){const need=S.coopUids||[];const on=new Set(NET.members.filter(x=>x.on).map(x=>x.uid));on.add(NET.uid);const miss=need.filter(u=>!on.has(u));return {need,miss}}
+function coopResetHtml(){if(!HOSTCAP)return '';const {need,miss}=coopResetCheck();const nm=u=>esc((S.coopNames||{})[u]||(u===NET.uid?'房主':'朋友'));
+  return `<h3>🔄 重置這個合作農場</h3><div style="font-size:13px">原本一起玩的玩家（${need.length} 位）：${need.map(u=>`${nm(u)}${miss.includes(u)?'⚪':'🟢'}`).join('、')||'（還沒有記錄）'}<br>${miss.length?`<span style="color:#c0392b">還有 ${miss.length} 位原本的玩家沒上線，不能重置；可以「新建合作農場」（舊的會保留起來）。</span>`:'原本的玩家都在線上，可以重置。'}</div>
+   <div class="chooser"><button id="coopRst" ${miss.length||need.length<2?'disabled':''}>🔄 重置合作農場進度</button><button id="coopNew">🆕 新建合作農場（舊的保留）</button></div>`}
+function coopResetBind(){const r=$('#coopRst'),n=$('#coopNew');if(r)r.onclick=()=>{const {miss}=coopResetCheck();if(miss.length){toast('原本的玩家沒有全部在線上，不能重置');return}
+    confirmAsk('確定要<b>重置這個合作農場</b>嗎？<br><small>原本的玩家都在線上，農場會全部清空</small>',()=>setTimeout(()=>confirmAsk('⚠️ 再確認一次：<b>真的要清空嗎？</b><br><small>刪除後沒辦法復原（單人農場不受影響）</small>',()=>coopWipe(false)),150))};
+  if(n)n.onclick=()=>confirmAsk('確定要<b>新建一個合作農場</b>嗎？<br><small>舊的合作農場會保留起來（不會刪除），新的從頭開始，原本的玩家改成現在房間裡的人</small>',()=>coopWipe(true))}
+function coopWipe(keep){const code=S.myCode;try{if(keep)localStorage.setItem(KEY+'_old_'+Date.now(),JSON.stringify(S));localStorage.removeItem(KEY)}catch(e){}
+  const ns=newState();ns.myCode=code;ns.coopUids=keep?NET.members.filter(x=>x.on).map(x=>x.uid).slice(0,HOSTCAP):(S.coopUids||[]);ns.coopNames=S.coopNames||{};ns.profileSet=S.profileSet;ns.profile=S.profile;
+  try{localStorage.setItem(KEY,JSON.stringify(ns))}catch(e){}netSend({t:'leave'});window.__noSave=true;location.reload()}
+
+/* ======================= 田地顏色說明（靠近田地時，畫面左側中間出現） ======================= */
+var LEG,LEGK;
+function legTick(){if(!LEG){LEG=document.createElement('div');LEG.id='soilLeg';document.body.appendChild(LEG)}
+  let best=null,bd=4.2;if(!S.inHome)for(const p of PLOTS){const d=Math.hypot(P.pos.x-p.x,P.pos.z-p.z);if(d<bd){bd=d;best=p}}
+  if(!best){if(LEGK){LEGK='';LEG.className=''}return}
+  const s=S.plots[best.id],c=CROPS[s.c];const cur=s.st==='broken'?'broken':c&&c.paddy&&s.w>.3?'paddy':soilKey(s.w);
+  const k=cur+'|'+best.f.i+'|'+Math.round(s.w*20);if(k===LEGK)return;LEGK=k;LEG.classList.add('on');
+  const o=cur==='paddy'?{hex:'#5a7a8a',n:'水田',d:'稻米、茭白筍要泡水'}:cur==='broken'?{hex:'#9a7a5a',n:'損壞',d:'站上去修好'}:SOIL_ST.find(x=>x.k===cur);const bar=Math.max(0,Math.min(100,Math.round(s.w*100)));
+  LEG.className='on '+cur;LEG.innerHTML=`<small>${best.f.name}　${c?c.em+c.n:'空田'}</small><div class="sw cur"><i style="background:${o.hex}"></i><span><b>${o.n}</b>　💧${bar}%<br><small>${o.d}</small></span></div><div class="wb"><u style="width:${bar}%"></u></div>`}
+(()=>{const st=document.createElement('style');st.textContent=`
+#soilLeg{position:fixed;left:6px;top:auto;bottom:calc(env(safe-area-inset-bottom) + 112px);transform:translateX(-120%);z-index:6;width:178px;background:rgba(255,255,255,.95);border:3px solid #c8a070;border-radius:14px;padding:6px 7px;font-size:13px;color:#4a2a10;transition:transform .3s;pointer-events:none;box-shadow:0 4px 0 rgba(120,80,30,.25)}
+#soilLeg.on{transform:translateX(0)}#soilLeg .wb{height:6px;border-radius:4px;background:#eadbc6;margin-top:3px;overflow:hidden}#soilLeg .wb u{display:block;height:100%;background:linear-gradient(90deg,#d6b47c,#4fa3e0)}#soilLeg.low,#soilLeg.dry{border-color:#e0602a}#soilLeg>b{font-size:14px}#soilLeg>small{display:block;color:#7a5a3a;margin-bottom:3px}
+#soilLeg .sw{display:flex;align-items:center;gap:6px;padding:2px;border-radius:9px;position:relative;line-height:1.2}
+#soilLeg .sw.cur{background:transparent}
+#soilLeg .sw i{flex:none;width:24px;height:24px;border-radius:6px;border:2px solid rgba(0,0,0,.2)}#soilLeg .sw small{font-size:11px;color:#7a5a3a}
+#soilLeg .sw em{position:absolute;right:-2px;top:-8px;font-style:normal;font-size:11px;background:#ffb300;color:#fff;border-radius:8px;padding:0 4px}
+#recP .grp{background:#f7fbef;border:2px solid #cfe6b0;border-radius:12px;padding:6px 8px;margin:6px 0;font-size:14px;line-height:1.55}
+#recP .grp h4{margin:0 0 2px;font-size:15px;color:#3a6a1a}#recP .bad{color:#c0301a;font-weight:bold}#recP .ok{color:#2f8a2a}#recP .tabs{display:flex;gap:6px;margin:4px 0}
+#recP .tabs button{flex:1;border:none;border-radius:10px;padding:7px 0;font-size:15px;background:#e8f2dc;color:#3a6a1a;font-family:inherit}#recP .tabs button.on{background:#5aa83a;color:#fff}
+@media (max-width:520px){#soilLeg{width:160px;font-size:12px}}`;document.head.appendChild(st)})();
+
+/* ======================= 家裡的紀錄看板 ======================= */
+function recBoardInit(){if(HOME.board||!HOME.g)return;const b=new THREE.Group();b.position.set(1.2,1.45,-2.02);HOME.g.add(b);
+  const fr=mesh(G.box,M(0x8a5a2a));fr.scale.set(1.3,.9,.06);b.add(fr);const cv=mesh(G.box,M(0xf4ecd0));cv.scale.set(1.15,.76,.07);cv.position.z=.01;b.add(cv);
+  const t=mesh(new THREE.PlaneGeometry(1.1,.7),new THREE.MeshBasicMaterial({map:canvasTex(256,160,g=>{g.fillStyle='#f4ecd0';g.fillRect(0,0,256,160);g.fillStyle='#5a3a10';g.font='bold 34px "Huninn","PingFang TC",sans-serif';g.textAlign='center';g.fillText('📋 紀錄看板',128,44);g.font='24px "Huninn","PingFang TC",sans-serif';g.fillText('🌱 田地　🐔 動物',128,96);g.fillText('點我看全部',128,136)}),transparent:true}));t.position.z=.05;b.add(t);
+  for(const x of [-.45,.45]){const pin=mesh(G.sph,M(0xe53935));pin.scale.setScalar(.05);pin.position.set(x,.32,.06);b.add(pin)}HOME.board=b}
+function recRows(){const w=curW();const out=[];
+  FIELDS.slice().sort((a,b)=>a.i-b.i).forEach(f=>{const ps=PLOTS.filter(p=>p.f===f).map(p=>S.plots[p.id]);const by={};ps.forEach(s=>{const k=s.st==='empty'?'_empty':s.c+'|'+s.st;(by[k]=by[k]||[]).push(s)});
+    const lines=Object.keys(by).map(k=>{const L=by[k],s=L[0];if(k==='_empty')return `⬜ 空田 ${L.length} 格`;const c=CROPS[s.c]||{em:'🌱',n:''};
+      if(s.st==='grow'){const rem=Math.max(...L.map(x=>(1-x.g)*plotDur(x)));const dry=L.filter(x=>x.w<=0).length,low=L.filter(x=>x.w>0&&x.w<=.3).length;const cold=w.cold&&c.cold&&!covered(f);
+        return `${c.em} ${c.n} ${L.length} 格　${Math.floor(Math.min(...L.map(x=>x.g))*100)}%　⏳ ${dry||cold?'<span class="bad">停止生長</span>':`還要 ${fmtDur(rem)}（${realAt(rem)}）`}${dry?`　<span class="bad">💧 ${dry} 格乾掉了</span>`:low?`　<span class="bad">💧 ${low} 格快乾了</span>`:'　<span class="ok">💧 水夠</span>'}`}
+      if(s.st==='ripe')return `${c.em} ${c.n} ${L.length} 格　<span class="ok">✅ 可以採收</span>`;if(s.st==='wither')return `🥀 ${c.n} ${L.length} 格　<span class="bad">枯萎了，快收</span>`;if(s.st==='rot')return `💀 壞掉 ${L.length} 格（站上去清掉）`;if(s.st==='broken')return `🔨 損壞 ${L.length} 格（站上去修）`;return ''}).filter(Boolean);
+    out.push({f:1,h:`🌱 ${f.name}${S.boxes[f.i].length?`　📦 集貨箱 ${S.boxes[f.i].length}`:''}`,lines})});
+  const pens=[];for(const pk in PENS){const T=PEN_T[pk];const an=S.animals.filter(a=>ANIM[a.k].pen===pk);const cnt={};an.forEach(a=>{const k=a.k+(a.age>=1?'A':'B');cnt[k]=(cnt[k]||0)+1});
+    const lines=[];Object.keys(cnt).forEach(k=>{const d=ANIM[k.slice(0,-1)],ad=k.endsWith('A');const kids=an.filter(a=>a.k===k.slice(0,-1)&&a.age<1);let gr='';if(!ad&&kids.length){const rem=Math.max(...kids.map(a=>(1-a.age)*d.grow*6));gr=`　⏳ 長大還要 ${fmtDur(rem)}`}lines.push(`${ad?d.em:d.bem} ${ad?d.n:d.baby} ${cnt[k]} 隻${gr}`)});
+    if(!an.length)lines.push('（還沒有動物）');
+    if(T.food.length){const tl=troughLeft(pk);lines.push(`🥣 飼料槽 ${S.trough[pk]}/10　${tl==null?'':tl<=0?'<span class="bad">空了！動物肚子餓</span>':tl<penDur(pk)*1.2?`<span class="bad">快吃完（${realAt(tl)}）</span>`:`<span class="ok">還能吃 ${fmtDur(tl)}</span>（${realAt(tl)}）`}`)}
+    const pr=S.piles[pk].length+S.pbox[pk].length;if(pr)lines.push(`📦 等你收的產品 ${pr} 份${S.pbox[pk].length?'（冷藏箱）':''}`);
+    pens.push({h:`${T.em} ${T.n}　⏱️ 每 ${durName(penDur(pk))} 生產`,lines})}
+  const st=['feed','hay'].map(k=>{const sl=stockLeft(k);return `${ITEMS[k].em} ${ITEMS[k].n} ${S.stock[k]} 份${sl==null?'':sl<=0?'　<span class="bad">用完了</span>':`　夠餵 ${fmtDur(sl)}（${realAt(sl)}）`}`});
+  return {fields:out,pens,st}}
+var REC_TAB=REC_TAB||'f';
+function openRecord(tab){if(tab)REC_TAB=tab;const r=recRows();const g=(h,L)=>`<div class="grp"><h4>${h}</h4>${L.join('<br>')}</div>`;
+  openPanel(`<h2>📋 紀錄看板</h2><div id="recP"><div class="tabs"><button data-t="f" class="${REC_TAB==='f'?'on':''}">🌱 田地 ${r.fields.length}</button><button data-t="p" class="${REC_TAB==='p'?'on':''}">🐔 養殖場 ${r.pens.length}</button></div>
+  ${REC_TAB==='f'?r.fields.map(x=>g(x.h,x.lines)).join(''):g('🏚️ 飼料倉庫',r.st)+r.pens.map(x=>g(x.h,x.lines)).join('')}<div style="font-size:12px;color:#7a6a5a">括號裡是現實時間。這裡只能看，要處理請出門到現場。</div></div>`,
+  ()=>$('#recP').querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{SFX.click();openRecord(b.dataset.t)}))}
+
+/* ======================= 每一格畫面都會跑 ======================= */
+function f7Tick(rdt){legTick();recBoardInit();if(typeof tutTick==='function')tutTick(rdt);if(typeof wildTick==='function')wildTick(rdt)}
+
+/* ======================= 野生動物、圍欄、護衛犬、獵人、巡邏隊、路燈 ======================= */
+// 森林裡的動物會跑進農場：山豬拱田、猴子偷水果、狐狸抓家禽、黑熊偷蜂蜜。靠近牠就會跑掉。
+var WILD={boar:{n:'山豬',em:'🐗',lv:3,spd:2.6,to:'field'},fox:{n:'狐狸',em:'🦊',lv:4,spd:3.2,to:'poultry'},monkey:{n:'猴子',em:'🐒',lv:6,spd:3,to:'ripe'},bear:{n:'黑熊',em:'🐻',lv:15,spd:2.2,to:'pen'}};
+var POULTRY=['coop','pond','loft'];
+var GUARD={fence:{n:'木圍欄',em:'🪵',lv:3,p:300,d:'圍住一塊田：大部分山豬進不來，猴子有時候會爬進來'},iron:{n:'鐵柵欄',em:'⛓️',lv:10,p:1200,d:'圍住一塊田：山豬、猴子都進不來'},
+  lamp:{n:'路燈',em:'💡',lv:8,p:250,d:'裝在田邊或養殖場旁：晚上變亮，野生動物比較不敢靠近'},dog:{n:'護衛犬',em:'🐕‍🦺',lv:4,p:500,day:10,d:'顧一個養殖場：狐狸不敢來，黑熊也常被趕走（每天飼料 💵10）'}};
+STAFF.push({id:'hunter',em:'🏹',n:'獵人',wage:60,lv:3,d:'野生動物一出現就去把牠趕走',per:'farm',does:['hunt']},{id:'patrol',em:'🔦',n:'巡邏隊',wage:90,lv:12,d:'一直沿著田地、養殖場外圍巡邏，野生動物靠近就趕走；晚上會開手電筒',per:'farm',does:['patrol']});
+var WILDV,GUARDV,HUNTER,PATROL,NIGHTC,LAMPTEX;
+function wildModel(k){let m;if(k==='boar')m=quadModel({body:0x4a3428,snout:0x6a4a3a,len:.85,thick:1,hs:1,ear:'',leg:.55});else if(k==='fox')m=quadModel({body:0xe8742a,snout:0xffffff,len:.7,thick:.7,hs:.85,ear:'',tail:'long'});
+  else if(k==='bear')m=quadModel({body:0x1e1e22,snout:0x8a6a4a,len:1.05,thick:1.3,hs:1.2,ear:'',leg:.8});else{m=quadModel({body:0x8a5a3a,head:0xe8c0a0,len:.55,thick:.8,hs:1,ear:'',tail:'long',leg:.7})}
+  if(k==='boar'){for(const s of [-1,1]){const t=mesh(G.cone,M(0xffffff));t.scale.set(.03,.12,.03);t.position.set(.3,-.08,.08*s);t.rotation.z=-1.2;m.userData.head.add(t)}}
+  const g=new THREE.Group();g.add(m);g.userData.m=m;return g}
+function wildTargets(k){const W2=WILD[k];if(W2.to==='field')return PLOTS.filter(p=>{const s=S.plots[p.id];return s.st==='grow'||s.st==='ripe'}).map(p=>({type:'plot',id:p.id,x:p.x,z:p.z,f:p.f.i}));
+  if(W2.to==='ripe')return PLOTS.filter(p=>S.plots[p.id].st==='ripe').map(p=>({type:'plot',id:p.id,x:p.x,z:p.z,f:p.f.i}));
+  const pens=Object.keys(PENS).filter(pk=>(W2.to==='poultry'?POULTRY.includes(pk):true)&&(S.animals.some(a=>ANIM[a.k].pen===pk&&a.age>=1)||S.piles[pk].length));return pens.map(pk=>({type:'pen',pk,x:PENS[pk].x,z:PENS[pk].z+PENS[pk].d/2+.6}))}
+var isNight=()=>{const h=hourOf(S.t);return h>=19||h<5};
+function wildSpawn(force){const lv=farmLv();const ks=Object.keys(WILD).filter(k=>WILD[k].lv<=lv||force);const opts=[];ks.forEach(k=>{const t=wildTargets(k);if(t.length)opts.push([k,t])});if(!opts.length)return;
+  const [k,ts]=opts[Math.floor(Math.random()*opts.length)];const tg=ts[Math.floor(Math.random()*ts.length)];const a=Math.atan2(tg.z,tg.x)+rand(-.5,.5);const sx=Math.cos(a)*46,sz=clamp(Math.sin(a)*46,-46,50);
+  S.wild=S.wild||[];const w={id:Date.now()%1e7+Math.floor(Math.random()*999),k,x:sx,z:sz,sx,sz,tg,st:'go',t:0};S.wild.push(w);SFX.bad();
+  banner(`${WILD[k].em} ${WILD[k].n}跑進農場了！${WILD[k].to==='poultry'?'要抓家禽':WILD[k].to==='pen'?'要偷動物和產品':'要偷吃作物'}，快去趕走（走到牠旁邊就會跑掉）`,6000)}
+function wildFlee(w,why){if(w.st==='flee')return;w.st='flee';w.t=0;if(why){toast(why,2800);floatAt(V(w.x,1.6,w.z),'💨 跑掉了！','#2a7a30')}}
+function wildDamage(w){const W2=WILD[w.k],tg=w.tg;let msg='';
+  if(tg.type==='plot'){const f=FI(tg.f);const ps=PLOTS.filter(p=>p.f===f&&(W2.to==='ripe'?S.plots[p.id].st==='ripe':['grow','ripe'].includes(S.plots[p.id].st))).slice(0,2);
+    ps.forEach(p=>{const s=S.plots[p.id];if(w.k==='boar'){s.st='broken';s.rt=0;s.c=''}else{s.st='empty';s.c='';s.g=0}puff(V(p.x,.4,p.z),12,0x8a6a3a,.15)});msg=ps.length?`${W2.em} ${W2.n}${w.k==='boar'?'把':'偷走了'} ${f.name} ${ps.length} 格${w.k==='boar'?'拱壞了':'的作物'}！（買圍欄、雇獵人可以防）`:''}
+  else{const pk=tg.pk;if(S.piles[pk].length&&(w.k==='bear'||Math.random()<.5)){const n=Math.min(S.piles[pk].length,4);S.piles[pk].splice(0,n);msg=`${W2.em} ${W2.n}偷走了${PEN_T[pk].n} ${n} 份產品！`}
+    else{const i=S.animals.findIndex(a=>ANIM[a.k].pen===pk&&a.age>=1&&(w.k==='bear'||ANIM[a.k].carry==='cage'));if(i>=0){const a=S.animals.splice(i,1)[0];syncAnimals();msg=`${W2.em} ${W2.n}抓走了一隻${ANIM[a.k].n}！（養護衛犬、雇獵人可以防）`}}}
+  if(msg){SFX.bad();banner(msg,5000);S.stats=S.stats||{};S.stats.wildLoss=(S.stats.wildLoss||0)+1}}
+function wildProtect(w){const tg=w.tg;let why='';
+  if(tg.type==='plot'){if(isNight()&&(S.guard&&S.guard.lamp||{})['f'+tg.f]&&Math.random()<.5)why='💡 路燈很亮，'+WILD[w.k].n+'不敢靠近！'}
+  else{const dg=(S.guard&&S.guard.dog||{})[tg.pk];if(dg&&(w.k==='fox'||Math.random()<.6))why='🐕‍🦺 護衛犬汪汪叫，把'+WILD[w.k].n+'趕跑了！';if(!why&&isNight()&&(S.guard&&S.guard.lamp||{})['p'+tg.pk]&&Math.random()<.5)why='💡 路燈很亮，'+WILD[w.k].n+'不敢靠近！'}
+  return why}
+// 巡邏路線：沿著田地和養殖場外圍
+function patrolPath(){const xs=[],zs=[];FIELDS.forEach(f=>{xs.push(f.x);zs.push(f.z)});for(const k in PENS){xs.push(PENS[k].x);zs.push(PENS[k].z)}const x0=Math.min(...xs)-6,x1=Math.min(22,Math.max(...xs)+6),z0=Math.min(...zs)-6,z1=Math.max(...zs)+4;return [V(x0,0,z0),V(x1,0,z0),V(x1,0,z1),V(x0,0,z1)]}
+function npcModel(col,hat){const g=new THREE.Group();const b=mesh(new THREE.CylinderGeometry(.24,.3,.75,10),M(col));b.position.y=.68;g.add(b);const h=mesh(G.sph,M(0xf3c9a1));h.scale.setScalar(.22);h.position.y=1.22;g.add(h);
+  const ht=mesh(new THREE.CylinderGeometry(.2,.26,.14,10),M(hat));ht.position.y=1.42;g.add(ht);for(const s of [-1,1]){const l=mesh(G.cyl,M(0x3a3a3a));l.scale.set(.08,.32,.08);l.position.set(.1*s,.16,0);g.add(l)}scene.add(g);return g}
+function guardSync(){const G2=S.guard||(S.guard={fence:{},lamp:{},dog:{}});const key=JSON.stringify(G2)+FIELDS.length+Object.keys(PENS).length;if(GUARDV&&GUARDV.key===key)return;
+  if(GUARDV)GUARDV.list.forEach(o=>scene.remove(o));GUARDV={key,list:[],lamps:[],dogs:[]};
+  GUARDV.gates=[];FIELDS.forEach(f=>{const fe=G2.fence[f.i];if(fe){const r=fence(f.x,f.z+.1,6.2,4.4);const col=fe==='iron'?0x50545e:0xc98a4a;if(fe==='iron')r.g.traverse(o=>{if(o.isMesh)o.material=M(0x50545e)});GUARDV.list.push(r.g);
+      for(const sd of [-1,1]){const gp=new THREE.Group();gp.position.set(f.x+1.5*sd,0,f.z+.1+2.2);const pn=mesh(G.box,M(fe==='iron'?0x3a3e46:0xe0a868));pn.scale.set(1.45,.5,.07);pn.position.set(-.72*sd,.55,0);gp.add(pn);const bar=mesh(G.box,M(col));bar.scale.set(.07,.7,.09);bar.position.set(-1.4*sd,.45,0);gp.add(bar);scene.add(gp);GUARDV.list.push(gp);GUARDV.gates.push({g:gp,sd,f})}}
+    if(G2.lamp['f'+f.i])GUARDV.lamps.push(lampAt(f.x-3.4,f.z-2.3))});
+  for(const pk in PENS){const p=PENS[pk];if(G2.lamp['p'+pk])GUARDV.lamps.push(lampAt(p.x-p.w/2-.6,p.z+p.d/2+.6));if(G2.dog[pk]){const d=petModel('shiba');d.scale.multiplyScalar(1.15);d.position.set(p.x+1.8,0,p.z+p.d/2-.9);scene.add(d);const c=mesh(new THREE.TorusGeometry(.13,.03,6,12),M(0xe53935));c.rotation.x=Math.PI/2;c.position.set(.28,.5,0);d.add(c);GUARDV.list.push(d);GUARDV.dogs.push({o:d,pk,base:d.position.clone()})}}
+  GUARDV.lamps.forEach(l=>GUARDV.list.push(l))}
+var FRECT,FRK;function fenceRects(){const G2=S.guard;if(!G2||!G2.fence)return [];const k=JSON.stringify(G2.fence)+FIELDS.length;if(k!==FRK){FRK=k;FRECT=FIELDS.filter(f=>G2.fence[f.i]).map(f=>({fi:f.i,x:f.x,z:f.z+.1,w:6.2,d:4.4}))}return FRECT}
+function gateTick(rdt){if(!GUARDV||!GUARDV.gates)return;const ppl=[P.pos];if(NET&&NET.remote)for(const r of NET.remote.values())ppl.push(r.o.position);GUARDV.gates.forEach(q=>{const gx=q.f.x,gz=q.f.z+2.3;const open=ppl.some(p=>Math.hypot(p.x-gx,p.z-gz)<2.4);const tgt=open?q.sd*1.6:0;q.g.rotation.y+=(tgt-q.g.rotation.y)*Math.min(1,rdt*8)})}
+function lampAt(x,z){const g=new THREE.Group();g.position.set(x,0,z);const pole=mesh(G.cyl,M(0x3a4048));pole.scale.set(.07,2.6,.07);pole.position.y=1.3;g.add(pole);const arm=mesh(G.box,M(0x3a4048));arm.scale.set(.6,.06,.08);arm.position.set(.26,2.58,0);g.add(arm);
+  const hd=mesh(G.box,M(0x2a3038));hd.scale.set(.34,.12,.26);hd.position.set(.52,2.52,0);g.add(hd);const bulb=new THREE.Mesh(new THREE.SphereGeometry(.11,10,8),new THREE.MeshBasicMaterial({color:0xfff2b0}));bulb.position.set(.52,2.42,0);g.add(bulb);
+  if(!LAMPTEX)LAMPTEX=canvasTex(128,128,c=>{const gr=c.createRadialGradient(64,64,0,64,64,64);gr.addColorStop(0,'rgba(255,240,180,1)');gr.addColorStop(.35,'rgba(255,225,140,.75)');gr.addColorStop(.7,'rgba(255,200,100,.25)');gr.addColorStop(1,'rgba(255,200,100,0)');c.fillStyle=gr;c.fillRect(0,0,128,128)});
+  const glow=new THREE.Mesh(new THREE.PlaneGeometry(7.5,7.5),new THREE.MeshBasicMaterial({map:LAMPTEX,transparent:true,opacity:0,depthWrite:false,blending:THREE.AdditiveBlending}));glow.rotation.x=-Math.PI/2;glow.position.set(.52,.2,0);glow.renderOrder=2;g.add(glow);
+  const cone=new THREE.Mesh(new THREE.ConeGeometry(1.5,2.3,20,1,true),new THREE.MeshBasicMaterial({color:0xfff0b0,transparent:true,opacity:0,depthWrite:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide}));cone.position.set(.52,1.25,0);g.add(cone);g.userData={bulb,glow,cone};scene.add(g);return g}
+// 晚上的黑色遮罩：人物、路燈、巡邏隊手電筒附近是亮的
+function nightDraw(ne,px,py,rr,night){if(!NIGHTC){NIGHTC=document.createElement('canvas');NIGHTC.style.cssText='position:absolute;inset:0;width:100%;height:100%';ne.appendChild(NIGHTC)}
+  const c=NIGHTC;if(c.width!==W||c.height!==H){c.width=W;c.height=H}const g=c.getContext('2d');ne.style.background='transparent';g.globalCompositeOperation='source-over';g.clearRect(0,0,W,H);g.fillStyle='#0a1640';g.fillRect(0,0,W,H);g.globalCompositeOperation='destination-out';
+  const hole=(x,y,r,k=1)=>{const gr=g.createRadialGradient(x,y,0,x,y,r*2);gr.addColorStop(0,`rgba(0,0,0,${k})`);gr.addColorStop(.42,`rgba(0,0,0,${k})`);gr.addColorStop(.68,`rgba(0,0,0,${k*.4})`);gr.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=gr;g.fillRect(x-r*2,y-r*2,r*4,r*4)};
+  hole(px,py,rr);const lit=night>.3;if(GUARDV&&lit)GUARDV.lamps.forEach(l=>{const [x,y,on]=project(l.position.clone().add(V(.5,0,0)));const [x2,y2]=project(l.position.clone().add(V(3.4,0,0)));if(x>-300&&x<W+300&&y>-300&&y<H+300)hole(x,y,Math.max(50,Math.hypot(x2-x,y2-y)*1.15),.95)});
+  if(PATROL&&PATROL.visible&&lit){const [x,y]=project(PATROL.position.clone().setY(.5));hole(x,y,rr*.6,.7)}}
+
+function wildTick(rdt){guardSync();gateTick(rdt);const lit=GUARDV&&curNight()>.3;if(GUARDV)GUARDV.lamps.forEach(l=>{const nk=curNight();l.userData.glow.material.opacity=nk>.3?.9*nk:0;l.userData.cone.material.opacity=nk>.3?.12*nk:0;l.userData.bulb.material.color.setHex(lit?0xfff6c0:0xb8b8a8)});
+  if(!WILDV)WILDV=new Map();S.wild=S.wild||[];const gdt=S.paused||S.inHome&&false?0:rdt*(S.speed||1)*TS();
+  // 獵人、巡邏隊
+  const hunt=staffOn('hunter','farm'),pat=staffOn('patrol','farm');
+  if(hunt&&!HUNTER){HUNTER=npcModel(0x5a7a3a,0x7a5a2a);HUNTER.position.set(-11,0,5);HUNTER.userData.tag=label('<div class="pl">🏹 獵人</div>',V(),20)}if(!hunt&&HUNTER){scene.remove(HUNTER);dropL(HUNTER.userData.tag);HUNTER=null}
+  if(pat&&!PATROL){PATROL=npcModel(0x2a4a8a,0x1a2a5a);PATROL.userData.i=0;const pp=patrolPath();PATROL.position.copy(pp[0]);PATROL.userData.tag=label('<div class="pl">🔦 巡邏隊</div>',V(),26)}if(!pat&&PATROL){scene.remove(PATROL);dropL(PATROL.userData.tag);PATROL=null}
+  const walk=(o,to,spd)=>{const dx=to.x-o.position.x,dz=to.z-o.position.z,d=Math.hypot(dx,dz);if(d<.2)return true;const s=Math.min(d,spd*rdt);o.position.x+=dx/d*s;o.position.z+=dz/d*s;o.rotation.y=Math.atan2(dx,dz);o.position.y=Math.abs(Math.sin(wTime*10))*.06;return false};
+  if(PATROL&&!S.paused){const pp=patrolPath();const u=PATROL.userData;if(walk(PATROL,pp[u.i%4],3.2))u.i++;u.tag.pos=PATROL.position.clone().setY(2)}
+  if(HUNTER){const tgt=S.wild.find(w=>w.st!=='flee');const home=V(-11,0,5);walk(HUNTER,tgt?V(tgt.x,0,tgt.z):home,tgt?5.5:2.5);HUNTER.userData.tag.pos=HUNTER.position.clone().setY(2)}
+  // 護衛犬：有野生動物靠近養殖場時會衝出去叫
+  if(GUARDV)GUARDV.dogs.forEach(d=>{const w=S.wild.find(w=>w.st!=='flee'&&w.tg.type==='pen'&&w.tg.pk===d.pk);const to=w?V(w.x,0,w.z):d.base;const dx=to.x-d.o.position.x,dz=to.z-d.o.position.z,dd=Math.hypot(dx,dz);if(dd>.3){const s=Math.min(dd,(w?6:2)*rdt);d.o.position.x+=dx/dd*s;d.o.position.z+=dz/dd*s;d.o.rotation.y=Math.atan2(dx,dz)-Math.PI/2}});
+  if(!NETG&&!S.paused&&!TUTON&&!OFFSIM){S.wildT=(S.wildT==null?DAY*.7:S.wildT)-gdt;if(S.wildT<=0){S.wildT=DAY*rand(.7,1.5)*(isNight()?.7:1);if(farmLv()>=3&&!S.inHome)wildSpawn()}}
+  // 野生動物移動
+  const ids=new Set();for(let i=S.wild.length-1;i>=0;i--){const w=S.wild[i];ids.add(w.id);const W2=WILD[w.k];let v=WILDV.get(w.id);if(!v){const o=wildModel(w.k);o.position.set(w.x,0,w.z);scene.add(o);const L=label('',V(w.x,1.8,w.z),60);v={o,L};WILDV.set(w.id,v)}
+    if(!NETG&&!S.paused){w.t+=rdt;const to=w.st==='flee'?V(w.sx,0,w.sz):V(w.tg.x,0,w.tg.z);const dx=to.x-w.x,dz=to.z-w.z,d=Math.hypot(dx,dz);
+      if(w.st==='go'||w.st==='flee'){const s=Math.min(d,W2.spd*(w.st==='flee'?2.2:1)*rdt);if(d>.05){w.x+=dx/d*s;w.z+=dz/d*s;w.ry=Math.atan2(dx,dz)-Math.PI/2}
+        if(w.st==='go'&&w.tg.type==='plot'){const fr=fenceRects().find(q=>q.fi===w.tg.f);if(fr&&Math.abs(w.x-fr.x)<fr.w/2+.6&&Math.abs(w.z-fr.z)<fr.d/2+.6){w.st='blocked';w.t=0;w.bx=w.x;w.bz=w.z}}
+        if(w.st==='go'&&d<.6){const why=wildProtect(w);if(why)wildFlee(w,why);else{w.st='eat';w.t=0}}
+        if(w.st==='flee'&&d<1){S.wild.splice(i,1);continue}}
+      else if(w.st==='blocked'){w.x=w.bx+Math.sin(w.t*3)*.6;w.z=w.bz;if(w.t>3.5){const fi=w.tg.f,G2=S.guard;const iron=G2.fence[fi]==='iron';let msg=`${iron?'⛓️ 鐵柵欄':'🪵 木圍欄'}把${W2.n}擋在外面了！`;
+          if(!iron&&(w.k==='boar'||w.k==='bear')){G2.fhp=G2.fhp||{};G2.fhp[fi]=(G2.fhp[fi]==null?10:G2.fhp[fi])-(w.k==='bear'?3:1);if(G2.fhp[fi]<=0){delete G2.fence[fi];delete G2.fhp[fi];msg=`💥 ${W2.n}把${FI(fi).name}的木圍欄撞壞了！要重新買（鐵柵欄不會壞）`;SFX.bad()}else msg+=`（木圍欄耐久 ${G2.fhp[fi]}/10）`}
+          wildFlee(w,msg)}}
+      else if(w.st==='eat'&&w.t>9){wildDamage(w);wildFlee(w,'')}
+      if(w.st!=='flee'){const gs=NET&&NET.role==='host'?[...NET.guests.values()].find(g=>g.on&&!g.inHome&&Math.hypot(g.pos.x-w.x,g.pos.z-w.z)<2.6):null;
+        if(gs)wildFlee(w,`👋 ${gs.name||'朋友'}把${W2.n}趕走了！`);else if(Math.hypot(P.pos.x-w.x,P.pos.z-w.z)<2.6&&!S.inHome){wildFlee(w,`👋 ${NET&&NET.role?'你':'你'}把${W2.n}趕走了！`);tutDo('shoo')}
+        else if(HUNTER&&HUNTER.position.distanceTo(V(w.x,0,w.z))<2.4)wildFlee(w,`🏹 獵人把${W2.n}趕走了！`);else if(PATROL&&PATROL.position.distanceTo(V(w.x,0,w.z))<7)wildFlee(w,`🔦 巡邏隊把${W2.n}趕走了！`)}}
+    v.o.position.set(w.x,0,w.z);v.o.rotation.y=w.ry||0;const m=v.o.userData.m;if(m.userData.legs)m.userData.legs.forEach((l,j)=>l.rotation.z=w.st==='eat'?0:Math.sin(wTime*14+j*Math.PI)*.5);if(w.st==='eat')m.rotation.z=Math.sin(wTime*12)*.08;
+    v.L.pos.set(w.x,2,w.z);v.L.near=60;setL(v.L,`<div class="pl warn">${W2.em} ${W2.n}${w.st==='eat'?'正在偷吃！':w.st==='flee'?'逃跑中':w.st==='blocked'?'進不去圍欄！':''}</div>`)}
+  for(const [id,v] of WILDV)if(!ids.has(id)){scene.remove(v.o);dropL(v.L);WILDV.delete(id)}}
+function curNight(){const hr=hourOf(S.t);return hr>=19||hr<5?1:hr>=17?(hr-17)/2:hr<7?(7-hr)/2:0}
+// 商店畫面：五金行的「防護與照明」、繁殖場的「護衛犬」
+function guardShop(){const lv=farmLv(),G2=S.guard||{fence:{},lamp:{},dog:{}};const fl=FIELDS.slice().sort((a,b)=>a.i-b.i);
+  const row=(k,list)=>{const d=GUARD[k];if(d.lv>lv)return card(d.em,d.n,`${d.d}<br>🔒 等級 ${d.lv} 開放`,`<button disabled>🔒 等級 ${d.lv}</button>`,true);
+    return card(d.em,d.n,`${d.d}<br>每個 💵${d.p}`,list.map(([key,name,on,price])=>on?`<button disabled>✔ ${name}</button>`:`<button data-a="guard" data-v="${k}:${key}">${name}${price?`<br><small>💵${price}</small>`:''}</button>`).join(''),0,1)};
+  return `<h3>🛡️ 防護與照明（防野生動物）</h3><div style="font-size:13px;color:#7a5a3a">山豬、猴子會偷吃作物，狐狸、黑熊會抓家禽、偷產品。也可以到人力仲介雇 🏹 獵人、🔦 巡邏隊，到繁殖場養 🐕‍🦺 護衛犬。</div><div class="goods">`
+   +row('fence',fl.map(f=>[f.i,`第${f.i+1}塊田`,!!G2.fence[f.i]]))+row('iron',fl.map(f=>[f.i,`第${f.i+1}塊田`,G2.fence[f.i]==='iron',G2.fence[f.i]==='fence'?GUARD.iron.p-GUARD.fence.p:0]))
+   +row('lamp',fl.map(f=>['f'+f.i,`第${f.i+1}塊田`,!!G2.lamp['f'+f.i]]).concat(Object.keys(PENS).map(pk=>['p'+pk,PEN_T[pk].n,!!G2.lamp['p'+pk]])))+'</div>'}
+function dogShop(){const d=GUARD.dog,lv=farmLv(),G2=S.guard||{dog:{}};return `<h3>🐕‍🦺 護衛犬（顧養殖場）</h3><div class="goods">${d.lv>lv?card(d.em,d.n,`${d.d}<br>🔒 等級 ${d.lv} 開放`,`<button disabled>🔒 等級 ${d.lv}</button>`,true):
+  card(d.em,d.n,`${d.d}<br>每隻 💵${d.p}`,Object.keys(PENS).map(pk=>G2.dog&&G2.dog[pk]?`<button disabled>✔ ${PEN_T[pk].n}</button>`:`<button data-a="guard" data-v="dog:${pk}">${PEN_T[pk].em}${PEN_T[pk].n}</button>`).join(''),0,1)}</div>`}
+// 升級時告訴玩家解鎖了什麼
+function lvUnlocks(lv){const L=[];Object.keys(CROPS).forEach(k=>{if((CROPS[k].lv||1)===lv)L.push(CROPS[k].em+CROPS[k].n)});Object.keys(ANIM).forEach(k=>{if((ANIM[k].lv||1)===lv)L.push(ANIM[k].em+ANIM[k].n)});
+  Object.keys(PEN_T).forEach(k=>{if((PEN_T[k].lv||1)===lv)L.push(PEN_T[k].em+PEN_T[k].n)});LOTS.forEach(l=>{if(l.lv===lv)L.push((l.kind==='field'?'🟫農地 ':'🏗️建地 ')+l.id)});
+  Object.keys(GUARD).forEach(k=>{if(GUARD[k].lv===lv)L.push(GUARD[k].em+GUARD[k].n)});STAFF.forEach(st=>{if(st.lv===lv)L.push(st.em+st.n)});PEN_UP.forEach((u,i)=>{if(u.lv===lv)L.push(`🐾 養殖場第 ${i+1} 次擴建`)});
+  return L.length?`<br>解鎖：${L.join('、')}`:'<br>繼續加油，賺更多錢！'}
+
+// 離線時（衝刺、極速經營沒有離線保護）：野生動物也會來
+function wildOffline(sim){const lv=farmLv();if(lv<3)return [];const out=[];const n=Math.min(6,Math.floor(sim/(DAY*1.1)));const hunt=staffOn('hunter','farm'),pat=staffOn('patrol','farm');
+  for(let i=0;i<n;i++){const ks=Object.keys(WILD).filter(k=>WILD[k].lv<=lv);const opts=[];ks.forEach(k=>{const t=wildTargets(k);if(t.length)opts.push([k,t])});if(!opts.length)break;
+    const [k,ts]=opts[Math.floor(Math.random()*opts.length)];const tg=ts[Math.floor(Math.random()*ts.length)];const W2=WILD[k];const w={k,tg};
+    if(pat&&Math.random()<.9){out.push(`🔦 巡邏隊趕走了${W2.em}${W2.n}`);continue}if(hunt&&Math.random()<.85){out.push(`🏹 獵人趕走了${W2.em}${W2.n}`);continue}
+    if(tg.type==='plot'&&S.guard&&S.guard.fence&&S.guard.fence[tg.f]){out.push(`${S.guard.fence[tg.f]==='iron'?'⛓️ 鐵柵欄':'🪵 木圍欄'}擋住了${W2.em}${W2.n}`);continue}
+    const why=wildProtect(w);if(why){out.push(why);continue}
+    const bk=banner;banner=()=>{};try{wildDamage(w)}finally{banner=bk}
+    out.push(`${W2.em} ${W2.n}來偷${tg.type==='plot'?FI(tg.f).name+'的作物':PEN_T[tg.pk].n}，沒人顧被偷了！`)}
+  return out}
+
+/* ======================= 新手教學（畫面變暗、只有指定的按鈕會亮，一步一步帶著做） ======================= */
+// 每個系列第一次進來都會出現；做完記在這台裝置上，之後可以在「☰ 更多 → 📘 重看教學」再看
+var TUT2,TUT_UI,TUT_CLICK;var TUT_KEY='zzdh_tut_farm_v2';
+function tutSeen(){try{return localStorage.getItem(TUT_KEY)==='1'}catch(e){return false}}
+function tutMark(){try{localStorage.setItem(TUT_KEY,'1')}catch(e){}}
+var modalOn=()=>$('#modal').classList.contains('on');var askOn=()=>$('#ask2').style.display==='flex';
+var shopOn=k=>modalOn()&&curShop===k;
+var tc=k=>(S.tc&&S.tc[k])||0;
+function tutPickCrop(){const se=seasonOf(S.t);const ks=Object.keys(CROPS).filter(k=>{const c=CROPS[k];return (c.lv||1)<=1&&!c.tree&&!c.paddy&&okSeason(c,se)});ks.sort((a,b)=>(a==='bokchoy'?-1:0)-(b==='bokchoy'?-1:0)||CROPS[a].seed-CROPS[b].seed);return ks[0]||Object.keys(CROPS)[0]}
+function tutPickField(){let best=FIELDS[0],bn=-1;FIELDS.forEach(f=>{const n=PLOTS.filter(p=>p.f===f&&S.plots[p.id].st==='empty').length;if(n>bn||(n===bn&&f.i<best.i)){bn=n;best=f}});return best}
+function tutPickAnimal(){const lv=farmLv();const ok=k=>{const d=ANIM[k];return (d.lv||1)<=lv&&PENS[d.pen]&&S.animals.filter(a=>a.k===k).length+S.cage.filter(a=>a.k===k).length<animMax(k)&&d.carry==='cage'&&d.prod&&PEN_T[d.pen].food.length};
+  return ['chick','duck','quail','goose'].find(ok)||Object.keys(ANIM).find(ok)||'chick'}
+var fieldPos=f=>V(f.x,0,f.z+2.3);
+var plotsOf=f=>PLOTS.filter(p=>p.f===f);
+function tutSteps(){const T=TUT2;const ck=CROPS[T.crop],an=ANIM[T.anim],pk=an.pen,PT=PEN_T[pk],pen=()=>PENS[pk];const F=()=>FI(T.fi);const fresh=()=>T.fresh.map(id=>S.plots[id]);
+  const fd=PT.food.includes('feed')?'feed':PT.food[0];const ringOf=(kind,f)=>RINGS.find(r=>r.kind===kind&&f(r));
+  const shopTour=(k,txt)=>[{w:()=>SHOPS[k].ring,go:()=>SHOPS[k].ring,t:`接下來帶你逛逛其他商店。按「🚶 帶我去」到 <b>${SHOP_DEF[k].n}</b>。`,done:()=>shopOn(k)},
+    {el:'#panel',t:txt,next:1,onNext:()=>closePanel()}];
+  return [
+  {t:`👋 歡迎來到你的農場！我是小幫手 🐣<br>接下來會<b>一步一步帶你實際做一次</b>所有功能：種菜、澆水、採收、賣菜、養動物、餵飼料、回家、商店…<br><small>教學期間都是晴天，作物、動物會長得特別快。</small>`,next:1,enter:()=>{if(S.money<300){const g=300-Math.floor(S.money);S.money+=g;toast(`🎁 新手教學送你 💵${g}`,2500)}}},
+  {el:'#clock',t:'這裡是 <b>日期、時間、天氣預報</b>。<br>下雨天田地會自己變濕；打雷、颱風、寒流、龍捲風來之前要先準備。',next:1},
+  {el:'#money',t:'這裡是 <b>你的錢 💵</b> 和 <b>農場等級 ⭐</b>（最高 40 級）。<br>賺越多錢等級越高，會解鎖新作物、新動物、新機器。',next:1},
+  {el:'#durB',t:'先看 <b>⏱️ 種植時間</b>：點這個按鈕 👇',click:1,done:()=>modalOn()},
+  {el:'#panel',t:'時間選越久，一次收越多；常常上線就選短的。<br>看完按右上角 <b>✖</b> 關掉。',done:()=>!modalOn()},
+  {w:()=>SHOPS.seed.ring,go:()=>SHOPS.seed.ring,t:'去 <b>🌱 種子店</b> 買種子。<br>按「🚶 帶我去」，人物會自己走過去（也可以點地上發亮的圈圈）。',done:()=>shopOn('seed')},
+  {el:()=>$(`#panel [data-a="seed"][data-v="${T.crop}:6"]`),scroll:1,skip:()=>{const b=$(`#panel [data-a="seed"][data-v="${T.crop}:6"]`);return !b||b.disabled},
+    t:`<b>${ck.em}${ck.n}</b> 現在這個季節可以種。<br>點「<b>買 6 包</b>」。最上面也會顯示你身上已經有幾包。`,done:()=>askOn()||tc('buySeed')>T.base.buySeed},
+  {el:'#ask2 .box',t:'花錢之前都會問你「確定嗎？」，也會顯示你身上已經有幾包。<br>按「<b>✔ 確定</b>」。',done:()=>tc('buySeed')>T.base.buySeed,back:()=>!askOn()&&tc('buySeed')<=T.base.buySeed},
+  {el:'#px',t:'買好了！按 <b>✖</b> 關掉商店。',done:()=>!modalOn()},
+  {el:()=>$(`#seeds button[data-k="${T.crop}"]`)||$('#seeds'),t:`下面這排是 <b>你身上的種子</b>，黃色框框是現在選的。<br>點一下「${ck.em}${ck.n}」選它來種。`,click:1,done:()=>T.clicked&&S.sel===T.crop},
+  {w:()=>fieldPos(F()),go:()=>fieldPos(F()),t:`去 <b>${F().name}</b>。<br>走進空田站著，就會自動播種一格。`,done:()=>Math.hypot(P.pos.x-F().x,P.pos.z-F().z-2.3)<2.2&&!P.auto,skip:()=>!T.fresh.length},
+  {el:()=>$(`[data-sow="${T.fi}"]`),t:'也可以按田邊木牌的「<b>🌱 一鍵播種</b>」，整塊田一次種滿！點它。',done:()=>modalOn()||fresh().every(s=>s.st!=='empty'),skip:()=>!T.fresh.length||fresh().every(s=>s.st!=='empty'),go:()=>fieldPos(F())},
+  {el:'#panel',t:'選要種的種子（也可以改種植時間），按下去會再問一次，按確定。',done:()=>fresh().every(s=>s.st!=='empty'),back:()=>!modalOn()&&!askOn()&&fresh().some(s=>s.st==='empty'),skip:()=>!T.fresh.length||fresh().every(s=>s.st!=='empty')},
+  {el:'#soilLeg',t:'種好了！靠近田地時，左下角會顯示 <b>這塊田的顏色和水分</b>：<br>深咖啡＝滿水、淺一點＝微缺水、再淺＝<b>快乾了</b>、淺黃＝乾枯（停止生長）。',next:1,enter:()=>{fresh().forEach(s=>{if(s.st==='grow')s.w=.15})},skip:()=>!fresh().some(s=>s.st==='grow')},
+  {w:()=>fieldPos(F()),t:'看！田地變淺色，頭上冒出 <b>💧</b>，右邊「📋 待處理」也會提醒 → 代表<b>快乾了</b>，要澆水。',next:1,skip:()=>!fresh().some(s=>s.st==='grow'&&s.w<=.3)},
+  {w:()=>V(-7,0,3.6),go:()=>V(-7,0,3.6),t:'去 <b>💧 水井</b> 拿水桶（站著就會一直拿）。',done:()=>S.hand.filter(t=>t==='water').length>=Math.min(6,cap.hand()),skip:()=>!fresh().some(s=>s.st==='grow'&&s.w<=.3)},
+  {w:()=>{const p=plotsOf(F()).find(p=>S.plots[p.id].st==='grow'&&S.plots[p.id].w<=.3);return p?V(p.x,0,p.z):fieldPos(F())},auto:()=>{const p=plotsOf(F()).find(p=>S.plots[p.id].st==='grow'&&S.plots[p.id].w<=.3);return p?V(p.x,0,p.z):null},
+    t:'拿著水桶走到快乾的田上，就會自動澆水（人物會自己走過去示範）。',done:()=>!fresh().some(s=>s.st==='grow'&&s.w<=.3),back:()=>!S.hand.includes('water')&&fresh().some(s=>s.st==='grow'&&s.w<=.3),skip:()=>!fresh().some(s=>s.st==='grow'&&s.w<=.3)},
+  {w:()=>fieldPos(F()),t:()=>T.ff?'⏩ 時間快轉中…看作物一天天長大！':'澆好水了！平常作物要等你選的種植時間（例如 4 小時）才會成熟，這段時間可以先去做別的事。<br>教學中按「<b>⏩ 快轉時間</b>」，馬上看作物長大！',
+    ff:1,done:()=>!fresh().some(s=>s.st==='grow'),skip:()=>!fresh().some(s=>s.st==='grow')},
+  {el:()=>$(`[data-reap="${T.fi}"]`),go:()=>fieldPos(F()),t:'成熟了！木牌變成 <b>金黃色</b>。<br>按「<b>✅ 一鍵採收</b>」，收成會放進田邊的 📦 集貨箱。',done:()=>tc('harvest')>T.base.harvest,skip:()=>!plotsOf(F()).some(p=>S.plots[p.id].st==='ripe')},
+  {w:()=>{const r=ringOf('box',r=>r.f===T.fi);return V(r.x,0,r.z)},go:()=>{const r=ringOf('box',r=>r.f===T.fi);return V(r.x,0,r.z)},t:'走到 <b>📦 集貨箱</b>，站著就會把菜搬到背上的菜籃子。<br><small>（直接走進田裡採收，會直接放進菜籃子）</small>',done:()=>!S.boxes[T.fi].length||basketFull(),skip:()=>!S.boxes[T.fi].length},
+  {el:'#bSell',t:'菜籃子有東西了，按「<b>🧺 一鍵賣貨</b>」，人物會自己走到收購站賣掉！',done:()=>tc('sell')>T.base.sell,skip:()=>!hasSellable()},
+  {t:'賣掉了，賺到錢 💵！<br>接下來教你 <b>養動物</b> 🐔',next:1},
+  {w:()=>SHOPS.breed.ring,go:()=>SHOPS.breed.ring,t:'去 <b>🐣 繁殖場</b> 買小動物。',done:()=>shopOn('breed')},
+  {el:()=>$(`#panel [data-a="animal"][data-v="${T.anim}"]`),scroll:1,skip:()=>{const b=$(`#panel [data-a="animal"][data-v="${T.anim}"]`);return !b||b.disabled},t:`點「買」，買一隻 <b>${an.bem}${an.baby}</b>。`,done:()=>askOn()||tc('buyAnimal')>T.base.buyAnimal},
+  {el:'#ask2 .box',t:'按「<b>✔ 確定</b>」。',done:()=>tc('buyAnimal')>T.base.buyAnimal,back:()=>!askOn()&&tc('buyAnimal')<=T.base.buyAnimal},
+  {el:'#px',t:'按 <b>✖</b> 關掉。',done:()=>!modalOn()},
+  {el:'#carry',t:`買的小動物會放進 <b>背上的籃子</b>，下面也會顯示「🪺 籠子」。<br>大隻的（牛、羊、豬…）會用繩子牽著走。`,next:1,skip:()=>!S.cage.length&&!S.leash.length},
+  {w:()=>{const r=pen().ring.release;return V(r.x,0,r.z)},go:()=>{const r=pen().ring.release;return V(r.x,0,r.z)},t:`帶回 <b>${PT.em}${PT.n}</b> 門口的 <b>粉紅色圈圈</b>，站上去就會放進去。`,done:()=>tc('release')>T.base.release,skip:()=>!S.cage.concat(S.leash).some(a=>ANIM[a.k].pen===pk)},
+  {w:()=>fd==='hay'?V(10.5,0,3.4):V(7,0,3.6),go:()=>fd==='hay'?V(10.5,0,3.4):V(7,0,3.6),enter:()=>{if((S.stock[fd]||0)<10){S.stock[fd]=(S.stock[fd]||0)+10;toast(`🎁 教學送你 ${ITEMS[fd].em}${ITEMS[fd].n} ×10`,2200)}},
+    t:`動物要吃東西才會長大、生產。<br>去 <b>${ITEMS[fd].em} ${fd==='hay'?'乾草堆':'飼料桶'}</b> 拿（站越久拿越多，用完了去「🥫 飼料行」買）。`,done:()=>S.hand.filter(t=>t===fd).length>=4||(S.hand.includes(fd)&&handFull())},
+  {w:()=>{const r=pen().ring.trough;return V(r.x,0,r.z)},go:()=>{const r=pen().ring.trough;return V(r.x,0,r.z)},t:'走到 <b>🥣 飼料槽</b>，站著就會倒進去（最多 10 份），旁邊會顯示還能吃多久。',done:()=>tc('feed')>T.base.feed},
+  {w:()=>V(8.75,0,4.7),go:()=>V(8.75,0,4.7),t:'飼料槽滿了，手上還有多的？<br>拿到 <b>♻️ 回收桶</b>，會放回飼料桶、乾草堆，不會浪費。',done:()=>!S.hand.some(t=>t==='feed'||t==='hay'||t==='water'),skip:()=>!S.hand.some(t=>t==='feed'||t==='hay'||t==='water')},
+  {w:()=>{const r=pen().ring.take;return r?V(r.x,0,r.z):fieldPos(F())},go:()=>{const r=pen().ring.take;return r?V(r.x,0,r.z):fieldPos(F())},
+    enter:()=>{const a=S.animals.find(a=>a.k===T.anim);if(a){a.age=1;a.food=Math.max(a.food||0,1)}if(an.prod){S.piles[pk].push([S.t,an.prod],[S.t,an.prod]);toast(`✨ 教學加速：${an.n}長大，生了 ${ITEMS[an.prod].em}${ITEMS[an.prod].n}！`,2600)}},
+    t:()=>`${an.prod?ITEMS[an.prod].em+ITEMS[an.prod].n:'產品'}出來了！走到 <b>收產品</b> 的圈圈，收進菜籃子。<br><small>雞蛋、鮮奶放太久會壞，買「自動收集機」就不會。</small>`,done:()=>tc('collect')>T.base.collect,skip:()=>!an.prod||!pen().ring.take},
+  {el:'#bSell',t:'再按一次「<b>🧺 一鍵賣貨</b>」把產品賣掉。',done:()=>tc('sell')>T.base.sell2,enter:()=>{T.base.sell2=tc('sell')},skip:()=>!hasSellable()},
+  {el:'#todo',t:'右邊的 <b>📋 待處理</b> 會列出要做的事（缺水、肚子餓、可以採收…）。<br>點一項，人物就會自己走過去；按「收起」可以縮小。',next:1},
+  {el:'#bLedger',t:'<b>📒 帳本</b>：收入、支出、每天的帳單、等級進度都在這裡。點開看看。',click:1,done:()=>modalOn()},
+  {el:'#panel',t:'看完按右上角 <b>✖</b> 關掉。',done:()=>!modalOn()},
+  {el:'#bMenu',t:'<b>☰ 更多</b> 裡面還有很多功能，點開。',click:1,done:()=>$('#btns').classList.contains('open')},
+  {el:'#btns',t:'這裡有：📖 說明、🔊 聲音、⚙️ 經營模式（輕鬆／標準／衝刺／極速）、🔍 畫面遠近、🤝 找朋友一起玩、🎮 獎金小遊戲、📘 重看教學、全畫面、回主畫面。',next:1},
+  {el:'#bMenu',t:'再按一次 <b>☰ 更多</b> 收起來。',click:1,done:()=>!$('#btns').classList.contains('open')},
+  {el:'#bHome',t:'<b>🏠 回家</b>：打雷、颱風、龍捲風時回家躲最安全。<br>點一下，人物會自己走回家。',click:1,done:()=>S.inHome},
+  {el:'#homeUI .box',t:'在家裡可以：👗 <b>衣櫥</b> 換衣服（有加成）、🛋️ <b>裝潢</b>、🧊 <b>冰箱</b> 存放農產品。<br>作物、動物、員工在你回家時都會繼續運作。',next:1},
+  {el:'#bRec',t:'點「<b>📋 紀錄看板</b>」（牆上的看板也可以點）。',click:1,done:()=>modalOn()},
+  {el:'#panel',t:'所有田地 <b>還要多久成熟、缺不缺水</b>，所有動物 <b>飼料還夠多久</b> 都在這裡，一次看清楚！<br>看完按 <b>✖</b>。',done:()=>!modalOn()},
+  {el:'#bOut',t:'按「<b>🚪 出門</b>」。',click:1,done:()=>!S.inHome},
+  ...shopTour('feed','<b>🥫 飼料行</b>：買飼料、乾草放進倉庫（最多 200 份）。<br>倉庫快沒了，待處理會提醒你。'),
+  ...shopTour('tool','<b>🔧 五金農具行</b>：買 🚿 水管（拉著走自動澆水）、大菜籃、大籠子、工作手套，一次搬更多。'),
+  ...shopTour('car','<b>🚜 農機車行</b>：🚲 腳踏車、🛻 貨車跑更快；💦 灑水器、🚜 曳引機、🌾 收割機、⚙️ 自動餵食機…讓農場自動化、離線也能賺。'),
+  ...shopTour('labor','<b>👷 人力仲介</b>：雇 農夫、澆水工、牧場工、送貨員、🏹 獵人、🔦 巡邏隊、🐕 護衛犬…幫你顧農場（每天付薪水）。'),
+  ...shopTour('land','<b>🏛️ 地政事務所</b>：租或買新的農地、建地，蓋新的養殖場、擴建養殖場。<br>等級越高，能買的地越多。'),
+  {t:'⚠️ <b>要小心</b>：烏鴉、山豬、猴子、狐狸會來偷吃作物和家禽；颱風、寒流、龍捲風會破壞作物。<br>可以蓋 🪵 圍欄、養 🐕 護衛犬、雇 🏹 獵人和 🔦 巡邏隊、蓋 ⛺ 防災布棚；晚上裝 💡 路燈會比較亮。',next:1},
+  {t:'🎓 <b>教學完成！</b>你已經會經營農場了。<br>之後想再看一次，按「☰ 更多 → 📘 重看教學」。<br>祝你成為農場大亨！',next:1,last:1}]}
+// 商店名稱
+var SHOP_DEF={seed:{n:'🌱 種子店'},feed:{n:'🥫 飼料行'},tool:{n:'🔧 五金農具行'},breed:{n:'🐣 繁殖場'},car:{n:'🚜 農機車行'},labor:{n:'👷 人力仲介'},land:{n:'🏛️ 地政事務所'}};
+
+function tutUI(){if(TUT_UI)return TUT_UI;const st=document.createElement('style');st.textContent=`
+#tutL{position:fixed;inset:0;z-index:58;pointer-events:none;display:none}#tutL.on{display:block}
+#tutL .blk{position:fixed;pointer-events:auto;background:transparent}
+#tutL .hole{position:fixed;border-radius:16px;box-shadow:0 0 0 9999px rgba(0,0,0,.6);transition:all .25s;pointer-events:none}
+#tutL .hole.full{left:50%!important;top:50%!important;width:0!important;height:0!important}
+#tutL .hole::after{content:'';position:absolute;inset:-6px;border-radius:20px;border:4px solid #ffe14a;animation:tutRing 1s ease-in-out infinite}
+#tutL .hole.full::after{display:none}#tutL .hole.wld{border-radius:50%;pointer-events:auto;cursor:pointer}#tutL .hole.wld::after{border-radius:50%}
+@keyframes tutRing{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.08);opacity:.55}}
+#tutL .arw{position:fixed;font-size:40px;transform:translate(-50%,-100%);animation:tutBob .7s ease-in-out infinite;filter:drop-shadow(0 3px 2px rgba(0,0,0,.4))}
+@keyframes tutBob{50%{margin-top:-12px}}
+#tutL .dlg{position:fixed;left:50%;transform:translateX(-50%);width:min(94vw,460px);background:#fffdf3;border:4px solid #ffc83a;border-radius:20px;padding:12px 14px 12px 64px;pointer-events:auto;box-shadow:0 8px 24px rgba(0,0,0,.35);font-size:17px;line-height:1.5;color:#4a2a10;box-sizing:border-box}
+#tutL .dlg .mas{position:absolute;left:8px;top:8px;font-size:44px;animation:tutBob 1.2s ease-in-out infinite}
+#tutL .dlg .cnt{font-size:12px;color:#a07a3a;margin-bottom:2px}#tutL .dlg small{font-size:13px;color:#7a5a3a}
+#tutL .dlg .bt{display:flex;gap:8px;justify-content:flex-end;margin-top:8px;flex-wrap:wrap}
+#tutL .dlg button{font-family:inherit;border:none;border-radius:14px;padding:9px 16px;font-size:17px;color:#fff;background:linear-gradient(#5ee07a,#2fb04a);box-shadow:0 4px 0 #1f8a38;cursor:pointer}
+#tutL .dlg button.go{background:linear-gradient(#5aa8f5,#2f7bd6);box-shadow:0 4px 0 #1f5ea8;animation:tutPulse 1s ease-in-out infinite}
+#tutL .dlg button.sk{background:#e8e0d0;color:#7a6a5a;box-shadow:none;font-size:13px;padding:6px 10px}
+#tutL .dlg .skipAll{position:absolute;right:8px;top:6px;font-size:12px;color:#b09a7a;cursor:pointer;text-decoration:underline}
+.tutGlow{animation:tutPulse 1s ease-in-out infinite!important;position:relative;z-index:1}
+@keyframes tutPulse{0%,100%{transform:scale(1);filter:brightness(1)}50%{transform:scale(1.07);filter:brightness(1.25)}}
+@media (max-width:520px){#tutL .dlg{font-size:16px;padding:10px 10px 10px 56px}#tutL .dlg .mas{font-size:38px}}`;document.head.appendChild(st);
+  const L=document.createElement('div');L.id='tutL';L.innerHTML='<div class="hole full"></div><div class="blk"></div><div class="blk"></div><div class="blk"></div><div class="blk"></div><div class="arw">👇</div><div class="dlg"></div>';document.body.appendChild(L);
+  const hole=L.querySelector('.hole');hole.onclick=()=>{const s=TUT2&&TUT2.steps[TUT2.i];if(s&&s.go&&!s.el){SFX.click();goTo(s.go())}};
+  L.querySelectorAll('.blk').forEach(b=>b.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();const d=L.querySelector('.dlg');d.animate([{transform:'translateX(-50%) scale(1)'},{transform:'translateX(-50%) scale(1.04)'},{transform:'translateX(-50%) scale(1)'}],{duration:260})}));
+  // 點到發亮的按鈕：記下來（讓按鈕原本的功能照常執行）
+  document.addEventListener('click',e=>{if(!TUT2)return;const el=TUT2.tgtEl;if(el&&el.contains&&el.contains(e.target))TUT2.clicked=true},true);
+  TUT_UI={L,hole,blk:[...L.querySelectorAll('.blk')],arw:L.querySelector('.arw'),dlg:L.querySelector('.dlg')};return TUT_UI}
+
+function tutStart(force){if(TUT2||NETG)return;tutUI();if(modalOn())closePanel();if(S.inHome)exitHome(false);
+  TUT2={i:-1,steps:null,crop:tutPickCrop(),fi:tutPickField().i,anim:tutPickAnimal(),base:{},fresh:[],t:0,clicked:false,skipAsk:0};
+  TUT2.fresh=plotsOf(FI(TUT2.fi)).filter(p=>S.plots[p.id].st==='empty').map(p=>p.id);TUT2.steps=tutSteps();TUTON=true;
+  if(EMBED)try{parent.postMessage({t:'tut',on:1},'*')}catch(e){}
+  $('#btns').classList.remove('open');tutGo(0)}
+function tutGo(i){const T=TUT2;if(!T)return;if(T.tgtEl)T.tgtEl.classList.remove('tutGlow');T.tgtEl=null;
+  while(i<T.steps.length&&T.steps[i].skip&&T.steps[i].skip())i++;if(i>=T.steps.length){tutEnd(true);return}
+  T.i=i;T.t=0;T.clicked=false;T.dk='';T.base=Object.assign(T.base||{},{buySeed:tc('buySeed'),harvest:tc('harvest'),sell:tc('sell'),buyAnimal:tc('buyAnimal'),release:tc('release'),feed:tc('feed'),collect:tc('collect')});
+  const s=T.steps[i];if(s.enter)s.enter();if(s.scroll)setTimeout(()=>{const e=typeof s.el==='function'?s.el():$(s.el);if(e&&e.scrollIntoView)e.scrollIntoView({block:'center',behavior:'smooth'})},120);SFX.click()}
+function tutEnd(done){const T=TUT2;if(!T)return;if(T.tgtEl)T.tgtEl.classList.remove('tutGlow');TUT2=null;TUTON=false;tutMark();$('#goal').style.visibility='';S.tutDone=1;TUT_UI.L.classList.remove('on');
+  if(EMBED)try{parent.postMessage({t:'tut',on:0},'*')}catch(e){}
+  if(done){SFX.fanfare();confetti(P.pos,80);earn(200,'grant');toast('🎓 教學完成！獎勵 💵200',3500)}else toast('已跳過教學，之後可以在「☰ 更多 → 📘 重看教學」再看',3200)}
+function tutRect(s){let el=null;if(s.el){el=typeof s.el==='function'?s.el():$(s.el)}
+  if(el){const r=el.getBoundingClientRect();if(r.width>2&&r.height>2&&r.bottom>0&&r.top<H)return {el,x:r.left-6,y:r.top-6,w:r.width+12,h:r.height+12}}
+  const wp=s.w?s.w():(s.el&&s.go?s.go():null);if(wp&&!S.inHome){const v=wp.clone().setY(.4).project(camera);if(v.z<1){const sx=(v.x+1)/2*W,sy=(1-v.y)/2*H,R=Math.max(46,Math.min(W,H)*.13);return {wld:1,x:sx-R,y:sy-R,w:R*2,h:R*2}}}
+  return null}
+function tutTick(rdt){if(!TUT2){if(performance.now()<6500||typeof modalOn!=='function')return;if(!tutSeen()&&!NETG&&typeof RUN!=='undefined'&&RUN&&!modalOn()&&!askOn()&&(S.profileSet||performance.now()>25000)&&performance.now()>6500&&!S.paused)tutStart();return}
+  const T=TUT2,s=T.steps[T.i],U=tutUI();T.t+=rdt;$('#goal').style.visibility='hidden';
+  // 教學中：剛種下的作物長很快
+  if(T.ff)T.fresh.forEach(id=>{const q=S.plots[id];if(q.st==='grow'){q.w=Math.max(q.w,.6);q.g=Math.min(1,q.g+rdt/2.8);if(q.g>=1){q.g=1;q.st='ripe';q.rt=0;q.warned=0;const p=PLOTS.find(p=>p.id===id);if(p){puff(V(p.x,.6,p.z),12,0xfff3a0);SFX.pop&&SFX.pop()}}}});
+  if(S.paused&&!modalOn())setPause(false);
+  if(s.back&&s.back()){T.bt=(T.bt||0)+rdt;if(T.bt>.8&&T.t>1){T.bt=0;tutGo(T.i-1);return}}else T.bt=0;
+  if(s.done&&s.done()&&T.t>.35){tutGo(T.i+1);return}
+  if(s.auto&&!P.auto&&T.t>.8){const a=s.auto();if(a&&Math.hypot(P.pos.x-a.x,P.pos.z-a.z)>.5)goTo(a)}
+  U.L.classList.add('on');
+  // 確認視窗跳出來時，讓它可以按
+  const ask=askOn()&&!(s.el==='#ask2 .box');let R=ask?tutRect({el:'#ask2 .box'}):tutRect(s);let intr=false;
+  if(!ask&&modalOn()&&!(R&&R.el&&$('#modal').contains(R.el))){intr=true;R=tutRect({el:'#panel'})}
+  if(R&&R.el&&R.el!==T.tgtEl){if(T.tgtEl)T.tgtEl.classList.remove('tutGlow');T.tgtEl=R.el;if(/^(BUTTON)$/.test(R.el.tagName))R.el.classList.add('tutGlow')}
+  const h=U.hole,[b0,b1,b2,b3]=U.blk;
+  if(R){h.classList.remove('full');h.classList.toggle('wld',!!R.wld);const x=Math.max(0,R.x),y=Math.max(0,R.y),x2=Math.min(W,R.x+R.w),y2=Math.min(H,R.y+R.h);
+    Object.assign(h.style,{left:x+'px',top:y+'px',width:(x2-x)+'px',height:(y2-y)+'px'});
+    Object.assign(b0.style,{left:0,top:0,width:W+'px',height:y+'px'});Object.assign(b1.style,{left:0,top:y2+'px',width:W+'px',height:Math.max(0,H-y2)+'px'});
+    Object.assign(b2.style,{left:0,top:y+'px',width:x+'px',height:(y2-y)+'px'});Object.assign(b3.style,{left:x2+'px',top:y+'px',width:Math.max(0,W-x2)+'px',height:(y2-y)+'px'});
+    const up=(y+y2)/2>H*.5;U.arw.style.display='block';U.arw.textContent=y>70?'👇':'👆';U.arw.style.left=((x+x2)/2)+'px';U.arw.style.top=(y>70?y-4:y2+48)+'px';U.dlg.style.top=up?'max(8px,calc(env(safe-area-inset-top) + 8px))':'';U.dlg.style.bottom=up?'':'calc(env(safe-area-inset-bottom) + 92px)';
+    if(up&&y<190)U.dlg.style.top='auto',U.dlg.style.bottom=Math.max(10,H-y+56)+'px';if(!up&&y2>H-200){U.dlg.style.bottom='';U.dlg.style.top=Math.max(8,y2+56)+'px'}}
+  else{h.classList.add('full');h.classList.remove('wld');Object.assign(b0.style,{left:0,top:0,width:W+'px',height:H+'px'});[b1,b2,b3].forEach(b=>b.style.width=0);U.arw.style.display='none';U.dlg.style.top='';U.dlg.style.bottom='';U.dlg.style.top='30%'}
+  // 對話框
+  const txt=ask?'確認一下內容，按「<b>✔ 確定</b>」。':intr?'先看完這個視窗，按右上角 <b>✖</b> 關掉，再繼續教學。':(typeof s.t==='function'?s.t():s.t);const stuck=T.t>25&&!s.next&&!s.ff;
+  const key=T.i+'|'+txt+'|'+intr+(s.go&&!ask&&!s.el?1:0)+(s.go&&s.el&&!(R&&R.el)?2:0)+stuck+T.skipAsk;if(key!==T.dk){T.dk=key;
+    U.dlg.innerHTML=`<div class="mas">🐣</div><span class="skipAll">${T.skipAsk?'再按一次確定跳過':'跳過教學'}</span><div class="cnt">新手教學 ${T.i+1} / ${T.steps.length}</div><div>${txt}</div><div class="bt">${stuck?'<button class="sk" data-b="sk">略過這一步</button>':''}${s.go&&!ask&&!intr&&(!s.el||!(R&&R.el))?'<button class="go" data-b="go">🚶 帶我去</button>':''}${s.ff&&!T.ff&&!ask&&!intr?'<button class="go" data-b="ff">⏩ 快轉時間</button>':''}${s.next&&!ask&&!intr?`<button data-b="nx">${s.last?'🎉 完成':'下一步 ▶'}</button>`:''}</div>`;
+    U.dlg.querySelectorAll('button').forEach(b=>b.onclick=()=>{SFX.click();const k=b.dataset.b;if(k==='go')goTo(s.go());else if(k==='ff'){T.ff=1;T.dk=''}else if(k==='sk')tutGo(T.i+1);else if(k==='nx'){if(s.onNext)s.onNext();if(s.last)tutEnd(true);else tutGo(T.i+1)}});
+    U.dlg.querySelector('.skipAll').onclick=()=>{if(!T.skipAsk){T.skipAsk=1;T.dk='';setTimeout(()=>{if(TUT2===T){T.skipAsk=0;T.dk=''}},3000)}else tutEnd(false)}}}
+// 「☰ 更多」裡的重看教學
+{const b=document.createElement('button');b.className='hb o more';b.id='bTut';b.textContent='📘 重看教學';$('#btns').appendChild(b);b.onclick=()=>{SFX.click();$('#btns').classList.remove('open');if(NETG){toast('連線時由房主看教學');return}try{localStorage.removeItem(TUT_KEY)}catch(e){}tutStart(true)}}
+window.__T=()=>TUT2;window.__TS=tutStart;
+window.__TG=i=>tutGo(i);
+
+// 農場測試版（不是從主遊戲進來）：只留一般玩家會用到的按鈕；網址加 ?dev 才顯示測試工具
+if(!EMBED&&!QS.has('dev')){['#bReset','#bTest','#bSpeed','#bCoop','#bExit'].forEach(q=>{const e=$(q);if(e)e.remove()});S.speed=1}
 </script>
 </body>
 </html>
