@@ -300,7 +300,7 @@ body.ing #toast{top:138px}
     <button class="ib" data-p="credits"><div class="sq">📜</div><span>聲明</span></button>
   </div>
 </div>
-<div id="credit">遊戲製作：Eric Hu　版本 1.6.2</div>
+<div id="credit">遊戲製作：Eric Hu　版本 1.7.1</div>
 </div>
 <div id="game" class="hide">
   <div id="lbls"></div>
@@ -387,7 +387,8 @@ G.lastLogin=Date.now();
 if(G.tasks.date!==today()){G.tasks={date:today(),p:{login:1},claimed:{}}}
 let dirty=true;
 const hooks={beforeSave:[]};
-function save(show){try{hooks.beforeSave.forEach(f=>f());let js;if(typeof NET!=='undefined'&&NET.swap){const cur=G.maps.food2;if(NET.hostCap){if(cur)G.maps['food2_c'+NET.hostCap]=cur;else delete G.maps['food2_c'+NET.hostCap]}if(NET.own===undefined)delete G.maps.food2;else G.maps.food2=NET.own;js=JSON.stringify(G);G.maps.food2=cur}else js=JSON.stringify(G);localStorage.setItem(KEY,js);dirty=false;if(show){const s=$('#saved');s.classList.add('on');clearTimeout(save.t);save.t=setTimeout(()=>s.classList.remove('on'),1300)}}catch(e){}}
+function save(){if(window.__noMainSave)return;return save0.apply(this,arguments)}
+function save0(show){try{hooks.beforeSave.forEach(f=>f());let js;if(typeof NET!=='undefined'&&NET.swap){const cur=G.maps.food2;if(NET.hostCap){if(cur)G.maps['food2_c'+NET.hostCap]=cur;else delete G.maps['food2_c'+NET.hostCap]}if(NET.own===undefined)delete G.maps.food2;else G.maps.food2=NET.own;js=JSON.stringify(G);G.maps.food2=cur}else js=JSON.stringify(G);localStorage.setItem(KEY,js);dirty=false;if(show){const s=$('#saved');s.classList.add('on');clearTimeout(save.t);save.t=setTimeout(()=>s.classList.remove('on'),1300)}}catch(e){}}
 const mark=()=>{dirty=true};
 setInterval(()=>{if(dirty||mode==='game')save(true)},4000);
 addEventListener('visibilitychange',()=>{if(document.hidden)save()});
@@ -1019,6 +1020,7 @@ const PANELS={
  cards(useMode){const html=`<div class="note">${useMode?'點「使用」立刻發動卡片效果！':'用 💎 鑽石購買卡片，進入地圖後點 🃏 就能使用。'}</div><div class="cards">${CARDS.map(c=>`<div class="card" data-id="${c.id}"><span class="own">擁有 ×${G.cards[c.id]||0}</span><div class="e">${c.em}</div><div class="n">${c.name}</div><div class="d">${c.d}</div>${useMode?`<button class="use" ${(G.cards[c.id]||0)>0?'':'disabled'}>使用</button> `:''}<button class="buy">💎 ${c.p}</button></div>`).join('')}</div>`;
    openPanel(useMode?'🃏 使用卡片':'🃏 卡片商店',html,()=>pb.querySelectorAll('.card').forEach(el=>{const c=CARDS.find(x=>x.id===el.dataset.id);
      el.querySelector('.buy').onclick=()=>{if(G.gems<c.p){SFX.err();el.classList.remove('shake');void el.offsetWidth;el.classList.add('shake');toast('鑽石不夠喔！去領每日獎勵或完成任務吧');return}
+       if(!el.dataset.ok){ask(`確定花 💎${c.p} 買「${c.em||''}${c.name||c.n||'卡片'}」嗎？`,()=>{el.dataset.ok=1;el.querySelector('.buy').click();delete el.dataset.ok});return}
        G.gems-=c.p;G.cards[c.id]=(G.cards[c.id]||0)+1;SFX.buy();bump('#cGem');bump('#gGem');refreshTop();el.querySelector('.own').textContent='擁有 ×'+G.cards[c.id];const u=el.querySelector('.use');if(u)u.disabled=false;el.animate([{transform:'scale(1)'},{transform:'scale(1.08)'},{transform:'scale(1)'}],{duration:300});toast(`買到「${c.name}」！`);mark();save(true)};
      const u=el.querySelector('.use');if(u)u.onclick=()=>{if(!(G.cards[c.id]>0))return;if(useCard(c)){G.cards[c.id]--;taskAdd('cardUse');el.querySelector('.own').textContent='擁有 ×'+G.cards[c.id];u.disabled=!(G.cards[c.id]>0);mark();save(true)}}}))},
  tasks(){const html=`<div class="note">每日任務每天凌晨重置，完成後領取 💎 鑽石！</div>${TASKS.map(t=>{const p=Math.min(t.goal,G.tasks.p[t.key]||0),done=p>=t.goal,cl=G.tasks.claimed[t.id];
@@ -1030,11 +1032,12 @@ const PANELS={
    <div class="set">背景音樂<button class="tg ${G.set.music!==false?'on':''}" id="tM"></button></div>
    <div class="set">畫質<div class="seg"><button data-q="1" class="${G.set.hq?'on':''}">高</button><button data-q="0" class="${G.set.hq?'':'on'}">省電</button></div></div>
    <div class="set">存檔<span style="font-size:14px;color:#2f8a3d">✓ 每 4 秒、離開或斷線時自動儲存</span></div>
-   <button class="big" id="reTut" style="display:block;margin:8px auto;width:260px;background:linear-gradient(#5aa8f5,#2f7bd6)">📘 重看第 2 系列教學</button><button class="danger" id="rst">🔄 重置遊戲進度（可以選系列）</button>`;
+   <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:8px 0"><button class="big green" id="bExp" style="width:260px">📤 匯出存檔</button><button class="big" id="bImp" style="width:260px;background:linear-gradient(#b07cff,#7a4ad8)">📥 匯入存檔</button></div><button class="big" id="reTut" style="display:block;margin:8px auto;width:260px;font-size:18px;background:linear-gradient(#5aa8f5,#2f7bd6)">📘 重看第 2 系列教學</button><button class="danger" id="rst">🔄 重置遊戲進度（可以選系列）</button>`;
    openPanel('⚙️ 設定',html,()=>{const nm=$('#nm');nm.value=G.name;const doName=()=>{const v=nm.value.trim().slice(0,10);if(!v){nm.value=G.name;$('#nmOkT').style.color='#c0392b';$('#nmOkT').textContent='暱稱不能空白喔';return}const ch=v!==G.name;G.name=v;nm.value=v;refreshTop();mark();save(true);pushRank();relabelPlayers();if(ch&&typeof netProf==='function')netProf();const t=$('#nmOkT');t.style.color='#2f8a3d';t.textContent='✅ 修改成功！（不用重置進度）';SFX.ding&&SFX.ding();clearTimeout(t.h);t.h=setTimeout(()=>{if($('#nmOkT'))t.textContent=''},2500)};$('#nmSave').onclick=doName;nm.onkeydown=e=>{if(e.key==='Enter')doName()};
      $('#tS').onclick=e=>{G.set.sfx=!G.set.sfx;e.target.classList.toggle('on',G.set.sfx);if(A.out)A.out.gain.value=G.set.sfx?.8:0;sndIcon();SFX.click();mark()};
      $('#tM').onclick=e=>{const v=!(G.set.music!==false);e.target.classList.toggle('on',v);bgmToggle(v);sndIcon();SFX.click();mark()};
      pb.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{G.set.hq=b.dataset.q==='1';pb.querySelectorAll('.seg button').forEach(x=>x.classList.toggle('on',x===b));renderer.setPixelRatio(Math.min(devicePixelRatio,G.set.hq?1.75:1));renderer.shadowMap.enabled=G.set.hq;[HOME.scene,GW&&GW.scene].forEach(s=>s&&s.traverse(o=>{if(o.material){[].concat(o.material).forEach(m=>m.needsUpdate=true)}}));resize();SFX.click();mark()});
+     $('#bExp').onclick=()=>{SFX.click();saveExport()};$('#bImp').onclick=()=>{SFX.click();saveImport()};
      $('#reTut').onclick=()=>{SFX.click();try{localStorage.removeItem('zzdh_tut_food_v1')}catch(e){}closePanel();toast('好的！下次進入「飲食與料理」地圖時會重新教學',3000)};
      $('#rst').onclick=()=>{SFX.click();resetPanel()}})},
  credits(){openPanel('📜 製作與來源聲明',`<div class="txt">
@@ -1096,13 +1099,28 @@ function resetPanel(){let ser=0,md='solo';const draw=()=>{const sn=['🌾 第 1 
   openPanel('🔄 重置遊戲進度',`<div class="note">只會重置你選的系列和模式，其他系列、鑽石、卡片都會保留。</div>
    <div class="set">系列<div class="seg">${sn.map((n,i)=>`<button data-s="${i}" class="${ser===i?'on':''}">${n}</button>`).join('')}</div></div>
    <div class="set">模式<div class="seg"><button data-m="solo" class="${md==='solo'?'on':''}">單人</button><button data-m="duo" class="${md==='duo'?'on':''}">雙人合作</button><button data-m="multi" class="${md==='multi'?'on':''}">多人合作</button></div></div>
-   <div class="note" style="margin-top:8px">${md==='solo'?'單人進度只有你自己，確認兩次就會重置。':`合作進度是<b>原本一起玩的 ${md==='duo'?'2':'3～4'} 位玩家</b>的。<br>請房主建立${md==='duo'?'雙人':'多人'}房間，等原本的玩家都上線後，在房間視窗按「🔄 重置」。<br>原本的玩家沒有全部上線時，只能「🆕 新建」（舊的會保留）。`}</div>
-   ${md==='solo'?'<button class="danger" id="rstGo">🔄 重置這個系列的單人進度</button>':'<button class="big green" id="rstRoom" style="display:block;margin:10px auto">👉 去建立合作房間</button>'}`,()=>{
+   <div class="note" style="margin-top:8px">${md==='solo'?'單人：重置「上次玩的那個存檔」，確認兩次就會重置。其他存檔不受影響（也可以在選擇存檔畫面用 🗑️ 刪除某一個存檔）。':`合作進度是<b>原本一起玩的 ${md==='duo'?'2':'3～4'} 位玩家</b>的。<br>請房主建立${md==='duo'?'雙人':'多人'}房間，等原本的玩家都上線後，在房間視窗按「🔄 重置」。<br>原本的玩家沒有全部上線時，只能「🆕 新建」（舊的會保留）。`}</div>
+   ${md==='solo'?'<button class="danger" id="rstGo">🔄 重置這個系列目前的單人存檔</button>':'<button class="big green" id="rstRoom" style="display:block;margin:10px auto">👉 去建立合作房間</button>'}`,()=>{
    pb.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{ser=+b.dataset.s;SFX.click();draw()});pb.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{md=b.dataset.m;SFX.click();draw()});
    const g=$('#rstGo');if(g)g.onclick=()=>ask(`確定要重置 <b>${sn[ser]}</b> 的<b>單人</b>進度嗎？`,()=>setTimeout(()=>ask('⚠️ 再確認一次：<b>真的要刪除嗎？</b><br><small>刪除後沒辦法復原，其他系列不受影響</small>',()=>{
      if(ser===0){try{if(farmIf){try{farmIf.contentWindow.__noSave=true}catch(e){}farmIf.remove();farmIf=null}localStorage.removeItem('zzdh_farm_v1');localStorage.removeItem('zzdh_tut_farm_v2')}catch(e){}G.farmLv=0;mark();save();toast('✅ 第 1 系列「農業與畜牧」的單人進度已經重置',3500);closePanel()}
      else{delete G.maps.food2;G.prog=G.prog||{};delete G.prog.food;try{localStorage.removeItem('zzdh_tut_food_v1')}catch(e){}hooks.beforeSave.length=0;save();location.reload()}}),150));
    const rr=$('#rstRoom');if(rr)rr.onclick=()=>{SFX.click();closePanel();if(ser===0)startFarm({coop:md==='duo'?2:4});else if(md==='duo')PANELS.duo();else PANELS.multi()}})};draw()}
+
+/* ======================= 匯出／匯入存檔（全部系列、單人和合作、教學紀錄、設定都包含） ======================= */
+function saveKeys(){const ks=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith('zzdh_')&&!k.includes('_test'))ks.push(k)}return ks}
+function saveExport(){try{save();if(farmIf&&farmIf.contentWindow&&farmIf.contentWindow.__farmSave)farmIf.contentWindow.__farmSave()}catch(e){}
+  const data={game:'製作大亨',ver:3,time:new Date().toISOString(),keys:{},slots:{}};saveKeys().forEach(k=>data.keys[k]=localStorage.getItem(k));
+  idbAll().then(sl=>{data.slots=sl;saveExport2(data)}).catch(()=>saveExport2(data))}
+function saveExport2(data){
+  const d=new Date(),pad=n=>String(n).padStart(2,'0');const name=`製作大亨存檔_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.json`;
+  const blob=new Blob([JSON.stringify(data)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},2000);
+  toast(`📤 已匯出存檔（${Object.keys(data.keys).length+Object.keys(data.slots||{}).length} 份資料，包含所有存檔格），檔案在手機或電腦的「下載」資料夾`,4500)}
+function saveImport(){const inp=document.createElement('input');inp.type='file';inp.accept='.json,application/json';inp.onchange=()=>{const f=inp.files&&inp.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{let data;try{data=JSON.parse(r.result)}catch(e){toast('❌ 這個檔案不是製作大亨的存檔');return}
+    if(!data||data.game!=='製作大亨'||!data.keys){toast('❌ 這個檔案不是製作大亨的存檔');return}const n=Object.keys(data.keys).length;
+    ask(`確定要匯入存檔嗎？<br><small>存檔時間：${new Date(data.time).toLocaleString('zh-TW')}<br>共 ${n} 份資料，<b>會蓋掉現在的進度</b></small>`,()=>setTimeout(()=>ask('⚠️ 再確認一次：現在的進度會被這個存檔取代，<b>確定嗎？</b><br><small>建議先「📤 匯出」一份現在的存檔備用</small>',()=>{
+      try{if(farmIf){try{farmIf.contentWindow.__noSave=true}catch(e){}farmIf.remove();farmIf=null}saveKeys().forEach(k=>localStorage.removeItem(k));for(const k in data.keys)if(k.startsWith('zzdh_'))localStorage.setItem(k,data.keys[k])}catch(e){toast('❌ 匯入失敗：手機儲存空間不夠');return}
+      hooks.beforeSave.length=0;window.__noMainSave=true;toast('✅ 匯入完成，重新載入中…',2000);(async()=>{try{await idbClear();for(const k in (data.slots||{}))await idbSet(k,data.slots[k])}catch(e){}setTimeout(()=>location.reload(),600)})()}),150))};r.readAsText(f)};inp.click()}
 /* ======================= 遊戲世界（原料中心＋向外擴張） ======================= */
 let GW=null;
 const RING_R=1.05;
@@ -3820,7 +3838,9 @@ function farmSnd(){const on=!!(G.set.sfx||G.set.music!==false);if(FARM)FARM.post
 // ===== 系列解鎖：第 1 系列農場到達 25 級（共 40 級，超過一半），開放第 2 系列 =====
 var SERIES_UNLOCK_LV=25;
 var FARM_LV_EARN=(()=>{const a=[0,1200,3500,8000,16000,30000,50000,80000,120000,180000];while(a.length<40){const n=a.length;a.push(Math.round(a[n-1]*(n<25?1.18:1.12)/1000)*1000)}return a})();
-function farmLevel(){let best=G.farmLv||0;for(const k of ['zzdh_farm_v1','zzdh_farm_coop2','zzdh_farm_coop4']){try{const d=JSON.parse(localStorage.getItem(k)||'null');if(!d)continue;let l=1;for(let i=1;i<FARM_LV_EARN.length;i++)if((d.earn||0)>=FARM_LV_EARN[i])l=i+1;best=Math.max(best,l)}catch(e){}}return best}
+// 網址後面加 ?dev 可以先打開第 2 系列測試（不會改到任何存檔）
+const DEV_UNLOCK=new URLSearchParams(location.search).has('dev');
+function farmLevel(){let best=G.farmLv||0;if(DEV_UNLOCK)best=Math.max(best,SERIES_UNLOCK_LV);for(const k of ['zzdh_farm_v1','zzdh_farm_coop2','zzdh_farm_coop4']){try{const d=JSON.parse(localStorage.getItem(k)||'null');if(!d)continue;let l=1;for(let i=1;i<FARM_LV_EARN.length;i++)if((d.earn||0)>=FARM_LV_EARN[i])l=i+1;best=Math.max(best,l)}catch(e){}}return best}
 // 首頁的「開始經營」「雙人合作」「多人合作」：第 2 系列開放後，先選要玩哪個系列
 function pickSeries(kind){if(farmLevel()<SERIES_UNLOCK_LV){if(kind==='solo')startFarm();else startFarm({coop:kind==='duo'?2:4});return}
   openPanel(kind==='solo'?'▶ 選擇系列':kind==='duo'?'👥 雙人合作：選擇系列':'👨‍👩‍👧‍👦 多人合作：選擇系列',`<div class="note">每個系列的進度和錢都是分開的。</div><div style="display:flex;flex-direction:column;gap:12px;align-items:center;margin:10px 0">
@@ -3912,5 +3932,81 @@ function ftTick(){requestAnimationFrame(ftTick);const now=performance.now(),dt=M
     U.dlg.querySelector('.skipAll').onclick=()=>{if(!T.skipAsk){T.skipAsk=1;T.dk='';setTimeout(()=>{if(FT===T){T.skipAsk=0;T.dk=''}},3000)}else ftEnd(false)}}}
 var FT_W=0;requestAnimationFrame(ftTick);
 window.__FT=()=>FT;
+
+/* ======================= 系列 2 補充：紀錄看板、畫面遠近、說明、確認視窗 ======================= */
+// 新按鈕放在地圖上方那排小按鈕
+{const bar=document.querySelector('#ghud .gbtns');const mk=(id,em,t)=>{const b=document.createElement('button');b.className='gbtn';b.id=id;b.title=t;b.textContent=em;bar.appendChild(b);return b};
+  mk('gRec','📒','紀錄看板').onclick=()=>{SFX.click();foodRecord()};
+  mk('gZoom','🔍','畫面遠近').onclick=()=>{SFX.click();foodZoom(1)};
+  mk('gHelp','📖','玩法說明').onclick=()=>{SFX.click();foodHelp()}}
+// 畫面遠近：近、標準、遠、超遠
+const FZ=[{n:'近',v:-4},{n:'標準',v:0},{n:'遠',v:6},{n:'超遠',v:13}];
+function foodZoom(step){G.set=G.set||{};let i=G.set.fzoom==null?1:G.set.fzoom;if(step)i=(i+1)%FZ.length;G.set.fzoom=i;window.__camX=FZ[i].v;if(step){toast(`🔍 畫面：${FZ[i].n}`,1400);mark()}}
+foodZoom(0);
+// 電腦滑鼠滾輪也可以拉遠拉近
+addEventListener('wheel',e=>{if(mode!=='game'||modal.classList.contains('on'))return;const i0=G.set.fzoom==null?1:G.set.fzoom;const i=Math.max(0,Math.min(FZ.length-1,i0+(e.deltaY>0?1:-1)));if(i!==i0){G.set.fzoom=i;window.__camX=FZ[i].v;toast(`🔍 畫面：${FZ[i].n}`,1000)}},{passive:true});
+// 每家店最近一分鐘的收入
+const REVH=[];setInterval(()=>{if(mode!=='game'||!GW)return;REVH.push({t:Date.now(),r:GW.shops.map(S=>S.rev||0)});while(REVH.length>8)REVH.shift()},10000);
+function shopPerMin(i){if(!GW)return 0;const S=GW.shops[i];const now=S.rev||0;const old=REVH.find(h=>Date.now()-h.t>=50000)||REVH[0];if(!old)return 0;const dt=(Date.now()-old.t)/60000;return dt>0?Math.round((now-(old.r[i]||0))/Math.max(dt,1/6)):0}
+// 📒 紀錄看板
+function foodRecord(){if(!GW)return;const st=GW.st;let tot=0;const rows=GW.shops.map((S,i)=>{const z=st.shops[i]||{};const n=S.links.length;const p=Math.min(n,z.p||0);
+    if(!S.built){const s=zoneStatus(i);if(s!=='next')return '';return `<div class="task"><div class="e">${S.def.em}</div><div class="m"><b>${S.def.name}</b><small>🔜 下一家可以開的店，站上藍色圈圈付錢蓋店</small></div></div>`}
+    const pm=shopPerMin(i);tot+=pm;const auto=isAuto(S);const halt=S.links.some(l=>l.on&&l.halt);
+    return `<div class="task" style="${auto?'border-color:#7ccf6a':''}"><div class="e">${S.def.em}</div><div class="m"><b>${S.def.name}</b><small>${auto?'🤖 已全自動':'🏪 營業中'}　自動化 ${p}/${n}<span style="display:inline-block;width:60px;height:7px;border-radius:4px;background:#e6ecf2;margin-left:6px;vertical-align:middle;overflow:hidden"><i style="display:block;height:100%;width:${n?p/n*100:0}%;background:#5ec46a"></i></span>${S.cash&&S.cash.amt?`<br>💵 收銀台有 ${S.cash.amt} 待撿`:''}${halt?'<br>⚠️ 有機器停工':''}</small></div><div style="font-size:16px;color:#2a7a30;white-space:nowrap">💵${pm}/分</div></div>`}).filter(Boolean);
+  const done=GW.shops.filter(isAuto).length,open=GW.shops.filter(S=>S.built).length;
+  openPanel('📒 紀錄看板',`<div class="note">營業中 <b>${open}</b> 家・全自動 <b>${done}</b> 家（共 44 家）<br>所有店最近一分鐘收入：<b>💵${tot}/分</b>　<small>（剛進地圖時要等一分鐘才會準）</small></div>${rows.join('')||'<div class="note">還沒有開店，跟著黃色箭頭走吧！</div>'}`)}
+// 📖 玩法說明
+function foodHelp(){openPanel('📖 玩法說明',`<div style="font-size:15px;line-height:1.7">
+ <h3>🍔 飲食與料理怎麼玩</h3>① 到地圖中間的 <b>原料中心</b> 拿原料，站著就會疊在手上。<br>② 送到店裡的 <b>機器</b>，做成料理。<br>③ 放到 <b>櫃台</b>，客人來買，錢堆在收銀台，走過去撿。<br>④ 站上 <b>藍色圈圈</b> 會花錢蓋店、買機器、雇員工；雇滿員工就變 <b>🤖 全自動</b>。<br>⑤ 畫面上方的提示和地上的 <b>黃色箭頭</b> 會告訴你下一步。
+ <h3>🧾 錢和帳單</h3>右上角是這個系列的錢，「🛟 保底」是每分鐘要付的薪水和帳單。錢不夠付薪水，員工會罷工。點錢可以看收支明細。
+ <h3>🔘 上方按鈕</h3>🏠 回首頁　📚 店家進度（可傳送）　🃏 卡片　🔊 聲音　🎡 遊樂場　📒 紀錄看板　🔍 畫面遠近（電腦也可以用滑鼠滾輪）　📖 說明
+ <h3>🗑️ 手上東西太多</h3>點下方手上的東西，可以丟掉（會扣掉成本）。
+ <h3>💤 離線</h3>全自動的店在你離開時也會繼續賺錢，回來會告訴你賺了多少。
+ <h3>🎮 小遊戲</h3>工作時右邊會跳出獎金小遊戲；🎡 遊樂場可以玩對戰小遊戲和博弈遊戲（用這個系列賺到的錢）。
+ <h3>🔓 下一個系列</h3>完成 ${seriesNeed(2)} 家以上全自動，就會開放第 3 系列「${SERIES[2].name}」。</div>`)}
+// 確認視窗：回首頁、丟東西、買卡片、對戰報名費
+$('#gHome').onclick=()=>{SFX.click();ask('確定要<b>回到首頁</b>嗎？<br><small>進度會自動存檔，全自動的店會繼續賺錢</small>',()=>exitGame())};
+{const od=discard;discard=function(p,type){const list=p.stack.filter(m=>!type||m.userData.type===type);if(!list.length)return;const val=list.reduce((a,m)=>a+itemValue(m.userData.type),0);
+  ask(`確定要丟掉手上 <b>${list.length}</b> 個${type&&ITEMS[type]?ITEMS[type].em+ITEMS[type].n:'東西'}嗎？<br><small>會扣掉成本 💵${Math.min(Math.round(val),Math.floor(GW.st.money))}</small>`,()=>od(p,type))}}
+{const ov=vsStart;vsStart=function(k,lv,mode,first){const fee=VS_FEE[mode];if(!fee)return ov.apply(this,arguments);const a=arguments;ask(`確定要開始嗎？<br><small>報名費 💵${fee}</small>`,()=>ov.apply(this,a))}}
+{const st=document.createElement('style');st.textContent=`@media (max-width:560px){#ghud .gbtns{gap:4px!important;flex-wrap:wrap!important;max-width:calc(100vw - 16px)}#ghud .gbtn{width:37px!important;height:37px!important;font-size:16px!important;border-radius:11px!important;border-width:2px!important}}`;document.head.appendChild(st)}
+
+/* ======================= 存檔一到五（每個系列、每種模式各 5 個） ======================= */
+// 正在玩的那一個存檔放在原本的位置（遊戲照舊讀寫），其他 4 個放在瀏覽器裡容量很大的儲存區
+const SLOT_N=5;const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));const SLOT_PICK={};
+function idbOpen(){return new Promise((res,rej)=>{const r=indexedDB.open('zzdh_slots',1);r.onupgradeneeded=()=>r.result.createObjectStore('s');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+async function idbDo(fn){const db=await idbOpen();return new Promise((res,rej)=>{const tx=db.transaction('s','readwrite');const st=tx.objectStore('s');const r=fn(st);tx.oncomplete=()=>res(r&&r.result);tx.onerror=()=>rej(tx.error)})}
+const idbGet=k=>idbDo(s=>s.get(k)),idbSet=(k,v)=>idbDo(s=>s.put(v,k)),idbDel=k=>idbDo(s=>s.delete(k));
+async function idbAll(){const db=await idbOpen();return new Promise((res,rej)=>{const out={};const tx=db.transaction('s','readonly');const c=tx.objectStore('s').openCursor();c.onsuccess=()=>{const q=c.result;if(q){out[q.key]=q.value;q.continue()}else res(out)};c.onerror=()=>rej(c.error)})}
+async function idbClear(){return idbDo(s=>s.clear())}
+const LS=k=>localStorage.getItem(k),LSset=(k,v)=>v==null?localStorage.removeItem(k):localStorage.setItem(k,v);
+const fmap=k=>({get:()=>G.maps[k]?JSON.stringify({m:G.maps[k],c:k==='food2'?null:(G.foodCoop||{})[k.endsWith('c2')?2:4]}):null,
+  set:v=>{const cap=k.endsWith('c2')?2:4;if(v==null){delete G.maps[k];if(k!=='food2'&&G.foodCoop)delete G.foodCoop[cap]}else{const d=JSON.parse(v);G.maps[k]=d.m;if(k!=='food2'){G.foodCoop=G.foodCoop||{};if(d.c)G.foodCoop[cap]=d.c;else delete G.foodCoop[cap]}}mark();save()}});
+const UNITS={farm_solo:{get:()=>LS('zzdh_farm_v1'),set:v=>LSset('zzdh_farm_v1',v)},farm_duo:{get:()=>LS('zzdh_farm_coop2'),set:v=>LSset('zzdh_farm_coop2',v)},farm_multi:{get:()=>LS('zzdh_farm_coop4'),set:v=>LSset('zzdh_farm_coop4',v)},
+  food_solo:fmap('food2'),food_duo:fmap('food2_c2'),food_multi:fmap('food2_c4')};
+const MODE_N={solo:'單人',duo:'雙人合作',multi:'多人合作'};const SER_N={farm:'🌾 農業與畜牧',food:'🍔 飲食與料理'};
+function slotIdx(){try{return JSON.parse(LS('zzdh_slotidx')||'{}')}catch(e){return {}}}
+function slotOf(u){const a=slotIdx();return a[u]||(a[u]={act:1,names:{}})}
+function slotPut(u,o){const a=slotIdx();a[u]=o;LSset('zzdh_slotidx',JSON.stringify(a))}
+function slotMeta(u,raw){if(!raw)return null;try{if(u.startsWith('farm')){const d=JSON.parse(raw);let l=1;for(let i=1;i<FARM_LV_EARN.length;i++)if((d.earn||0)>=FARM_LV_EARN[i])l=i+1;return {txt:`⭐ 等級 ${l}/40　💵${Math.floor(d.money||0).toLocaleString()}`,t:d.last||0}}
+  const d=JSON.parse(raw).m;let a=0,o=0;(d.shops||[]).forEach((z,i)=>{if(!z||!SHOPS[i])return;if(z.b||z.p>0)o++;if(z.p>=SHOPS[i].links.length)a++});return {txt:`🤖 全自動 ${a} 家　💵${Math.floor(d.money||0).toLocaleString()}`,t:d.last||d.saved||0}}catch(e){return {txt:'（讀不到資料）',t:0}}}
+// 先把農場存好並關掉（換存檔前）
+function farmFlush(){if(typeof farmIf!=='undefined'&&farmIf){try{farmIf.contentWindow.__farmSave&&farmIf.contentWindow.__farmSave();farmIf.contentWindow.__noSave=true}catch(e){}farmIf.remove();farmIf=null}}
+async function slotSwitch(u,n){const o=slotOf(u);if(o.act===n)return;if(u.startsWith('farm'))farmFlush();const cur=UNITS[u].get();const t=slotMeta(u,cur);o.t=o.t||{};o.t[o.act]=Date.now();
+  if(cur)await idbSet(u+'_'+o.act,cur);else await idbDel(u+'_'+o.act);const nx=await idbGet(u+'_'+n);UNITS[u].set(nx||null);await idbDel(u+'_'+n);o.act=n;slotPut(u,o)}
+async function slotDelete(u,n){const o=slotOf(u);if(o.act===n){if(u.startsWith('farm'))farmFlush();UNITS[u].set(null)}else await idbDel(u+'_'+n);if(o.names)delete o.names[n];if(o.t)delete o.t[n];slotPut(u,o)}
+// 選擇存檔畫面
+async function slotPanel(ser,md,go){const u=ser+'_'+md;const o=slotOf(u);const rows=[];
+  for(let n=1;n<=SLOT_N;n++){const raw=n===o.act?UNITS[u].get():await idbGet(u+'_'+n);const m=slotMeta(u,raw);const nm=esc((o.names||{})[n]||`存檔 ${n}`);const tt=(m&&m.t)||(o.t||{})[n];const t=m&&tt?new Date(tt).toLocaleString('zh-TW',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'';
+    rows.push(`<div class="task" style="${n===o.act?'border-color:#5ec46a;background:#f2fff0':''}"><div class="e">${['1️⃣','2️⃣','3️⃣','4️⃣','5️⃣'][n-1]}</div><div class="m"><b>${nm}</b>${n===o.act?' <small style="color:#2a8a3a">（上次玩的）</small>':''}<small>${m?`${m.txt}${t?`<br>🕒 ${t}`:''}`:'空的存檔'}</small></div>
+      <div style="display:flex;flex-direction:column;gap:4px"><button class="sbtn" data-go="${n}" style="background:#2f9a4a;box-shadow:0 3px 0 #1f6a32">${m?'▶ 繼續':'🆕 開始'}</button><div style="display:flex;gap:4px"><button class="sbtn" data-nm="${n}" style="padding:4px 8px;background:#5aa8f5;box-shadow:0 2px 0 #2f7bd6">✏️</button>${m?`<button class="sbtn" data-del="${n}" style="padding:4px 8px;background:#e05a4a;box-shadow:0 2px 0 #a83a2a">🗑️</button>`:''}</div></div></div>`)}
+  openPanel(`💾 ${SER_N[ser]}・${MODE_N[md]}`,`<div class="note">選一個存檔開始。每個存檔的等級、錢、進度都分開。${md==='solo'?'':'<br>合作的存檔是<b>房主</b>的；加入朋友的房間不會用到你的存檔。'}</div>${rows.join('')}`,()=>{
+    pb.querySelectorAll('[data-go]').forEach(b=>b.onclick=async()=>{SFX.click();const n=+b.dataset.go;b.disabled=true;try{await slotSwitch(u,n)}catch(e){toast('❌ 換存檔失敗，請再試一次');b.disabled=false;return}const o2=slotOf(u);o2.t=o2.t||{};o2.t[n]=Date.now();slotPut(u,o2);SLOT_PICK[u]=Date.now();closePanel();go()});
+    pb.querySelectorAll('[data-nm]').forEach(b=>b.onclick=()=>{const n=+b.dataset.nm;const v=prompt('存檔名稱（最多 10 個字）',(slotOf(u).names||{})[n]||`存檔 ${n}`);if(v==null)return;const o2=slotOf(u);o2.names=o2.names||{};o2.names[n]=v.trim().slice(0,10)||`存檔 ${n}`;slotPut(u,o2);slotPanel(ser,md,go)});
+    pb.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{const n=+b.dataset.del;const nm=(slotOf(u).names||{})[n]||`存檔 ${n}`;ask(`確定要刪除「<b>${esc(nm)}</b>」嗎？`,()=>setTimeout(()=>ask('⚠️ 再確認一次：<b>真的要刪除嗎？</b><br><small>刪除後沒辦法復原</small>',async()=>{await slotDelete(u,n);toast('🗑️ 已刪除');slotPanel(ser,md,go)}),150))})})}
+// 接到原本的入口：開始經營、雙人、多人、系列地圖
+{const sf=startFarm;startFarm=function(opt){opt=opt||{};if(mode!=='home'||opt.noSlot)return sf(opt);const md=opt.coop?(opt.coop>2?'multi':'duo'):'solo';slotPanel('farm',md,()=>sf(Object.assign({},opt,{noSlot:1})))}}
+{const sg=startGame;startGame=function(opt){opt=opt||{};if(mode!=='home'||opt.coop||opt.net||opt.noSlot)return sg(opt);slotPanel('food','solo',()=>sg(Object.assign({},opt,{noSlot:1})))}}
+for(const k of ['duo','multi']){const p0=PANELS[k];PANELS[k]=function(skip){if(skip===true||mode!=='home'||Date.now()-(SLOT_PICK['food_'+k]||0)<300000)return p0.call(this);slotPanel('food',k,()=>PANELS[k](true))}}
 </script>
 </body></html>
