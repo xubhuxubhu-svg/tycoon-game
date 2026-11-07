@@ -356,7 +356,7 @@ const GLOBAL_MACH=[{id:'lorry',em:'🚚',n:'運貨卡車',p:3500,day:12,d:'每 5
 const STAFF=[
  {id:'farmer',em:'🧑‍🌾',n:'農夫',wage:45,d:'負責一塊田：會走到田裡採收（放進集貨箱）、清掉壞掉的、修復損壞的田；在木牌設定「自動種植」後會自己買種子去播種',per:'field',does:['sow','reap','fix']},
  {id:'waterer',em:'👩‍🌾',n:'澆水工',wage:20,d:'負責一塊田：田快乾了就去澆水（有水管會去拉水管，沒有就去水井提水桶）',per:'field',does:['water']},
- {id:'rancher',em:'🤠',n:'牧場工',wage:40,d:'負責一個養殖場：會去飼料桶／乾草堆拿飼料倒進飼料槽，把產品收進產品箱',per:'pen',does:['feed','collect']},
+ {id:'rancher',em:'🤠',n:'牧場工',wage:40,d:'負責一個養殖場：拿飼料倒進飼料槽、把產品收進產品箱、把長大的動物抓去收購站賣掉、養殖場沒養滿時去繁殖場買小動物回來養（兩項都可以在養殖場的牌子上開關）',per:'pen',does:['feed','collect']},
  {id:'courier',em:'🧑‍✈️',n:'送貨員',wage:50,d:'集貨箱、產品箱一有貨就馬上走過去搬，送到收購站賣掉',per:'farm',does:['deliver']}];
 
 /* ======================= 土地（地政事務所） ======================= */
@@ -428,6 +428,7 @@ const DURS=[{s:1200,n:'20 分鐘',m:1,tag:'⚡ 下班一直玩'},{s:1800,n:'30 �
 const durOf=sec=>DURS.find(d=>d.s===sec)||DURS.reduce((a,b)=>Math.abs(b.s-sec)<Math.abs(a.s-sec)?b:a);
 const plotDur=s=>s.dur||(S.dur||7200);
 const ripeKeep=s=>Math.max(1800,plotDur(s)*.5),witherKeep=s=>Math.max(1800,plotDur(s)*.4),dryTime=s=>Math.max(1800,plotDur(s)*.5);
+const aSell=pk=>!S.autoSell||S.autoSell[pk]!==false,aRebuy=pk=>!S.autoRebuy||S.autoRebuy[pk]!==false;
 const penDur=pk=>PROFILES[S.profile||'mid'].pen;// 生產時間跟著經營模式
 const spoilSec=pk=>Math.max(7200,penDur(pk)*1.5);
 /* ======================= 經營模式（低、中、高收益） ======================= */
@@ -1778,7 +1779,7 @@ function frameBody(){if(EMBED&&HOLD){clock.getDelta();return}const rdt=Math.min(
     const d2=ANIM[a.k];const hungry=a.food<=0&&d2.eat;const nearP=Math.hypot(P.pos.x-v.o.position.x,P.pos.z-v.o.position.z)<9;let h='';
     if(v.hid)h='';else if(hungry)h='😣 肚子餓';else if(nearP){if(a.age<1)h=`${d2.bem} 長大中 ${Math.floor(a.age*100)}%`;else if(d2.prod)h=`${ITEMS[d2.prod].em} ${Math.floor((a.prog||0)*100)}%`;else h='✅ 長大了，可以賣'}
     v.L.pos=v.o.position.clone().setY((['cow','beef','buffalo','ostrich','alpaca'].includes(a.k)?2:a.k==='pig'?1.3:1.1)*(a.age>=1?1:.7));v.L.near=h?14:0;setL(v.L,h?`<div class="pl ${hungry?'warn':''}">${h}</div>`:'')}
-  for(const k in PENS){const p=PENS[k];p.trough.scale.z=.05+.4*(S.trough[k]/10);p.trough.visible=S.trough[k]>0;const hidden=shelter&&S.animals.some(a=>ANIM[a.k].pen===k&&ANIM[a.k].pen!=='apiary');const pn=Math.hypot(P.pos.x-p.x,P.pos.z-p.z)<Math.max(p.w,p.d)*.75;p.L.el.classList.toggle('act',pn&&!S.inHome);const tl=troughLeft(k);setL(p.L,`<div class="shop" style="border-color:#ffb36b;color:#8a4a10">${PEN_T[k].em} ${PEN_T[k].n}<br><small>⏱️ 每 ${fmtDur(penDur(k))} 生產（跟著經營模式）${tl!=null?`　🥣 還能吃 ${fmtDur(Math.max(0,tl))}`:''}</small>${hidden?'<br><small>🏠 動物躲進小屋避難中</small>':''}</div>`)}
+  for(const k in PENS){const p=PENS[k];p.trough.scale.z=.05+.4*(S.trough[k]/10);p.trough.visible=S.trough[k]>0;const hidden=shelter&&S.animals.some(a=>ANIM[a.k].pen===k&&ANIM[a.k].pen!=='apiary');const pn=Math.hypot(P.pos.x-p.x,P.pos.z-p.z)<Math.max(p.w,p.d)*.75;p.L.el.classList.toggle('act',pn&&!S.inHome);const tl=troughLeft(k);setL(p.L,`<div class="shop" style="border-color:#ffb36b;color:#8a4a10">${PEN_T[k].em} ${PEN_T[k].n}<br><small>⏱️ 每 ${fmtDur(penDur(k))} 生產（跟著經營模式）${tl!=null?`　🥣 還能吃 ${fmtDur(Math.max(0,tl))}`:''}</small>${hidden?'<br><small>🏠 動物躲進小屋避難中</small>':''}${staffOn('rancher',k)?`<div class="bt">${Object.keys(ANIM).some(a=>ANIM[a].pen===k&&ANIM[a].sell)?`<button class="${aSell(k)?'h':''}" data-asell="${k}">🤠 自動賣長大的：${aSell(k)?'開':'關'}</button>`:''}<button class="${aRebuy(k)?'h':''}" data-arebuy="${k}">🐣 自動補滿動物：${aRebuy(k)?'開':'關'}</button></div>`:''}</div>`)}
   // 倉庫（飼料桶、乾草堆）
   STOCKV.feed.visible=S.stock.feed>0;STOCKV.feed.position.y=.12+.9*Math.min(1,S.stock.feed/80);const hb=Math.min(9,Math.ceil(S.stock.hay/10));if(STOCKV.hay.children.length!==hb){STOCKV.hay.clear();for(let i=0;i<hb;i++){const b=mesh(G.box,M(0xe8c868));b.scale.set(.85,.45,.55);b.position.set((i%3-1)*.9,.23+Math.floor(i/3)*.46,0);STOCKV.hay.add(b);const s=mesh(G.box,M(0xb8962a),false);s.scale.set(.04,.47,.57);s.position.copy(b.position);STOCKV.hay.add(s)}}
   // 圈圈文字
@@ -1835,7 +1836,7 @@ function frameBody(){if(EMBED&&HOLD){clock.getDelta();return}const rdt=Math.min(
     if(L!==P.tag){if(L.mh!==L.html){L.mh=L.html;L.w=L.el.offsetWidth;L.h=L.el.offsetHeight}const hit=false&&x+L.w/2>PB[0]&&x-L.w/2<PB[2]&&y>PB[1]&&y-L.h<PB[3];if(hit!==!!L.fd){L.fd=hit;L.el.classList.toggle('fade',hit)}}}
   taskT-=rdt;if(taskT<=0){taskT=.5;TASKS=buildTasks();renderTodo();layoutHUD();homeUI();if(S.flow.length>400)S.flow=S.flow.filter(f=>S.t-f[0]<DAY*3)}
   hud(w,wk,se,hr,night);renderBottom()}
-document.addEventListener('click',e=>{const pb=e.target.closest&&e.target.closest('[data-pen]');if(pb){SFX.click();penPanel(pb.dataset.pen);return}const t=e.target.closest&&e.target.closest('[data-sow],[data-reap],[data-auto],[data-spray],[data-root]');if(!t)return;SFX.click();if(t.dataset.root!=null)oneRoot(+t.dataset.root);else if(t.dataset.sow!=null)oneSow(+t.dataset.sow);else if(t.dataset.reap!=null)oneReap(+t.dataset.reap);else if(t.dataset.auto!=null)autoCropSet(+t.dataset.auto);else oneSpray(+t.dataset.spray)});
+document.addEventListener('click',e=>{const as=e.target.closest&&e.target.closest('[data-asell],[data-arebuy]');if(as){SFX.click();const k=as.dataset.asell||as.dataset.arebuy,key=as.dataset.asell?'autoSell':'autoRebuy';S[key]=S[key]||{};S[key][k]=!(as.dataset.asell?aSell(k):aRebuy(k));if(NETG)netCmd({c:'aset',key,k,v:S[key][k]});toast(as.dataset.asell?(S[key][k]?'🤠 牧場工會把長大的動物抓去賣':'🤠 牧場工不會賣動物（留著生蛋）'):(S[key][k]?'🐣 養殖場沒養滿時，牧場工會去繁殖場買小動物回來養':'🐣 牧場工不會自己買動物'),2600);return}const pb=e.target.closest&&e.target.closest('[data-pen]');if(pb){SFX.click();penPanel(pb.dataset.pen);return}const t=e.target.closest&&e.target.closest('[data-sow],[data-reap],[data-auto],[data-spray],[data-root]');if(!t)return;SFX.click();if(t.dataset.root!=null)oneRoot(+t.dataset.root);else if(t.dataset.sow!=null)oneSow(+t.dataset.sow);else if(t.dataset.reap!=null)oneReap(+t.dataset.reap);else if(t.dataset.auto!=null)autoCropSet(+t.dataset.auto);else oneSpray(+t.dataset.spray)});
 let moneyShown=Math.floor(S.money);
 function hud(w,wk,se,hr,night){const day=dayOf(S.t),dIn=day%DAYS_PER_SEASON+1,year=Math.floor(day/(DAYS_PER_SEASON*4))+1;const h=Math.floor(hr),mi=Math.floor((hr-h)*6)*10;const pi=Math.floor(S.t/PERIOD);
   const nightName=x=>night>.5&&(x.n==='晴天'||x.n==='多雲')?(x.n==='晴天'?'🌙 晴朗的夜晚':'☁️ 多雲的夜晚'):`${x.em} ${x.n}`;
@@ -2089,7 +2090,7 @@ function digTick(rdt){if(!HOE||!DIG_T)return;if(P.digT>0){P.digT-=rdt}else if(HO
 /* ======================= 連線合作（房主＋朋友，最多 4 人一起經營房主的農場） ======================= */
 // 房主負責計算整座農場；朋友把自己的位置、動作傳給房主，房主每 0.4 秒把農場狀態傳回給大家。
 var NET={ws:null,role:'',code:'',uid:'',slot:0,cap:2,members:[],hostUid:'',remote:new Map(),guests:new Map(),ppT:0,ssT:0,flowT:0,reShop:0,lastPP:'',hostGone:false};
-const NET_KEYS=['wild','guard','penUp','wildT','tc','money','t','seed','plots','boxes','animals','trough','piles','pbox','seeds','own','mats','fm','pm','gm','staff','stock','pens','autoCrop','tut','tutDone','lastP','earn','debt','strike','ev','evT','day','tor','torAt','forceW','paused','stats','gc','crows','fridge','decor','fridgeCap','penDur','autoDur','profile','boostUntil'];
+const NET_KEYS=['autoSell','autoRebuy','wild','guard','penUp','wildT','tc','money','t','seed','plots','boxes','animals','trough','piles','pbox','seeds','own','mats','fm','pm','gm','staff','stock','pens','autoCrop','tut','tutDone','lastP','earn','debt','strike','ev','evT','day','tor','torAt','forceW','paused','stats','gc','crows','fridge','decor','fridgeCap','penDur','autoDur','profile','boostUntil'];
 const NET_COL=['#2f6fd1','#e0507e','#2fa84f','#e08a1a'];
 function netOK(){return location.protocol==='http:'||location.protocol==='https:'}
 function netSend(o){if(NET.ws&&NET.ws.readyState===1)NET.ws.send(JSON.stringify(o))}
@@ -2135,7 +2136,7 @@ function withActor(g,fn){const sv={du:S.dur,h:S.hand,b:S.basket,c:S.cage,l:S.lea
     S.dur=sv.du;S.hand=sv.h;S.basket=sv.b;S.cage=sv.c;S.leash=sv.l;S.veh=sv.veh;S.sel=sv.sel;P.pos.copy(sv.pos);P.cd=sv.cd;P.hose=sv.hose;P.plot=sv.plot;P.plotStay=sv.ps;P.auto=sv.auto}}
 function flushFx(g){if(g.msgs.length||g.snd.length||g.ui){netSend({t:'fx',_to:g.uid,m:g.msgs.slice(-4),s:g.snd.slice(-8),ui:g.ui});g.msgs=[];g.snd=[];g.ui=null}}
 function hostCmd(g,m){withActor(g,()=>{switch(m.c){
-  case 'sow':{const d0=S.dur;if(m.dur)S.dur=m.dur;doSow(m.fi,m.k);S.dur=d0}break;case 'reap':oneReap(m.fi);break;case 'root':doRoot(m.fi);break;case 'spray':oneSpray(m.fi);break;
+  case 'sow':{const d0=S.dur;if(m.dur)S.dur=m.dur;doSow(m.fi,m.k);S.dur=d0}break;case 'reap':oneReap(m.fi);break;case 'root':doRoot(m.fi);break;case 'aset':S[m.key]=S[m.key]||{};S[m.key][m.k]=m.v;break;case 'spray':oneSpray(m.fi);break;
   case 'auto':if(CROPS[m.k]){S.autoCrop[m.fi]=m.k;if(m.dur)S.autoDur[m.fi]=m.dur;toast(`⚙️ ${FI(m.fi)?FI(m.fi).name:''}自動種植：${CROPS[m.k].em}${CROPS[m.k].n}`)}break;
   case 'act':if(ACT[m.a]&&m.a!=='goLot')ACT[m.a](m.v);break;case 'build':doBuild(m.id,m.k);break;
   case 'drop':{let h,n=0;while((h=takeHand(x=>x===m.t))){n++;if(m.t==='feed'||m.t==='hay')S.stock[m.t]++}if(n)toast(`放下了 ${ITEMS[m.t].n}`)}break;
@@ -2576,6 +2577,7 @@ function wkSync(){const want=new Set();for(const id of ['farmer','waterer','ranc
   for(const k of want){const [id,key]=k.split('|');wkMake(id,key)}}
 function wkGo(w,to,txt,then){w.path=findPath(w.o.position.clone().setY(0),V(to.x,0,to.z));w.then=then;w.txt=txt||w.txt}
 function wkHold(w,t){w.u.anchor.clear();if(t){for(let i=0;i<Math.min(4,t.n||1);i++){const it=makeItem(t.k);it.position.y=i*ITEM_H;w.u.anchor.add(it)}}}
+function wkCarry(w,a){if(w.carryM){w.o.remove(w.carryM);w.carryM=null}if(!a)return;const m=animalModel(a);m.scale.multiplyScalar(ANIM[a.k].carry==='cage'?.55:.45);m.position.set(0,1.05,.45);w.o.add(m);w.carryM=m}
 const wkDo=(w,sec,txt,fn)=>{w.busy=sec;w.txt=txt;w.after=fn};
 const canAct=()=>!NETG;
 // 找工作
@@ -2594,6 +2596,13 @@ function wkPlan(w){const id=w.id,key=w.key;
   if(id==='rancher'){const pk=w.key,pen=PENS[pk],T=PEN_T[pk];if(!pen)return wkIdle(w);
     if(w.load.length){const tr=pen.ring.trough;return wkGo(w,tr,'🥣 倒進飼料槽',()=>wkDo(w,1,'🥣 倒飼料中',()=>{if(canAct()){const src=w.load[0];const n=Math.min(10-S.trough[pk],w.load.length);S.trough[pk]+=n;const back=w.load.length-n;if(back>0)S.stock[src]=(S.stock[src]||0)+back}w.load=[];wkHold(w,null)}))}
     if(T.food.length&&pen.ring.trough&&S.trough[pk]<5&&S.animals.some(a=>ANIM[a.k].pen===pk)){const src=T.food.includes('feed')&&S.stock.feed>0?'feed':T.food.includes('hay')&&S.stock.hay>0?'hay':'';if(src){const at=src==='feed'?V(7,0,2.9):V(10.5,0,2.6);return wkGo(w,at,src==='feed'?'🌰 去拿飼料':'🌾 去拿乾草',()=>wkDo(w,1,'拿飼料中',()=>{const n=Math.min(10-S.trough[pk],S.stock[src]||0);if(canAct())S.stock[src]-=n;w.load=Array(n).fill(src);wkHold(w,{k:src,n})}))}}
+    if(w.baby)return wkGo(w,pen.ring.release,'🐣 把小動物放進去',()=>wkDo(w,.8,'🐣 放進去',()=>{if(canAct()){S.animals.push(w.baby);syncAnimals();puff(V(pen.ring.release.x,.5,pen.ring.release.z-1.4),12,0xff8ad8);animSnd(w.baby.k)}w.baby=null;wkCarry(w,null)}));
+    if(w.sellA)return wkGo(w,V(0,0,1.2),`🛒 帶${ANIM[w.sellA.k].n}去收購站賣`,()=>wkDo(w,1,'💵 賣動物中',()=>{const a=w.sellA,d=ANIM[a.k];w.sellA=null;wkCarry(w,null);if(canAct()){earn(d.sell,'animal');toast(`🤠 牧場工把一隻${d.n}賣掉了，賺到 💵${d.sell}`,2600);SFX.cash&&SFX.cash()}}));
+    // 自動補滿：養殖場還沒養滿，就去繁殖場買小動物帶回來
+    if(aRebuy(pk)&&SHOPS.breed){const lv=farmLv();const k=Object.keys(ANIM).find(k=>{const d=ANIM[k];return d.pen===pk&&(d.lv||1)<=lv&&S.animals.filter(x=>x.k===k).length<animMax(k)&&S.money>=d.buy+50});
+      if(k)return wkGo(w,SHOPS.breed.ring,`🐣 去繁殖場買${ANIM[k].baby}`,()=>wkDo(w,1,'🐣 買小動物中',()=>{const d=ANIM[k];if(canAct()){if(S.money<d.buy||S.animals.filter(x=>x.k===k).length>=animMax(k))return;spend(d.buy,'shop');toast(`🤠 牧場工買了一隻${d.bem}${d.baby}（💵${d.buy}），帶回「${PEN_T[pk].n}」`,2600)}w.baby=newAnimal(k);wkCarry(w,w.baby)}))}
+    // 自動賣：把長大的抓去收購站
+    if(aSell(pk)){const a=S.animals.find(x=>ANIM[x.k].pen===pk&&ANIM[x.k].sell&&x.age>=1);if(a&&pen.ring['c'+a.k])return wkGo(w,pen.ring['c'+a.k],`🪢 去抓長大的${ANIM[a.k].n}`,()=>wkDo(w,1,'🪢 抓動物中',()=>{if(canAct()){const i=S.animals.indexOf(a);if(i<0)return;S.animals.splice(i,1);syncAnimals();animSnd(a.k)}w.sellA=a;wkCarry(w,a)}))}
     if(S.piles[pk]&&S.piles[pk].length&&pen.ring.take)return wkGo(w,pen.ring.take,'🥚 去收產品',()=>wkDo(w,1.2,'🥚 收產品中',()=>{if(canAct()&&S.piles[pk].length){S.pbox[pk].push(...S.piles[pk].map(x=>x[1]));S.piles[pk]=[]}}));
     return wkIdle(w)}
   if(id==='courier'){if(w.load.length)return wkGo(w,V(0,0,1.2),'🚚 送去收購站',()=>wkDo(w,1,'💵 賣貨中',()=>{if(canAct()){let sum=0;w.load.forEach(t=>sum+=sellPrice(t));if(sum){earn(sum,'deliver');toast(`🧑‍✈️ 送貨員賣了 ${w.load.length} 件貨，賺到 💵${sum}！`,2600);SFX.cash&&SFX.cash()}}w.load=[];wkHold(w,null)}));
