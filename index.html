@@ -204,7 +204,11 @@ body.ing #toast{top:138px}
 #ghud .gbtn{width:auto;min-width:44px;padding:0 10px 0 8px;display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
 #ghud .gbtn[data-lb]::after{content:attr(data-lb);font-size:14px;font-weight:700;letter-spacing:.5px}
 @media (max-width:560px){#ghud .gbtns .gbtn{width:38px!important;height:44px!important;padding:0!important;flex-direction:column;justify-content:center;gap:0;font-size:15px!important;line-height:1.1}#ghud .gbtns .gbtn[data-lb]::after{font-size:9px;letter-spacing:0}}
-.nmchip[data-mlab]{pointer-events:auto;cursor:pointer}.nmchip .mlh{display:inline-block;margin-left:4px;background:#2f7bd6;color:#fff;border-radius:8px;padding:0 5px;font-size:11px}
+.nmchip[data-mlab],.nmchip[data-fac]{pointer-events:auto;cursor:pointer}.facbtn{font-size:15px!important;padding:6px 12px!important}
+.fvCard{display:flex;gap:10px;align-items:center;background:#f2f7ff;border:2px solid #cfe0f7;border-radius:14px;padding:10px;margin:8px 0}.fvCard.fvCur{border-color:#2e9d4a;background:#eefbea}
+.fvEm{font-size:40px;width:56px;text-align:center}.fvM{flex:1;color:#24456e;font-size:15px}.fvM small{display:block;color:#6a7f9a;font-size:12px;margin-top:2px}.fvM .fvSp{color:#2e7d32;font-weight:700}
+.fvTag{background:#2e9d4a;color:#fff;border-radius:8px;padding:1px 6px;font-size:11px}.fvBar{height:9px;border-radius:5px;background:#dde7f3;margin-top:6px;overflow:hidden}.fvBar i{display:block;height:100%;background:linear-gradient(90deg,#7ad86a,#2fb3e8,#ff7a3a)}
+.fvBtn{width:auto!important;padding:0 10px;font-size:14px!important;min-width:76px}.fvBtn.buy{background:linear-gradient(#5ccf6a,#2e9d4a);box-shadow:0 3px 0 #1f6a32}.nmchip .mlh{display:inline-block;margin-left:4px;background:#2f7bd6;color:#fff;border-radius:8px;padding:0 5px;font-size:11px}
 .lkTitle{margin:14px 0 6px;font-weight:800;color:#2a4a7a}
 .lkRow{display:flex;align-items:center;gap:8px;background:#f2f7ff;border:2px solid #cfe0f7;border-radius:12px;padding:8px 10px;margin:6px 0}
 .lkN{flex:1;font-weight:700;color:#24456e;font-size:14px}.lkN small{display:block;font-weight:500;color:#6a7f9a;font-size:12px}
@@ -310,7 +314,7 @@ body.ing #toast{top:138px}
     <button class="ib" data-p="credits"><div class="sq">📜</div><span>聲明</span></button>
   </div>
 </div>
-<div id="credit">遊戲製作：Eric Hu　版本 1.9.6</div>
+<div id="credit">遊戲製作：Eric Hu　版本 1.9.8</div>
 </div>
 <div id="game" class="hide">
   <div id="lbls"></div>
@@ -1457,7 +1461,7 @@ function makeMachObj(md,built,pos,inR,outR,key){const Mo={type:'mach',name:md.na
   Mo.out=new Pile(16,i=>{const k=i%4,l=(i/4)|0;return V(outR.x-.3+(k%2)*.6,.12+l*ITEM_H,outR.z-.3+((k/2)|0)*.6)});
   Mo.Lin=label(`<div class="rl drop"><span class="i">⬇</span>放入 ${md.inT.map(t=>ITEMS[t].em+ITEMS[t].n).join('＋')}</div>`,inR.clone().setY(2.4),Mo,key+':in');
   Mo.Lout=label(`<div class="rl pick"><span class="i">${ITEMS[md.outT].em}</span>拿${ITEMS[md.outT].n}<small> 做好放這裡</small></div>`,outR.clone().setY(2.4),Mo,key+':out');
-  {const Li=nameLabel(inR,`${md.name}：放入 ${md.inT.map(t=>ITEMS[t].em+ITEMS[t].n).join('＋')} <span class="mlh">🚚</span>`,Mo,Mo.Lin,'#ffa53a');Mo.lname=md.name;if(typeof MLAB==='undefined'||!MLAB)MLAB=[];const ch=Li.el.querySelector('.nmchip');if(ch){ch.dataset.mlab=MLAB.push(Mo)-1;Li.html=Li.el.innerHTML}}nameLabel(outR,`${md.name}：拿 ${ITEMS[md.outT].em}${ITEMS[md.outT].n}`,Mo,Mo.Lout);
+  {const Li=nameLabel(inR,`${md.name}：放入 ${md.inT.map(t=>ITEMS[t].em+ITEMS[t].n).join('＋')} <span class="mlh">🚚</span>`,Mo,Mo.Lin,'#ffa53a');Mo.lname=md.name;if(typeof MLAB==='undefined'||!MLAB)MLAB=[];const ch=Li.el.querySelector('.nmchip');if(ch){ch.dataset.mlab=MLAB.push(Mo)-1;Li.html=Li.el.innerHTML}}{const Lo=nameLabel(outR,`${md.name}：拿 ${ITEMS[md.outT].em}${ITEMS[md.outT].n} <span class="mlh">🚚</span>`,Mo,Mo.Lout);if(typeof MLAB==='undefined'||!MLAB)MLAB=[];const ch=Lo.el.querySelector('.nmchip');if(ch)ch.dataset.mlab=MLAB.push(Mo)-1}
   return Mo}
 
 /* ---- 建立一家店 ---- */
@@ -2639,8 +2643,8 @@ function collide(p,r=.38){for(const b of GW.solids){if(b.ob){const dx=p.x-b.cx,d
   const R=Math.max(16,...GW.shops.filter(S=>S.built||GW.pads.some(o=>o.S===S)).map(S=>S.c.length()+S.rad+3));const l=Math.hypot(p.x,p.z);if(l>R){p.x*=R/l;p.z*=R/l}}
 function updatePlayer(p,dt){const [ix,iy]=p.remote?[0,0]:inputOf(p.inId??p.id);let speed=p.remote?netMoveRemote(p,dt):0;
   if(p.dance>0){p.dance-=dt;const u=p.o.userData;u.body.position.y=Math.abs(Math.sin(p.dance*9))*.5;p.o.rotation.y+=dt*10;u.arms.forEach((a,i)=>{a.rotation.z=(i?-1:1)*(1.2+Math.sin(p.dance*12)*.6)});if(p.dance<=0)u.arms.forEach((a,i)=>a.rotation.z=(i?-1:1)*.18);return}
-  if(ix||iy){const mv=V(0,0,0).addScaledVector(SR,ix).addScaledVector(SD,iy);const mag=Math.min(1,mv.length());mv.normalize();const sp=6.4*mag*(buffOn('run')?1.5:1);const old=p.pos.clone();p.pos.addScaledVector(mv,sp*dt);collide(p.pos);speed=old.distanceTo(p.pos)/dt;p.dir=Math.atan2(mv.x,mv.z)}
-  p.o.rotation.y=lerpA(p.o.rotation.y,p.dir,dt*14);walkAnim(p,speed,dt,p.stack.length+p.incoming>0,(q)=>{puff(q.pos.clone().add(V(0,.08,0)),2,.1);SFX.step()});
+  if(ix||iy){const mv=V(0,0,0).addScaledVector(SR,ix).addScaledVector(SD,iy);const mag=Math.min(1,mv.length());mv.normalize();const sp=6.4*mag*(buffOn('run')?1.5:1)*fvMul(p);const old=p.pos.clone();p.pos.addScaledVector(mv,sp*dt);collide(p.pos);speed=old.distanceTo(p.pos)/dt;p.dir=Math.atan2(mv.x,mv.z)}
+  p.o.rotation.y=lerpA(p.o.rotation.y,p.dir,dt*14);walkAnim(p,speed,dt,p.stack.length+p.incoming>0,(q)=>{if(!p.vehM){puff(q.pos.clone().add(V(0,.08,0)),2,.1);SFX.step()}});if(p.vehM)fvPose(p,speed,dt);
   for(const s of GW.stList){if(Math.abs(s.pos?0:0)>0)continue;
     if(s.type==='src'){if(d2(p.pos,s.ring)<RING_R&&cdReady(p,'src',dt)){p.cd.src=.06;if(pickSource(p,s))seen(s.key)}}
     else if(s.type==='mach'){if(d2(p.pos,s.inR)<RING_R&&cdReady(p,'min',dt)){for(const t of s.in)if(acceptCount(s,t)>0&&giveTo(p,s,t)){p.cd.min=.07;seen(s.key+':in');manualGive(s,t);break}}
@@ -2665,8 +2669,8 @@ function updateHelper(h,dt,vis){if(h.conv)return;const lk=h.link;let speed=0;if(
   if(vis){h.o.rotation.y=lerpA(h.o.rotation.y,h.dir,dt*10);const u=h.o.userData;if(u.props)u.props.forEach((p,i)=>p.rotation.y+=dt*30);const bu=u.body.userData;if(bu.legsA)bu.legsA.position.y=speed>.2?Math.abs(Math.sin(GW.time*12))*.12:0;if(bu.puller)bu.puller.userData.legs.forEach((l,i)=>l.rotation.x=speed>.2?Math.sin(GW.time*14+i*Math.PI)*.7:0);
     if(h.ride)u.body.position.y=h.fly?Math.sin(GW.time*2)*.12:(speed>.2?Math.abs(Math.sin(GW.time*20))*.03:0);else walkAnim(h,speed,dt,h.stack.length>0)}}
 function updateBelt(lk,dt){if(GW.strike)return;if(lk.grow!==undefined&&lk.grow<1){lk.grow=Math.min(1,lk.grow+dt*2);lk.obj.scale.set(1,Math.max(.01,easeBack(lk.grow)),1)}
-  const sp=buffOn('speed')?2:1;lk.t-=dt*sp;
-  if(lk.t<=0&&lk.from.out.items.length&&lk.items.length<8&&acceptCount(lk.to,lk.item)-lk.items.length>0){lk.t=.45;const m=lk.from.out.items.pop();lk.items.push({m,s:0})}
+  const bm=1+(lk.bst||0);const sp=(buffOn('speed')?2:1)*bm;lk.t-=dt*sp;
+  if(lk.t<=0&&lk.from.out.items.length&&lk.items.length<8*bm&&acceptCount(lk.to,lk.item)-lk.items.length>0){lk.t=.45;const m=lk.from.out.items.pop();lk.items.push({m,s:0})}
   const pts=lk.pts;const segs=[];let tot=0;for(let k=0;k<pts.length-1;k++){const l=pts[k].distanceTo(pts[k+1]);segs.push(l);tot+=l}
   for(let k=lk.items.length-1;k>=0;k--){const it=lk.items[k];it.s+=dt*2.4*sp;let s=Math.min(it.s,tot),q=0;while(q<segs.length-1&&s>segs[q]){s-=segs[q];q++}
     const p=pts[q].clone().lerp(pts[q+1],segs[q]?s/segs[q]:1);it.m.position.set(p.x,.4,p.z);it.m.rotation.set(0,0,0);
@@ -2806,6 +2810,7 @@ function startGame(opts={}){initAudio();mode='game';setTimeout(()=>{if(mode==='g
   GW.coop=!!opts.coop;GW.net=opts.net||null;
   if(GW.coop&&!GW.net&&GW.players.length<2){const p=makePlayer(1);p.pos.copy(GW.players[0].pos).add(V(1.4,0,.6));GW.players.push(p);GW.camT[1].copy(p.pos)}
   if((!GW.coop||GW.net==='host')&&GW.players.length>1){const p=GW.players.pop();p.stack.forEach(m=>m.parent&&m.parent.remove(m));GW.scene.remove(p.o);p.tag.el.remove();LABELS.splice(LABELS.indexOf(p.tag),1)}
+  fvSync();
   if(opts.focus!==undefined)teleport(opts.focus);
   sndIcon();refreshTop();
   if(GW.coop&&!GW.net)toast('👥 1P：左半邊／WASD　2P：右半邊／方向鍵',4200);
@@ -2850,7 +2855,7 @@ function payroll(dt){payT-=dt;if(payT>0)return;payT=10;
     const r=$('#gCash').getBoundingClientRect();d.style.left=(r.left+r.width/2)+'px';d.style.top=(r.bottom+30)+'px';document.body.appendChild(d);d.animate([{opacity:0,transform:'translate(-50%,-50%) scale(.6)'},{opacity:1,offset:.2},{opacity:0,transform:'translate(-50%,0%) scale(1)'}],{duration:1400}).onfinish=()=>d.remove()}
   else{if(!GW.strike){GW.strike=true;SFX.err();toast('😴 錢不夠付薪水，員工罷工了！先自己賺點錢吧～',4200)}}}
 function flowRates(){if(GW&&GW.net==='guest'&&NET.fr)return {inc:NET.fr[0],out:NET.fr[1],by:{}};const L=GW.flowLog||[];const t0=GW.time-60;while(L.length&&L[0].t<t0)L.shift();let inc=0,out=0;const by={};L.forEach(e=>{if(e.a>0)inc+=e.a;else{out-=e.a;by[e.k]=(by[e.k]||0)-e.a}});return {inc,out,by}}
-setInterval(()=>{if(mode!=='game'||!GW)return;const r=flowRates();const el=$('#flow');el.innerHTML=`<span class="up">▲${r.inc}</span><span class="dn">▼${r.out}</span><small>/分</small>`;el.classList.toggle('neg',r.out>r.inc);if(GW.time>65)GW.st.netRate=r.inc-r.out;
+setInterval(()=>{if(mode!=='game'||!GW)return;const r=flowRates();const el=$('#flow');el.innerHTML=`<span class="up">▲${Math.round(r.inc)}</span><span class="dn">▼${Math.round(r.out)}</span><small>/分</small>`;el.classList.toggle('neg',r.out>r.inc);if(GW.time>65)GW.st.netRate=r.inc-r.out;
   const fl=floorAmt();GW.floor=fl;$('#gFloor b').textContent=fl.toLocaleString();const low=fl>0&&GW.st.money<fl*3;$('#gCash').classList.toggle('warn',!!(low||GW.strike));$('#gFloor').classList.toggle('warn',!!low);haltTip()},1000);
 function showLedger(){const r=flowRates();const rows=[];let tot=0;
   GW.shops.forEach(S=>{if(!S.built)return;const on=S.links.filter(l=>l.on);if(!on.length)return;const w=on.reduce((a,l)=>a+wageOf(l),0);tot+=w;
@@ -2987,7 +2992,10 @@ function boostShare(S,b){const r=S.def.fp?S.def.fp.ring:0;return b?[.52,.6,.66][
 function boostWageMul(lk){return 1;if(!boostable(lk)||!GW||!GW.st)return 1;const b=(GW.st.shops[lk.shop.i].bo)||0;return 1+BOOST[b].cost}
 // 每個工序可以各自設定加派幾組機器人（zs.lb[工序編號]）；沒有個別設定時跟著整間店
 function lbGet(S,lk){const zs=GW.st.shops[S.i];return zs.lb&&zs.lb[lk.k]!=null?zs.lb[lk.k]:(zs.bo||0)}
-function spawnBoost(S,anim){const add=[],rem=[];S.links.forEach(lk=>{if(!lk.on||!boostable(lk))return;lk.extraN=lk.extraN||0;const b=lbGet(S,lk);
+const adjustable=lk=>boostable(lk)||lk.role==='belt';
+// 輸送帶：加派機器人＝輸送帶加速、旁邊多一台上料機器人
+function beltBoost(lk,n){lk.bst=n;lk.xr=lk.xr||[];while(lk.xr.length<n&&lk.robot){const r=makeRobot();r.position.copy(lk.robot.position).add(V(.75*(lk.xr.length+1),0,.4*(lk.xr.length+1)));r.rotation.y=lk.robot.rotation.y;GW.scene.add(r);lk.xr.push(r)}while(lk.xr.length>n){GW.scene.remove(lk.xr.pop())}}
+function spawnBoost(S,anim){const add=[],rem=[];S.links.forEach(lk=>{if(lk.on&&lk.role==='belt'){beltBoost(lk,lbGet(S,lk));return}if(!lk.on||!boostable(lk))return;lk.extraN=lk.extraN||0;const b=lbGet(S,lk);
   while(lk.extraN<b){lk.extraN++;const n0=GW.helpers.length;BOOSTING=true;try{enableLink(S,lk,!anim)}finally{BOOSTING=false}for(let k=n0;k<GW.helpers.length;k++){GW.helpers[k].extra=lk.extraN;GW.helpers[k].delay=anim?0:lk.extraN*1.5;add.push(GW.helpers[k])}}
   while(lk.extraN>b){const h=GW.helpers.find(x=>x.link===lk&&x.extra===lk.extraN&&!x.conv);if(h){if(anim)rem.push(h);else{GW.scene.remove(h.o);GW.helpers.splice(GW.helpers.indexOf(h),1)}}lk.extraN--}});
   if(anim){if(add.length){add.forEach(h=>{h.grow=1;h.o.scale.setScalar(1)});cvDeploy(S,add)}if(rem.length)cvWithdraw(S,rem)}}
@@ -2998,7 +3006,7 @@ function boostPanel(i){const S=GW.shops[i];if(!S||!isAuto(S))return;const zs=GW.
    <div class="note">加倍的運輸改用<b>自主移動機器人</b>和<b>無人搬運車</b>，不再增加人力。<br>🏭 機器人會從「自動化工廠」的鐵捲門出發；路太遠時會由 AI 貨車載過去。<br>每次只能加 1 倍，最多 3 倍。<br>💡 租賃費依距離：第一圈近店 52%、第二圈 60%、外圈遠店 66%（扣完租金、原料和稅，多賺的部分還是你的）。</div>
    ${cur<2?`<button class="boostOpt" id="bUp"><b>⬆️ 升級到「${BOOST[nx].t}」</b><br><small>機器人租賃費：只抽「加派後<b>多賺的營收</b>」的 ${Math.round(boostShare(S,nx)*100)}%（不用付薪水）<br>沒多賺就不收錢 ➜ 加了一定比不加賺得多！</small></button>`:`<div class="note" style="text-align:center;font-size:16px">🏆 已經是「全自動最大化」！</div>`}
    ${cur>0?`<button class="boostOpt down" id="bDown">⬇️ 撤回一組機器人（回到「${BOOST[cur-1].t}」）</button>`:''}
-   <div class="lkTitle">🔧 每個工序的運輸（可以各別增加或減少）</div>${lkRows(S,S.links.filter(l=>l.on&&boostable(l)))}`,
+   <div class="lkTitle">🔧 每個工序的運輸（可以各別增加或減少）</div>${lkRows(S,S.links)}`,
     ()=>{lkBind(S,()=>boostPanel(i));const up=$('#bUp'),dn=$('#bDown');if(up)up.onclick=()=>{boostSet(i,nx);SFX.buy();confettiDom(40);toast(nx===2?'🏆 全自動最大化！運輸量 ×3':'🤖 無人搬運機器人上工！運輸量 ×2');save(true);boostPanel(i)};
       if(dn)dn.onclick=()=>{boostSet(i,cur-1);SFX.click();save(true);boostPanel(i)}})}
 document.addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('[data-boost]');if(t&&mode==='game'){SFX.click();boostPanel(+t.dataset.boost)}});
@@ -3022,13 +3030,16 @@ function makeAMR(big,accent){const g=new THREE.Group();const body=new THREE.Grou
 
 /* ---- 個別工序的運輸人力／機器人（點加派運輸視窗，或點機台上的「放入…」標籤） ---- */
 function lkRows(S,lks){if(!lks.length)return '<div class="note">這個工序還沒自動化，自動化之後才可以加派機器人。</div>';
-  return lks.map(lk=>{const n=lbGet(S,lk);return `<div class="lkRow"><div class="lkN">${lk.name}<small>${lk.sub||''}</small></div><div class="lkC">👷 人力 1${n?`<br>🤖 機器 ${n}`:''}<small>運輸量 ×${1+n}</small></div><button class="lkB" data-lkm="${lk.k}" ${n<=0?'disabled':''}>－</button><button class="lkB" data-lkp="${lk.k}" ${n>=2?'disabled':''}>＋</button></div>`}).join('')}
+  return lks.map(lk=>{const n=lbGet(S,lk);const nm=`${lk.name}<small>${lk.sub||''}${lk.role==='belt'?'（輸送帶）':''}</small>`;
+    if(!lk.on)return `<div class="lkRow" style="opacity:.55"><div class="lkN">${nm}</div><div class="lkC">🔒 還沒自動化</div></div>`;
+    if(lk.role==='cashier')return `<div class="lkRow"><div class="lkN">${nm}</div><div class="lkC">💵 收銀員 1<small>收錢自動入帳，不用搬運</small></div></div>`;
+    return `<div class="lkRow"><div class="lkN">${nm}</div><div class="lkC">${lk.role==='belt'?'🦾 輸送帶 1':lk.role==='vehicle'?'🚚 車輛 1':'👷 人力 1'}${n?`<br>🤖 機器 ${n}`:''}<small>運輸量 ×${1+n}</small></div><button class="lkB" data-lkm="${lk.k}" ${n<=0?'disabled':''}>－</button><button class="lkB" data-lkp="${lk.k}" ${n>=2?'disabled':''}>＋</button></div>`}).join('')}
 function lkBind(S,again){pb.querySelectorAll('[data-lkp],[data-lkm]').forEach(b=>b.onclick=()=>{const k=+(b.dataset.lkp??b.dataset.lkm);const lk=S.links.find(l=>l.k===k);if(!lk)return;const n=lbGet(S,lk)+(b.dataset.lkp!=null?1:-1);if(n<0||n>2)return;linkBoostSet(S.i,k,n);SFX.click();if(n>0&&b.dataset.lkp!=null)toast(`🤖 ${lk.name}：加派一組機器人（運輸量 ×${n+1}）`);save(true);again()})}
-function linkBoostSet(i,k,n,from){const S=GW.shops[i];if(!S)return;const zs=GW.st.shops[i];const lks=S.links.filter(l=>l.on&&boostable(l));zs.lb=zs.lb||{};lks.forEach(l=>{if(zs.lb[l.k]==null)zs.lb[l.k]=zs.bo||0});zs.lb[k]=n;
+function linkBoostSet(i,k,n,from){const S=GW.shops[i];if(!S)return;const zs=GW.st.shops[i];const lks=S.links.filter(l=>l.on&&adjustable(l));zs.lb=zs.lb||{};lks.forEach(l=>{if(zs.lb[l.k]==null)zs.lb[l.k]=zs.bo||0});zs.lb[k]=n;
   const nb=Math.max(0,...lks.map(l=>zs.lb[l.k]||0));if(!(zs.bo)&&nb>0){const h=S.revH||[];zs.base=h.length?Math.round(h.reduce((a,b)=>a+b,0)/h.length):0}zs.bo=nb;spawnBoost(S,true);S.sign();
   if(GW.net==='guest'&&!from)netToHost({t:'cmd',c:'lboost',i,k,n});if(from)toast(`🤖 ${peerName(from)} 調整了 ${S.def.em} ${S.def.name} 的運輸`)}
-function machPopup(Mo){const S=GW.shops.find(S=>S.links.some(l=>l.to===Mo||l.from===Mo));if(!S)return;const lks=S.links.filter(l=>(l.to===Mo||l.from===Mo)&&boostable(l));
-  const on=lks.filter(l=>l.on);openPanel(`🚚 ${Mo.lname||''}：運輸人力`,`<div class="note">這台機器的搬運工作。每個工序固定 1 位人力，可以再加派 0～2 組機器人。<br>💡 機器人只抽「加派後多賺的營收」的一部分，貨太少時可以減少，省下費用。</div>${lkRows(S,on)}${lks.length>on.length?'<div class="note">還有工序沒自動化，自動化之後才會出現在這裡。</div>':''}`,()=>lkBind(S,()=>machPopup(Mo)))}
+function machPopup(Mo){const S=GW.shops.find(S=>S.links.some(l=>l.to===Mo||l.from===Mo));if(!S)return;const lks=S.links.filter(l=>l.to===Mo||l.from===Mo);
+  const on=lks;openPanel(`🚚 ${Mo.lname||''}：運輸人力`,`<div class="note">這台機器的搬運工作。每個工序固定 1 位人力，可以再加派 0～2 組機器人。<br>💡 機器人只抽「加派後多賺的營收」的一部分，貨太少時可以減少，省下費用。</div>${lkRows(S,on)}`,()=>lkBind(S,()=>machPopup(Mo)))}
 var MLAB=MLAB||[];
 document.addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('[data-mlab]');if(t&&mode==='game'){const Mo=MLAB[+t.dataset.mlab];if(Mo){SFX.click();machPopup(Mo)}}});
 
@@ -3265,6 +3276,7 @@ function buildFactory(scene){const d=FACTORY;const c=V(d.c[0],0,d.c[1]);const g=
   // 小擺設：棧板與箱子
   for(let k=0;k<2;k++){B(1.0,.12,1.0,0xc98a4a,-4.6,.06,3.6-k*1.3,g);B(.7,.6,.7,0xe8c98a,-4.6,.42,3.6-k*1.3,g)}const cone=CONE(.18,.45,0xff7a1a,-5.4,.23,-3.6,g,10);
   FAC={g,door,lamps,open:0,req:0,D:lp(-1.2,0),F:lp(-5.2,0),P:lp(-5.4,-2.6),th,lp};
+  FAC.L=label('<div class="nmchip facbtn" data-fac="1" style="border-color:#2f6fd1">🏭 自動化工廠　<span class="mlh">🛵 交通工具</span></div>',lp(-2.6,0).setY(5.3),null);
   return FAC}
 function facUpdate(dt){if(!FAC)return;const want=FAC.req>0?1:0;FAC.req=0;const sp=.45;const o0=FAC.open;FAC.open+=Math.sign(want-FAC.open)*Math.min(Math.abs(want-FAC.open),dt*sp);
   FAC.door.scale.y=Math.max(.06,1-FAC.open*.95);const moving=Math.abs(FAC.open-o0)>1e-4;FAC.lamps.forEach((l,i)=>l.material.color.setHex(moving&&((GW.time*4+i)|0)%2?0xffb020:0x5a3a1a));
@@ -4136,6 +4148,77 @@ function foodIntro(force){if(!force&&G.seen&&G.seen.foodIntro1)return;G.seen=G.s
    <b style="color:#c0392b">⚠️ 錢不夠付帳單或薪水時：所有員工會罷工、店家全部停擺！</b><br>這時只能 <b>自己動手</b> 搬貨、做東西、收錢，把錢賺回來；錢夠付了，大家才會回來上班。<br><br>
    <b>✅ 建議這樣玩：</b><br>．開新店、加派運輸之前，先看右上角的 <b>🛟 保底</b> 金額，手上的錢最好比它多一些。<br>．每做一個大動作，就先等錢存夠再進行下一步，不要一次把錢花光。<br>．看到「罷工」提示時別緊張，自己動手賺一點錢就會恢復。</div>
    <button class="boostOpt" id="fiOk" style="margin-top:10px"><b>👌 我知道了，開始經營！</b></button>`,()=>{$('#fiOk').onclick=()=>{SFX.click();closePanel()}})}
-window.__T2={start:()=>startGame({noSlot:1}),get GW(){return GW},boostPanel,machPopup,get MLAB(){return MLAB},linkBoostSet,enableLink,foodIntro};
+window.__T2={openShop,start:()=>startGame({noSlot:1}),get GW(){return GW},boostPanel,machPopup,get MLAB(){return MLAB},linkBoostSet,enableLink,foodIntro};
+/* ======================= 🛵 第 2 系列：自動化工廠賣的交通工具 ======================= */
+// sp：速度倍數（走路＝1）；lift：坐上去時人物抬高多少；pose：站／坐
+const FVEH=[
+ {id:'scooter',em:'🛴',n:'滑板車',p:800,sp:1.25,lift:.13,pose:'stand',d:'輕巧好上手，用腳踩著滑，比走路快一點。'},
+ {id:'bike',em:'🚲',n:'淑女腳踏車',p:2500,sp:1.45,lift:.42,pose:'pedal',d:'前面有可愛的菜籃，踩踏板就能輕鬆跑。'},
+ {id:'moto',em:'🛵',n:'電動機車',p:8000,sp:1.7,lift:.38,pose:'sit',d:'安靜又環保的電動速克達，城市移動的好幫手。'},
+ {id:'snow',em:'🏂',n:'雪地摩托車',p:20000,sp:1.95,lift:.5,pose:'sit',d:'前面是雪橇、後面是履帶，在雪地上衝最快！'},
+ {id:'cart',em:'🚐',n:'迷你電動餐車',p:50000,sp:2.2,lift:.45,pose:'sit',d:'開放式小餐車，後面有遮陽棚和餐箱，老闆的最高座駕。'}];
+const FVEH_BY=id=>FVEH.find(v=>v.id===id);
+function fvSt(){const st=GW&&GW.st;if(!st)return {own:[],cur:''};st.fveh=st.fveh||{own:[],cur:''};return st.fveh}
+function fvMul(p){return p&&p.vehId&&FVEH_BY(p.vehId)?FVEH_BY(p.vehId).sp:1}
+
+/* ---- 模型（朝 +z 前進） ---- */
+function fvWheel(r,w,col,par,x,y,z){const g=new THREE.Group();g.position.set(x,y,z);par.add(g);const t=mesh(new THREE.TorusGeometry(r*.8,r*.22,10,22),M(0x22252b));t.rotation.y=Math.PI/2;g.add(t);
+  const hub=Cy(r*.45,r*.45,w,col,0,0,0,g,14);hub.rotation.z=Math.PI/2;const cap=Cy(r*.18,r*.18,w+.02,0xd8dde3,0,0,0,g,10);cap.rotation.z=Math.PI/2;
+  for(let i=0;i<3;i++){const s=B(.02,r*1.2,.02,0xb8c0c8,0,0,0,g);s.rotation.x=i*Math.PI/3}return g}
+function fvModel(id){const g=new THREE.Group();const W=[];const tube=(a,b,r,c)=>{const d=b.clone().sub(a);const m=Cy(r,r,d.length(),c,0,0,0,g,8);m.position.copy(a).add(b).multiplyScalar(.5);m.quaternion.setFromUnitVectors(V(0,1,0),d.normalize());return m};
+  if(id==='scooter'){const C=0x37c7a8;B(.26,.05,.86,C,0,.12,0,g);B(.2,.012,.6,0x2b2f3a,0,.15,-.02,g);W.push(fvWheel(.1,.06,0xffffff,g,0,.1,.42),fvWheel(.1,.06,0xffffff,g,0,.1,-.42));
+    tube(V(0,.14,.4),V(0,1.02,.5),.03,0xc8ccd2);tube(V(-.25,1.02,.5),V(.25,1.02,.5),.025,0x2b2f3a);for(const s of [-1,1])Cy(.035,.035,.12,0x1d1d1d,.27*s,1.02,.5,g,8).rotation.z=Math.PI/2;
+    B(.12,.08,.18,C,0,.16,-.47,g);Sp(.035,0xff4a4a,0,.17,-.55,g)}
+  else if(id==='bike'){const C=0xff8fb1;W.push(fvWheel(.34,.05,0xfff3f7,g,0,.34,.55),fvWheel(.34,.05,0xfff3f7,g,0,.34,-.5));
+    tube(V(0,.34,-.5),V(0,.42,0),.03,C);tube(V(0,.42,0),V(0,.34,.55),.03,C);tube(V(0,.42,0),V(0,.82,-.18),.03,C);tube(V(0,.82,-.18),V(0,.34,-.5),.025,C);tube(V(0,.34,.55),V(0,.95,.42),.03,C);
+    B(.22,.07,.3,0x6a3a2a,0,.87,-.2,g);tube(V(-.28,.98,.38),V(.28,.98,.38),.022,0xc8ccd2);for(const s of [-1,1])Cy(.035,.035,.1,0xffffff,.3*s,.98,.38,g,8).rotation.z=Math.PI/2;
+    const bk=new THREE.Group();bk.position.set(0,.88,.66);g.add(bk);B(.36,.24,.26,0xc89a5a,0,0,0,bk);B(.37,.03,.27,0xa8784a,0,.12,0,bk);for(let i=0;i<3;i++)B(.38,.02,.28,0xa8784a,0,-.08+i*.08,0,bk);
+    Sp(.07,0xff4a4a,-.08,.15,0,bk);Sp(.06,0xffd23a,.07,.14,.03,bk);Cy(.06,.06,.1,0xc8ccd2,0,.42,0,g,10).rotation.z=Math.PI/2;
+    const fender=new THREE.Mesh(new THREE.TorusGeometry(.36,.025,6,16,Math.PI*.8),M(C));fender.rotation.y=Math.PI/2;fender.rotation.z=.3;fender.position.set(0,.34,-.5);g.add(fender);Sp(.05,0xfff7a0,0,.9,.82,g)}
+  else if(id==='moto'){const C=0x5ab8f5;W.push(fvWheel(.25,.12,0x3a3f47,g,0,.25,.55),fvWheel(.25,.12,0x3a3f47,g,0,.25,-.55));
+    const bd=Sp(.36,C,0,.5,-.2,g);bd.scale.set(.75,.62,1.25);B(.38,.12,.5,0x2b2f3a,0,.72,-.22,g);B(.34,.08,.75,C,0,.3,.12,g);
+    const sh=B(.42,.62,.12,C,0,.62,.42,g);sh.rotation.x=-.25;Sp(.11,0xfff7c0,0,.86,.52,g);B(.46,.06,.08,0x2b2f3a,0,1.0,.38,g);for(const s of [-1,1]){Sp(.05,0xd8dde3,.27*s,1.0,.38,g)}
+    B(.4,.3,.36,0xffffff,0,.88,-.62,g);B(.2,.06,.04,0xff4a4a,0,.62,-.8,g);tube(V(0,.25,.55),V(0,.95,.4),.035,0xc8ccd2)}
+  else if(id==='snow'){const C=0xff6b3a;for(const s of [-1,1]){const sk=B(.14,.04,1.0,0x2b2f3a,.42*s,.05,.55,g);const tip=B(.14,.04,.25,0x2b2f3a,.42*s,.12,1.08,g);tip.rotation.x=-.6;tube(V(.42*s,.07,.55),V(.2*s,.45,.45),.03,0x5a6570)}
+    const tr=B(.5,.3,1.0,0x1d2027,0,.2,-.45,g);for(let i=0;i<8;i++)B(.52,.04,.05,0x3a3f47,0,.36,-.9+i*.13,g);W.push(fvWheel(.15,.48,0x5a6570,g,0,.2,-.05),fvWheel(.15,.48,0x5a6570,g,0,.2,-.85));
+    const hull=Sp(.45,C,0,.5,.25,g);hull.scale.set(1,.55,1.3);B(.52,.25,.9,C,0,.5,-.4,g);B(.42,.12,.75,0x2b2f3a,0,.68,-.35,g);
+    const ws=B(.5,.3,.03,GLASS(0xbfe8ff,.55),0,.92,.42,g);ws.rotation.x=-.5;B(.6,.05,.06,0x2b2f3a,0,.9,.25,g);Sp(.08,0xfff7c0,.15,.58,.78,g);Sp(.08,0xfff7c0,-.15,.58,.78,g);B(.6,.04,.04,0xffffff,0,.62,.6,g)}
+  else if(id==='cart'){const C=0xffd23a;W.push(fvWheel(.22,.16,0xffffff,g,.55,.22,.62),fvWheel(.22,.16,0xffffff,g,-.55,.22,.62),fvWheel(.22,.16,0xffffff,g,.55,.22,-.7),fvWheel(.22,.16,0xffffff,g,-.55,.22,-.7));
+    B(1.15,.22,2.0,C,0,.42,0,g);B(1.18,.08,2.04,0xffffff,0,.32,0,g);const hood=B(1.1,.3,.45,C,0,.62,.8,g);Sp(.09,0xfff7c0,.38,.62,1.03,g);Sp(.09,0xfff7c0,-.38,.62,1.03,g);
+    B(1.0,.12,.5,0x8a5a3a,0,.6,.05,g);B(1.0,.4,.1,0x8a5a3a,0,.82,-.2,g);const ws=B(1.0,.45,.03,GLASS(0xbfe8ff,.5),0,1.0,.55,g);ws.rotation.x=-.2;
+    tube(V(.48,.5,.55),V(.48,1.65,.5),.03,0xffffff);tube(V(-.48,.5,.55),V(-.48,1.65,.5),.03,0xffffff);B(1.15,.06,1.0,0xffffff,0,1.67,.12,g);
+    const box=B(1.05,.75,.85,0xfff3e0,0,.9,-.55,g);for(let i=0;i<5;i++)B(.21,.06,.95,i%2?0xff5a5a:0xffffff,-.42+i*.21,1.32,-.55,g);
+    const tex=(()=>{const c=document.createElement('canvas');c.width=128;c.height=64;const x=c.getContext('2d');x.fillStyle='#fff3e0';x.fillRect(0,0,128,64);x.font='44px sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText('🍔🍦',64,34);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t})();
+    for(const s of [-1,1]){const pl=new THREE.Mesh(new THREE.PlaneGeometry(.75,.38),new THREE.MeshLambertMaterial({map:tex}));pl.position.set(.53*s,.95,-.55);pl.rotation.y=s*Math.PI/2;g.add(pl)}
+    tube(V(0,.62,.62),V(0,.95,.45),.03,0x2b2f3a);const wh=new THREE.Mesh(new THREE.TorusGeometry(.16,.03,8,18),M(0x2b2f3a));wh.position.set(0,.98,.42);wh.rotation.x=-1.1;g.add(wh)}
+  g.userData.wheels=W;g.traverse(o=>{if(o.isMesh){o.castShadow=true}});return g}
+
+/* ---- 上車／下車、移動姿勢 ---- */
+function fvMount(p,id){if(!p||!p.o)return;const u=p.o.userData;if(p.vehM){p.o.remove(p.vehM);p.vehM=null}p.vehId=id||'';u.legs.forEach(l=>{l.visible=true;l.rotation.set(0,0,0);l.position.y=.32});u.body.position.z=0;
+  if(!id)return;const m=fvModel(id);p.o.add(m);p.vehM=m;if(id==='cart')u.body.position.z=.05}
+function fvPose(p,speed,dt){if(!p.vehM)return;const v=FVEH_BY(p.vehId);if(!v)return;const u=p.o.userData;u.body.position.y=v.lift+(speed>.3?Math.sin(GW.time*18)*.012:0);u.body.rotation.z=0;
+  p.vehM.userData.wheels.forEach(w=>w.rotation.x+=speed*dt/.25);
+  if(v.pose==='stand'){u.legs.forEach(l=>{l.position.y=.32+v.lift;l.rotation.x=0})}
+  else if(v.pose==='pedal'){p.pt=(p.pt||0)+speed*dt*2;u.legs.forEach((l,i)=>{l.position.y=.32+v.lift;l.rotation.x=-1.0+Math.sin(p.pt+i*Math.PI)*.45})}
+  else u.legs.forEach(l=>{l.position.y=.32+v.lift;l.rotation.x=-1.35});
+  if(speed>.3&&v.id==='snow'&&Math.random()<dt*20)puff(p.pos.clone().add(V(-Math.sin(p.dir)*.9,.15,-Math.cos(p.dir)*.9)),2,.12)}
+window.__FV={fvShop,fvMount,FVEH,get FAC(){return FAC}};
+function fvSync(){if(!GW)return;const s=fvSt();const p=GW.players[0];if(p&&(p.vehId||'')!==(s.cur||''))fvMount(p,s.cur)}
+function fvLegsReset(p){if(!p||p.vehM)return;p.o.userData.legs.forEach(l=>l.position.y=.32)}
+
+/* ---- 自動化工廠的交通工具店 ---- */
+function fvShop(){if(!GW)return;const s=fvSt();const money=Math.floor(GW.st.money);const maxSp=FVEH[FVEH.length-1].sp;
+  const card=(v)=>{const own=v.id===''||s.own.includes(v.id),cur=(s.cur||'')===v.id;const pct=Math.round(v.sp/maxSp*100);
+    return `<div class="fvCard ${cur?'fvCur':''}"><div class="fvEm">${v.em}</div><div class="fvM"><b>${v.n}</b>${cur?' <span class="fvTag">使用中</span>':''}<small>${v.d}</small>
+      <div class="fvBar"><i style="width:${pct}%"></i></div><small class="fvSp">🏃 速度 ×${v.sp}（走路的 ${Math.round(v.sp*100)}%）</small></div>
+      <div class="fvB">${cur?(v.id?`<button class="lkB fvBtn" data-fvoff="1">下車</button>`:''):own?`<button class="lkB fvBtn" data-fvuse="${v.id}">${v.id?'騎上去':'改走路'}</button>`:`<button class="lkB fvBtn buy" data-fvbuy="${v.id}" ${money<v.p?'disabled':''}>💵${v.p.toLocaleString()}</button>`}</div></div>`};
+  openPanel('🏭 自動化工廠：交通工具',`<div class="note">在這裡買交通工具，騎上去走得更快，搬貨、收錢都更有效率！<br>💡 買過的交通工具會一直留著，可以隨時換。<b>買之前記得留足夠的錢付帳單和薪水</b>（右上角 🛟 保底）。</div>
+    ${card({id:'',em:'🚶',n:'走路',sp:1,d:'不用花錢，最基本的移動方式。'})}${FVEH.map(card).join('')}`,()=>{
+    pb.querySelectorAll('[data-fvbuy]').forEach(b=>b.onclick=()=>{const v=FVEH_BY(b.dataset.fvbuy);if(!v)return;if(GW.st.money<v.p){SFX.err&&SFX.err();toast('💵 錢不夠喔');return}
+      const fl=floorAmt();if(GW.st.money-v.p<fl&&!b.dataset.ok){b.dataset.ok=1;b.textContent='⚠️ 低於保底，再按一次';toast(`⚠️ 買了之後會低於保底 💵${fl}，可能付不出帳單和薪水`,3500);return}
+      GW.st.money-=v.p;if(GW.net==='guest')netMoney(-v.p);s.own.push(v.id);s.cur=v.id;fvSync();SFX.buy&&SFX.buy();try{confettiDom(30)}catch(e){}toast(`${v.em} 買了「${v.n}」！速度變成走路的 ${Math.round(v.sp*100)}%`,3000);save(true);fvShop()});
+    pb.querySelectorAll('[data-fvuse]').forEach(b=>b.onclick=()=>{s.cur=b.dataset.fvuse;fvSync();SFX.click();save(true);fvShop()});
+    pb.querySelectorAll('[data-fvoff]').forEach(b=>b.onclick=()=>{s.cur='';fvSync();SFX.click();save(true);fvShop()})})}
+document.addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('[data-fac]');if(t&&mode==='game'){SFX.click();fvShop()}});
 </script>
 </body></html>
