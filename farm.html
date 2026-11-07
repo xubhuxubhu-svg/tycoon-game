@@ -564,6 +564,7 @@ function makePen(type,pos,animate){const T=PEN_T[type];const p={type,...pos,n:T.
   if(type==='pig'){const m=mesh(new THREE.CylinderGeometry(1.6,1.6,.05,20),M(0x7a5a3a),false);m.position.set(p.x-1,.04,p.z-1.5);grp.add(m)}
   if(type==='apiary'){for(let i=0;i<6;i++){const f=mesh(G.sphL,M([0xff8ad8,0xffe25a,0xb08aff][i%3]),false);f.scale.setScalar(.18);f.position.set(p.x+rand(-3,3),.15,p.z+rand(-2,2));grp.add(f)}}
   const fc=fence(p.x,p.z,p.w,p.d);p.fence=fc;
+  if(type==='loft')loftCage(p,grp);
   // 動物小屋（天災時動物會躲進去）
   const sh=new THREE.Group();const sx=p.x-p.w/2+1.7,sz=p.z-p.d/2+1.4;sh.position.set(sx,0,sz);scene.add(sh);
   if(type==='apiary'){for(let i=0;i<3;i++){const hv=new THREE.Group();hv.position.set(i*1.1,0,0);sh.add(hv);B(.8,.3,.6,0xffffff,0,.3,0,hv);B(.8,.3,.6,0xffd040,0,.62,0,hv);B(.8,.3,.6,0xffffff,0,.94,0,hv);B(.95,.08,.75,0x8a5a2a,0,1.13,0,hv)}}
@@ -689,6 +690,20 @@ function makeLotVisual(L){const ls=lotState(L.id);const v=LOTV[L.id]={grp:new TH
       Object.defineProperty(o,'m',{value:m,enumerable:false,writable:true,configurable:true});v.objs[i]=m})}
   v.L=label('',V(L.x,1.6,L.z-d/2+.4),40)}
 LOTS.forEach(L=>{const ls=lotState(L.id);if(L.kind==='field'&&ls.done){makeField({x:L.x,z:L.z,lot:L.id,idx:6+FIELD_LOTS().indexOf(L)})}else if(L.kind==='pen'&&ls.done&&ls.pen){makePen(ls.pen,{x:L.x,z:L.z,w:9,d:7,lot:L.id})}else makeLotVisual(L)});
+
+/* ---- 鴿舍：加高的方格鐵網把整個鴿舍罩起來，鴿子飛不出去 ---- */
+var CAGE_TEX=null;
+function loftCage(p,grp){if(!CAGE_TEX)CAGE_TEX=canvasTex(128,128,c=>{c.clearRect(0,0,128,128);c.strokeStyle='#9aa2aa';c.lineWidth=5;for(let i=2;i<=128;i+=42){c.beginPath();c.moveTo(i,0);c.lineTo(i,128);c.stroke();c.beginPath();c.moveTo(0,i);c.lineTo(128,i);c.stroke()}});
+  const H=3.4,ins=.35,w=p.w-ins*2,d=p.d-ins*2,x0=p.x-w/2,x1=p.x+w/2,z0=p.z-d/2,z1=p.z+d/2,DW=2.4,DH=2.3;const cg=new THREE.Group();
+  const net=(pw,ph,x,y,z,ry,rx)=>{const t=CAGE_TEX.clone();t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(pw/1.2,ph/1.2);t.needsUpdate=true;const m=new THREE.Mesh(new THREE.PlaneGeometry(pw,ph),new THREE.MeshLambertMaterial({map:t,transparent:true,alphaTest:.25,side:THREE.DoubleSide}));m.position.set(x,y,z);m.rotation.set(rx||0,ry||0,0);cg.add(m)};
+  net(w,H,p.x,H/2,z0,0);net(d,H,x0,H/2,p.z,Math.PI/2);net(d,H,x1,H/2,p.z,Math.PI/2);net(w,d,p.x,H,p.z,0,-Math.PI/2);
+  // 前面留一個門口（人、員工可以走進去）
+  const sw=(w-DW)/2;net(sw,H,x0+sw/2,H/2,z1,0);net(sw,H,x1-sw/2,H/2,z1,0);net(DW,H-DH,p.x,DH+(H-DH)/2,z1,0);
+  const pole=(x,z,h)=>{const m=mesh(G.cyl,M(0x4a5a4a));m.scale.set(.06,h,.06);m.position.set(x,h/2,z);cg.add(m)};
+  for(const x of [x0,p.x-DW/2,p.x+DW/2,x1])pole(x,z1,H);for(const x of [x0,p.x,x1])pole(x,z0,H);pole(x0,p.z,H);pole(x1,p.z,H);
+  const bar=(sx,sz,x,z)=>{const m=mesh(G.box,M(0x4a5a4a));m.scale.set(sx,.08,sz);m.position.set(x,H,z);cg.add(m)};bar(w,.08,p.x,z0);bar(w,.08,p.x,z1);bar(.08,d,x0,p.z);bar(.08,d,x1,p.z);
+  {const m=mesh(G.box,M(0x4a5a4a));m.scale.set(DW,.08,.08);m.position.set(p.x,DH,z1);cg.add(m)}
+  grp.add(cg);regOcc(cg);p.cage=cg}
 
 /* ======================= 作物模型（每種都有自己的樣子） ======================= */
 const GR=0x58b947,DG=0x3f9a35,LG=0x8fd86a,WITH=0xb08a4a,ROT=0x6a5a40;

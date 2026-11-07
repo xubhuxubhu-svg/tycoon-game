@@ -201,6 +201,16 @@ body.ing #toast{top:138px}
 .gbtns{display:flex;gap:7px}
 .gbtn{width:44px;height:44px;border-radius:14px;border:3px solid #9ad7f2;background:linear-gradient(#2c66b0,#163a6b);color:#fff;font-size:20px;box-shadow:0 3px 0 #0d2747;position:relative}
 .gbtn.off{opacity:.45}
+#ghud .gbtn{width:auto;min-width:44px;padding:0 10px 0 8px;display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+#ghud .gbtn[data-lb]::after{content:attr(data-lb);font-size:14px;font-weight:700;letter-spacing:.5px}
+@media (max-width:560px){#ghud .gbtns .gbtn{width:38px!important;height:44px!important;padding:0!important;flex-direction:column;justify-content:center;gap:0;font-size:15px!important;line-height:1.1}#ghud .gbtns .gbtn[data-lb]::after{font-size:9px;letter-spacing:0}}
+.nmchip[data-mlab]{pointer-events:auto;cursor:pointer}.nmchip .mlh{display:inline-block;margin-left:4px;background:#2f7bd6;color:#fff;border-radius:8px;padding:0 5px;font-size:11px}
+.lkTitle{margin:14px 0 6px;font-weight:800;color:#2a4a7a}
+.lkRow{display:flex;align-items:center;gap:8px;background:#f2f7ff;border:2px solid #cfe0f7;border-radius:12px;padding:8px 10px;margin:6px 0}
+.lkN{flex:1;font-weight:700;color:#24456e;font-size:14px}.lkN small{display:block;font-weight:500;color:#6a7f9a;font-size:12px}
+.lkC{min-width:84px;font-size:13px;color:#24456e;text-align:center;line-height:1.35}.lkC small{display:block;color:#2e9d4a;font-weight:700}
+.lkB{width:40px;height:40px;border-radius:12px;border:none;font-size:22px;font-weight:900;color:#fff;background:linear-gradient(#5aa8f5,#2f7bd6);box-shadow:0 3px 0 #1f5ea8;font-family:inherit}
+.lkB[data-lkm]{background:linear-gradient(#f59a8a,#d6553f);box-shadow:0 3px 0 #a83a28}.lkB:disabled{opacity:.35}
 #gmoney{font-size:24px}
 #goal{position:fixed;top:64px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:6px;background:#fff;border:3px solid #ffd36b;color:#e0692f;padding:5px 14px;border-radius:18px;font-size:16px;white-space:nowrap;box-shadow:0 4px 0 #f0c040;pointer-events:none;max-width:94vw;overflow:hidden;text-overflow:ellipsis}
 #zinfo{position:fixed;top:106px;left:50%;transform:translateX(-50%);font-size:13px;color:#fff;background:rgba(22,58,107,.82);padding:3px 12px;border-radius:12px;pointer-events:none;white-space:nowrap}
@@ -300,7 +310,7 @@ body.ing #toast{top:138px}
     <button class="ib" data-p="credits"><div class="sq">📜</div><span>聲明</span></button>
   </div>
 </div>
-<div id="credit">遊戲製作：Eric Hu　版本 1.9.5</div>
+<div id="credit">遊戲製作：Eric Hu　版本 1.9.6</div>
 </div>
 <div id="game" class="hide">
   <div id="lbls"></div>
@@ -351,7 +361,7 @@ const SERIES=[
  {id:'cyber',em:'🤖',name:'未來與賽博朋克',color:'#7c4dff',count:30},
 ];
 // 飲食系列 44 種玩法（地圖上出現的順序）
-const FOOD_LIST=[['🥩','冰原肉舖大亨'],['🍔','美式漢堡得來速'],['🌭','熱狗大亨攤'],['🍕','義式披薩窯烤坊'],['🍦','夢幻冰淇淋車'],['🧋','手搖珍奶霓虹吧'],
+const FOOD_LIST=[['🥩','冰原肉舖'],['🍔','美式漢堡得來速'],['🌭','熱狗大亨攤'],['🍕','義式披薩窯烤坊'],['🍦','夢幻冰淇淋車'],['🧋','手搖珍奶霓虹吧'],
  ['🍗','街頭炸雞薯條攤'],['🍜','日式拉麵屋'],['🍰','精緻甜點屋'],['🍣','迴轉壽司專賣'],['🌮','墨西哥塔可餅'],['🥟','中式點心蒸籠'],['🍺','精釀啤酒廠'],['🍢','碳烤燒烤樂園'],['🍿','爆米花電影院'],['🥖','法式長棍麵包坊'],['🧃','鮮榨果汁吧'],['🥗','素食沙拉輕食'],['🍳','傳統早餐店'],['🍫','濃情巧克力工廠'],['🦀','海鮮燒烤攤'],['🍩','甜甜圈樂園'],['☕','經典咖啡館'],['🍻','韓式炸雞啤酒屋'],['🫖','英式下午茶'],['🥩','美式牛排館'],['🍬','馬卡龍專賣'],['🥧','水果派工坊'],['🥙','土耳其烤肉夾饃'],['🍧','冰沙雪泥攤'],['🥤','港式茶餐廳'],['🌯','墨西哥捲餅狂熱'],['🥞','美式鬆餅疊加秀'],['🥠','意式小餃子工坊'],['🫓','法式可麗餅小攤'],['🍛','印度咖哩饢餅屋'],['🥘','西班牙海鮮大鍋飯'],['🍲','泰式酸辣蝦湯屋'],['🍖','巴西烤肉狂歡節'],['🍜','越南河粉速食店'],['🫕','瘋狂起司火鍋城'],['💊','太空膠囊餐廳'],['🦗','昆蟲高蛋白點心'],['🌋','熔岩巧克力火山']];
 const CARDS=[
  {id:'speed',em:'⚡',name:'加速卡',d:'機器加工、輸送帶速度 ×2，10 分鐘',p:30,dur:600},
@@ -574,7 +584,7 @@ const NEED_HUB={flour:['wheat','mill']};
    座標都是相對於店中心；mach.in / mach.out 是站位圈 */
 const R0=26;
 const SHOPS=[
- {id:'meat',name:'冰原肉舖大亨',em:'🥩',c:[0,30],floor:{shape:'rect',w:14,d:11,color:'#dbb7b3',pat:'plank'},fence:'wood',awn:0xd93636,
+ {id:'meat',name:'冰原肉舖',em:'🥩',c:[0,30],floor:{shape:'rect',w:14,d:11,color:'#dbb7b3',pat:'plank'},fence:'wood',awn:0xd93636,
   hub:['meat'],mach:[],
   counter:{look:'bench',p:[2,-1.5],drop:[2,-3.9],item:'meat',price:4,max:3,
     queue:[[1,.8],[2.2,.8],[3.4,.8],[3.4,2],[2.2,2],[1,2]],spawn:[7,6],exit:[[5.2,.8],[8,6]]},
@@ -1447,7 +1457,7 @@ function makeMachObj(md,built,pos,inR,outR,key){const Mo={type:'mach',name:md.na
   Mo.out=new Pile(16,i=>{const k=i%4,l=(i/4)|0;return V(outR.x-.3+(k%2)*.6,.12+l*ITEM_H,outR.z-.3+((k/2)|0)*.6)});
   Mo.Lin=label(`<div class="rl drop"><span class="i">⬇</span>放入 ${md.inT.map(t=>ITEMS[t].em+ITEMS[t].n).join('＋')}</div>`,inR.clone().setY(2.4),Mo,key+':in');
   Mo.Lout=label(`<div class="rl pick"><span class="i">${ITEMS[md.outT].em}</span>拿${ITEMS[md.outT].n}<small> 做好放這裡</small></div>`,outR.clone().setY(2.4),Mo,key+':out');
-  nameLabel(inR,`${md.name}：放入 ${md.inT.map(t=>ITEMS[t].em+ITEMS[t].n).join('＋')}`,Mo,Mo.Lin,'#ffa53a');nameLabel(outR,`${md.name}：拿 ${ITEMS[md.outT].em}${ITEMS[md.outT].n}`,Mo,Mo.Lout);
+  {const Li=nameLabel(inR,`${md.name}：放入 ${md.inT.map(t=>ITEMS[t].em+ITEMS[t].n).join('＋')} <span class="mlh">🚚</span>`,Mo,Mo.Lin,'#ffa53a');Mo.lname=md.name;if(typeof MLAB==='undefined'||!MLAB)MLAB=[];const ch=Li.el.querySelector('.nmchip');if(ch){ch.dataset.mlab=MLAB.push(Mo)-1;Li.html=Li.el.innerHTML}}nameLabel(outR,`${md.name}：拿 ${ITEMS[md.outT].em}${ITEMS[md.outT].n}`,Mo,Mo.Lout);
   return Mo}
 
 /* ---- 建立一家店 ---- */
@@ -1472,7 +1482,7 @@ function buildShop(i){const d=SHOPS[i];const c=V(d.c[0],0,d.c[1]);const g=new TH
   S.cash=new CashSpot(S,lp(...d.cash));S.padSpot=lp(...d.pad);
   S.signL=label('',lp(...d.sign).setY(2.6),null);
   S.sign=()=>{const n=S.links.length,p=GW.st.shops[i].p;const prev=GW.shops[i-1];S.signL.show=S.built||!prev||prev.built;
-    const mt=S.built&&p<n?manualInfo(S):'';S.signL.el.innerHTML=S.built?`<div class="zsign"><div class="nm">${d.em} ${d.name}</div><div class="pg${p>=n?' auto':''}" ${p>=n?`data-boost="${i}"`:''}>${p>=n?((GW.st.shops[i].bo||0)>=2?'🏆 全自動最大化！':'🤖 全自動化！'+((GW.st.shops[i].bo||0)?' 🤖×2':'')+' ＋'):'⚙️ 自動化 '+p+'/'+n}</div>${mt}</div>`:`<div class="zsign lock"><div class="nm">🔒 ${d.em} ${d.name}</div><div class="pg">💵 ${d.build} 開店</div></div>`};
+    const mt=S.built&&p<n?manualInfo(S):'';S.signL.el.innerHTML=S.built?`<div class="zsign"><div class="nm">${d.em} ${d.name}</div><div class="pg${p>=n?' auto':''}" ${p>=n?`data-boost="${i}"`:''}>${p>=n?((GW.st.shops[i].bo||0)>=2?'🏆 全自動最大化！ 🚚 調整運輸':'🤖 全自動化！'+((GW.st.shops[i].bo||0)?' 🤖×2':'')+' ＋ 🚚 加派運輸'):'⚙️ 自動化 '+p+'/'+n}</div>${mt}</div>`:`<div class="zsign lock"><div class="nm">🔒 ${d.em} ${d.name}</div><div class="pg">💵 ${d.build} 開店</div></div>`};
   // 自動化項目
   const ref=r=>{if(r.startsWith('hub:')){const k=r.slice(4);if(k==='mill'||k==='flour')return GW.hub.mill;return GW.hub.src[k]}if(r==='counter')return S.counter;return S.mach[+r.slice(1)]};
   d.links.forEach(([f,t,kind],k)=>{const from=ref(f),to=ref(t);const item=from.type==='src'?from.item:(from.type==='counter'?from.item:from.outType);const toName=to.type==='counter'?'櫃台':to.name;
@@ -2790,7 +2800,7 @@ function useCard(c){if(c.dur){G.buffs[c.id]=Math.max(Date.now(),G.buffs[c.id]||0
   SFX.fanfare();confettiDom(50);toast(`${c.em} 「${c.name}」發動！`);mark();return true}
 
 /* ======================= 進入／離開地圖 ======================= */
-function startGame(opts={}){initAudio();mode='game';document.body.classList.add('ing');$('#home').classList.add('hide');$('#game').classList.remove('hide');$('#tapHint').style.display='none';
+function startGame(opts={}){initAudio();mode='game';setTimeout(()=>{if(mode==='game'&&!FARM)foodIntro()},900);document.body.classList.add('ing');$('#home').classList.add('hide');$('#game').classList.remove('hide');$('#tapHint').style.display='none';
   if(!GW)buildWorld();curScene=GW.scene;projector=projectGame;
   if(!GW.players.length){const p=makePlayer(0);p.pos.set(GW.st.px??0,0,GW.st.pz??14);GW.players.push(p);GW.camT[0].copy(p.pos)}
   GW.coop=!!opts.coop;GW.net=opts.net||null;
@@ -2876,7 +2886,8 @@ function billing(dt){billT-=dt;if(billT>0)return;billT=60;const r=billRates();co
   setTimeout(()=>el.animate([{opacity:1},{opacity:0,transform:'translateX(60%)'}],{duration:400}).onfinish=()=>el.remove(),8500)}
 
 /* ======================= 先自己做過，才能雇人 ======================= */
-const manualNeed=lk=>lk.role==='cashier'?1:2;
+// 只有第一關「冰原肉舖」要先自己做過；其他關卡直接可以自動化
+const manualNeed=lk=>(lk.shop&&lk.shop.def&&lk.shop.def.id!=='meat')?0:(lk.role==='cashier'?1:2);
 function manualOk(S,k){const zs=GW.st.shops[S.i];const lk=S.links[k];return ((zs.m||[])[k]||0)>=manualNeed(lk)}
 function manualDone(lk){const S=lk.shop,zs=GW.st.shops[S.i];if(lk.on||lk.k!==zs.p)return;if(GW.time-(lk.lastMan||-99)<2.5)return;lk.lastMan=GW.time;
   zs.m=zs.m||[];const need=manualNeed(lk);if((zs.m[lk.k]||0)>=need)return;zs.m[lk.k]=(zs.m[lk.k]||0)+1;
@@ -2974,7 +2985,9 @@ const BOOST=[{m:1,cost:0,fee:0,t:'標準人力'},{m:2,cost:0,fee:.25,t:'運輸�
 const boostable=lk=>['worker','courier','vehicle','staff'].includes(lk.role);
 function boostShare(S,b){const r=S.def.fp?S.def.fp.ring:0;return b?[.52,.6,.66][Math.min(2,r)]:0}
 function boostWageMul(lk){return 1;if(!boostable(lk)||!GW||!GW.st)return 1;const b=(GW.st.shops[lk.shop.i].bo)||0;return 1+BOOST[b].cost}
-function spawnBoost(S,anim){const b=GW.st.shops[S.i].bo||0;const add=[],rem=[];S.links.forEach(lk=>{if(!lk.on||!boostable(lk))return;lk.extraN=lk.extraN||0;
+// 每個工序可以各自設定加派幾組機器人（zs.lb[工序編號]）；沒有個別設定時跟著整間店
+function lbGet(S,lk){const zs=GW.st.shops[S.i];return zs.lb&&zs.lb[lk.k]!=null?zs.lb[lk.k]:(zs.bo||0)}
+function spawnBoost(S,anim){const add=[],rem=[];S.links.forEach(lk=>{if(!lk.on||!boostable(lk))return;lk.extraN=lk.extraN||0;const b=lbGet(S,lk);
   while(lk.extraN<b){lk.extraN++;const n0=GW.helpers.length;BOOSTING=true;try{enableLink(S,lk,!anim)}finally{BOOSTING=false}for(let k=n0;k<GW.helpers.length;k++){GW.helpers[k].extra=lk.extraN;GW.helpers[k].delay=anim?0:lk.extraN*1.5;add.push(GW.helpers[k])}}
   while(lk.extraN>b){const h=GW.helpers.find(x=>x.link===lk&&x.extra===lk.extraN&&!x.conv);if(h){if(anim)rem.push(h);else{GW.scene.remove(h.o);GW.helpers.splice(GW.helpers.indexOf(h),1)}}lk.extraN--}});
   if(anim){if(add.length){add.forEach(h=>{h.grow=1;h.o.scale.setScalar(1)});cvDeploy(S,add)}if(rem.length)cvWithdraw(S,rem)}}
@@ -2984,8 +2997,9 @@ function boostPanel(i){const S=GW.shops[i];if(!S||!isAuto(S))return;const zs=GW.
   openPanel(`🚚 ${S.def.em} ${S.def.name}：加派運輸`,`<div class="bsteps">${steps}</div>
    <div class="note">加倍的運輸改用<b>自主移動機器人</b>和<b>無人搬運車</b>，不再增加人力。<br>🏭 機器人會從「自動化工廠」的鐵捲門出發；路太遠時會由 AI 貨車載過去。<br>每次只能加 1 倍，最多 3 倍。<br>💡 租賃費依距離：第一圈近店 52%、第二圈 60%、外圈遠店 66%（扣完租金、原料和稅，多賺的部分還是你的）。</div>
    ${cur<2?`<button class="boostOpt" id="bUp"><b>⬆️ 升級到「${BOOST[nx].t}」</b><br><small>機器人租賃費：只抽「加派後<b>多賺的營收</b>」的 ${Math.round(boostShare(S,nx)*100)}%（不用付薪水）<br>沒多賺就不收錢 ➜ 加了一定比不加賺得多！</small></button>`:`<div class="note" style="text-align:center;font-size:16px">🏆 已經是「全自動最大化」！</div>`}
-   ${cur>0?`<button class="boostOpt down" id="bDown">⬇️ 撤回一組機器人（回到「${BOOST[cur-1].t}」）</button>`:''}`,
-    ()=>{const up=$('#bUp'),dn=$('#bDown');if(up)up.onclick=()=>{boostSet(i,nx);SFX.buy();confettiDom(40);toast(nx===2?'🏆 全自動最大化！運輸量 ×3':'🤖 無人搬運機器人上工！運輸量 ×2');save(true);boostPanel(i)};
+   ${cur>0?`<button class="boostOpt down" id="bDown">⬇️ 撤回一組機器人（回到「${BOOST[cur-1].t}」）</button>`:''}
+   <div class="lkTitle">🔧 每個工序的運輸（可以各別增加或減少）</div>${lkRows(S,S.links.filter(l=>l.on&&boostable(l)))}`,
+    ()=>{lkBind(S,()=>boostPanel(i));const up=$('#bUp'),dn=$('#bDown');if(up)up.onclick=()=>{boostSet(i,nx);SFX.buy();confettiDom(40);toast(nx===2?'🏆 全自動最大化！運輸量 ×3':'🤖 無人搬運機器人上工！運輸量 ×2');save(true);boostPanel(i)};
       if(dn)dn.onclick=()=>{boostSet(i,cur-1);SFX.click();save(true);boostPanel(i)}})}
 document.addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('[data-boost]');if(t&&mode==='game'){SFX.click();boostPanel(+t.dataset.boost)}});
 
@@ -3005,6 +3019,18 @@ function makeAMR(big,accent){const g=new THREE.Group();const body=new THREE.Grou
     const tag=sign3(body,'無人車',.7,.2,'#2f6fd1','#fff',.67,.45,0,Math.PI/2,40)}
   const an=new THREE.Group();an.position.set(0,big?.82:.68,big?-.2:0);body.add(an);g.userData={body,anchor:an,legs:[],arms:[],eyes:[],props};GW.scene.add(g);return g}
 
+
+/* ---- 個別工序的運輸人力／機器人（點加派運輸視窗，或點機台上的「放入…」標籤） ---- */
+function lkRows(S,lks){if(!lks.length)return '<div class="note">這個工序還沒自動化，自動化之後才可以加派機器人。</div>';
+  return lks.map(lk=>{const n=lbGet(S,lk);return `<div class="lkRow"><div class="lkN">${lk.name}<small>${lk.sub||''}</small></div><div class="lkC">👷 人力 1${n?`<br>🤖 機器 ${n}`:''}<small>運輸量 ×${1+n}</small></div><button class="lkB" data-lkm="${lk.k}" ${n<=0?'disabled':''}>－</button><button class="lkB" data-lkp="${lk.k}" ${n>=2?'disabled':''}>＋</button></div>`}).join('')}
+function lkBind(S,again){pb.querySelectorAll('[data-lkp],[data-lkm]').forEach(b=>b.onclick=()=>{const k=+(b.dataset.lkp??b.dataset.lkm);const lk=S.links.find(l=>l.k===k);if(!lk)return;const n=lbGet(S,lk)+(b.dataset.lkp!=null?1:-1);if(n<0||n>2)return;linkBoostSet(S.i,k,n);SFX.click();if(n>0&&b.dataset.lkp!=null)toast(`🤖 ${lk.name}：加派一組機器人（運輸量 ×${n+1}）`);save(true);again()})}
+function linkBoostSet(i,k,n,from){const S=GW.shops[i];if(!S)return;const zs=GW.st.shops[i];const lks=S.links.filter(l=>l.on&&boostable(l));zs.lb=zs.lb||{};lks.forEach(l=>{if(zs.lb[l.k]==null)zs.lb[l.k]=zs.bo||0});zs.lb[k]=n;
+  const nb=Math.max(0,...lks.map(l=>zs.lb[l.k]||0));if(!(zs.bo)&&nb>0){const h=S.revH||[];zs.base=h.length?Math.round(h.reduce((a,b)=>a+b,0)/h.length):0}zs.bo=nb;spawnBoost(S,true);S.sign();
+  if(GW.net==='guest'&&!from)netToHost({t:'cmd',c:'lboost',i,k,n});if(from)toast(`🤖 ${peerName(from)} 調整了 ${S.def.em} ${S.def.name} 的運輸`)}
+function machPopup(Mo){const S=GW.shops.find(S=>S.links.some(l=>l.to===Mo||l.from===Mo));if(!S)return;const lks=S.links.filter(l=>(l.to===Mo||l.from===Mo)&&boostable(l));
+  const on=lks.filter(l=>l.on);openPanel(`🚚 ${Mo.lname||''}：運輸人力`,`<div class="note">這台機器的搬運工作。每個工序固定 1 位人力，可以再加派 0～2 組機器人。<br>💡 機器人只抽「加派後多賺的營收」的一部分，貨太少時可以減少，省下費用。</div>${lkRows(S,on)}${lks.length>on.length?'<div class="note">還有工序沒自動化，自動化之後才會出現在這裡。</div>':''}`,()=>lkBind(S,()=>machPopup(Mo)))}
+var MLAB=MLAB||[];
+document.addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('[data-mlab]');if(t&&mode==='game'){const Mo=MLAB[+t.dataset.mlab];if(Mo){SFX.click();machPopup(Mo)}}});
 
 /* ======================= 獎金小遊戲：右側提醒 → 點了才放大到畫面中間 ======================= */
 (()=>{const st=document.createElement('style');st.textContent=`
@@ -3631,7 +3657,7 @@ function netStackFix(p,dt){if(!p.net)return;p.fixT=(p.fixT||0)-dt;if(p.fixT>0)re
 /* ---- 房主 → 大家：同步經營狀態 ---- */
 function netSync(){const st=GW.st;const fr=flowRates();
   netSend({t:'sync',m:Math.floor(st.money),k:GW.strike?1:0,c:GW.capped?1:0,debt:st.debt||0,fr:[fr.inc,fr.out],hub:st.hub,
-    sh:st.shops.map(z=>[z.b||0,z.p||0,z.bo||0,z.pp||0,z.bp||0,z.m||[],z.base||0]),ev:netEvList()})}
+    sh:st.shops.map(z=>[z.b||0,z.p||0,z.bo||0,z.pp||0,z.bp||0,z.m||[],z.base||0,z.lb||null]),ev:netEvList()})}
 function netApplySync(m){if(!GW||GW.net!=='guest')return;const st=GW.st;st.money=m.m;GW.strike=!!m.k;GW.capped=!!m.c;st.debt=m.debt;NET.fr=m.fr;let dirty=false;
   m.sh.forEach((a,i)=>{const S=GW.shops[i],zs=st.shops[i];if(!S||!zs)return;const [b,p,bo,pp,bp,mm,base]=a;
     if(b&&!S.built){openShop(S,true);updateTutorial();toast(`🎊 新店開幕：${S.def.em} ${S.def.name}`);dirty=true}
@@ -3639,6 +3665,7 @@ function netApplySync(m){if(!GW||GW.net!=='guest')return;const st=GW.st;st.money
     while(S.built&&(zs.p||0)<p&&zs.p<S.links.length){const lk=S.links[zs.p];zs.p++;enableLink(S,lk,true);dirty=true;if(zs.p>=S.links.length)setTimeout(()=>shopAutomated(S),900)}
     zs.pp=pp;zs.bp=bp;zs.m=mm;zs.base=base;
     if(S.built&&(zs.bo||0)!==bo){zs.bo=bo;spawnBoost(S,true);S.sign()}
+    if(S.built&&JSON.stringify(zs.lb||null)!==JSON.stringify(a[7]||null)){zs.lb=a[7]||undefined;spawnBoost(S,true);S.sign()}
     const ok1=S.built&&zs.p<S.links.length&&manualOk(S,zs.p);if(ok0!==ok1)dirty=true});
   Object.assign(st.hub,m.hub||{});
   GW.evs=(m.ev||[]).map(([id,rem])=>{const E=EVENTS.find(e=>e.id===id);return E&&E.mod?{id,em:E.em,t:E.t,mod:E.mod,until:GW.time+rem}:null}).filter(Boolean);
@@ -3658,11 +3685,12 @@ function netMoney(d){if(GW&&GW.net==='guest'&&d)netToHost({t:'cmd',c:'money',d:M
 function netCmd(m){if(!GW||GW.net!=='host')return;const st=GW.st;
   if(m.c==='money'){st.money=Math.max(0,Math.min(MONEY_CAP,st.money+m.d));flow(m.d,'fun');bump('#gCash')}
   else if(m.c==='boost'){boostSet(m.i,m.bo,m._f)}
+  else if(m.c==='lboost'){linkBoostSet(m.i,m.k,m.n,m._f)}
   else if(m.c==='padOk'){const o=GW.pads.find(o=>o.S.i===m.i&&o.key===m.key);if(o)o.okNet=true}
   else if(m.c==='disc'){const p=GW.players.find(x=>x.uid===m._f);if(p)discard(p,m.type||null)}
   NET.syncT=0}
 function boostSet(i,bo,from){const S=GW.shops[i];if(!S)return;const zs=GW.st.shops[i];const cur=zs.bo||0;if(cur===bo)return;
-  if(!cur&&bo>0){const h=S.revH||[];zs.base=h.length?Math.round(h.reduce((a,b)=>a+b,0)/h.length):0}zs.bo=bo;spawnBoost(S,true);S.sign();
+  if(!cur&&bo>0){const h=S.revH||[];zs.base=h.length?Math.round(h.reduce((a,b)=>a+b,0)/h.length):0}zs.bo=bo;zs.lb=undefined;spawnBoost(S,true);S.sign();
   if(GW.net==='guest'&&!from)netToHost({t:'cmd',c:'boost',i,bo});if(from)toast(`🤖 ${peerName(from)} 調整了 ${S.def.em} ${S.def.name} 的運輸`)}
 
 /* ---- 小遊戲：誰先按誰玩 ---- */
@@ -4097,5 +4125,17 @@ function lobbyPanel(){lbConnect();lbSend({t:'llist'});LB.open=true;
 // 首頁按鈕：單人經營、多人合作
 {const s=$('#bSolo');if(s)s.textContent='👤 單人經營';const d=$('#bDuo');if(d)d.style.display='none';const m=$('#bMulti');if(m){m.textContent='👥 多人合作';m.onclick=()=>{SFX.click();lobbyPanel()}}}
 window.__LB={LB,lobbyPanel,lobbyJoin,lobbyUid,get G(){return G}};
+
+/* ---- 第 2 系列：左上角按鈕加上文字 ---- */
+(function(){const LB={gHome:'首頁',gMenu:'進度',gCard:'卡片',gSfx:'聲音',gFun:'遊樂場',gPause:'暫停',gRec:'帳本',gZoom:'畫面',gHelp:'說明'};
+  const go=()=>document.querySelectorAll('#ghud .gbtn').forEach(b=>{if(LB[b.id])b.dataset.lb=LB[b.id];else if(!b.dataset.lb&&b.title)b.dataset.lb=b.title.slice(0,3)});go();setTimeout(go,1500)})();
+/* ---- 第 2 系列開始前的重點說明 ---- */
+function foodIntro(force){if(!force&&G.seen&&G.seen.foodIntro1)return;G.seen=G.seen||{};G.seen.foodIntro1=1;try{mark()}catch(e){}
+  openPanel('📢 開始經營前，請先看這個重點',`<div class="note" style="font-size:15px;line-height:1.75">
+   <b>💵 錢是店家運作的命脈</b><br>每隔一段時間要付 <b>🧾 帳單</b>（租金、水電瓦斯、營業稅），也要付 <b>👷 員工薪水</b>。<br><br>
+   <b style="color:#c0392b">⚠️ 錢不夠付帳單或薪水時：所有員工會罷工、店家全部停擺！</b><br>這時只能 <b>自己動手</b> 搬貨、做東西、收錢，把錢賺回來；錢夠付了，大家才會回來上班。<br><br>
+   <b>✅ 建議這樣玩：</b><br>．開新店、加派運輸之前，先看右上角的 <b>🛟 保底</b> 金額，手上的錢最好比它多一些。<br>．每做一個大動作，就先等錢存夠再進行下一步，不要一次把錢花光。<br>．看到「罷工」提示時別緊張，自己動手賺一點錢就會恢復。</div>
+   <button class="boostOpt" id="fiOk" style="margin-top:10px"><b>👌 我知道了，開始經營！</b></button>`,()=>{$('#fiOk').onclick=()=>{SFX.click();closePanel()}})}
+window.__T2={start:()=>startGame({noSlot:1}),get GW(){return GW},boostPanel,machPopup,get MLAB(){return MLAB},linkBoostSet,enableLink,foodIntro};
 </script>
 </body></html>
