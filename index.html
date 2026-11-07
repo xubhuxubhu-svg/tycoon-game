@@ -314,7 +314,7 @@ body.ing #toast{top:138px}
     <button class="ib" data-p="credits"><div class="sq">📜</div><span>聲明</span></button>
   </div>
 </div>
-<div id="credit">遊戲製作：Eric Hu　版本 1.9.8</div>
+<div id="credit">遊戲製作：Eric Hu　版本 1.9.9</div>
 </div>
 <div id="game" class="hide">
   <div id="lbls"></div>
@@ -2891,8 +2891,8 @@ function billing(dt){billT-=dt;if(billT>0)return;billT=60;const r=billRates();co
   setTimeout(()=>el.animate([{opacity:1},{opacity:0,transform:'translateX(60%)'}],{duration:400}).onfinish=()=>el.remove(),8500)}
 
 /* ======================= 先自己做過，才能雇人 ======================= */
-// 只有第一關「冰原肉舖」要先自己做過；其他關卡直接可以自動化
-const manualNeed=lk=>(lk.shop&&lk.shop.def&&lk.shop.def.id!=='meat')?0:(lk.role==='cashier'?1:2);
+// 每一關的每個工序（黃色圓圈）都要先自己做 2 次，才會出現那個工序的自動化選項；收銀只要自己撿 1 次錢
+const manualNeed=lk=>lk.role==='cashier'?1:2;
 function manualOk(S,k){const zs=GW.st.shops[S.i];const lk=S.links[k];return ((zs.m||[])[k]||0)>=manualNeed(lk)}
 function manualDone(lk){const S=lk.shop,zs=GW.st.shops[S.i];if(lk.on||lk.k!==zs.p)return;if(GW.time-(lk.lastMan||-99)<2.5)return;lk.lastMan=GW.time;
   zs.m=zs.m||[];const need=manualNeed(lk);if((zs.m[lk.k]||0)>=need)return;zs.m[lk.k]=(zs.m[lk.k]||0)+1;
@@ -4148,7 +4148,7 @@ function foodIntro(force){if(!force&&G.seen&&G.seen.foodIntro1)return;G.seen=G.s
    <b style="color:#c0392b">⚠️ 錢不夠付帳單或薪水時：所有員工會罷工、店家全部停擺！</b><br>這時只能 <b>自己動手</b> 搬貨、做東西、收錢，把錢賺回來；錢夠付了，大家才會回來上班。<br><br>
    <b>✅ 建議這樣玩：</b><br>．開新店、加派運輸之前，先看右上角的 <b>🛟 保底</b> 金額，手上的錢最好比它多一些。<br>．每做一個大動作，就先等錢存夠再進行下一步，不要一次把錢花光。<br>．看到「罷工」提示時別緊張，自己動手賺一點錢就會恢復。</div>
    <button class="boostOpt" id="fiOk" style="margin-top:10px"><b>👌 我知道了，開始經營！</b></button>`,()=>{$('#fiOk').onclick=()=>{SFX.click();closePanel()}})}
-window.__T2={openShop,start:()=>startGame({noSlot:1}),get GW(){return GW},boostPanel,machPopup,get MLAB(){return MLAB},linkBoostSet,enableLink,foodIntro};
+window.__T2={openShop,manualGive:(s,t)=>manualGive(s,t),manualOk:(S,k)=>manualOk(S,k),manualInfo:S=>manualInfo(S),start:()=>startGame({noSlot:1}),get GW(){return GW},boostPanel,machPopup,get MLAB(){return MLAB},linkBoostSet,enableLink,foodIntro};
 /* ======================= 🛵 第 2 系列：自動化工廠賣的交通工具 ======================= */
 // sp：速度倍數（走路＝1）；lift：坐上去時人物抬高多少；pose：站／坐
 const FVEH=[
