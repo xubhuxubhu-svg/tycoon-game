@@ -66,6 +66,27 @@ const server = http.createServer((req, res) => {
 const wss = new WebSocketServer({ server, maxPayload: 2 * 1024 * 1024 });
 function send(ws, obj) { if (ws && ws.readyState === 1) ws.send(typeof obj === 'string' ? obj : JSON.stringify(obj)); }
 
+/* ================= 製作大亨：多人合作大廳 ================= */
+const LOBBY = new Set();
+let lobbyT = null;
+function lobbyList() {
+  const teams = [];
+  for (const r of tRooms.values()) {
+    const on = [...r.mem.values()].filter(x => x.ws && x.ws.readyState === 1);
+    const host = [...r.mem.values()].find(x => x.slot === 0);
+    if (!host || !on.length) continue;
+    teams.push({ code: r.code, series: r.series || 'farm', cap: r.cap, n: r.mem.size, on: on.length, hostName: host.name, hostLu: host.lu || '', hostOn: !!(host.ws && host.ws.readyState === 1), mem: [...r.mem.values()].sort((a, b) => a.slot - b.slot).map(x => ({ name: x.name, on: !!(x.ws && x.ws.readyState === 1), lu: x.lu || '' })) });
+  }
+  const inTeam = new Map();
+  for (const t of teams) for (const x of t.mem) if (x.lu) inTeam.set(x.lu, t.code);
+  const seen = new Set(), players = [];
+  for (const w of LOBBY) { if (w.readyState !== 1 || !w.lobby || seen.has(w.lobby.lu)) continue; seen.add(w.lobby.lu); players.push({ lu: w.lobby.lu, name: w.lobby.name, where: w.lobby.where, team: inTeam.get(w.lobby.lu) || '' }); }
+  return { t: 'llist', players, teams };
+}
+function lobbyDirty() { if (lobbyT) return; lobbyT = setTimeout(() => { lobbyT = null; const s = JSON.stringify(lobbyList()); for (const w of LOBBY) if (w.readyState === 1) w.send(s); }, 600); }
+function lobbyTo(lu, obj) { let n = 0; if (!lu) return 0; const s = JSON.stringify(obj); for (const w of LOBBY) if (w.readyState === 1 && w.lobby && w.lobby.lu === lu) { w.send(s); n++; } return n; }
+setInterval(lobbyDirty, 5000);
+
 /* ================= 製作大亨：合作房間（雙人 2 位／多人 4 位，斷線可用房號回來） ================= */
 // 房間成員用玩家代號記住；有人登出時保留位置 30 分鐘，用同一個房號就能回來繼續玩。
 const tRooms = new Map();
@@ -99,7 +120,7 @@ function tycoon(ws) {
           const h = [...old.mem.values()].find(x => x.slot === 0);
           if (h && h.uid === uid) {
             old.cap = Math.max(m.cap === 4 ? 4 : 2, old.mem.size);
-            h.ws = ws; h.name = String(m.name || h.name).slice(0, 10); ws.troom = old; ws.tuid = uid; clearTimeout(old.kill);
+            h.ws = ws; h.name = String(m.name || h.name).slice(0, 10); if (m.lu) h.lu = String(m.lu).slice(0, 40); if (m.series) old.series = String(m.series).slice(0, 8); ws.troom = old; ws.tuid = uid; clearTimeout(old.kill);
             send(ws, { t: 'joined', code: old.code, cap: old.cap, uid, slot: 0, role: 'host', hostName: h.name, members: tMembers(old), fixed: true });
             tBroadcast(old, { t: 'peer', uid, name: h.name, slot: 0 }, ws);
             break;
@@ -107,8 +128,8 @@ function tycoon(ws) {
         }
         let code = want && !tRooms.has(want) && !fRooms.has(want) ? want : '';
         while (!code || tRooms.has(code) || fRooms.has(code)) code = String(1000 + Math.floor(Math.random() * 9000));
-        const room = { code, cap: m.cap === 4 ? 4 : 2, mem: new Map(), kill: null };
-        room.mem.set(uid, { uid, name: String(m.name || '老闆').slice(0, 10), slot: 0, ws });
+        const room = { code, cap: m.cap === 4 ? 4 : 2, mem: new Map(), kill: null, series: String(m.series || 'farm').slice(0, 8) };
+        room.mem.set(uid, { uid, name: String(m.name || '老闆').slice(0, 10), slot: 0, ws, lu: String(m.lu || '').slice(0, 40) });
         tRooms.set(code, room); ws.troom = room; ws.tuid = uid;
         send(ws, { t: 'created', code, cap: room.cap, uid, slot: 0, members: tMembers(room) });
         break;
@@ -126,7 +147,7 @@ function tycoon(ws) {
           mem = { uid, name: '', slot, ws: null }; room.mem.set(uid, mem);
         }
         tLeave(ws);
-        mem.ws = ws; mem.name = String(m.name || '朋友').slice(0, 10); ws.troom = room; ws.tuid = uid; clearTimeout(room.kill);
+        mem.ws = ws; mem.name = String(m.name || '朋友').slice(0, 10); if (m.lu) mem.lu = String(m.lu).slice(0, 40); ws.troom = room; ws.tuid = uid; clearTimeout(room.kill);
         const host = [...room.mem.values()].find(x => x.slot === 0);
         send(ws, { t: 'joined', code: room.code, cap: room.cap, uid, slot: mem.slot, role: mem.slot === 0 ? 'host' : 'guest', hostName: host ? host.name : '', members: tMembers(room) });
         tBroadcast(room, { t: 'peer', uid, name: mem.name, slot: mem.slot }, ws);
@@ -134,6 +155,18 @@ function tycoon(ws) {
       }
       case 'leave': tLeave(ws); break;
       case 'ping': send(ws, { t: 'pong' }); break;
+      // ===== 多人合作大廳：誰在線上、有哪些隊伍、邀請、請求加入 =====
+      case 'lhello': { ws.lobby = { lu: String(m.lu || '').slice(0, 40), name: String(m.name || '玩家').slice(0, 10), where: String(m.where || 'home').slice(0, 8) }; LOBBY.add(ws); lobbyDirty(); send(ws, lobbyList()); break; }
+      case 'lstat': { if (ws.lobby) { if (m.name) ws.lobby.name = String(m.name).slice(0, 10); if (m.where) ws.lobby.where = String(m.where).slice(0, 8); lobbyDirty(); } break; }
+      case 'llist': send(ws, lobbyList()); break;
+      case 'linvite': { if (!ws.lobby) return; lobbyTo(m.to, { t: 'linvite', from: ws.lobby.lu, fromName: ws.lobby.name, code: String(m.code || ''), series: String(m.series || '') }); break; }
+      case 'lreq': { if (!ws.lobby) return; const room = tRooms.get(String(m.code || '')); if (!room) return send(ws, { t: 'lans', ok: false, why: '這個隊伍已經解散了' });
+        if (room.mem.size >= room.cap && ![...room.mem.values()].some(x => x.lu === ws.lobby.lu)) return send(ws, { t: 'lans', ok: false, why: `這個隊伍已經滿了（最多 ${room.cap} 位）` });
+        const host = [...room.mem.values()].find(x => x.slot === 0);
+        if (!host || !lobbyTo(host.lu, { t: 'lreq', from: ws.lobby.lu, fromName: ws.lobby.name, code: room.code, series: room.series })) return send(ws, { t: 'lans', ok: false, why: '房主現在不在大廳，請稍後再試' });
+        for (const x of room.mem.values()) if (x.slot !== 0 && x.lu) lobbyTo(x.lu, { t: 'lnote', msg: `「${ws.lobby.name}」申請加入隊伍，等房主決定` });
+        break; }
+      case 'lans': { if (!ws.lobby) return; const room = tRooms.get(String(m.code || '')); lobbyTo(m.to, { t: 'lans', ok: !!m.ok, code: String(m.code || ''), series: room ? room.series : String(m.series || ''), hostName: ws.lobby.name, why: m.ok ? '' : '房主沒有同意' }); break; }
       default: { // 其他訊息轉給房間裡的其他人（_to 指定一人、_x 排除一人）
         if (!r) return;
         const me = r.mem.get(ws.tuid); if (!me) return;
@@ -148,7 +181,7 @@ function tycoon(ws) {
       }
     }
   });
-  ws.on('close', () => tLeave(ws));
+  ws.on('close', () => { tLeave(ws); if (LOBBY.delete(ws)) lobbyDirty(); });
 }
 
 /* ================= 極速F1：連線賽車房間（原遊戲內建） ================= */

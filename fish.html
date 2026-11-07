@@ -825,7 +825,8 @@ function fsDraw(){const F=FS,c=fsUI.cv,g=c.getContext('2d'),w=c.width,H0=c.heigh
 /* ======================= 經營系統：錢、魚簍、船、養殖、曬魚乾、冷凍、事件 ======================= */
 function tutDo(k){S.tc=S.tc||{};S.tc[k]=(S.tc[k]||0)+1}
 const tcN=k=>(S.tc&&S.tc[k])||0;
-function earn(v,kind){v=Math.round(v);if(!v)return;S.money+=v;if(EMBED)try{parent.postMessage({t:'earn',v},'*')}catch(e){}const lv0=fishLv();S.earn=(S.earn||0)+v;S.flow.push([S.t,v,kind||'sell']);if(fishLv()>lv0)levelUp(lv0,fishLv())}
+const MONEY_MAX=100000000;// 每個系列最多賺 1 億
+function earn(v,kind){v=Math.round(v);if(v>0){v=Math.min(v,MONEY_MAX-S.money);if(v<=0){if(!(earn.t>performance.now())){earn.t=performance.now()+60000;try{notify('💰 漁港的錢已經到 1 億（這個系列的上限），不能再賺錢了')}catch(e){}}return}}if(!v)return;S.money+=v;if(EMBED)try{parent.postMessage({t:'earn',v},'*')}catch(e){}const lv0=fishLv();S.earn=(S.earn||0)+v;S.flow.push([S.t,v,kind||'sell']);if(fishLv()>lv0)levelUp(lv0,fishLv())}
 function spend(v,kind){v=Math.round(v);if(S.money<v){hint('nomoney',`💵 錢不夠！還差 💵${(v-Math.floor(S.money)).toLocaleString()}`);return false}S.money-=v;S.flow.push([S.t,-v,kind||'buy']);SFX.cash&&SFX.cash();return true}
 // 通知：所有事件都會跳出來，也記在「📒 帳本 → 通知」裡
 function notify(msg,big){S.notes.unshift([S.t,msg]);if(S.notes.length>60)S.notes.length=60;if(big)banner(msg,6000);else toast(msg,3600)}
