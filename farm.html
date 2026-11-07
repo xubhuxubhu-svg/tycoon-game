@@ -431,7 +431,7 @@ const plotDur=s=>s.dur||(S.dur||7200);
 const ripeKeep=s=>Math.max(1800,plotDur(s)*.5),witherKeep=s=>Math.max(1800,plotDur(s)*.4),dryTime=s=>Math.max(1800,plotDur(s)*.5);
 function autoPick(fi){const se=seasonOf(S.t);const a=S.autoSea&&S.autoSea[fi];const k=a?a[se]:S.autoCrop[fi];return CROPS[k]?k:''}
 const aSell=pk=>!S.autoSell||S.autoSell[pk]!==false,aRebuy=pk=>!S.autoRebuy||S.autoRebuy[pk]!==false;
-const penDur=pk=>PROFILES[S.profile||'mid'].pen;// 生產時間跟著經營模式
+const penDur=pk=>(PROFILES[S.profile]||PROFILES.mid).pen;// 生產時間跟著經營模式
 const spoilSec=pk=>Math.max(7200,penDur(pk)*1.5);
 /* ======================= 經營模式（低、中、高收益） ======================= */
 const PROFILES={
@@ -1748,7 +1748,7 @@ function fadeOcc(rdt){const pts=[];for(const y of [.25,.9,1.55])for(const sx of 
     o.g.traverse(m=>{if(!m.isMesh)return;(Array.isArray(m.material)?m.material:[m.material]).forEach(mt=>{const b=mt.userData.op0==null?1:mt.userData.op0;mt.transparent=o.op<.999||!!mt.userData.tr0;mt.opacity=b*o.op;mt.depthWrite=o.op>.999&&!mt.userData.tr0})})}}
 function resize(){W=innerWidth;H=innerHeight;renderer.setSize(W,H);camera.aspect=W/H;camera.updateProjectionMatrix()}addEventListener('resize',()=>{resize();layoutHUD()});resize();
 const camT=P.pos.clone();const clock=new THREE.Clock();let wTime=0,taskT=0,slowT=0;
-function frame(){requestAnimationFrame(frame);try{frameBody()}catch(e){console.error(e)}}
+function frame(){requestAnimationFrame(frame);try{frameBody()}catch(e){if(!frame.errT||performance.now()-frame.errT>5000){frame.errT=performance.now();reportErr(e)}}}
 const SIGN_COL={ripe:['#ffe36a','#d09a00','#6a4a00'],warn:['#ffb08a','#d0502a','#7a2000'],dry:['#cfe8ff','#2f8ad8','#1f4e78'],norm:['#f6dca0','#8a5a2a','#6a3a10'],broken:['#d8d0c8','#7a6a5a','#4a3a2a']};
 function frameBody(){if(EMBED&&HOLD){clock.getDelta();return}const rdt=Math.min(.05,clock.getDelta());wTime+=rdt;
   if(!S.paused&&RUN&&!NETG){let gdt=rdt*S.speed*TS();while(gdt>0){const d=Math.min(gdt,TS()>1?5:2);step(d,false);gdt-=d}}
@@ -1893,7 +1893,11 @@ function hud(w,wk,se,hr,night){const day=dayOf(S.t),dIn=day%DAYS_PER_SEASON+1,ye
 const lv2txt=v=>v<.4?'風雨漸漸變強':v<.85?'風雨很強':'風雨最強';
 
 /* ======================= 開始遊戲：離線收入、從家裡走出來 ======================= */
-const OFF=NETG?null:offlineSim();syncAnimals();
+// 遊戲出錯時在畫面下方顯示原因（方便截圖回報），遊戲照常繼續
+function reportErr(e){try{console.error(e);let d=$('#errBox');if(!d){d=document.createElement('div');d.id='errBox';d.style.cssText='position:fixed;left:8px;bottom:22px;z-index:99999;max-width:70vw;background:#fff0f0;border:2px solid #e05050;border-radius:10px;padding:6px 10px;font-size:12px;color:#a02020;pointer-events:none';document.body.appendChild(d)}
+  d.textContent='⚠️ 遊戲小錯誤（遊戲會繼續，可截圖給製作者）：'+(e&&e.message||e)+' ＠'+((e&&e.stack||'').split('\n')[1]||'').trim().slice(0,60);clearTimeout(reportErr.t);reportErr.t=setTimeout(()=>d.remove(),15000)}catch(_){}}
+addEventListener('error',ev=>reportErr(ev.error||ev.message));
+let OFF=null;try{OFF=NETG?null:offlineSim()}catch(e){reportErr(e)}try{syncAnimals()}catch(e){reportErr(e)}
 if(OFF&&OFF.away>=60&&!S.inHome){P.o.visible=false;P.pos.set(HOME.x,0,HOME.z+2.55)}
 function showBack(OFF){setTimeout(()=>openPanel(`<h2>👋 歡迎回來！</h2><div>你離開了 <b>${fmtAway(OFF.away)}</b>${OFF.away>OFF.sim?`（最多計算 ${TS()>1?6:24} 小時）`:''}，這段時間農場繼續運作：<br>
   💵 錢的變化：<b style="color:${OFF.money>=0?'#2a7a30':'#c0392b'}">${OFF.money>=0?'+':''}${OFF.money}</b>（離線收入 💵${OFF.earn}）<br>🧾 離線帳單：只扣了 💵${OFF.bill}${OFF.billAll>OFF.bill?`（原本 💵${OFF.billAll}，離線時最多只扣 1 天或離線賺到的錢，不會欠款）`:''}<br>${prof().protect?'🛡️ 離線保護：成熟的作物還在等你、產品沒有壞<br>':''}${OFF.boost?'🚀 歡迎回來加成：接下來 30 分鐘，作物和動物長得快 1.5 倍！<br>':''}
@@ -1936,7 +1940,7 @@ if(EMBED){['#bSpeed','#bReset'].forEach(q=>$(q).remove());S.speed=1;$('#credit')
     else if(m.t==='resume'){if(m.name!=null)PNAME=String(m.name).slice(0,10);resumeFarm()}})}
 // 回到主畫面時農場畫面停住；再進來時，離開的這段時間用離線計算補上
 function holdFarm(){HOLD=true;RUN=false;save();window.__farmHold=true;windLevel(0)}
-function resumeFarm(){window.__farmHold=false;HOLD=false;const off=NETG?null:offlineSim();syncAnimals();clock.getDelta();RUN=true;if(off&&off.away>=60)showBack(off)}
+function resumeFarm(){window.__farmHold=false;HOLD=false;let off=null;try{off=NETG?null:offlineSim()}catch(e){reportErr(e)}try{syncAnimals()}catch(e){reportErr(e)}clock.getDelta();RUN=true;if(off&&off.away>=60)showBack(off)}
 
 /* ======================= 開始畫面、全畫面、離開遊戲 ======================= */
 let RUN=false,started=false;
@@ -2540,7 +2544,7 @@ function lvUnlocks(lv){const L=[];Object.keys(CROPS).forEach(k=>{if((CROPS[k].lv
   return L.length?`<br>解鎖：${L.join('、')}`:'<br>繼續加油，賺更多錢！'}
 
 // 離線時（衝刺、極速經營沒有離線保護）：野生動物也會來
-function wildOffline(sim){const lv=farmLv();if(lv<3)return [];const out=[];const n=Math.min(6,Math.floor(sim/(DAY*1.1)));const hunt=staffOn('hunter','farm'),pat=staffOn('patrol','farm');
+function wildOffline(sim){if(typeof WILD==='undefined'||!WILD||!POULTRY)return [];const lv=farmLv();if(lv<3)return [];const out=[];const n=Math.min(6,Math.floor(sim/(DAY*1.1)));const hunt=staffOn('hunter','farm'),pat=staffOn('patrol','farm');
   for(let i=0;i<n;i++){const ks=Object.keys(WILD).filter(k=>WILD[k].lv<=lv);const opts=[];ks.forEach(k=>{const t=wildTargets(k);if(t.length)opts.push([k,t])});if(!opts.length)break;
     const [k,ts]=opts[Math.floor(Math.random()*opts.length)];const tg=ts[Math.floor(Math.random()*ts.length)];const W2=WILD[k];const w={k,tg};
     if(pat&&Math.random()<.9){out.push(`🔦 巡邏隊趕走了${W2.em}${W2.n}`);continue}if(hunt&&Math.random()<.85){out.push(`🏹 獵人趕走了${W2.em}${W2.n}`);continue}
