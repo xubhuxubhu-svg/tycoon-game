@@ -480,7 +480,7 @@ const evMod=k=>{const e=S.ev;if(!e||!e.mod)return 1;return (e.mod[k]||1)*(e.mod.
 function sellPrice(t){const it=ITEMS[t];if(!it)return 0;return Math.round(it.p*(it.crop?evMod('crop'):evMod('animal'))*(1+(outB().sell||0))*prof().price*(isWeekend()?1.2:1))}
 
 /* ======================= 立體場景 ======================= */
-const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,MOBILE?1.5:1.75));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;document.body.prepend(renderer.domElement);
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,MOBILE?1.5:1.5));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;document.body.prepend(renderer.domElement);
 const scene=new THREE.Scene();scene.background=new THREE.Color(0xbfe6ff);scene.fog=new THREE.Fog(0xbfe6ff,50,115);
 const hemi=new THREE.HemisphereLight(0xffffff,0x8fae6a,2.0);scene.add(hemi);
 const sun=new THREE.DirectionalLight(0xffffff,1.6);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);Object.assign(sun.shadow.camera,{left:-26,right:26,top:26,bottom:-26,near:1,far:80});sun.shadow.bias=-.0008;sun.shadow.normalBias=.03;scene.add(sun,sun.target);
@@ -945,7 +945,7 @@ function outfitAnim(o,t,spd,rdt){const u=o.userData,st=u.style,k=Math.min(1,spd/
 
 /* ======================= 手上、籃子裡的東西 ======================= */
 const TOK=new THREE.CylinderGeometry(.3,.3,.12,20);const ITEM_H=.13;const tokM={};
-function tokMats(t){if(tokM[t])return tokM[t];const it=ITEMS[t];const side=new THREE.MeshLambertMaterial({color:new THREE.Color(it.c).multiplyScalar(.82)});
+function tokMats(t){if(tokM[t])return tokM[t];const it=ITEMS[t]||{c:'#b8a888'};const side=new THREE.MeshLambertMaterial({color:new THREE.Color(it.c).multiplyScalar(.82)});
   const top=new THREE.MeshLambertMaterial({map:canvasTex(128,128,g=>{g.fillStyle=it.c;g.beginPath();g.arc(64,64,63,0,7);g.fill();g.strokeStyle=it.w?'#7a5a2a':'rgba(255,255,255,.9)';g.lineWidth=7;g.beginPath();g.arc(64,64,56,0,7);g.stroke();if(it.w)g.globalAlpha=.55;g.font='74px '+EMOJI;g.textAlign='center';g.textBaseline='middle';g.fillText(it.em,64,70)})});
   return tokM[t]=[side,top,side]}
 function makeItem(t){const m=mesh(TOK,tokMats(t));m.userData.type=t;return m}
@@ -1264,7 +1264,7 @@ function oneSow(fi){const f=FI(fi);if(!fieldNear(f)){hint('far','要走到這塊
 function doSow(fi,k){const f=FI(fi);if(!f||!CROPS[k])return;const empties=PLOTS.filter(p=>p.f===f&&S.plots[p.id].st==='empty');{let n=0;empties.forEach((p,i)=>{if((S.seeds[k]||0)<=0)return;n++;plantPlot(p,k,true);setTimeout(()=>puff(V(p.x,.3,p.z),10,0x9a7a4a,.12),i*90)});SFX.plant();toast(`🌱 一口氣種下 ${n} 格${CROPS[k].n}！${n<empties.length?'（種子不夠，還有空田）':''}`)}}
 function oneReap(fi){if(NETG){netCmd({c:'reap',fi});return}const f=FI(fi);if(!fieldNear(f)){hint('far','要走到這塊田旁邊才能按喔');return}let n=0,full=false,clr=0,fix=0;
   PLOTS.filter(p=>p.f===f).forEach((p,i)=>{const s=S.plots[p.id];if(s.st==='broken'){repairPlot(p);fix++;return}if(s.st==='rot'){s.st='empty';s.c='';clr++;puff(V(p.x,.5,p.z),8,0x8a7a5a);return}
-    if(s.st==='ripe'||s.st==='wither'){if(S.boxes[f.i].length>=60){full=true;return}const t=s.st==='ripe'?s.c:s.c+'_w';const g=harvestTo(p,true);n+=g;setTimeout(()=>flyAway(t,V(p.x,.6,p.z),V(f.x+3.4,1.1,f.z+.4)),i*80)}});
+    if(s.st==='ripe'||s.st==='wither'){if(S.boxes[f.i].length>=60){full=true;return}const t=s.st==='ripe'?s.c:s.c+'_w';const g=harvestTo(p,true);n+=g;if(ITEMS[t])setTimeout(()=>flyAway(t,V(p.x,.6,p.z),V(f.x+3.4,1.1,f.z+.4)),i*80)}});
   if(!n&&!clr&&!fix){hint('noripe','這塊田還沒有可以採收的作物');return}SFX.harvest();tutDo('harvest');toast(`✅ 採收 ${n} 個，放進「📦 集貨箱」${clr?`，清掉 ${clr} 格壞掉的`:''}${fix?`，修好 ${fix} 格`:''}${full?'（集貨箱滿了！）':''}`)}
 function oneRoot(fi){const f=FI(fi);if(!fieldNear(f)){hint('far','要走到這塊田旁邊才能按喔');return}const L=PLOTS.filter(p=>p.f===f&&S.plots[p.id].st!=='empty'&&S.plots[p.id].st!=='broken');if(!L.length){hint('noroot','這塊田是空的，不用拔除');return}
   const tree=L.some(p=>CROPS[S.plots[p.id].c]&&CROPS[S.plots[p.id].c].tree);confirmAsk(`確定要把 <b>${f.name}</b> 的 ${L.length} 格作物<b>全部拔掉</b>嗎？<br><small>拔掉的作物不會退還種子${tree?'，果樹也會被砍掉':''}；拔完可以按「🌱 栽種」重新種。</small>`,()=>{if(NETG){netCmd({c:'root',fi});return}doRoot(fi)})}
@@ -1350,15 +1350,22 @@ function marketAct(r){if(r.stay<.15)return;
 /* ======================= 走路帶路 ======================= */
 // 自動走路：用格子找路，繞過圍籬、房子、商店
 function walkable(x,z){const q=V(x,0,z);const h=P.hose;P.hose=false;collide(q);P.hose=h;return Math.abs(q.x-x)<.05&&Math.abs(q.z-z)<.05}
-function findPath(from,to){const X0=-46,Z0=-42,NX=87,NZ=89,id=(i,j)=>j*NX+i;const ci=x=>clamp(Math.round(x-X0),0,NX-1),cj=z=>clamp(Math.round(z-Z0),0,NZ-1);
-  const ok=new Uint8Array(NX*NZ);const free=(i,j)=>{const k=id(i,j);if(!ok[k])ok[k]=walkable(i+X0,j+Z0)?1:2;return ok[k]===1};
+// 走路判斷的快取（地圖沒有改變時，同一點不用重算）：讓找路不會卡頓
+const WALKC={key:'',m:new Map()};
+function walkKey(){if(typeof fenceRects==='function')fenceRects();return Object.keys(PENS).join()+'|'+(typeof FRK!=='undefined'?FRK:'')+'|'+BLOCKS.length+'|'+(typeof PH!=='undefined'&&PH&&PH.blk?PH.blk.join():'')}
+function walkPrep(){const k=walkKey();if(k!==WALKC.key){WALKC.key=k;WALKC.m.clear()}}
+function walkC(x,z){const qx=Math.round(x*10),qz=Math.round(z*10),k=qx*100000+qz;let v=WALKC.m.get(k);if(v===undefined){v=walkable(qx/10,qz/10);if(WALKC.m.size>400000)WALKC.m.clear();WALKC.m.set(k,v)}return v}
+function findPath(from,to){walkPrep();const X0=-46,Z0=-42,NX=87,NZ=89,id=(i,j)=>j*NX+i;const ci=x=>clamp(Math.round(x-X0),0,NX-1),cj=z=>clamp(Math.round(z-Z0),0,NZ-1);
+  const free=(i,j)=>walkC(i+X0,j+Z0);
   const near=(x,z)=>{let bi=ci(x),bj=cj(z);if(free(bi,bj))return [bi,bj];for(let r=1;r<6;r++)for(let a=-r;a<=r;a++)for(const [di,dj] of [[a,-r],[a,r],[-r,a],[r,a]]){const i=bi+di,j=bj+dj;if(i>=0&&j>=0&&i<NX&&j<NZ&&free(i,j))return [i,j]}return [bi,bj]};
-  const [si,sj]=near(from.x,from.z),[ti,tj]=near(to.x,to.z);const g=new Float32Array(NX*NZ).fill(1e9),par=new Int32Array(NX*NZ).fill(-1),done=new Uint8Array(NX*NZ);const open=[[0,si,sj]];g[id(si,sj)]=0;let found=false,n=0;
-  while(open.length&&n++<9000){let bi=0;for(let k=1;k<open.length;k++)if(open[k][0]<open[bi][0])bi=k;const [,i,j]=open.splice(bi,1)[0];const k0=id(i,j);if(done[k0])continue;done[k0]=1;if(i===ti&&j===tj){found=true;break}
-    for(const [di,dj,c] of [[1,0,1],[-1,0,1],[0,1,1],[0,-1,1],[1,1,1.41],[1,-1,1.41],[-1,1,1.41],[-1,-1,1.41]]){const a=i+di,b=j+dj;if(a<0||b<0||a>=NX||b>=NZ||!free(a,b))continue;if(di&&dj&&(!free(i+di,j)||!free(i,j+dj)))continue;if(!walkable(i+X0+di*.25,j+Z0+dj*.25)||!walkable(i+X0+di*.5,j+Z0+dj*.5)||!walkable(i+X0+di*.75,j+Z0+dj*.75))continue;const k=id(a,b),ng=g[k0]+c;if(ng<g[k]){g[k]=ng;par[k]=k0;open.push([ng+Math.hypot(ti-a,tj-b),a,b])}}}
+  const [si,sj]=near(from.x,from.z),[ti,tj]=near(to.x,to.z);const g=new Float32Array(NX*NZ).fill(1e9),par=new Int32Array(NX*NZ).fill(-1),done=new Uint8Array(NX*NZ);const open=[];const hp=(f,i,j)=>{open.push([f,i,j]);let c=open.length-1;while(c>0){const pp=(c-1)>>1;if(open[pp][0]<=open[c][0])break;[open[pp],open[c]]=[open[c],open[pp]];c=pp}};
+  const hpop=()=>{const top=open[0],last=open.pop();if(open.length){open[0]=last;let c=0;for(;;){const l=c*2+1,r=l+1;let m=c;if(l<open.length&&open[l][0]<open[m][0])m=l;if(r<open.length&&open[r][0]<open[m][0])m=r;if(m===c)break;[open[m],open[c]]=[open[c],open[m]];c=m}}return top};
+  hp(0,si,sj);g[id(si,sj)]=0;let found=false,n=0;
+  while(open.length&&n++<9000){const [,i,j]=hpop();const k0=id(i,j);if(done[k0])continue;done[k0]=1;if(i===ti&&j===tj){found=true;break}
+    for(const [di,dj,c] of [[1,0,1],[-1,0,1],[0,1,1],[0,-1,1],[1,1,1.41],[1,-1,1.41],[-1,1,1.41],[-1,-1,1.41]]){const a=i+di,b=j+dj;if(a<0||b<0||a>=NX||b>=NZ||!free(a,b))continue;if(di&&dj&&(!free(i+di,j)||!free(i,j+dj)))continue;if(!walkC(i+X0+di*.25,j+Z0+dj*.25)||!walkC(i+X0+di*.5,j+Z0+dj*.5)||!walkC(i+X0+di*.75,j+Z0+dj*.75))continue;const k=id(a,b),ng=g[k0]+c;if(ng<g[k]){g[k]=ng;par[k]=k0;hp(ng+Math.hypot(ti-a,tj-b),a,b)}}}
   if(!found)return [to.clone()];const cells=[];for(let k=id(ti,tj);k>=0;k=par[k])cells.unshift(V(k%NX+X0,0,Math.floor(k/NX)+Z0));
-  const clear=(a,b)=>{const L=a.distanceTo(b),m=Math.ceil(L/.2);for(let t=1;t<m;t++){const q=a.clone().lerp(b,t/m);if(!walkable(q.x,q.z))return false}return true};
-  const out=[];let cur=from.clone();let k=0;while(k<cells.length-1){let far=k+1;for(let m=cells.length-1;m>k+1;m--)if(clear(cur,cells[m])){far=m;break}out.push(cells[far]);cur=cells[far];k=far}
+  const clear=(a,b)=>{const L=Math.hypot(b.x-a.x,b.z-a.z),m=Math.ceil(L/.2);for(let t=1;t<m;t++){const k=t/m;if(!walkC(a.x+(b.x-a.x)*k,a.z+(b.z-a.z)*k))return false}return true};
+  const out=[];let cur=from.clone();let k=0;while(k<cells.length-1){let far=k+1;for(let m=Math.min(cells.length-1,k+25);m>k+1;m--)if(clear(cur,cells[m])){far=m;break}out.push(cells[far]);cur=cells[far];k=far}
   if(out.length)out.pop();out.push(to.clone());return out}
 function goTo(pos){P.auto={pts:findPath(P.pos,pos)};toast('🚶 自動走過去（自己移動就會取消）',1800)}
 
@@ -1744,7 +1751,7 @@ function windOnWorker(w,T,rdt){const o=w.o,u=w.u;if(w.fly||w.held||!o.visible)re
 const PB=[0,0,0,0];
 // 建築物、木牌擋住人物時變半透明
 const _ray=new THREE.Ray(),_bx=new THREE.Box3(),_hp=new THREE.Vector3(),_rc=new THREE.Raycaster();
-function fadeOcc(rdt){const pts=[];for(const y of [.25,.9,1.55])for(const sx of [-.32,0,.32])pts.push(P.pos.clone().addScaledVector(SR,sx).setY(y));const qs=pts.map(h=>{const d=h.clone().sub(camera.position);const L=d.length();return {d:d.normalize(),L}});
+function fadeOcc(rdt){fadeOcc.t=(fadeOcc.t||0)+rdt;if(fadeOcc.t<.08)return;rdt=fadeOcc.t;fadeOcc.t=0;const pts=[];for(const y of [.25,.9,1.55])for(const sx of [-.32,0,.32])pts.push(P.pos.clone().addScaledVector(SR,sx).setY(y));const qs=pts.map(h=>{const d=h.clone().sub(camera.position);const L=d.length();return {d:d.normalize(),L}});
   for(const o of OCC){o.bt-=rdt;if(!o.box||o.bt<=0){o.bt=2;o.g.updateMatrixWorld(true);o.box=new THREE.Box3().setFromObject(o.g);o.box.expandByScalar(-.05)}
     let hit=false;if(!S.inHome&&o.g.visible){for(const q of qs){_ray.set(camera.position,q.d);if(!_ray.intersectBox(o.box,_hp)||camera.position.distanceTo(_hp)>q.L)continue;_rc.set(camera.position,q.d);_rc.camera=camera;_rc.far=q.L-.2;if(_rc.intersectObject(o.g,true).length){hit=true;break}}}
     const tgt=hit?.28:1;if(Math.abs(o.op-tgt)<.01&&o.op===tgt)continue;o.op+=(tgt-o.op)*Math.min(1,rdt*8);if(Math.abs(o.op-tgt)<.01)o.op=tgt;
@@ -1876,8 +1883,9 @@ function frameBody(){if(EMBED&&HOLD){clock.getDelta();return}const rdt=Math.min(
   frameExtras(rdt);netFrame(rdt);wardTick(rdt);stepAnims(rdt);updateFlights(rdt);updateParts(rdt);drawArrows();renderer.render(scene,camera);
   P.tag.pos=P.pos.clone().setY(S.veh?2.6:2.15);P.tag.near=S.inHome?0:99;setL(P.tag,P.stun>0?'<span class="ptag">💫 頭暈中…</span>':`<span class="ptag">${esc(PNAME||'我的農場')}</span>`);
   {const [hx,hy]=project(P.pos.clone().setY(1.7)),[fx,fy]=project(P.pos.clone().setY(0));PB[0]=hx-22;PB[2]=hx+22;PB[1]=hy-6;PB[3]=fy+4}
-  for(const L of LABELS){const d=Math.hypot(L.pos.x-P.pos.x,L.pos.z-P.pos.z);const nr=L.near>=50?L.near:Math.min(L.near,7);if(!L.near||d>nr||!L.html){L.el.style.display='none';continue}const [x,y,ok]=project(L.pos);if(!ok){L.el.style.display='none';continue}L.el.style.display='';L.el.style.transform=`translate(${x|0}px,${y|0}px) translate(-50%,-100%)`;
-    if(L!==P.tag){if(L.mh!==L.html){L.mh=L.html;L.w=L.el.offsetWidth;L.h=L.el.offsetHeight}const hit=false&&x+L.w/2>PB[0]&&x-L.w/2<PB[2]&&y>PB[1]&&y-L.h<PB[3];if(hit!==!!L.fd){L.fd=hit;L.el.classList.toggle('fade',hit)}}}
+  // 文字標籤：只有位置或顯示狀態改變時才更新畫面（減少卡頓）
+  for(const L of LABELS){const d=Math.hypot(L.pos.x-P.pos.x,L.pos.z-P.pos.z);const nr=L.near>=50?L.near:Math.min(L.near,7);let show=!!(L.near&&d<=nr&&L.html),x=0,y=0;if(show){const pr=project(L.pos);x=pr[0]|0;y=pr[1]|0;show=pr[2]&&x>-200&&x<W+200&&y>-100&&y<H+300}
+    if(show!==L.vis){L.vis=show;L.el.style.display=show?'':'none'}if(!show)continue;if(x!==L.px||y!==L.py){L.px=x;L.py=y;L.el.style.transform=`translate(${x}px,${y}px) translate(-50%,-100%)`}}
   taskT-=rdt;if(taskT<=0){taskT=.5;TASKS=buildTasks();renderTodo();layoutHUD();homeUI();if(S.flow.length>400)S.flow=S.flow.filter(f=>S.t-f[0]<DAY*3)}
   hud(w,wk,se,hr,night);renderBottom()}
 document.addEventListener('click',e=>{const as=e.target.closest&&e.target.closest('[data-asell],[data-arebuy]');if(as){SFX.click();const k=as.dataset.asell||as.dataset.arebuy,key=as.dataset.asell?'autoSell':'autoRebuy';S[key]=S[key]||{};S[key][k]=!(as.dataset.asell?aSell(k):aRebuy(k));if(NETG)netCmd({c:'aset',key,k,v:S[key][k]});toast(as.dataset.asell?(S[key][k]?'🤠 牧場工會把長大的動物抓去賣':'🤠 牧場工不會賣動物（留著生蛋）'):(S[key][k]?'🐣 養殖場沒養滿時，牧場工會去繁殖場買小動物回來養':'🐣 牧場工不會自己買動物'),2600);return}const pb=e.target.closest&&e.target.closest('[data-pen]');if(pb){SFX.click();penPanel(pb.dataset.pen);return}const t=e.target.closest&&e.target.closest('[data-sow],[data-reap],[data-auto],[data-spray],[data-root]');if(!t)return;SFX.click();if(t.dataset.root!=null)oneRoot(+t.dataset.root);else if(t.dataset.sow!=null)oneSow(+t.dataset.sow);else if(t.dataset.reap!=null)oneReap(+t.dataset.reap);else if(t.dataset.auto!=null)autoCropSet(+t.dataset.auto);else oneSpray(+t.dataset.spray)});
@@ -1963,7 +1971,7 @@ function layoutHUD(){const mob=W<=700;const r=q=>$(q).getBoundingClientRect();co
   else{b.style.top=(r('#money').bottom+6)+'px';const tt=r('#btns').bottom+8;t.style.top=tt+'px';t.style.maxHeight=Math.max(120,bt-tt-12)+'px';g.style.top='8px';bn.style.top=(r('#goal').bottom+6)+'px';const nc=$('#netChip');if(nc)nc.style.top=(r('#clock').bottom+6)+'px'}}
 RUN=true;started=true;if(HOSTCAP)setTimeout(()=>{if(!NET.role)hostCreate(HOSTCAP)},700);firstStart();fsLabel();setTimeout(()=>{dailyGift();if(!S.profileSet&&!NETG)setTimeout(()=>{if(!$('#modal').classList.contains('on'))profilePanel(1);else S.profileAsk=1},5000)},1500);
 frame();layoutHUD();
-window.__F={get PETX(){return PETX},spawnPet,PETW,get LORRY(){return LORRY},truckTrip,camera,collideT:collide,get nightDraw(){return nightDraw},get GUARDV(){return GUARDV},get curNight(){return curNight},animalModel,scene,get wildSpawn(){return wildSpawn},get HUNTER(){return HUNTER},get PATROL(){return PATROL},goTo,findPath,closePanel,S,step,PLOTS,P,syncAnimals,FIELDS,oneSow,oneReap,RINGS,SHOPS,PENS,LOTS,finishLot,ACT,openShop,enterHome,exitHome,strike,ledger,buildPanel,outB,offlineSim,OCC,showPets:()=>{PETS.forEach((p,i)=>{const o=petModel(p.id);o.position.set(P.pos.x-6+i*1.1,0,P.pos.z);o.rotation.y=.6;scene.add(o)})},layoutHUD,weatherAt,stormLevel,FI};
+window.__F={findPath,get PETX(){return PETX},spawnPet,PETW,get LORRY(){return LORRY},truckTrip,camera,collideT:collide,get nightDraw(){return nightDraw},get GUARDV(){return GUARDV},get curNight(){return curNight},animalModel,scene,get wildSpawn(){return wildSpawn},get HUNTER(){return HUNTER},get PATROL(){return PATROL},goTo,findPath,closePanel,S,step,PLOTS,P,syncAnimals,FIELDS,oneSow,oneReap,RINGS,SHOPS,PENS,LOTS,finishLot,ACT,openShop,enterHome,exitHome,strike,ledger,buildPanel,outB,offlineSim,OCC,showPets:()=>{PETS.forEach((p,i)=>{const o=petModel(p.id);o.position.set(P.pos.x-6+i*1.1,0,P.pos.z);o.rotation.y=.6;scene.add(o)})},layoutHUD,weatherAt,stormLevel,FI};
 
 /* ======================= 寵物、烏鴉、家裡裝潢、倉庫冰箱、畫面遠近 ======================= */
 var PETX=null,CROWV=null,DECOR_KEY='';
@@ -2232,7 +2240,7 @@ function petHouseSync(){const pd=PETS.find(p=>p.id===(PETW.cur||PETW.own[0]));co
 function petHouseTick(){if(typeof PH==="undefined"||!PH)return;petHouseSync();if(PH.zz&&PH.zz.visible){PH.zz.position.y=1.25+Math.sin(wTime*2)*.08}}
 
 /* ----- 寵物走路會繞過建築物、圍欄（直線走不過去就找路） ----- */
-function petLineFree(a,b){const L=Math.hypot(b.x-a.x,b.z-a.z),m=Math.ceil(L/.5);for(let t=1;t<=m;t++){const k=t/m;if(!walkable(a.x+(b.x-a.x)*k,a.z+(b.z-a.z)*k))return false}return true}
+function petLineFree(a,b){walkPrep();const L=Math.hypot(b.x-a.x,b.z-a.z),m=Math.ceil(L/.5);for(let t=1;t<=m;t++){const k=t/m;if(!walkC(a.x+(b.x-a.x)*k,a.z+(b.z-a.z)*k))return false}return true}
 function petWay(X,o,tgt){const now=X.t;
   if(X.nav&&X.nav.length&&now<X.navT&&X.navTo&&Math.hypot(X.navTo.x-tgt.x,X.navTo.z-tgt.z)<2){}
   else{X.lc=(X.lc||0)-1;if(X.lc<=0){X.lc=6;X.free=petLineFree(o.position,tgt)}if(X.free){X.nav=null;return tgt}
@@ -2753,6 +2761,7 @@ const canAct=()=>!NETG;
 // 找工作
 function wkPlan(w){const id=w.id,key=w.key;
   if(id==='farmer'){const f=FI(+key);const ps=PLOTS.filter(p=>p.f===f);
+    if(f&&S.ev&&S.ev.pest&&S.ev.fi===f.i){if(S.money<30){w.txt='😟 有病蟲害，但錢不夠買藥（💵30）';return wkIdle(w)}return wkGo(w,V(f.x-3.3,0,f.z+1.2),'🧴 去拿藥噴病蟲害',()=>wkDo(w,2,'🧴 噴藥中',()=>{if(!canAct())return;if(!(S.ev&&S.ev.pest&&S.ev.fi===f.i)||S.money<30)return;spend(30,'spray');S.ev=null;PLOTS.filter(p=>p.f===f).forEach((p,i)=>setTimeout(()=>{for(let j=0;j<8;j++)particle(V(p.x+rand(-.6,.6),1.2,p.z+rand(-.6,.6)),V(rand(-.3,.3),-.5,rand(-.3,.3)),0xb8f0d0,.07,.8,-1)},i*80));SFX.water&&SFX.water();toast(`🧑‍🌾 第 ${f.i+1} 塊田的農夫噴了藥（💵30），蟲子跑光光！`,3000)}))}
     let p=ps.find(p=>{const s=S.plots[p.id];return (s.st==='ripe'||s.st==='wither')&&S.boxes[f.i].length<60});if(p)return wkGo(w,p,'🌾 去採收',()=>wkDo(w,1.1,'🌾 採收中',()=>{if(canAct()){const s=S.plots[p.id];if(s.st==='ripe'||s.st==='wither'){harvestTo(p,true,true);f.busy=S.t}}}));
     p=ps.find(p=>{const s=S.plots[p.id];return s.st==='rot'||s.st==='broken'});if(p)return wkGo(w,p,'🔨 去整理',()=>wkDo(w,1.4,'🔨 修田中',()=>{if(!canAct())return;const s=S.plots[p.id];if(s.st==='broken')repairPlot(p);else if(s.st==='rot'){s.st='empty';s.c='';s.g=0;s.rt=0;puff(V(p.x,.4,p.z),10,0x8a7a5a)}}));
     const k=autoPick(f.i),c=CROPS[k];p=ps.find(p=>S.plots[p.id].st==='empty');if(p&&c&&!canPlant(c)&&S.money>=c.seed)return wkGo(w,p,'🌱 去播種',()=>wkDo(w,1,'🌱 播種中',()=>{if(!canAct())return;const s=S.plots[p.id];if(s.st!=='empty'||S.money<c.seed)return;spend(c.seed,'seed');s.st='grow';s.c=k;s.g=0;s.rt=0;s.warned=0;s.dur=S.autoDur[f.i]||S.dur||7200;f.busy=S.t;puff(V(p.x,.3,p.z),8,0x9a7a4a,.1)}));
