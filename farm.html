@@ -310,6 +310,9 @@ const ANIM={
  iberico:{n:'伊比利豬',baby:'小伊比利豬',em:'🐖',bem:'🐷',buy:2400,max:3,grow:1300,eat:150,carry:'leash',pen:'pig',sell:6500,lv:32},
  queenbee:{n:'蜂王',baby:'蜂王群',em:'👑',bem:'🐝',buy:3000,max:3,grow:1,eat:0,prod:'royaljelly',prodT:480,carry:'cage',pen:'apiary',sell:0,lv:35},
  whitehorse:{n:'白馬',baby:'小白馬',em:'🐎',bem:'🐴',buy:5000,max:2,grow:1500,eat:130,carry:'leash',pen:'horse',sell:14000,lv:38}};
+// 暴龍、獨角獸從森林叼回來的野生動物：用繩子牽著，帶去收購站賣
+const PREY_LIST=[{k:'hare',n:'野兔',em:'🐇',v:120},{k:'squirrel',n:'松鼠',em:'🐿️',v:80},{k:'pheasant',n:'山雞',em:'🐓',v:160},{k:'wduck',n:'野鴨',em:'🦆',v:140},{k:'partridge',n:'竹雞',em:'🐦',v:110},{k:'pigeon',n:'野鴿',em:'🕊️',v:90},{k:'piglet',n:'山豬仔',em:'🐗',v:320,big:1},{k:'deer',n:'梅花鹿',em:'🦌',v:520,big:1},{k:'goose',n:'野雁',em:'🪿',v:200}];
+PREY_LIST.forEach(q=>{ANIM['w_'+q.k]={n:q.n,baby:q.n,em:q.em,bem:q.em,buy:0,max:0,grow:1,eat:0,carry:'leash',pen:'wild',sell:q.v,lv:999,wild:1,pk:q.k}});
 // 養殖場種類（前四種一開始就有，其他要買地、買材料、一鍵建造）
 const PEN_T={
  cow:{n:'乳牛牧場',em:'🐄',food:['hay','grass','corn'],col:0xb5d98a,shed:0xc0392b},
@@ -825,7 +828,7 @@ function birdBig(k,adult){if(k==='turkey'&&adult){const g=birdModel('chick',true
   return birdModel(k,adult)}
 function beeModel(){const g=new THREE.Group();const hv=new THREE.Group();g.add(hv);for(let i=0;i<3;i++){const m=mesh(G.box,M(i%2?0xffd040:0xffffff));m.scale.set(.6,.25,.45);m.position.y=.13+i*.25;hv.add(m)}const rf=mesh(G.box,M(0x8a5a2a));rf.scale.set(.72,.06,.55);rf.position.y=.78;hv.add(rf);
   const bees=[];for(let i=0;i<3;i++){const b=sprite('🐝',.28);g.add(b);bees.push(b)}g.userData={bees,kind:'bee'};return g}
-function animalModel(a){const adult=a.age>=1,k=a.k;let m;
+function animalModel(a){const adult=a.age>=1,k=a.k;let m;if(ANIM[k]&&ANIM[k].wild)return preyModel(ANIM[k].pk);
   if(CHIBI[k]){m=CHIBI[k](adult);if(!adult)m.scale.multiplyScalar(.65);return m}
   if(k==='cow')m=cowModel(!adult);else if(k==='pig')m=pigModel(!adult);else if(k==='bee'||k==='queenbee'){m=beeModel();if(k==='queenbee'){const cr=sprite('👑',.32);cr.position.y=1.05;m.add(cr)}}
   else if(['silkie','guinea','goldhen','pigeon'].includes(k)){m=birdModel('chick',adult||k==='pigeon');m.userData.body.children[0].material=M({silkie:0x2e2e36,guinea:0x5a6274,goldhen:0xffc83a,pigeon:0x9aa4b8}[k]);if(k==='guinea')for(let i=0;i<8;i++){const d=mesh(G.sph,M(0xffffff));d.scale.setScalar(.035);const a=i*.8;d.position.set(Math.cos(a)*.15,.42+Math.sin(i*1.7)*.1,Math.sin(a)*.2);m.userData.body.add(d)}if(k==='pigeon')m.scale.multiplyScalar(adult?.75:.5);if(k==='goldhen'&&adult){const s2=sprite('✨',.35);s2.position.y=.9;m.add(s2)}}
@@ -1321,7 +1324,7 @@ function ringAction(r,dt){r.cd-=dt;if(r.cd>0)return;
     if(!h){if(!r.used){r.used=1;hint('nofood'+r.pen,`🥣 ${T.n}吃：${FOOD_NAME(T.food)}。去廣場的飼料桶、乾草堆拿，或用菜籃子裡的作物`)}return}
     S.trough[r.pen]=Math.min(10,S.trough[r.pen]+(h.t==='feed'||h.t==='hay'?1:2));flyAway(h.t,from,PENS[r.pen].troughG.position.clone().setY(.6));SFX.place();r.used=1;r.cd=.15;tutDo('feed');return}
   case 'release':{const i1=S.cage.findIndex(a=>ANIM[a.k].pen===r.pen),i2=S.leash.findIndex(a=>ANIM[a.k].pen===r.pen);
-    if(i1<0&&i2<0){if(!r.used&&(S.cage.length||S.leash.length)){r.used=1;const a=S.cage[0]||S.leash[0];hint('wrongpen',`${ANIM[a.k].em} ${ANIM[a.k].n}不住這裡，要帶去「${PEN_T[ANIM[a.k].pen].n}」`)}return}
+    if(i1<0&&i2<0){if(!r.used&&(S.cage.length||S.leash.length)){r.used=1;const a=S.cage[0]||S.leash[0];hint('wrongpen',ANIM[a.k].wild?`${ANIM[a.k].em} 野生的${ANIM[a.k].n}不能養，帶去收購站賣掉`:`${ANIM[a.k].em} ${ANIM[a.k].n}不住這裡，要帶去「${PEN_T[ANIM[a.k].pen].n}」`)}return}
     const a=i1>=0?S.cage.splice(i1,1)[0]:S.leash.splice(i2,1)[0];S.animals.push(a);syncCage();syncLeash();syncAnimals();animSnd(a.k);const v=AV.get(a.id);if(v){v.o.position.set(r.x,0,r.z-1.6);puff(v.o.position.clone().add(V(0,.5,0)),12,0xff8ad8)}
     floatAt(V(r.x,1.2,r.z),`${ANIM[a.k].em} 歡迎回家！`,'#c0307a');tutDo('release');r.used=1;r.cd=.35;return}
   case 'take':{const pk=r.pen;if(basketFull()){if(!r.used){r.used=1;hint('bfull','🧺 菜籃子滿了，先去賣')}return}
@@ -1454,7 +1457,7 @@ const SHOP_HTML={
   <h3>🚚 整座農場</h3><div class="goods">${GLOBAL_MACH.map(m=>card(m.em,m.n,`${m.d}<br>💵${m.p}　每天油錢 💵${m.day}`,S.gm[m.id]?'<button disabled>✔ 已經有了</button>':`<button data-a="gm" data-v="${m.id}">買 💵${m.p}</button>`)).join('')}</div>`},
  labor(){const fl=FIELDS.slice().sort((a,b)=>a.i-b.i);const chips=(id,list)=>list.map(([key,name,on])=>`<button data-a="staff" data-v="${id}:${key}" class="${on?'on':''}">${on?'✔ ':''}${name}</button>`).join('');
   return `<h2>👷 人力仲介</h2><div>雇來的員工每天早上 6 點領薪水（雇用當下先付第一天）。點「✔」的名字可以解雇。${S.strike?'<br>⚠️ <b style="color:#c0392b">有欠款，員工暫時停工中</b>':''}</div><div class="goods">${STAFF.map(st=>{const has=S.staff[st.id]||{};let list;if((st.lv||1)>farmLv())return card(st.em,st.n,`${st.d}<br>🔒 等級 ${st.lv} 開放`,`<button disabled>🔒 等級 ${st.lv}</button>`,true);
-   if(st.per==='field')list=fl.map(f=>[f.i,`第${f.i+1}塊田`,!!has[f.i]]);else if(st.per==='pen')list=Object.keys(PENS).map(k=>[k,PEN_T[k].n,!!has[k]]);else list=[['farm','整座農場',!!has.farm]];
+   if(st.per==='field')list=fl.map(f=>[f.i,`第${f.i+1}塊田`,!!has[f.i]]);else if(st.per==='pen'){list=[];Object.keys(PENS).forEach(k=>{list.push([k,PEN_T[k].n,!!has[k]]);if(st.id==='rancher'&&has[k])list.push([k+'#2',PEN_T[k].n+' 第2位',!!has[k+'#2']])})}else list=[['farm','整座農場',!!has.farm]];
    return card(st.em,st.n,`${st.d}<br>每人每天薪水 💵${st.wage}`,chips(st.id,list),0,1)}).join('')}</div>`},
  land(){return `<h2>🏛️ 地政事務所</h2><div>📝 <b>租地</b>：每天早上付租金。💰 <b>買地</b>：一次付清（大約 20 天的租金），之後就不用付租金。<br>租或買之後要先<b>開墾</b>：清掉雜草、石頭、樹頭，農地會變成田，建地可以蓋養殖場。</div><div class="goods">${LOTS.map(L=>{const ls=lotState(L.id),pr=lotPrice(L);const nm=L.kind==='field'?`農地 ${L.id}`:`建地 ${L.id}`;let st,b='';
    if(ls.st==='wild'&&(L.lv||1)>farmLv())return card('🔒',nm,`等級 ${L.lv} 開放<br>${L.kind==='field'?'開墾後變成一塊 6 格的田':'開墾後可以蓋一座養殖場'}`,`<button disabled>🔒 等級 ${L.lv}</button>`,true);
@@ -1478,7 +1481,7 @@ const ACT={
  pm(v){const [id,pk]=v.split(':');const m=PEN_MACH.find(x=>x.id===id);if(!pay(m.p,'build'))return;(S.pm[pk]=S.pm[pk]||{})[id]=1;toast(`${m.em} ${PEN_T[pk].n}裝好${m.n}了！`)},
  gm(id){const m=GLOBAL_MACH.find(x=>x.id===id);if(!pay(m.p,'build'))return;S.gm[id]=1;toast(`${m.em} 買了${m.n}！停在廣場東邊，會定時自動載貨去賣`,4000)},
  staff(v){const [id,key]=v.split(':');const st=STAFF.find(x=>x.id===id);if((st.lv||1)>farmLv())return;const h=S.staff[id]=S.staff[id]||{};
-  if(h[key]){delete h[key];SFX.click();toast(`${st.em} 解雇了一位${st.n}`);return}if(!pay(st.wage,'staff'))return;h[key]=1;toast(`${st.em} 雇了一位${st.n}！`);if(id==='farmer'&&!S.autoCrop[key]){if(ACTOR){ACTOR.ui=['auto',+key];return}setTimeout(()=>autoCropSet(+key),300);return false}},
+  if(h[key]){delete h[key];if(!key.includes('#'))delete h[key+'#2'];SFX.click();toast(`${st.em} 解雇了${key.includes('#')||!h[key+'#2']?'一位':''}${st.n}`);return}if(!pay(st.wage,'staff'))return;h[key]=1;toast(`${st.em} 雇了一位${st.n}！`);if(id==='farmer'&&!S.autoCrop[key]){if(ACTOR){ACTOR.ui=['auto',+key];return}setTimeout(()=>autoCropSet(+key),300);return false}},
  guard(v){const [k,t]=v.split(':');const G2=S.guard||(S.guard={fence:{},lamp:{},dog:{}});const d=GUARD[k];if(d.lv>farmLv())return;
    if(k==='fence'||k==='iron'){const cur=G2.fence[t];const price=k==='iron'&&cur==='fence'?d.p-GUARD.fence.p:d.p;if(cur===k||(cur==='iron'))return;if(!pay(price,'shop'))return;G2.fence[t]=k;const f=FI(+t);if(f){confetti(V(f.x,1,f.z),40)}toast(`${d.em} ${f?f.name:''}圍好${d.n}了！`)}
    else if(k==='lamp'){if(G2.lamp[t])return;if(!pay(d.p,'shop'))return;G2.lamp[t]=1;toast('💡 路燈裝好了！晚上會亮起來')}
@@ -1501,7 +1504,7 @@ const ACT_Q={
  fm(v){const [id,fi]=v.split(':');const m=FIELD_MACH.find(x=>x.id===id);return `確定在 <b>第 ${+fi+1} 塊田</b>裝 <b>${m.em}${m.n}</b> 嗎？<br>💵${m.p}，每天電費 💵${m.day}`},
  pm(v){const [id,pk]=v.split(':');const m=PEN_MACH.find(x=>x.id===id);return `確定在 <b>${PEN_T[pk].n}</b>裝 <b>${m.em}${m.n}</b> 嗎？<br>💵${m.p}，每天電費 💵${m.day}`},
  gm(id){const m=GLOBAL_MACH.find(x=>x.id===id);return `確定買 <b>${m.em}${m.n}</b> 嗎？<br>💵${m.p}，每天油錢 💵${m.day}`},
- staff(v){const [id,key]=v.split(':');const st=STAFF.find(x=>x.id===id);const place=st.per==='field'?`第 ${+key+1} 塊田`:st.per==='pen'?PEN_T[key].n:'整座農場';return (S.staff[id]||{})[key]?`確定要解雇負責 <b>${place}</b> 的${st.em}${st.n}嗎？`:`確定雇一位 <b>${st.em}${st.n}</b> 負責 <b>${place}</b> 嗎？<br>每天薪水 💵${st.wage}（現在先付第一天）`},
+ staff(v){const [id,key]=v.split(':');const st=STAFF.find(x=>x.id===id);const place=st.per==='field'?`第 ${+key+1} 塊田`:st.per==='pen'?PEN_T[key.split('#')[0]].n+(key.includes('#')?'（第 2 位）':''):'整座農場';return (S.staff[id]||{})[key]?`確定要解雇負責 <b>${place}</b> 的${st.em}${st.n}嗎？`:`確定雇一位 <b>${st.em}${st.n}</b> 負責 <b>${place}</b> 嗎？<br>每天薪水 💵${st.wage}（現在先付第一天）`},
  guard(v){const [k,t]=v.split(':');const d=GUARD[k];const G2=S.guard||{};const where=k==='dog'?PEN_T[t].n:t[0]==='p'&&k==='lamp'?PEN_T[t.slice(1)].n:`第 ${+(k==='lamp'?t.slice(1):t)+1} 塊田`;const price=k==='iron'&&(G2.fence||{})[t]==='fence'?d.p-GUARD.fence.p:d.p;return `確定在 <b>${where}</b> ${k==='dog'?'養':'裝'} <b>${d.em}${d.n}</b> 嗎？<br>💵${price}${d.day?`，之後每天 💵${d.day}`:''}`},
  penUp(pk){const u=(S.penUp||{})[pk]||0,nx=PEN_UP[u];return `確定擴建 <b>${PEN_T[pk].em}${PEN_T[pk].n}</b> 嗎？<br>💵${nx.p}，每種動物可以多養 50%`},
  rent(id){const L=LOTS.find(l=>l.id===id);return `確定<b>租下 ${id}</b> 嗎？<br>每天租金 💵${lotPrice(L).rent}（現在先付第一天）`},
@@ -1743,7 +1746,7 @@ const PB=[0,0,0,0];
 const _ray=new THREE.Ray(),_bx=new THREE.Box3(),_hp=new THREE.Vector3(),_rc=new THREE.Raycaster();
 function fadeOcc(rdt){const pts=[];for(const y of [.25,.9,1.55])for(const sx of [-.32,0,.32])pts.push(P.pos.clone().addScaledVector(SR,sx).setY(y));const qs=pts.map(h=>{const d=h.clone().sub(camera.position);const L=d.length();return {d:d.normalize(),L}});
   for(const o of OCC){o.bt-=rdt;if(!o.box||o.bt<=0){o.bt=2;o.g.updateMatrixWorld(true);o.box=new THREE.Box3().setFromObject(o.g);o.box.expandByScalar(-.05)}
-    let hit=false;if(!S.inHome&&o.g.visible){for(const q of qs){_ray.set(camera.position,q.d);if(!_ray.intersectBox(o.box,_hp)||camera.position.distanceTo(_hp)>q.L)continue;_rc.set(camera.position,q.d);_rc.far=q.L-.2;if(_rc.intersectObject(o.g,true).length){hit=true;break}}}
+    let hit=false;if(!S.inHome&&o.g.visible){for(const q of qs){_ray.set(camera.position,q.d);if(!_ray.intersectBox(o.box,_hp)||camera.position.distanceTo(_hp)>q.L)continue;_rc.set(camera.position,q.d);_rc.camera=camera;_rc.far=q.L-.2;if(_rc.intersectObject(o.g,true).length){hit=true;break}}}
     const tgt=hit?.28:1;if(Math.abs(o.op-tgt)<.01&&o.op===tgt)continue;o.op+=(tgt-o.op)*Math.min(1,rdt*8);if(Math.abs(o.op-tgt)<.01)o.op=tgt;
     o.g.traverse(m=>{if(!m.isMesh)return;(Array.isArray(m.material)?m.material:[m.material]).forEach(mt=>{const b=mt.userData.op0==null?1:mt.userData.op0;mt.transparent=o.op<.999||!!mt.userData.tr0;mt.opacity=b*o.op;mt.depthWrite=o.op>.999&&!mt.userData.tr0})})}}
 function resize(){W=innerWidth;H=innerHeight;renderer.setSize(W,H);camera.aspect=W/H;camera.updateProjectionMatrix()}addEventListener('resize',()=>{resize();layoutHUD()});resize();
@@ -2021,7 +2024,7 @@ function petTick(rdt){if(!PETX){if(PETW.cur)spawnPet();return}const X=PETX,o=X.o
   if(!PH)return;petHouseSync();
   if(S.inHome){if(X.mode!=='phome'&&X.mode!=='pin'){X.mode='phome';X.pr=null;X.act='';if(X.item){scene.remove(X.item);X.item=null}petSay('🏠 我也回我的家囉！')}
     const dr=petDoor();if(X.mode==='phome'){const dx=dr.x-o.position.x,dz=dr.z-o.position.z,d=Math.hypot(dx,dz);if(d>40){o.position.copy(dr);}
-      if(d>.25){const sp=5*Math.min(1,(pd.big||1));o.position.x+=dx/d*Math.min(d,sp*rdt);o.position.z+=dz/d*Math.min(d,sp*rdt);o.rotation.y=lerpA(o.rotation.y,Math.atan2(dx,dz),rdt*10);X.walk=(X.walk||0)+rdt*sp*3;petAnim(o,1,X.walk)}
+      if(d>.25){const sp=5*Math.min(1,(pd.big||1));const wp=petWay(X,o,dr);const ex=wp.x-o.position.x,ez=wp.z-o.position.z,ed=Math.hypot(ex,ez)||1;o.position.x+=ex/ed*Math.min(ed,sp*rdt);o.position.z+=ez/ed*Math.min(ed,sp*rdt);o.rotation.y=lerpA(o.rotation.y,Math.atan2(ex,ez),rdt*10);X.walk=(X.walk||0)+rdt*sp*3;petAnim(o,1,X.walk)}
       else{X.mode='pin';X.inT=0;o.rotation.y=Math.PI}}
     if(X.mode==='pin'){X.inT+=rdt;const k=Math.min(1,X.inT/.6);const s0=o.userData.s0||1;o.position.z=dr.z-k*1.2*PH.s;o.scale.setScalar(s0*(1-k*.85));petAnim(o,k<1,X.inT*12);o.visible=k<1;if(PH.zz)PH.zz.visible=k>=1}
     return}
@@ -2029,7 +2032,7 @@ function petTick(rdt){if(!PETX){if(PETW.cur)spawnPet();return}const X=PETX,o=X.o
   if(torFlyObj(o,rdt))return;
   let tgt=null,spd=5.5;const BG=pd.big||1;const behind=P.pos.clone().add(V(-Math.sin(P.dir)*1.5*BG+Math.cos(P.dir)*.7*BG,0,-Math.cos(P.dir)*1.5*BG-Math.sin(P.dir)*.7*BG));
   // 叼產品
-  X.ft-=rdt;if(pd.hunt&&X.mode==='follow'&&X.ft<=0&&!S.paused){X.ft=pd.fetch;const a=rand(0,Math.PI*2);X.hp=V(Math.cos(a)*43,0,clamp(Math.sin(a)*43,-44,48));X.mode='hunt';X.pr=null;petSay(pd.id==='dino'?'吼！去森林抓獵物！':'🌈 我去森林找東西給你！')}
+  X.ft-=rdt;if(pd.hunt&&X.mode==='follow'&&X.ft<=0&&!S.paused){X.ft=pd.fetch;const a=rand(0,Math.PI*2);X.hp=V(clamp(Math.cos(a)*39,-44,38),0,clamp(Math.sin(a)*39,-40,44));X.mode='hunt';X.pr=null;petSay(pd.id==='dino'?'吼！去森林抓獵物！':'🌈 我去森林找東西給你！')}
   else if(!pd.hunt&&X.mode==='follow'&&X.ft<=0&&!S.paused){X.ft=pd.fetch;const ks=Object.keys(PENS).filter(k=>PENS[k].ring.take&&(S.piles[k].length||S.pbox[k].length));if(ks.length&&!basketFull()){X.pen=ks[Math.floor(rand(0,ks.length))];X.mode='fetch';petSay('🐾 我去幫你拿！')}}
   // 趕烏鴉
   if(X.mode==='follow'&&S.crows&&S.crows.length){let best=null,bd=pd.chase;for(const c of S.crows){const pl=PLOTS.find(p=>p.id===c.pi);if(!pl)continue;const d=Math.hypot(pl.x-o.position.x,pl.z-o.position.z);if(d<bd){bd=d;best=pl}}if(best){X.mode='chase';X.cp=best;petSay(pd.id==='dino'?'吼！':['汪！','喵！'][pd.id.includes('cat')||pd.id==='tabby'?1:0])}}
@@ -2040,16 +2043,16 @@ function petTick(rdt){if(!PETX){if(PETW.cur)spawnPet();return}const X=PETX,o=X.o
   if(X.mode==='back'){tgt=P.pos.clone();spd=7;if(Math.hypot(P.pos.x-o.position.x,P.pos.z-o.position.z)<1.3){if(!NETG){if(!addBasket(X.carry,o.position.clone().setY(.6))){const pk=X.pen;S.pbox[pk].push(X.carry)}}else flyAway(X.carry,o.position.clone().setY(.6),P.pos.clone().setY(1.2));
       toast(`${pd.em} ${pd.n}幫你叼回一個${ITEMS[X.carry].n}！`,2200);if(X.item)scene.remove(X.item);X.item=null;X.carry=null;X.mode='follow';X.act='wag';X.actT=0}}
   if(X.mode==='hunt'){tgt=X.hp;spd=pd.id==='dino'?8:9;if(Math.hypot(X.hp.x-o.position.x,X.hp.z-o.position.z)<.6){X.mode='catch';X.ct=0;X.act=pd.id==='dino'?'roar':'prance';X.actT=0}}
-  if(X.mode==='catch'){X.ct+=rdt;X.actT+=rdt;petAnim(o,0,0,X.act,X.actT);if(X.ct>1.8){const pool=PREY.filter(q=>pd.id==='dino'||!q.big);X.pr=pool[Math.floor(rand(0,pool.length))];X.item=preyModel(X.pr.k);if(pd.id!=='dino')X.item.scale.setScalar(.8);scene.add(X.item);X.mode='bring';puff(o.position.clone().setY(.6),14,0xb8a070,.2);SFX.pop&&SFX.pop()}
+  if(X.mode==='catch'){X.ct+=rdt;X.actT+=rdt;petAnim(o,0,0,X.act,X.actT);if(X.ct>1.8){const pool=PREY_LIST.filter(q=>pd.id==='dino'||!q.big);X.pr=pool[Math.floor(rand(0,pool.length))];X.item=preyModel(X.pr.k);if(pd.id!=='dino')X.item.scale.setScalar(.8);scene.add(X.item);X.mode='bring';puff(o.position.clone().setY(.6),14,0xb8a070,.2);SFX.pop&&SFX.pop()}
     if(X.item)petCarry(o);return}
-  if(X.mode==='bring'){tgt=P.pos.clone();spd=pd.id==='dino'?7.5:8.5;if(Math.hypot(P.pos.x-o.position.x,P.pos.z-o.position.z)<1.6*BG){const q=X.pr;const v=Math.round(q.v*(pd.id==='dino'?1.2:1));if(NETG)netCmd({c:'money',d:v});else earn(v,'grant');S.stats=S.stats||{};S.stats.prey=(S.stats.prey||0)+1;SFX.cash();
-      floatAt(o.position.clone().setY(2.2*BG*.6+.8),`${q.em} +💵${v}`,'#2a7a30');toast(`${pd.em} ${pd.n}從森林叼回一隻${q.em}${q.n}，換到 💵${v}！`,3200);if(X.item){const it=X.item;X.item=null;anim(.5,k=>{it.scale.setScalar(Math.max(.01,(1-k)*(pd.id==='dino'?1:.8)));it.position.y+=.02},()=>scene.remove(it))}X.pr=null;X.mode='follow';X.act=pd.id==='dino'?'stomp':'sparkle';X.actT=0}}
+  if(X.mode==='bring'){tgt=P.pos.clone();spd=pd.id==='dino'?7.5:8.5;if(Math.hypot(P.pos.x-o.position.x,P.pos.z-o.position.z)<1.6*BG){const q=X.pr;const v=Math.round(q.v*(pd.id==='dino'?1.2:1));S.stats=S.stats||{};S.stats.prey=(S.stats.prey||0)+1;if(!NETG&&S.leash.length<cap.leash()){const na=newAnimal('w_'+q.k);na.age=1;S.leash.push(na);syncLeash();SFX.pop&&SFX.pop();floatAt(o.position.clone().setY(2.2*BG*.6+.8),`${q.em} 🪢`,'#2a7a30');toast(`${pd.em} ${pd.n}從森林叼回一隻${q.em}${q.n}！已經用繩子牽著，帶去收購站可以賣 💵${ANIM['w_'+q.k].sell}`,3600)}
+      else{if(NETG)netCmd({c:'money',d:v});else earn(v,'grant');SFX.cash();floatAt(o.position.clone().setY(2.2*BG*.6+.8),`${q.em} +💵${v}`,'#2a7a30');toast(`${pd.em} ${pd.n}從森林叼回一隻${q.em}${q.n}${NETG?'':'（手上牽滿了，直接換錢）'}，換到 💵${v}！`,3600)}if(X.item){const it=X.item;X.item=null;anim(.5,k=>{it.scale.setScalar(Math.max(.01,(1-k)*(pd.id==='dino'?1:.8)));it.position.y+=.02},()=>scene.remove(it))}X.pr=null;X.mode='follow';X.act=pd.id==='dino'?'stomp':'sparkle';X.actT=0}}
   if(!tgt){tgt=behind;spd=Math.hypot(behind.x-o.position.x,behind.z-o.position.z)>4?8:5.5}
   const dx=tgt.x-o.position.x,dz=tgt.z-o.position.z,d=Math.hypot(dx,dz);if(d>30&&X.mode!=='hunt'&&X.mode!=='bring'){o.position.copy(behind);return}
   // 獨角獸：偶爾撿到金幣
   if(pd.id==='unicorn'){X.coin-=rdt;if(X.coin<=0){X.coin=rand(100,160);const v=Math.round(rand(20,60));if(NETG)netCmd({c:'money',d:v});else earn(v,'grant');floatAt(o.position.clone().setY(1.3),`🌈 撿到 💵${v}`,'#c050c0');SFX.cash()}}
   const near=d<(X.mode==='follow'?.6*BG:.3);
-  if(!near){o.position.x+=dx/d*Math.min(d,spd*rdt);o.position.z+=dz/d*Math.min(d,spd*rdt);o.rotation.y=lerpA(o.rotation.y,Math.atan2(dx,dz),rdt*10);X.walk=(X.walk||0)+rdt*spd*3;X.still=0;petAnim(o,1,X.walk);
+  if(!near){const wp=petWay(X,o,tgt);const ex=wp.x-o.position.x,ez=wp.z-o.position.z,ed=Math.hypot(ex,ez)||1;o.position.x+=ex/ed*Math.min(ed,spd*rdt);o.position.z+=ez/ed*Math.min(ed,spd*rdt);o.rotation.y=lerpA(o.rotation.y,Math.atan2(ex,ez),rdt*10);X.walk=(X.walk||0)+rdt*spd*3;X.still=0;petAnim(o,1,X.walk);
     if(X.mode==='chase'&&d<1.2){petSay(pd.id==='dino'?'吼～！':'汪汪！')}}
   else{X.still+=rdt;if(X.mode==='follow'&&X.still>2.5&&(!X.act||X.actT>rand(3.5,6))){X.act=pd.acts[Math.floor(rand(0,pd.acts.length))];X.actT=0}
     if(X.act==='zoom'&&X.still>2.5){X.actT+=rdt;const a=X.actT*5;o.position.set(P.pos.x+Math.cos(a)*1.6,0,P.pos.z+Math.sin(a)*1.6);o.rotation.y=Math.atan2(-Math.sin(a),Math.cos(a));petAnim(o,1,X.actT*25);if(X.actT>3){X.act='';X.still=0}}
@@ -2194,7 +2197,7 @@ function unicornModel(){const g=new THREE.Group(),b=new THREE.Group();g.add(b);c
   const tail=new THREE.Group();tail.position.set(0,.3,-.68);b.add(tail);MANE.forEach((c,i)=>{const crv=new THREE.CatmullRomCurve3([V((i-2.5)*.02,0,0),V((i-2.5)*.04,-.1,-.15),V((i-2.5)*.05,-.35,-.2),V((i-2.5)*.05,-.6,-.12)]);const t=mesh(new THREE.TubeGeometry(crv,10,.035,6),M(c));tail.add(t)});
   g.userData={b,head,tail,legs,ears,lh,mouth:V(0,-.18,.3)};return g}
 // 森林裡的野生動物（給暴龍、獨角獸叼回來）
-var PREY=[{k:'hare',n:'野兔',em:'🐇',v:120},{k:'squirrel',n:'松鼠',em:'🐿️',v:80},{k:'pheasant',n:'山雞',em:'🐓',v:160},{k:'wduck',n:'野鴨',em:'🦆',v:140},{k:'partridge',n:'竹雞',em:'🐦',v:110},{k:'pigeon',n:'野鴿',em:'🕊️',v:90},{k:'piglet',n:'山豬仔',em:'🐗',v:320,big:1},{k:'deer',n:'梅花鹿',em:'🦌',v:520,big:1},{k:'goose',n:'野雁',em:'🪿',v:200}];
+var PREY_OLD=[{k:'hare',n:'野兔',em:'🐇',v:120},{k:'squirrel',n:'松鼠',em:'🐿️',v:80},{k:'pheasant',n:'山雞',em:'🐓',v:160},{k:'wduck',n:'野鴨',em:'🦆',v:140},{k:'partridge',n:'竹雞',em:'🐦',v:110},{k:'pigeon',n:'野鴿',em:'🕊️',v:90},{k:'piglet',n:'山豬仔',em:'🐗',v:320,big:1},{k:'deer',n:'梅花鹿',em:'🦌',v:520,big:1},{k:'goose',n:'野雁',em:'🪿',v:200}];
 function preyModel(k){const g=new THREE.Group();let m;
   const bird=(c1,c2,bk,tl)=>{const q=new THREE.Group();const bd=mesh(G.sph,M(c1));bd.scale.set(.2,.17,.26);bd.position.y=.22;q.add(bd);const h=mesh(G.sph,M(c2));h.scale.setScalar(.11);h.position.set(0,.4,.2);q.add(h);const b2=mesh(G.cone,M(bk));b2.scale.set(.03,.09,.03);b2.rotation.x=Math.PI/2;b2.position.set(0,.39,.32);q.add(b2);if(tl){const t=mesh(G.cone,M(tl));t.scale.set(.05,.4,.04);t.rotation.x=-1.9;t.position.set(0,.3,-.35);q.add(t)}for(const s of [-1,1]){const w=mesh(G.sph,M(c2));w.scale.set(.03,.12,.2);w.position.set(.18*s,.24,0);q.add(w)}return q};
   if(k==='hare')m=quadModel({body:0xa8865a,snout:0xe8d0b0,len:.45,thick:.75,hs:.85,ear:'long',tail:'puff',leg:.45});
@@ -2227,6 +2230,15 @@ function petHouseSync(){const pd=PETS.find(p=>p.id===(PETW.cur||PETW.own[0]));co
   PH.blk[2]=2.5*s;PH.blk[3]=2.2*s;PH.blk[1]=PH.z-.05*s;
   PH.L=label('<div class="pl">🐾 寵物的家</div>',V(PH.x,2.6*s+.3,PH.z),26)}
 function petHouseTick(){if(typeof PH==="undefined"||!PH)return;petHouseSync();if(PH.zz&&PH.zz.visible){PH.zz.position.y=1.25+Math.sin(wTime*2)*.08}}
+
+/* ----- 寵物走路會繞過建築物、圍欄（直線走不過去就找路） ----- */
+function petLineFree(a,b){const L=Math.hypot(b.x-a.x,b.z-a.z),m=Math.ceil(L/.5);for(let t=1;t<=m;t++){const k=t/m;if(!walkable(a.x+(b.x-a.x)*k,a.z+(b.z-a.z)*k))return false}return true}
+function petWay(X,o,tgt){const now=X.t;
+  if(X.nav&&X.nav.length&&now<X.navT&&X.navTo&&Math.hypot(X.navTo.x-tgt.x,X.navTo.z-tgt.z)<2){}
+  else{X.lc=(X.lc||0)-1;if(X.lc<=0){X.lc=6;X.free=petLineFree(o.position,tgt)}if(X.free){X.nav=null;return tgt}
+    X.nav=findPath(o.position.clone().setY(0),V(tgt.x,0,tgt.z));X.navTo=tgt.clone();X.navT=now+1.2}
+  while(X.nav&&X.nav.length&&Math.hypot(X.nav[0].x-o.position.x,X.nav[0].z-o.position.z)<.4)X.nav.shift();
+  return X.nav&&X.nav.length?X.nav[0]:tgt}
 
 /* ======================= 連線合作（房主＋朋友，最多 4 人一起經營房主的農場） ======================= */
 // 房主負責計算整座農場；朋友把自己的位置、動作傳給房主，房主每 0.4 秒把農場狀態傳回給大家。
@@ -2730,9 +2742,9 @@ function wkMake(id,key){const o=makeFarmer();const u=o.userData;const vest=mesh(
   const home=wkHome(id,key);o.position.set(home.x+rand(-.5,.5),0,home.z+rand(-.5,.5));scene.add(o);
   const w={id,key,o,u,L:label('',V(),9),path:[],busy:0,job:null,txt:'',water:0,hose:false,load:[],stun:0,fly:null,taps:0,tapT:0,t:0,idleT:rand(1,3)};w.L.near=9;WORKERS.push(w);puff(o.position.clone().add(V(0,.6,0)),10);return w}
 function wkHome(id,key){if(id==='farmer'||id==='waterer'){const f=FI(+key);return f?V(f.x-3.3,0,f.z-.2):V(0,0,3)}if(id==='rancher'){const p=PENS[key];return p?V(p.door.x+1.2,0,p.door.z+1.2):V(0,0,3)}return id==='stocker'?V(SHOPS.feed.x-2,0,SHOPS.feed.z+3):V(1.5,0,1.6)}
-function wkSync(){const want=new Set();for(const id of ['farmer','waterer','rancher','courier','stocker']){const o=S.staff&&S.staff[id];if(!o)continue;for(const key in o)if(o[key]){if(id==='rancher'&&!PENS[key])continue;if((id==='farmer'||id==='waterer')&&!FI(+key))continue;want.add(id+'|'+key)}}
-  for(let i=WORKERS.length-1;i>=0;i--){const w=WORKERS[i];if(!want.has(w.id+'|'+w.key)){scene.remove(w.o);dropL(w.L);if(w.hoseM)scene.remove(w.hoseM);WORKERS.splice(i,1)}else want.delete(w.id+'|'+w.key)}
-  for(const k of want){const [id,key]=k.split('|');wkMake(id,key)}}
+function wkSync(){const want=new Set();for(const id of ['farmer','waterer','rancher','courier','stocker']){const o=S.staff&&S.staff[id];if(!o)continue;for(const key in o)if(o[key]){if(id==='rancher'&&!PENS[key.split('#')[0]])continue;if((id==='farmer'||id==='waterer')&&!FI(+key))continue;want.add(id+'|'+key)}}
+  for(let i=WORKERS.length-1;i>=0;i--){const w=WORKERS[i];if(!want.has(w.id+'|'+(w.full||w.key))){scene.remove(w.o);dropL(w.L);if(w.hoseM)scene.remove(w.hoseM);WORKERS.splice(i,1)}else want.delete(w.id+'|'+(w.full||w.key))}
+  for(const k of want){const [id,key]=k.split('|');const w=wkMake(id,key.split('#')[0]);w.full=key;if(key.includes('#')){w.o.position.x+=1.2;w.slot=2}}}
 function wkGo(w,to,txt,then){w.path=findPath(w.o.position.clone().setY(0),V(to.x,0,to.z));w.then=then;w.txt=txt||w.txt}
 function wkHold(w,t){w.u.anchor.clear();if(t){for(let i=0;i<Math.min(4,t.n||1);i++){const it=makeItem(t.k);it.position.y=i*ITEM_H;w.u.anchor.add(it)}}}
 function wkCarry(w,a){if(w.carryM){w.o.remove(w.carryM);w.carryM=null}if(!a)return;const m=animalModel(a);m.scale.multiplyScalar(ANIM[a.k].carry==='cage'?.55:.45);m.position.set(0,1.05,.45);w.o.add(m);w.carryM=m}
@@ -2761,7 +2773,7 @@ function wkPlan(w){const id=w.id,key=w.key;
     if(aRebuy(pk)&&SHOPS.breed){const lv=farmLv();const k=Object.keys(ANIM).find(k=>{const d=ANIM[k];return d.pen===pk&&(d.lv||1)<=lv&&S.animals.filter(x=>x.k===k).length<animMax(k)&&S.money>=d.buy+50});
       if(k)return wkGo(w,SHOPS.breed.ring,`🐣 去繁殖場買${ANIM[k].baby}`,()=>wkDo(w,1,'🐣 買小動物中',()=>{const d=ANIM[k];if(canAct()){if(S.money<d.buy||S.animals.filter(x=>x.k===k).length>=animMax(k))return;spend(d.buy,'shop');toast(`🤠 牧場工買了一隻${d.bem}${d.baby}（💵${d.buy}），帶回「${PEN_T[pk].n}」`,2600)}w.baby=newAnimal(k);wkCarry(w,w.baby)}))}
     // 自動賣：把長大的抓去收購站
-    if(aSell(pk)){const a=S.animals.find(x=>ANIM[x.k].pen===pk&&ANIM[x.k].sell&&x.age>=1);if(a&&pen.ring['c'+a.k])return wkGo(w,pen.ring['c'+a.k],`🪢 去抓長大的${ANIM[a.k].n}`,()=>wkDo(w,1,'🪢 抓動物中',()=>{if(canAct()){const i=S.animals.indexOf(a);if(i<0)return;S.animals.splice(i,1);syncAnimals();animSnd(a.k)}w.sellA=a;wkCarry(w,a)}))}
+    if(aSell(pk)){w.tgtA=0;const a=S.animals.find(x=>ANIM[x.k].pen===pk&&ANIM[x.k].sell&&x.age>=1&&!WORKERS.some(o=>o!==w&&o.tgtA===x.id));if(a&&pen.ring['c'+a.k]){w.tgtA=a.id;return wkGo(w,pen.ring['c'+a.k],`🪢 去抓長大的${ANIM[a.k].n}`,()=>wkDo(w,1,'🪢 抓動物中',()=>{w.tgtA=0;if(canAct()){const i=S.animals.indexOf(a);if(i<0)return;S.animals.splice(i,1);syncAnimals();animSnd(a.k)}w.sellA=a;wkCarry(w,a)}))}}
     if(S.piles[pk]&&S.piles[pk].length&&pen.ring.take)return wkGo(w,pen.ring.take,'🥚 去收產品',()=>wkDo(w,1.2,'🥚 收產品中',()=>{if(canAct()&&S.piles[pk].length){S.pbox[pk].push(...S.piles[pk].map(x=>x[1]));S.piles[pk]=[]}}));
     return wkIdle(w)}
   if(id==='stocker'){if(w.load.length){const k=w.load[0];const at=k==='feed'?V(7,0,2.9):V(10.5,0,2.6);return wkGo(w,at,`📦 把${ITEMS[k].n}放進${k==='feed'?'飼料桶':'乾草堆'}`,()=>wkDo(w,1,'📦 補貨中',()=>{if(canAct())S.stock[k]=Math.min(STOCK_MAX,(S.stock[k]||0)+w.load.length);toast(`🧑‍🔧 補貨員補了 ${w.load.length} 份${ITEMS[k].em}${ITEMS[k].n}`,2200);w.load=[];wkHold(w,null)}))}
@@ -2791,7 +2803,7 @@ function wkTick(rdt){punTick(rdt);wkSyncT-=rdt;if(wkSyncT<=0){wkSyncT=1;wkSync()
       if(w.busy>0&&Math.random()<rdt*30){const f=V(Math.sin(o.rotation.y),0,Math.cos(o.rotation.y));particle(hand.clone(),f.multiplyScalar(2.4).add(V(0,1,0)),0x5cb8ff,.06,.5,-8)}}
     else if(w.hoseM){scene.remove(w.hoseM);w.hoseM.geometry.dispose();w.hoseM=null}
     if(w.sayT>0)w.sayT-=rdt;
-    w.L.pos=o.position.clone().setY(2.2);w.L.near=S.inHome?0:9;setL(w.L,`<div class="pl" style="font-size:11px">${WK_N[w.id]}（${wkKeyName(w.id,w.key)}）<br>${w.sayT>0?'💬 '+w.say:w.txt}</div>`)}}
+    w.L.pos=o.position.clone().setY(2.2);w.L.near=S.inHome?0:9;setL(w.L,`<div class="pl" style="font-size:11px">${WK_N[w.id]}${w.slot?"②":""}（${wkKeyName(w.id,w.key)}）<br>${w.sayT>0?'💬 '+w.say:w.txt}</div>`)}}
 /* ---- 處罰員工：點兩下員工出現選項 ---- */
 {const cv=renderer.domElement;let dn=null;cv.addEventListener('pointerdown',e=>{dn={x:e.clientX,y:e.clientY,t:performance.now()}},true);
   cv.addEventListener('pointerup',e=>{if(!dn||Math.hypot(e.clientX-dn.x,e.clientY-dn.y)>10||performance.now()-dn.t>400||S.inHome)return;const rc=new THREE.Raycaster();rc.setFromCamera(new THREE.Vector2(e.clientX/W*2-1,-(e.clientY/H)*2+1),camera);
