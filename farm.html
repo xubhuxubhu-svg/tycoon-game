@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#7fc85a">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>製作大亨・農業與畜牧（測試版）</title>
+<title>億萬大亨・農業與畜牧（測試版）</title>
 <link id="fontcss" href="https://fonts.googleapis.com/css2?family=Huninn&display=swap" rel="stylesheet">
 <style>
 :root{color-scheme:light}
@@ -170,7 +170,7 @@ button{font-family:inherit;cursor:pointer}
 <div id="joy"><i></i></div>
 <div id="modal"><div id="panel"></div></div>
 <div id="pause"><div class="box"><div style="font-size:40px">⏸️</div><span id="pTxt">遊戲暫停中</span><br><small id="pSub">時間、作物、動物都停止</small><br><button class="hb" id="bResume" style="font-size:18px;padding:8px 22px">▶ 繼續遊戲</button></div></div>
-<div id="credit">遊戲製作：Eric Hu　製作大亨「農業與畜牧」測試版</div>
+<div id="credit">遊戲製作：Eric Hu　億萬大亨「農業與畜牧」測試版</div>
 <script type="module">
 import * as THREE from 'three';
 const $=s=>document.querySelector(s);
@@ -1640,7 +1640,7 @@ function setSnd(on,fromParent){S.snd=on?1:0;initAudio();if(A.out)A.out.gain.valu
 $('#bSnd').onclick=()=>{setSnd(!S.snd);toast(S.snd?'🔊 音效、背景音樂已開啟':'🔇 已靜音（音效、背景音樂都關閉）',1600)};$('#bSnd').textContent=S.snd?'🔊 聲音':'🔇 靜音';
 $('#bReset').onclick=()=>{if(confirm('確定要從頭開始測試嗎？農場會全部清空')&&confirm('再確認一次：真的要清空農場嗎？刪除後沒辦法復原')){localStorage.removeItem(KEY);S.reset=1;location.reload()}};
 addEventListener('beforeunload',()=>{if(S.reset)localStorage.removeItem(KEY)});
-function setPause(on,exit){S.paused=on?1:0;$('#pause').style.display=on?'flex':'none';$('#pTxt').textContent=exit?'🚪 已離開遊戲，進度已存檔':'遊戲暫停中';$('#pSub').textContent=exit?'接進主遊戲後，這個按鍵會回到「製作大亨」主畫面':'時間、作物、動物都停止';$('#bResume').textContent=exit?'▶ 回到遊戲':'▶ 繼續遊戲';save()}$('#bPause').onclick=()=>{SFX.click();setPause(true)};$('#bResume').onclick=()=>{SFX.click();clock.getDelta();setPause(false)};
+function setPause(on,exit){S.paused=on?1:0;$('#pause').style.display=on?'flex':'none';$('#pTxt').textContent=exit?'🚪 已離開遊戲，進度已存檔':'遊戲暫停中';$('#pSub').textContent=exit?'接進主遊戲後，這個按鍵會回到「億萬大亨」主畫面':'時間、作物、動物都停止';$('#bResume').textContent=exit?'▶ 回到遊戲':'▶ 繼續遊戲';save()}$('#bPause').onclick=()=>{SFX.click();setPause(true)};$('#bResume').onclick=()=>{SFX.click();clock.getDelta();setPause(false)};
 $('#goal').onclick=()=>{const tu=tutNow();if(tu){S.guide='';toast('👣 跟著地上的黃色箭頭走',1500)}else if(TASKS[0]){S.guide=TASKS[0].k;todoKey=''}};
 $('#money').onclick=()=>{SFX.click();ledger()};
 $('#bInfo').onclick=()=>{SFX.click();openPanel(`<h2>📖 遊戲說明${EMBED?'':'（測試版）'}</h2><div>
@@ -1956,12 +1956,12 @@ if(!EMBED){const tb=document.createElement('button');tb.className='hb o more';tb
      S.forceW={pi,k:k==='tor'?'storm':k};const k0=(S.t%PERIOD)/PERIOD;if(k==='typhoon'&&k0>.3)S.t=pi*PERIOD+PERIOD*.05;if(k==='storm'&&k0<.4)S.t=pi*PERIOD+PERIOD*.4;S.lastP=pi-1;
      if(k==='tor'){S.t=Math.max(S.t,pi*PERIOD+PERIOD*.4);S.tor={x:P.pos.x-14,z:P.pos.z+rand(-1,1),dz:0,life:40};SFX.bad();banner('🌪️ 龍捲風出現了！（測試）快躲進家裡！',5000)}}))}}
 
-/* ======================= 接進「製作大亨」主遊戲 ======================= */
+/* ======================= 接進「億萬大亨」主遊戲 ======================= */
 let HOLD=false;
 if(EMBED){['#bSpeed','#bReset'].forEach(q=>$(q).remove());S.speed=1;$('#credit').textContent='遊戲製作：Eric Hu';
   const fb=document.createElement('button');fb.className='hb y more';fb.id='bFun';fb.textContent='🎡 遊樂場';$('#btns').insertBefore(fb,$('#bFS'));
   fb.onclick=()=>{SFX.click();$('#btns').classList.remove('open');parent.postMessage({t:'fun',money:Math.floor(S.money)},'*')};
-  $('#bExit').onclick=()=>{SFX.click();$('#btns').classList.remove('open');closePanel();confirmAsk('確定要<b>離開農場</b>，回到「製作大亨」主畫面嗎？<br><small>進度會自動存檔</small>',()=>{save();holdFarm();parent.postMessage({t:'exit'},'*')})};
+  $('#bExit').onclick=()=>{SFX.click();$('#btns').classList.remove('open');closePanel();confirmAsk('確定要<b>離開農場</b>，回到「億萬大亨」主畫面嗎？<br><small>進度會自動存檔</small>',()=>{save();holdFarm();parent.postMessage({t:'exit'},'*')})};
   $('#bFS').onclick=()=>{SFX.click();parent.postMessage({t:'fs'},'*')};
   setInterval(()=>{try{parent.postMessage({t:'sync',money:Math.floor(S.money),paused:!!(S.paused||HOLD),lv:NETG?0:farmLv()},'*')}catch(e){}},1000);
   addEventListener('message',e=>{const m=e.data;if(!m||e.source!==parent)return;
@@ -2280,7 +2280,7 @@ function netSend(o){if(NET.ws&&NET.ws.readyState===1)NET.ws.send(JSON.stringify(
 function netCmd(o){if(!NET.hostUid)return;netSend({...o,t:'cmd',_to:NET.hostUid})}
 const netUidKey=c=>'zzdh_farm_netuid_'+c;
 function netBaseUid(){let u='';try{u=localStorage.getItem('zzdh_farm_uid')}catch(e){}if(!u){u='f'+Math.random().toString(36).slice(2,10);try{localStorage.setItem('zzdh_farm_uid',u)}catch(e){}}return u}
-function netConnect(first){if(!netOK()){netErr('這個網址不能連線。連線合作要在你架設的「製作大亨」網站（Render）上才能使用');return}
+function netConnect(first){if(!netOK()){netErr('這個網址不能連線。連線合作要在你架設的「億萬大亨」網站（Render）上才能使用');return}
   let ws;try{ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host+'/net')}catch(e){netErr('連線失敗，請稍後再試');return}
   NET.ws=ws;ws.onopen=first;ws.onerror=()=>{if(!NET.role)netErr('連線失敗。連線合作要在你架設的網站上才能使用')};
   ws.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch(_){return}try{netMsg(m)}catch(err){console.error(err)}};

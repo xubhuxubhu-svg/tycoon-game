@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#7fc85a">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>製作大亨・漁業與海洋（測試版）</title>
+<title>億萬大亨・漁業與海洋（測試版）</title>
 <link id="fontcss" href="https://fonts.googleapis.com/css2?family=Huninn&display=swap" rel="stylesheet">
 <style>
 :root{color-scheme:light}
@@ -170,7 +170,7 @@ button{font-family:inherit;cursor:pointer}
 <div id="joy"><i></i></div>
 <div id="modal"><div id="panel"></div></div>
 <div id="pause"><div class="box"><div style="font-size:40px">⏸️</div><span id="pTxt">遊戲暫停中</span><br><small id="pSub">時間、船、養殖都停止</small><br><button class="hb" id="bResume" style="font-size:18px;padding:8px 22px">▶ 繼續遊戲</button></div></div>
-<div id="credit">遊戲製作：Eric Hu　製作大亨「漁業與海洋」測試版</div>
+<div id="credit">遊戲製作：Eric Hu　億萬大亨「漁業與海洋」測試版</div>
 <script type="module">
 import * as THREE from 'three';
 const $=s=>document.querySelector(s);
@@ -1185,7 +1185,7 @@ function setSnd(on,fromParent){S.snd=on?1:0;initAudio();if(A.out)A.out.gain.valu
 if(S.snd==null)S.snd=1;$('#bSnd').onclick=()=>{setSnd(!S.snd)};setTimeout(()=>setSnd(S.snd,1),500);
 $('#bReset').onclick=()=>{confirmAsk('確定要<b>重新開始</b>漁港嗎？所有進度都會清除！',()=>{window.__noSave=1;localStorage.removeItem(KEY);location.reload()})};
 $('#bFS').onclick=()=>{SFX.click();if(EMBED){parent.postMessage({t:'fs'},'*');return}const d=document.documentElement;try{if(!document.fullscreenElement)(d.requestFullscreen||d.webkitRequestFullscreen).call(d);else document.exitFullscreen()}catch(e){}};
-$('#bExit').onclick=()=>{SFX.click();if(!EMBED){location.href='index.html';return}confirmAsk('確定要<b>離開漁港</b>，回到「製作大亨」主畫面嗎？<br><small>進度會自動存檔</small>',()=>{save();holdGame();parent.postMessage({t:'exit'},'*')})};
+$('#bExit').onclick=()=>{SFX.click();if(!EMBED){location.href='index.html';return}confirmAsk('確定要<b>離開漁港</b>，回到「億萬大亨」主畫面嗎？<br><small>進度會自動存檔</small>',()=>{save();holdGame();parent.postMessage({t:'exit'},'*')})};
 $('#money').onclick=()=>{SFX.click();ledger('lv')};$('#goal').onclick=()=>{SFX.click();helpPanel()};
 /* ---- 移動 ---- */
 const keys={};addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true});addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
@@ -1241,7 +1241,7 @@ function frameBody(){if(HOLD){clock.getDelta();return}const rdt=Math.min(.05,clo
   taskT-=rdt;if(taskT<=0){taskT=.5;TASKS=buildTasks();renderTodo();layoutHUD();if(S.flow.length>400)S.flow=S.flow.filter(f=>S.t-f[0]<DAY*3);save.t=(save.t||0)+1;if(save.t%10===0)save()}
   hud();if(typeof tutTick==='function')tutTick(rdt);renderer.render(scene,camera)}
 addEventListener('beforeunload',()=>save());document.addEventListener('visibilitychange',()=>{if(document.hidden)save()});
-/* ======================= 接進「製作大亨」主遊戲 ======================= */
+/* ======================= 接進「億萬大亨」主遊戲 ======================= */
 function holdGame(){HOLD=true;RUN=false;save();window.__farmHold=true}
 function resumeGame(){window.__farmHold=false;HOLD=false;const off=offlineSim();clock.getDelta();RUN=true;if(off&&off.away>=60)showBack(off)}
 function showBack(o){openPanel(`<h2>👋 歡迎回來！</h2><div class="big3">你離開了 ${fmtReal(o.away)}</div><div>這段時間漁港賺了 💵${Math.max(0,o.earn).toLocaleString()}${o.earn<0?`（付了帳單 💵${-o.earn}）`:''}</div><div class="note">船、養殖、曬魚架、研究都有繼續進行。看「📋 紀錄看板」和「📒 帳本 → 通知」了解詳細。</div>`)}

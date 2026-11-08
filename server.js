@@ -1,6 +1,6 @@
-// 製作大亨 — 連線伺服器（Render「網頁服務」直接部署）
+// 億萬大亨 — 連線伺服器（Render「網頁服務」直接部署）
 // 1. 提供遊戲網頁與所有檔案
-// 2. 「/net」：製作大亨雙人連線（合作經營、對戰邀請、即時畫面）
+// 2. 「/net」：億萬大亨雙人連線（合作經營、對戰邀請、即時畫面）
 // 3. 其他路徑：極速F1 內建的連線賽車房間
 const http = require('http');
 const fs = require('fs');
@@ -66,7 +66,7 @@ const server = http.createServer((req, res) => {
 const wss = new WebSocketServer({ server, maxPayload: 2 * 1024 * 1024 });
 function send(ws, obj) { if (ws && ws.readyState === 1) ws.send(typeof obj === 'string' ? obj : JSON.stringify(obj)); }
 
-/* ================= 製作大亨：多人合作大廳 ================= */
+/* ================= 億萬大亨：多人合作大廳 ================= */
 const LOBBY = new Set();
 let lobbyT = null;
 function lobbyList() {
@@ -87,7 +87,7 @@ function lobbyDirty() { if (lobbyT) return; lobbyT = setTimeout(() => { lobbyT =
 function lobbyTo(lu, obj) { let n = 0; if (!lu) return 0; const s = JSON.stringify(obj); for (const w of LOBBY) if (w.readyState === 1 && w.lobby && w.lobby.lu === lu) { w.send(s); n++; } return n; }
 setInterval(lobbyDirty, 5000);
 
-/* ================= 製作大亨：合作房間（雙人 2 位／多人 4 位，斷線可用房號回來） ================= */
+/* ================= 億萬大亨：合作房間（雙人 2 位／多人 4 位，斷線可用房號回來） ================= */
 // 房間成員用玩家代號記住；有人登出時保留位置 30 分鐘，用同一個房號就能回來繼續玩。
 const tRooms = new Map();
 function tMembers(r) { return [...r.mem.values()].map(m => ({ uid: m.uid, name: m.name, slot: m.slot, on: !!(m.ws && m.ws.readyState === 1) })); }
@@ -260,4 +260,4 @@ setInterval(() => {
   wss.clients.forEach(ws => { if (!ws.isAlive) return ws.terminate(); ws.isAlive = false; try { ws.ping(); } catch {} });
 }, 25000);
 
-server.listen(PORT, () => console.log('製作大亨 伺服器啟動於連接埠 ' + PORT));
+server.listen(PORT, () => console.log('億萬大亨 伺服器啟動於連接埠 ' + PORT));

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>製作大亨</title>
+<title>億萬大亨</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link id="fontcss" href="https://fonts.googleapis.com/css2?family=Huninn&display=swap" rel="stylesheet">
@@ -296,7 +296,7 @@ body.ing #toast{top:138px}
   </div>
 </div>
 <div id="titleWrap">
-  <div id="title"><span>製</span><span>作</span><span>大</span><span>亨</span>
+  <div id="title"><span>億</span><span>萬</span><span>大</span><span>亨</span>
     <i class="star" style="left:-20px;top:-6px">✦</i><i class="star" style="right:-18px;top:6px;animation-delay:.6s">✦</i><i class="star" style="left:46%;top:-20px;animation-delay:1.1s;font-size:15px">✦</i><i class="star" style="right:20%;bottom:-8px;animation-delay:.3s;font-size:13px">♥</i>
   </div><br>
   <div id="slogan"></div>
@@ -315,7 +315,7 @@ body.ing #toast{top:138px}
     <button class="ib" data-p="credits"><div class="sq">📜</div><span>聲明</span></button>
   </div>
 </div>
-<div id="credit">遊戲製作：Eric Hu　版本 2.1.0</div>
+<div id="credit">遊戲製作：Eric Hu　版本 2.3.0</div>
 </div>
 <div id="game" class="hide">
   <div id="lbls"></div>
@@ -988,7 +988,7 @@ function makeArrow(){const a=new THREE.Group();const c=mesh(new THREE.ConeGeomet
 if(G.tapped)$('#tapHint').style.display='none';
 
 /* ---- 首頁特效標語 ---- */
-const SLOGANS=['從一塊肉開始，打造美食帝國！','搬一搬、做一做，錢錢滾滾來～','雇員工、蓋產線，躺著也能賺！','44 種美食，等你一路解鎖！','你就是下一位製作大亨！','原料變商品，商品變鈔票！','和好朋友一起開工吧！'];
+const SLOGANS=['從一塊肉開始，打造美食帝國！','搬一搬、做一做，錢錢滾滾來～','雇員工、蓋產線，躺著也能賺！','44 種美食，等你一路解鎖！','你就是下一位億萬大亨！','原料變商品，商品變鈔票！','和好朋友一起開工吧！'];
 const SLOGAN_COLORS=['#ff6b6b','#ff9f43','#ffc312','#3fae50','#2f9bf0','#9c5fd1','#ff6fb5'];
 let sloganI=0;
 function showSlogan(){const el=$('#slogan');const old=[...el.querySelectorAll('.w')];old.forEach((w,i)=>{w.classList.remove('in');w.style.animationDelay=(i*.015)+'s';w.classList.add('out')});
@@ -1056,7 +1056,7 @@ const PANELS={
      $('#reTut').onclick=()=>{SFX.click();try{localStorage.removeItem('zzdh_tut_food_v1')}catch(e){}closePanel();toast('好的！下次進入「飲食與料理」地圖時會重新教學',3000)};
      $('#rst').onclick=()=>{SFX.click();resetPanel()}})},
  credits(){openPanel('📜 製作與來源聲明',`<div class="txt">
-   <h3>🎮 製作聲明</h3>遊戲名稱：製作大亨<br>遊戲製作：Eric Hu<br>程式、立體場景、角色、特效：由 Claude 協助以程式碼產生<br>音效：全部以程式即時合成，未使用外部音效檔<br>背景音樂：由製作人提供，見下方「音樂來源」
+   <h3>🎮 製作聲明</h3>遊戲名稱：億萬大亨<br>遊戲製作：Eric Hu<br>程式、立體場景、角色、特效：由 Claude 協助以程式碼產生<br>音效：全部以程式即時合成，未使用外部音效檔<br>背景音樂：由製作人提供，見下方「音樂來源」
    <h3>🕹️ 遊戲玩法說明</h3>① 到地圖中央的原料中心拿原料，送進店裡的機器加工，再放到櫃台賣給客人。<br>② 每條工作路線都要<b>先自己親手做過 1～2 次</b>，才會出現雇人／買機器的藍色圈圈。<br>③ 雇人、買機器、開新店都要花錢；員工每分鐘領薪水，店家每分鐘還要付租金、水電瓦斯和 12% 營業稅。<br>④ 金額旁邊會一直顯示「保底金額」（每一期帳單的金額）。錢低於保底的 3 倍時，金額會閃爍提醒。<br>⑤ 錢不夠付薪水時，<b>全部店家會停止營運</b>，畫面會一直提示你去哪裡手動賺錢；停業期間帳單減半，欠款分 2 期慢慢還。<br>⑥ <b>超過 30 分鐘沒有上線</b>，店家會自動停止營運（離線收益最多只算 30 分鐘）。<br>⑦ <b>金額達到 10 萬元</b>時，金庫滿了，全部店家會暫停營運，要先花掉一些錢（開新店、遊樂場）才會恢復。<br>⑧ 等錢開新店的空檔，可以到「🎡 遊樂場」用賺到的錢試試手氣。
    <h3>📚 來源聲明</h3>各系列的玩法企劃，整理自製作人提供的玩法清單（製作人於網路上蒐集整理），並依「收集原料 ➜ 加工製作 ➜ 自動販售／升級擴建」的核心玩法重新設計成連貫的大地圖。<br>畫面中的食物、物品圖示使用裝置內建的表情符號字型顯示。<br>中文字型：粉圓體（justfont 開源字型，開放字型授權）。<br>立體繪圖：開放原始碼函式庫 three.js（MIT 授權）。
    <h3>🎵 音樂來源</h3>背景音樂全部來自 Pixabay 免費音樂庫（依 Pixabay 授權使用），作者與編號如下：<br>
@@ -1126,14 +1126,14 @@ function resetPanel(){let ser=0,md='solo';const draw=()=>{const sn=['🌾 第 1 
 /* ======================= 匯出／匯入存檔（全部系列、單人和合作、教學紀錄、設定都包含） ======================= */
 function saveKeys(){const ks=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith('zzdh_')&&!k.includes('_test'))ks.push(k)}return ks}
 function saveExport(){try{save();if(farmIf&&farmIf.contentWindow&&farmIf.contentWindow.__farmSave)farmIf.contentWindow.__farmSave();if(typeof fishIf!=='undefined'&&fishIf&&fishIf.contentWindow.__farmSave)fishIf.contentWindow.__farmSave()}catch(e){}
-  const data={game:'製作大亨',ver:3,time:new Date().toISOString(),keys:{},slots:{}};saveKeys().forEach(k=>data.keys[k]=localStorage.getItem(k));
+  const data={game:'億萬大亨',ver:3,time:new Date().toISOString(),keys:{},slots:{}};saveKeys().forEach(k=>data.keys[k]=localStorage.getItem(k));
   idbAll().then(sl=>{data.slots=sl;saveExport2(data)}).catch(()=>saveExport2(data))}
 function saveExport2(data){
-  const d=new Date(),pad=n=>String(n).padStart(2,'0');const name=`製作大亨存檔_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.json`;
+  const d=new Date(),pad=n=>String(n).padStart(2,'0');const name=`億萬大亨存檔_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.json`;
   const blob=new Blob([JSON.stringify(data)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},2000);
   toast(`📤 已匯出存檔（${Object.keys(data.keys).length+Object.keys(data.slots||{}).length} 份資料，包含所有存檔格），檔案在手機或電腦的「下載」資料夾`,4500)}
-function saveImport(){const inp=document.createElement('input');inp.type='file';inp.accept='.json,application/json';inp.onchange=()=>{const f=inp.files&&inp.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{let data;try{data=JSON.parse(r.result)}catch(e){toast('❌ 這個檔案不是製作大亨的存檔');return}
-    if(!data||data.game!=='製作大亨'||!data.keys){toast('❌ 這個檔案不是製作大亨的存檔');return}const n=Object.keys(data.keys).length;
+function saveImport(){const inp=document.createElement('input');inp.type='file';inp.accept='.json,application/json';inp.onchange=()=>{const f=inp.files&&inp.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{let data;try{data=JSON.parse(r.result)}catch(e){toast('❌ 這個檔案不是億萬大亨的存檔');return}
+    if(!data||(data.game!=='億萬大亨'&&data.game!=='製作大亨')||!data.keys){toast('❌ 這個檔案不是億萬大亨的存檔');return}const n=Object.keys(data.keys).length;
     ask(`確定要匯入存檔嗎？<br><small>存檔時間：${new Date(data.time).toLocaleString('zh-TW')}<br>共 ${n} 份資料，<b>會蓋掉現在的進度</b></small>`,()=>setTimeout(()=>ask('⚠️ 再確認一次：現在的進度會被這個存檔取代，<b>確定嗎？</b><br><small>建議先「📤 匯出」一份現在的存檔備用</small>',()=>{
       try{if(farmIf){try{farmIf.contentWindow.__noSave=true}catch(e){}farmIf.remove();farmIf=null}if(fishIf){try{fishIf.contentWindow.__noSave=true}catch(e){}fishIf.remove();fishIf=null}saveKeys().forEach(k=>localStorage.removeItem(k));for(const k in data.keys)if(k.startsWith('zzdh_'))localStorage.setItem(k,data.keys[k])}catch(e){toast('❌ 匯入失敗：手機儲存空間不夠');return}
       hooks.beforeSave.length=0;window.__noMainSave=true;toast('✅ 匯入完成，重新載入中…',2000);(async()=>{try{await idbClear();for(const k in (data.slots||{}))await idbSet(k,data.slots[k])}catch(e){}setTimeout(()=>location.reload(),600)})()}),150))};r.readAsText(f)};inp.click()}
@@ -1444,13 +1444,15 @@ function buildHub(){const scene=GW.scene;const H={src:{},mill:null,g:new THREE.G
   const fl=mesh(new THREE.CircleGeometry(23.5,72),new THREE.MeshLambertMaterial({map:(()=>{const t=floorTex('stone','#dfe4e9');t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(3,3);return t})()}),false);fl.rotation.x=-Math.PI/2;fl.position.y=.02;H.g.add(fl);
   const ed=mesh(new THREE.RingGeometry(23.5,24.1,72),M(0xb9c3cd),false);ed.rotation.x=-Math.PI/2;ed.position.y=.03;H.g.add(ed);
   // 中央雪人廚師雕像
-  const st=new THREE.Group();Cy(1.2,1.4,.5,0xb9c3cd,0,.25,0,st,20);Sp(.8,0xffffff,0,1.2,0,st);Sp(.6,0xffffff,0,2.2,0,st);Cy(.45,.45,.5,0xffffff,0,2.9,0,st,16);Sp(.5,0xffffff,0,3.25,0,st).scale.y=.6;
+  const st=new THREE.Group();st.scale.setScalar(2);Cy(1.2,1.4,.5,0xb9c3cd,0,.25,0,st,20);Sp(.8,0xffffff,0,1.2,0,st);Sp(.6,0xffffff,0,2.2,0,st);Cy(.45,.45,.5,0xffffff,0,2.9,0,st,16);Sp(.5,0xffffff,0,3.25,0,st).scale.y=.6;
   for(const s of [-1,1])Sp(.07,0x1d1d1d,s*.2,2.3,.52,st);const nose=mesh(new THREE.ConeGeometry(.08,.35,6),M(0xff8a3d));nose.rotation.x=Math.PI/2;nose.position.set(0,2.15,.62);st.add(nose);Cy(.65,.65,.1,0xd93636,0,1.75,0,st,16);H.g.add(st);H.statue=st;
-  GW.solids.push({x0:-1.5,x1:1.5,z0:-1.5,z1:1.5});
-  H.signL=label('<div class="zsign"><div class="nm">🧺 原料中心</div></div>',V(0,4.6,0),null);
-  for(const item in HUB.src){const d=HUB.src[item];const m=buildSource(d.kind,item,d.crop);m.position.set(d.p[0],0,d.p[1]);m.rotation.y+=Math.atan2(d.ring[0]-d.p[0],d.ring[1]-d.p[1])-(d.kind==='barn'?Math.PI/2:0);scene.add(m);
-    const S={type:'src',item,ring:V(d.ring[0],0,d.ring[1]),mesh:m,name:ITEMS[item].n,key:'src:'+item,hub:true};S.rg=makeRing(S.ring,COL.pick,[ITEMS[item].em]);
-    S.L=label(`<div class="rl pick"><span class="i">${ITEMS[item].em}</span>拿${ITEMS[item].n}<small> 站進圈圈</small></div>`,S.ring.clone().setY(2.4),S,S.key);nameLabel(S.ring,`${ITEMS[item].em} ${ITEMS[item].n}`,S,S.L);S.solid={x0:d.p[0]-1.6,x1:d.p[0]+1.6,z0:d.p[1]-1.6,z1:d.p[1]+1.6};H.src[item]=S}
+  GW.solids.push({x0:-2.8,x1:2.8,z0:-2.8,z1:2.8});
+  H.signL=label('<div class="zsign"><div class="nm">🧺 原料中心</div></div>',V(0,8.4,0),null);
+  for(const item in HUB.src){const d=HUB.src[item];const m=buildSource(d.kind,item,d.crop);
+    // 圓圈改在原料的正下方：原料往後退一點，圓圈放在原料原本的位置
+    const bx=d.p[0]-d.ring[0],bz=d.p[1]-d.ring[1],bl=Math.hypot(bx,bz)||1;const back=V(d.p[0]+bx/bl*1.15,0,d.p[1]+bz/bl*1.15);const rp=V(d.p[0]-bx/bl*.25,0,d.p[1]-bz/bl*.25);m.position.copy(back);m.rotation.y+=Math.atan2(d.ring[0]-d.p[0],d.ring[1]-d.p[1])-(d.kind==='barn'?Math.PI/2:0);scene.add(m);
+    const S={type:'src',item,ring:rp,mesh:m,name:ITEMS[item].n,key:'src:'+item,hub:true};S.rg=makeRing(S.ring,COL.pick,[ITEMS[item].em]);
+    S.L=label(`<div class="rl pick"><span class="i">${ITEMS[item].em}</span>拿${ITEMS[item].n}<small> 站進圈圈</small></div>`,S.ring.clone().setY(2.4),S,S.key);nameLabel(S.ring,`${ITEMS[item].em} ${ITEMS[item].n}`,S,S.L);S.solid={x0:back.x+bx/bl*.5-1.1,x1:back.x+bx/bl*.5+1.1,z0:back.z+bz/bl*.5-1.1,z1:back.z+bz/bl*.5+1.1};H.src[item]=S}
   const md=HUB.mill;const mm=buildMachine('mill',0xc0563f);mm.g.position.set(md.p[0],0,md.p[1]);mm.g.rotation.y=Math.PI/2;scene.add(mm.g);
   const Mo=makeMachObj(md,mm,V(md.p[0],0,md.p[1]),V(...md.in.concat(0)).set(md.in[0],0,md.in[1]),V(md.out[0],0,md.out[1]),'mach:mill');Mo.hub=true;Mo.cap=40;Mo.out.cap=32;H.mill=Mo;Mo.solid={x0:md.p[0]-1.3,x1:md.p[0]+1.3,z0:md.p[1]-1.3,z1:md.p[1]+1.3}}
 function refreshHub(){const H=GW.hub,st=GW.st;
@@ -2642,12 +2644,12 @@ const SR=V(1,0,-1).normalize(),SD=V(1,0,1).normalize();
 function collide(p,r=.38){for(const b of GW.solids){if(b.ob){const dx=p.x-b.cx,dz=p.z-b.cz;let lx=dx*b.c-dz*b.s,lz=dx*b.s+dz*b.c;const X=b.hw+r,Z=b.hd+r;if(Math.abs(lx)<X&&Math.abs(lz)<Z){if(X-Math.abs(lx)<Z-Math.abs(lz))lx=Math.sign(lx||1)*X;else lz=Math.sign(lz||1)*Z;p.x=b.cx+lx*b.c+lz*b.s;p.z=b.cz-lx*b.s+lz*b.c}continue}if(p.x>b.x0-r&&p.x<b.x1+r&&p.z>b.z0-r&&p.z<b.z1+r){const dl=p.x-(b.x0-r),dr=(b.x1+r)-p.x,du=p.z-(b.z0-r),dd=(b.z1+r)-p.z;const m=Math.min(dl,dr,du,dd);if(m===dl)p.x=b.x0-r;else if(m===dr)p.x=b.x1+r;else if(m===du)p.z=b.z0-r;else p.z=b.z1+r}}
   for(const [x,z,s] of GW.trees){const dx=p.x-x,dz=p.z-z,d=Math.hypot(dx,dz),rr=r+.7*s;if(d<rr&&d>0){p.x=x+dx/d*rr;p.z=z+dz/d*rr}}
   const R=Math.max(16,...GW.shops.filter(S=>S.built||GW.pads.some(o=>o.S===S)).map(S=>S.c.length()+S.rad+3));const l=Math.hypot(p.x,p.z);if(l>R){p.x*=R/l;p.z*=R/l}}
-function updatePlayer(p,dt){const [ix,iy]=p.remote?[0,0]:inputOf(p.inId??p.id);let speed=p.remote?netMoveRemote(p,dt):0;
+function updatePlayer(p,dt){if(p.kick&&kickFly(p,dt))return;const [ix,iy]=p.remote?[0,0]:inputOf(p.inId??p.id);let speed=p.remote?netMoveRemote(p,dt):0;
   if(p.dance>0){p.dance-=dt;const u=p.o.userData;u.body.position.y=Math.abs(Math.sin(p.dance*9))*.5;p.o.rotation.y+=dt*10;u.arms.forEach((a,i)=>{a.rotation.z=(i?-1:1)*(1.2+Math.sin(p.dance*12)*.6)});if(p.dance<=0)u.arms.forEach((a,i)=>a.rotation.z=(i?-1:1)*.18);return}
   if(ix||iy){const mv=V(0,0,0).addScaledVector(SR,ix).addScaledVector(SD,iy);const mag=Math.min(1,mv.length());mv.normalize();const sp=6.4*mag*(buffOn('run')?1.5:1)*fvMul(p);const old=p.pos.clone();p.pos.addScaledVector(mv,sp*dt);collide(p.pos);speed=old.distanceTo(p.pos)/dt;p.dir=Math.atan2(mv.x,mv.z)}
   p.o.rotation.y=lerpA(p.o.rotation.y,p.dir,dt*14);walkAnim(p,speed,dt,p.stack.length+p.incoming>0,(q)=>{if(!p.vehM){puff(q.pos.clone().add(V(0,.08,0)),2,.1);SFX.step()}});if(p.vehM)fvPose(p,speed,dt);
   for(const s of GW.stList){if(Math.abs(s.pos?0:0)>0)continue;
-    if(s.type==='src'){if(d2(p.pos,s.ring)<RING_R&&cdReady(p,'src',dt)){p.cd.src=.06;if(pickSource(p,s))seen(s.key)}}
+    if(s.type==='src'){const inS=d2(p.pos,s.ring)<RING_R;if(inS){if(p.dwS!==s){p.dwS=s;p.dwT=0}p.dwT+=dt}else if(p.dwS===s)p.dwS=null;if(inS&&p.dwT>=.35&&cdReady(p,'src',dt)){p.cd.src=.06;if(pickSource(p,s))seen(s.key)}}
     else if(s.type==='mach'){if(d2(p.pos,s.inR)<RING_R&&cdReady(p,'min',dt)){for(const t of s.in)if(acceptCount(s,t)>0&&giveTo(p,s,t)){p.cd.min=.07;seen(s.key+':in');manualGive(s,t);break}}
       if(d2(p.pos,s.outR)<RING_R&&cdReady(p,'mout',dt)){if(takeFrom(p,s.out)){p.cd.mout=.06;seen(s.key+':out')}}}
     else if(d2(p.pos,s.drop)<RING_R&&cdReady(p,'cnt',dt)&&acceptCount(s,s.item)>0&&giveTo(p,s,s.item)){p.cd.cnt=.07;seen(s.key);manualGive(s,s.item)}}}
@@ -2759,20 +2761,20 @@ function updateInv(p,el){if(!p){el.innerHTML='';el.dataset.k='';return}const ct=
   el.querySelectorAll('button').forEach(b=>b.onclick=e=>{e.stopPropagation();discard(p,b.dataset.t||null);seen('discard')})}
 
 /* ======================= 每一幀 ======================= */
-function updateGame(dt){const W0=GW;W0.time+=dt;const t=W0.time;
+function updateGame(dt){const W0=GW;const pdt=dt;dt=dt*fpSpeed();W0.time+=pdt;const t=W0.time;
   W0.stList=stations();
-  W0.players.forEach(p=>updatePlayer(p,dt));
+  W0.players.forEach(p=>updatePlayer(p,pdt));
   updateMachines(dt);
   for(const S of W0.shops){if(!S.built)continue;const vis=W0.players.some(p=>d2(p.pos,S.c)<34);
     if(S.grow!==undefined&&S.grow<1){S.grow=Math.min(1,S.grow+dt*1.6);S.g.scale.set(1,Math.max(.01,easeBack(S.grow)),1)}
     updateCusts(S,dt,vis);if(vis&&S.sigG){const u=S.sigG.userData;if(u.spin)u.spin.rotation.y+=dt*1.2;if(u.reels)u.reels.forEach(r=>r.rotation.z+=dt*1.5);if(u.wheel)u.wheel.rotation.z+=dt*.5;if(u.bubbles)u.bubbles.forEach((b,i)=>{b.position.y+=dt*(.4+i*.05);if(b.position.y>2.2)b.position.y=.6});if(u.neon)u.neon.material.color.setHSL((t*.3)%1,.9,.65);if(u.hand)u.hand.rotation.z=-t;if(u.bob)u.bob.position.y=Math.sin(t*2)*.15;if(u.fire&&Math.random()<dt*10)particle(S.sigG.localToWorld(V(rand(-.4,.4),.9,rand(-.4,.4))),V(0,rand(1.2,2),0),Math.random()<.5?0xff9a2e:0xffd34d,rand(.06,.1),rand(.3,.5),2);if(u.lava&&Math.random()<dt*6)particle(S.sigG.localToWorld(u.lava.clone()),V(rand(-1,1),rand(2,3.5),rand(-1,1)),Math.random()<.5?0xff5a1a:0xffb31a,rand(.1,.16),rand(.6,1),-4);if(u.steam&&Math.random()<dt*3)particle(S.sigG.localToWorld(u.steam.clone()),V(rand(-.1,.1),rand(.6,1),rand(-.1,.1)),0xf2f5f8,rand(.14,.22),rand(.8,1.2),.3);if(u.fireR&&Math.random()<dt*12)particle(S.sigG.localToWorld(V(0,.3+u.bob.position.y,0)),V(rand(-.3,.3),rand(-1.5,-.5),rand(-.3,.3)),Math.random()<.5?0xff9a2e:0xffd34d,rand(.08,.14),rand(.3,.5),0)}if(vis&&S.cntA&&S.cntA.spin)S.cntA.spin.rotation.y+=dt*(S.def.counter.look==='sushiring'?.5:1.2);if(vis&&S.cntA&&S.cntA.bulbs)S.cntA.bulbs.forEach((b,i)=>b.material.color.setHSL(.13,1,((i+Math.floor(t*4))%2)?.75:.45));S.links.forEach(lk=>{if(lk.on&&lk.kind==='belt')updateBelt(lk,dt)});S.cash.update(dt)}
   const H=W0.hub;for(const k in H.src){const s=H.src[k];if(!s.on)continue;if(s.grow!==undefined&&s.grow<1){s.grow=Math.min(1,s.grow+dt*2);s.mesh.scale.set(1,Math.max(.01,easeBack(s.grow)),1)}
     const pl=s.mesh.userData.plants;if(pl&&s.mesh.userData.crop==='wheat'&&nearAny(s.ring,30))pl.forEach((p,i)=>{p.rotation.x=Math.sin(t*2+i)*.12;p.rotation.z=Math.cos(t*1.7+i)*.12});if(s.mesh.userData.cow)s.mesh.userData.cow.rotation.y=Math.sin(t*.8)*.3;const hn=s.mesh.userData.hens;if(hn&&nearAny(s.ring,30))hn.forEach((h,i)=>{h.position.y=Math.max(0,Math.sin(t*5+i*2))*.12;h.rotation.y=Math.sin(t*.9+i)*1.2});const fs=s.mesh.userData.fish;if(fs)fs.forEach((f,i)=>{const a=t*(.8+i*.25)+i*2;f.position.set(Math.cos(a)*(.5+i*.3),.1,Math.sin(a)*(.5+i*.3));f.rotation.y=-a})}
-  H.statue.rotation.y=Math.sin(t*.7)*.3;
+  H.statue.rotation.y+=pdt*.6;hubYeti(pdt);
   W0.helpers.forEach(h=>updateHelper(h,dt,W0.players.some(p=>d2(p.pos,h.pos)<34)));
   updatePads(dt);
   if(!W0.strike)W0.belts.forEach(b=>{b.tex.offset.y+=dt*1.6*b.dir});
-  if(W0.net!=='guest'){payroll(dt);billing(dt);eventTick(dt);miniTick(dt)}else{W0.evs=(W0.evs||[]).filter(e=>e.until>W0.time)}idleHint(dt);facUpdate(dt);netTick(dt);
+  if(W0.net!=='guest'){payroll(dt);billing(pdt);eventTick(pdt);miniTick(pdt)}else{W0.evs=(W0.evs||[]).filter(e=>e.until>W0.time)}idleHint(dt);facUpdate(dt);netTick(dt);
   W0.rings.forEach(r=>{if(!r.visible)return;const k=((t*.9)+r.userData.ph)%1;r.userData.pulse.scale.setScalar(1+k*.5);r.userData.pulse.material.opacity=.6*(1-k);if(r.userData.icon)r.userData.icon.position.y=1.15+Math.sin(t*3+r.userData.ph)*.1});
   W0.arrows.forEach(a=>{a.material.opacity=.25+.7*Math.max(0,Math.sin(t*5-a.userData.ph*6))});
   goalT-=dt;if(goalT<=0){goalT=.35;goal=computeGoal(W0.players[0]);const e=$('#goal');const txt=goal?'👉 '+goal.text:'✨ 一切順利運轉中～';if(e.textContent!==txt){e.textContent=txt;e.animate([{transform:'translateX(-50%) scale(1.12)'},{transform:'translateX(-50%) scale(1)'}],{duration:250})}}
@@ -2882,7 +2884,7 @@ function billRates(){const r={rent:0,power:0,gas:0,water:0};const opened=GW.shop
     S.def.mach.forEach(md=>{r.power+=3;if(HEAT.includes(md.look)||md.look.heat)r.gas+=4;if(WET.includes(md.look)||md.look.wet)r.water+=2});
     S.links.forEach(l=>{if(l.on&&l.role==='belt')r.power+=2})});
   if(GW.hub.mill.on)r.power+=2;
-  const infl=1.5*(1+.1*Math.max(0,Math.min(opened.length,14)-1));const su=opened.length<4?.5:1;r.rent*=evMod('rent');for(const k of ['power','gas','water'])r[k]*=evMod('util');for(const k in r)r[k]=Math.round(r[k]*infl*su);r.startup=su<1;return r}
+  const infl=1.5*(1+.1*Math.max(0,Math.min(opened.length,14)-1));const su=opened.length<4?.5:1;r.rent*=evMod('rent');const bm=fpBill();for(const k in r)r[k]*=bm;for(const k of ['power','gas','water'])r[k]*=evMod('util');for(const k in r)r[k]=Math.round(r[k]*infl*su);r.startup=su<1;return r}
 let billT=60;
 function billing(dt){billT-=dt;if(billT>0)return;billT=60;const r=billRates();const sales=(GW.flowLog||[]).filter(e=>e.k==='sale'&&e.t>GW.time-60).reduce((a,e)=>a+e.a,0);const tax=Math.round(sales*.12);
   const st=GW.st;const tax0=Math.round(tax*evMod('tax')*(r.startup?.5:1));let half=1;let debtPay=st.debt||0;let full=r.rent+r.power+r.gas+r.water+tax0;
@@ -4128,7 +4130,7 @@ function lobbyHost(series){closePanel();if(series==='food'){netCreate(4);return}
   else startFarm({coop:4,lhost:4})}
 function lbRender(){if(!LB.open||!$('#lbBody'))return;const me=lobbyUid(),L=LB.list,mt=myTeam(),amHost=mt&&mt.hostLu===me;
   const idle=L.players.filter(p=>p.lu!==me&&!p.team);
-  const h=`${LB.ok?'':'<div style="color:#c0392b">⚠️ 連不上伺服器。多人合作要在你架設的「製作大亨」網站上才能使用，正在重新連線…</div>'}
+  const h=`${LB.ok?'':'<div style="color:#c0392b">⚠️ 連不上伺服器。多人合作要在你架設的「億萬大亨」網站上才能使用，正在重新連線…</div>'}
    <div class="lbsec">🙋 你：<b>${esc(lbName())}</b>　${mt?`在 <b>${esc(mt.hostName)}</b> 的隊伍（${SER_ICON[mt.series]}，房號 ${mt.code}）${amHost?' 👑 你是房主':''}`:'還沒有組隊'}</div>
    ${mt?'':`<div class="lbsec"><b>👑 建立隊伍（我當房主）</b><div class="note2">先選要一起經營哪一個系列，隊伍會有固定房號，之後可以邀請線上的玩家。</div><div class="coRow2"><button class="sbtn" data-host="farm" style="background:#2fb04a">🌾 農業與畜牧</button>${typeof seriesUnlocked==='function'&&seriesUnlocked(1)?'<button class="sbtn" data-host="food" style="background:#e8701a">🍔 飲食與料理</button>':''}</div></div>`}
    <div class="lbsec"><b>👥 線上的隊伍（${L.teams.length}）</b>${L.teams.map(t=>{const mine=t.mem.some(x=>x.lu===me),full=t.n>=t.cap;return `<div class="lbrow"><div style="flex:1"><b>${SER_ICON[t.series]||''}</b>　👑${esc(t.hostName)}${t.hostOn?'':'（房主暫時離線）'}<br><small>${t.mem.map(x=>`${x.on?'🟢':'⚪'}${esc(x.name)}`).join('　')}　（${t.n}/${t.cap} 人）</small></div>${mine?'<span class="lbtag">你在這隊</span>':full?'<span class="lbtag">已滿</span>':`<button class="sbtn" data-req="${t.code}" data-hn="${esc(t.hostName)}" style="background:#e8701a">🙋 請求加入</button>`}</div>`}).join('')||'<div class="note2">目前沒有隊伍，可以自己建立一個！</div>'}</div>
@@ -4157,7 +4159,7 @@ function foodIntro(force){if(!force&&G.seen&&G.seen.foodIntro1)return;G.seen=G.s
    <b style="color:#c0392b">⚠️ 錢不夠付帳單或薪水時：所有員工會罷工、店家全部停擺！</b><br>這時只能 <b>自己動手</b> 搬貨、做東西、收錢，把錢賺回來；錢夠付了，大家才會回來上班。<br><br>
    <b>✅ 建議這樣玩：</b><br>．開新店、加派運輸之前，先看右上角的 <b>🛟 保底</b> 金額，手上的錢最好比它多一些。<br>．每做一個大動作，就先等錢存夠再進行下一步，不要一次把錢花光。<br>．看到「罷工」提示時別緊張，自己動手賺一點錢就會恢復。</div>
    <button class="boostOpt" id="fiOk" style="margin-top:10px"><b>👌 我知道了，開始經營！</b></button>`,()=>{$('#fiOk').onclick=()=>{SFX.click();closePanel()}})}
-window.__T2={openShop,manualGive:(s,t)=>manualGive(s,t),manualOk:(S,k)=>manualOk(S,k),manualInfo:S=>manualInfo(S),start:()=>startGame({noSlot:1}),get GW(){return GW},boostPanel,machPopup,get MLAB(){return MLAB},linkBoostSet,enableLink,foodIntro};
+window.__T2={refreshHub:()=>refreshHub(),openShop,manualGive:(s,t)=>manualGive(s,t),manualOk:(S,k)=>manualOk(S,k),manualInfo:S=>manualInfo(S),start:()=>startGame({noSlot:1}),get GW(){return GW},boostPanel,machPopup,get MLAB(){return MLAB},linkBoostSet,enableLink,foodIntro};
 /* ======================= 🛵 第 2 系列：自動化工廠賣的交通工具 ======================= */
 // sp：速度倍數（走路＝1）；lift：坐上去時人物抬高多少；pose：站／坐
 const FVEH=[
@@ -4294,6 +4296,90 @@ function rwPanel(tab){const r=rwSt();const cnt={daily:G.daily.last!==today()?1:0
     pb.querySelectorAll('[data-tk]').forEach(b=>b.onclick=()=>{const t=TASKS.find(x=>x.id===b.dataset.tk);if(G.tasks.claimed[t.id])return;G.tasks.claimed[t.id]=true;rwGive(t.r,null,`每日任務「${t.name}」`,b);setTimeout(()=>rwPanel(tab),700)})})}
 // 首頁的「每日」「任務」按鈕移到遊戲畫面裡的 🎁 領獎勵
 (()=>{const hide=()=>document.querySelectorAll('.ib[data-p="daily"],.ib[data-p="tasks"]').forEach(b=>b.style.display='none');hide();setTimeout(hide,1000)})();
-window.__RW={rwPanel,rwCount,rwSt,rwBtn};
+window.__RW={rwPanel,rwCount,rwSt,rwBtn,fpPanel:()=>fpPanel(),get GWY(){return GW.yetis}};
+/* ======================= 第 2 系列：經營模式 ======================= */
+const FPROF={
+ low:{n:'🌙 輕鬆經營',sp:.75,bill:.6,d:'店家運作慢一點（×0.75），帳單打 6 折。適合偶爾上線、慢慢玩。'},
+ mid:{n:'☀️ 標準經營',sp:1,bill:1,d:'原本的速度和帳單。'},
+ high:{n:'🔥 衝刺經營',sp:1.5,bill:1.35,d:'機器、員工、顧客都快 1.5 倍，賺得更快；帳單 ×1.35。'},
+ ultra:{n:'⚡ 極速經營',sp:2.2,bill:1.8,d:'所有店家運作快 2.2 倍，錢滾最快；帳單 ×1.8，錢不夠時會很快停擺，要一直盯著玩。'}};
+const fpCur=()=>FPROF[(GW&&GW.st&&GW.st.fprof)||'mid']||FPROF.mid;
+function fpSpeed(){return fpCur().sp}
+function fpBill(){return fpCur().bill}
+function fpPanel(first){const cur=(GW.st.fprof)||'mid';
+  openPanel('⚙️ 經營模式',`<div class="note">${first?'先選一種適合你的經營方式（之後隨時可以按左上角的「⚙️ 模式」更改）。<br>':''}模式只影響<b>店家運作的速度</b>（機器、員工、顧客、輸送帶）和<b>帳單</b>，你自己走路的速度不變。</div>
+   ${Object.entries(FPROF).map(([k,p])=>`<div class="rwRow" style="${k===cur?'border-color:#2e9d4a;background:#eefbea':''}"><div class="m"><b>${p.n}</b>${k===cur?' <span class="fvTag">使用中</span>':''}<small>${p.d}</small><small style="color:#2e7d32;font-weight:700">⏩ 速度 ×${p.sp}　🧾 帳單 ×${p.bill}</small></div><button data-fp="${k}" ${k===cur?'disabled':''}>${k===cur?'使用中':'選這個'}</button></div>`).join('')}`,
+   ()=>pb.querySelectorAll('[data-fp]').forEach(b=>b.onclick=()=>{if(GW.net==='guest'){toast('連線合作時由房主決定經營模式');return}GW.st.fprof=b.dataset.fp;GW.st.fprofSet=1;SFX.buy&&SFX.buy();toast(`⚙️ 改成「${FPROF[b.dataset.fp].n}」`);save(true);closePanel()}))}
+(()=>{const bar=document.querySelector('#ghud .gbtns');if(!bar)return;const b=document.createElement('button');b.className='gbtn';b.id='gProf';b.title='經營模式';b.textContent='⚙️';b.dataset.lb='模式';
+  const hp=$('#gHelp');bar.insertBefore(b,hp||null);b.onclick=()=>{SFX.click();fpPanel()}})();
+// 第一次進第 2 系列：看完重點說明後選經營模式
+{const fi=foodIntro;foodIntro=function(force){const first=!(G.seen&&G.seen.foodIntro1);fi(force);if(first||!(GW&&GW.st&&GW.st.fprofSet)){const t=setInterval(()=>{if(modal.classList.contains('on'))return;clearInterval(t);if(mode==='game'&&GW&&!GW.st.fprofSet&&GW.net!=='guest')fpPanel(true)},500)}}}
+
+/* ======================= 原料中心：雪人怪物巡邏 ======================= */
+// 全自動化滿 5 家出現第 1 隻，之後每多 5 家再多 1 隻
+const YETI_R=19.6;
+function yetiModel(){const g=new THREE.Group();const body=new THREE.Group();g.add(body);
+  const FUR=0xf2f5f8,FUR2=0xdfe6ee,SKIN=0x6f7f92,DARK=0x2a3340;
+  const add=(geo,col,sx,sy,sz,x,y,z,p,rx=0,ry=0,rz=0)=>{const m=mesh(geo,M(col));m.scale.set(sx,sy,sz);m.position.set(x,y,z);m.rotation.set(rx,ry,rz);p.add(m);return m};
+  const SPH=new THREE.SphereGeometry(1,16,12),CYL=new THREE.CylinderGeometry(1,1,1,12),CON=new THREE.ConeGeometry(1,1,6);
+  // 身體：厚重的毛皮
+  add(SPH,FUR,1.05,1.15,.85,0,2.2,0,body);add(SPH,FUR2,.85,.7,.7,0,1.55,.05,body);add(SPH,FUR,1.15,.7,.9,0,2.95,-.05,body);
+  // 一撮一撮往下垂的長毛（整片蓋住身體）
+  const tuft=new THREE.InstancedMesh(CON,M(FUR),260);const o=new THREE.Object3D();let n=0;
+  for(let i=0;i<260;i++){const a=Math.random()*Math.PI*2,y=1.2+Math.random()*2.1;const ry=y<1.6?.75:y>2.8?1.0:1.05;const rx=Math.cos(a)*ry*1.02,rz=Math.sin(a)*ry*.82;
+    o.position.set(rx,y,rz);o.quaternion.setFromUnitVectors(V(0,1,0),V(Math.cos(a)*.42+(Math.random()-.5)*.15,-1,Math.sin(a)*.42+(Math.random()-.5)*.15).normalize());o.scale.set(.09+Math.random()*.05,.34+Math.random()*.22,.09+Math.random()*.05);o.updateMatrix();tuft.setMatrixAt(n++,o.matrix);
+    tuft.setColorAt&&tuft.setColorAt(i,new THREE.Color(Math.random()<.3?FUR2:FUR))}
+  tuft.instanceMatrix.needsUpdate=true;if(tuft.instanceColor)tuft.instanceColor.needsUpdate=true;tuft.castShadow=true;body.add(tuft);
+  // 頭：灰藍色的臉、粗眉、獠牙
+  const head=new THREE.Group();head.position.set(0,3.55,.25);body.add(head);add(SPH,FUR,.62,.6,.6,0,0,0,head);
+  const ht=new THREE.InstancedMesh(CON,M(FUR),70);for(let i=0;i<70;i++){const a=Math.random()*Math.PI*2,b=Math.random()*1.2;o.position.set(Math.cos(a)*Math.sin(b)*.6,Math.cos(b)*.58,Math.sin(a)*Math.sin(b)*.58-.05);o.quaternion.setFromUnitVectors(V(0,1,0),V(Math.cos(a)*.6,-.8,Math.sin(a)*.6).normalize());o.scale.set(.07,.24+Math.random()*.12,.07);o.updateMatrix();ht.setMatrixAt(i,o.matrix)}ht.instanceMatrix.needsUpdate=true;head.add(ht);
+  add(SPH,SKIN,.42,.4,.22,0,-.08,.45,head);add(SPH,SKIN,.2,.13,.14,0,-.1,.66,head);add(SPH,DARK,.07,.05,.04,-.07,-.05,.79,head);add(SPH,DARK,.07,.05,.04,.07,-.05,.79,head);
+  for(const s of [-1,1]){add(SPH,0xffd23a,.075,.075,.04,.17*s,.08,.62,head);add(SPH,0x111111,.035,.05,.03,.17*s,.08,.65,head);add(new THREE.BoxGeometry(1,1,1),DARK,.2,.05,.06,.17*s,.18,.64,head,0,0,.35*s);
+    add(CON,0xfffbe8,.04,.16,.04,.13*s,-.28,.6,head,Math.PI,0,0);add(SPH,FUR2,.13,.18,.1,.55*s,.1,.05,head)}
+  const mouth=add(new THREE.BoxGeometry(1,1,1),0x3a1a1a,.32,.07,.05,0,-.24,.62,head);
+  // 手臂（粗壯、長到膝蓋）＋大手掌
+  const arms=[];for(const s of [-1,1]){const a=new THREE.Group();a.position.set(1.05*s,3.0,0);body.add(a);add(SPH,FUR,.36,.85,.36,0,-.75,0,a);add(SPH,FUR2,.3,.7,.3,0,-1.55,.1,a);
+    const at=new THREE.InstancedMesh(CON,M(FUR),40);for(let i=0;i<40;i++){const q=Math.random()*Math.PI*2;o.position.set(Math.cos(q)*.34,-.3-Math.random()*1.5,Math.sin(q)*.32);o.rotation.set(Math.PI,0,Math.cos(q)*.3);o.scale.set(.07,.26,.07);o.updateMatrix();at.setMatrixAt(i,o.matrix)}at.instanceMatrix.needsUpdate=true;a.add(at);
+    add(SPH,SKIN,.3,.22,.32,0,-2.15,.12,a);for(let k=0;k<4;k++)add(CON,DARK,.04,.14,.04,(-.15+k*.1),-2.35,.3,a,Math.PI*.85,0,0);arms.push(a)}
+  // 大棒槌（握在右手）
+  const mal=new THREE.Group();mal.position.set(0,-2.15,.25);arms[1].add(mal);add(CYL,0x7a4a22,.09,2.4,.09,0,.2,.35,mal,Math.PI/2.4,0,0);
+  const hd=new THREE.Group();hd.position.set(0,.65,1.45);mal.add(hd);add(CYL,0x8a5a2a,.48,1.15,.48,0,0,0,hd,0,0,Math.PI/2);for(const x of [-.5,0,.5])add(CYL,0x5a5f66,.5,.08,.5,x,0,0,hd,0,0,Math.PI/2);for(const x of [-.6,.6])add(CYL,0x6a3a1a,.5,.04,.5,x,0,0,hd,0,0,Math.PI/2);
+  // 腿＋大腳
+  const legs=[];for(const s of [-1,1]){const l=new THREE.Group();l.position.set(.45*s,1.25,0);g.add(l);add(SPH,FUR,.42,.75,.45,0,-.5,0,l);add(SPH,SKIN,.36,.18,.55,0,-1.15,.15,l);for(let k=0;k<3;k++)add(CON,DARK,.05,.13,.05,(-.15+k*.15),-1.15,.68,l,Math.PI/2,0,0);legs.push(l)}
+  const sh=new THREE.Mesh(new THREE.CircleGeometry(1.4,20),new THREE.MeshBasicMaterial({color:0,transparent:true,opacity:.18}));sh.rotation.x=-Math.PI/2;sh.position.y=.05;g.add(sh);
+  g.userData={body,head,arms,legs,mal,mouth};g.traverse(x=>{if(x.isMesh)x.castShadow=true});return g}
+function hubYeti(dt){if(!GW||!GW.scene)return;GW.yetis=GW.yetis||[];const auto=GW.shops.filter(S=>S.built&&isAuto(S)).length;const want=Math.floor(auto/5);
+  while(GW.yetis.length<want){const i=GW.yetis.length;const o=yetiModel();o.scale.setScalar(1.15);const a=i*Math.PI*2/Math.max(1,want)+.4;o.position.set(Math.cos(a)*YETI_R,0,Math.sin(a)*YETI_R);GW.scene.add(o);
+    const L=label('<div class="nmchip" style="border-color:#7a8ea8">👹 雪人怪物巡邏中</div>',o.position.clone().setY(5.6),null);const Y={o,a,dir:i%2?-1:1,t:Math.random()*9,L,roar:0};GW.yetis.push(Y);if(GW.time>3){puff(o.position.clone().setY(1),30,.6);SFX.thunk&&SFX.thunk();toast(`👹 全自動化 ${auto} 家！原料中心出現第 ${i+1} 隻雪人怪物，扛著大棒槌開始巡邏`,4000)}}
+  const P=GW.players[0];GW.yetis.forEach(Y=>{const u=Y.o.userData;Y.t+=dt;Y.roar-=dt;const near=P&&!P.kick&&d2(P.pos,Y.o.position)<5;
+    // 擋路判斷：玩家在牠前進方向的前面、很近
+    const fx=-Math.sin(Y.a)*Y.dir,fz=Math.cos(Y.a)*Y.dir;const dx=P?P.pos.x-Y.o.position.x:0,dz=P?P.pos.z-Y.o.position.z:0;const dd=Math.hypot(dx,dz);const block=P&&!P.kick&&dd<3.4&&(dx*fx+dz*fz)/(dd||1)>.25;
+    if(Y.kickT!==undefined){yetiKick(Y,P,dt);return}
+    if(block){Y.warn=(Y.warn||0)+dt;if(Y.warn===dt){floatAt(Y.o.position.clone().add(V(0,5.2,0)),'⚠️ 讓開！','#c0392b')}if(Y.warn>2.6){Y.kickT=0;Y.warn=0;return}}else Y.warn=0;
+    if(!near&&!block){Y.a+=Y.dir*dt*1.1/YETI_R;Y.o.position.set(Math.cos(Y.a)*YETI_R,0,Math.sin(Y.a)*YETI_R);Y.o.rotation.y=Math.atan2(-Math.sin(Y.a)*Y.dir,Math.cos(Y.a)*Y.dir);
+      const w=Math.sin(Y.t*3.2);u.legs[0].rotation.x=w*.45;u.legs[1].rotation.x=-w*.45;u.arms[0].rotation.x=-w*.35;u.arms[1].rotation.x=-.5+w*.15;u.body.position.y=Math.abs(Math.cos(Y.t*3.2))*.08;u.body.rotation.z=Math.sin(Y.t*3.2)*.05;u.mouth.scale.y=.07}
+    else{Y.o.rotation.y=lerpA(Y.o.rotation.y,Math.atan2(P.pos.x-Y.o.position.x,P.pos.z-Y.o.position.z),dt*5);const k=(Math.sin(Y.t*6)+1)/2;u.arms[1].rotation.x=-1.9+k*1.4;u.arms[0].rotation.x=-.6;u.mouth.scale.y=.07+k*.12;u.legs.forEach(l=>l.rotation.x=0);
+      if(Y.roar<=0){Y.roar=Y.warn?1.3:4;floatAt(Y.o.position.clone().add(V(0,5,0)),Y.warn?'吼！！再不讓開就踢你！':'吼～～！','#5a6f8a');try{SFX.err()}catch(e){}}}
+    Y.L.pos.copy(Y.o.position).setY(5.6)})}
+
+// 雪人怪物踢人：抬腿蓄力 → 一腳踢出 → 玩家翻滾飛出去 → 落地彈一下 → 頭暈
+function yetiKick(Y,P,dt){const u=Y.o.userData;Y.kickT+=dt;const k=Y.kickT;const L=u.legs[1];
+  Y.o.rotation.y=lerpA(Y.o.rotation.y,Math.atan2(P.pos.x-Y.o.position.x,P.pos.z-Y.o.position.z),dt*8);
+  if(k<.45){const e=k/.45;L.rotation.x=e*.9;u.body.rotation.x=-e*.18;u.arms[1].rotation.x=-.5-e*.6;u.arms[0].rotation.x=e*.4}// 往後抬腿蓄力
+  else if(k<.62){const e=(k-.45)/.17;L.rotation.x=.9-e*2.6;u.body.rotation.x=-.18+e*.3;// 用力往前踢
+    if(!Y.hit&&e>.6){Y.hit=1;const dir=Math.atan2(P.pos.x-Y.o.position.x,P.pos.z-Y.o.position.z)+(Math.random()<.5?-.5:.5);const dist=6.5;const to=V(P.pos.x+Math.sin(dir)*dist,0,P.pos.z+Math.cos(dir)*dist);collide(to);
+      P.kick={t:0,dur:1.05,from:P.pos.clone(),to,h:3.6,spin:dir,stun:1.5};P.stack&&0;puff(P.pos.clone().setY(.8),18,.35);try{SFX.thunk&&SFX.thunk();SFX.err()}catch(e){}floatAt(P.pos.clone().setY(2.6),'砰！！','#c0392b');try{if(navigator.vibrate)navigator.vibrate(120)}catch(e){}}}
+  else if(k<1.2){const e=(k-.62)/.58;L.rotation.x=-1.7*(1-e);u.body.rotation.x=.12*(1-e);u.arms[0].rotation.x=.4*(1-e)}
+  else{L.rotation.x=0;u.body.rotation.x=0;delete Y.kickT;Y.hit=0;Y.roar=0;floatAt(Y.o.position.clone().add(V(0,5,0)),'哼！別擋路！','#5a6f8a')}}
+// 玩家被踢飛的動畫（在 updatePlayer 開頭呼叫；回傳 true 表示這一幀不能自己移動）
+function kickFly(p,dt){const K=p.kick;if(!K)return false;K.t+=dt;const u=p.o.userData;
+  if(K.t<K.dur){const e=K.t/K.dur;p.pos.set(K.from.x+(K.to.x-K.from.x)*e,K.h*4*e*(1-e),K.from.z+(K.to.z-K.from.z)*e);p.o.rotation.x=e*Math.PI*2.5;p.o.rotation.z=Math.sin(e*9)*.35;
+    u.arms.forEach((a,i)=>a.rotation.z=(i?-1:1)*(1.2+Math.sin(K.t*25)*.5));u.legs.forEach((l,i)=>l.rotation.x=Math.sin(K.t*22+i*3)*.9);if(Math.random()<dt*30)puff(p.pos.clone().add(V(0,.6,0)),1,.12);return true}
+  if(!K.land){K.land=1;p.pos.y=0;p.o.rotation.x=0;p.o.rotation.z=0;puff(p.pos.clone().setY(.2),22,.4);try{SFX.thunk&&SFX.thunk()}catch(e){}K.b=0}
+  // 落地彈一下、坐在地上頭暈
+  K.b+=dt;if(K.b<.35){p.pos.y=Math.sin(K.b/.35*Math.PI)*.45;u.body.rotation.x=-.5}else{p.pos.y=0;u.body.rotation.x=-.35*(1-Math.min(1,(K.b-.35)/K.stun))}
+  u.legs.forEach(l=>l.rotation.x=-1.2*(1-Math.min(1,(K.b-.35)/K.stun)));p.o.rotation.y+=dt*2;
+  if(!K.stars){K.stars=1;floatAt(p.pos.clone().setY(2.4),'💫 好暈…','#7a5aa0')}
+  if(K.b>=K.stun+.35){u.body.rotation.x=0;u.legs.forEach(l=>l.rotation.x=0);p.kick=null}return true}
 </script>
 </body></html>
