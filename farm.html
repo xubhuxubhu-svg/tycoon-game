@@ -1186,6 +1186,12 @@ function step(dt,quiet){stockerTick();const OB=outB();const PROT=OFFSIM&&prof().
     if(pmOn(pk,'feeder0')&&!pmOn(pk,'feeder')&&S.trough[pk]<2){const src=T.food.includes('feed')&&S.stock.feed>0?'feed':T.food.includes('hay')&&S.stock.hay>0?'hay':'';if(src){const n=Math.min(5-S.trough[pk],S.stock[src]);S.stock[src]-=n;S.trough[pk]+=n}}
     if((pmOn(pk,'feeder')||(staffOn('rancher',pk)&&!npcWork()))&&S.trough[pk]<6){const src=T.food.includes('feed')&&S.stock.feed>0?'feed':T.food.includes('hay')&&S.stock.hay>0?'hay':'';if(src){const n=Math.min(10-S.trough[pk],S.stock[src]);S.stock[src]-=n;S.trough[pk]+=n}}}
   for(const pk in PENS){if((pmOn(pk,'collector')||(staffOn('rancher',pk)&&!npcWork()))&&S.piles[pk].length){S.pbox[pk].push(...S.piles[pk].map(x=>x[1]));S.piles[pk]=[]}}
+  // 離線時（或沒有畫面的時候）：牧場工自動把長大的動物抓去賣、再去繁殖場買小動物補滿
+  if(!npcWork()&&!S.strike){S.rkT=S.rkT||{};for(const pk in PENS){const n=(staffOn('rancher',pk)?1:0)+(S.staff.rancher&&S.staff.rancher[pk+'#2']?1:0);if(!n)continue;
+    S.rkT[pk]=(S.rkT[pk]||0)+dt*n;const per=15*TS();let guard=0;while(S.rkT[pk]>=per&&guard++<50){S.rkT[pk]-=per;
+      const a=aSell(pk)&&S.animals.find(x=>ANIM[x.k].pen===pk&&ANIM[x.k].sell&&x.age>=1);if(a){S.animals.splice(S.animals.indexOf(a),1);earn(ANIM[a.k].sell,'animal');S.offSold=(S.offSold||0)+1;continue}
+      if(aRebuy(pk)){const lv=farmLv();const k=Object.keys(ANIM).find(k=>{const d=ANIM[k];return d.pen===pk&&!d.wild&&(d.lv||1)<=lv&&S.animals.filter(x=>x.k===k).length<animMax(k)&&S.money>=d.buy+50});if(k){spend(ANIM[k].buy,'shop');const na=newAnimal(k);S.animals.push(na);S.offBought=(S.offBought||0)+1;continue}}
+      S.rkT[pk]=Math.min(S.rkT[pk],per);break}}}
   // 送貨：運貨卡車（每 2 小時）、送貨員（每 3 小時）
   const delivery=!S.strike&&(S.gm.lorry?DAY/12:S.staff.courier&&S.staff.courier.farm&&!npcWork()?DAY/8:0);
   if(delivery){S.dT=(S.dT||delivery)-dt;if(S.dT<=0){S.dT=delivery;let sum=0,n=0;for(const k in S.boxes){S.boxes[k].forEach(t=>{sum+=sellPrice(t);n++});S.boxes[k]=[]}for(const k in S.pbox){S.pbox[k].forEach(t=>{sum+=sellPrice(t);n++});S.pbox[k]=[]}
@@ -1570,7 +1576,7 @@ function ledger(){const d0=dayOf(S.t)*DAY;const td={},yd={};S.flow.forEach(([t,v
    ${S.debt?`<div style="color:#c0392b">⚠️ 欠款 💵${S.debt}：員工、機器停工中，賺到錢會自動補繳</div>`:''}${S.ev?`<div>📰 現在的事件：${S.ev.em} ${S.ev.t}（${S.ev.d}）</div>`:''}`)}
 
 /* ======================= 離線收入 ======================= */
-function offlineSim(){const away=(Date.now()-(S.last||Date.now()))/1000;if(S.paused||away<30)return null;const sim=Math.min(TS()>1?6*3600:24*3600,away)*TS();const m0=S.money,e0=S.earn;S.offBill=0;S.offDay=0;
+function offlineSim(){const away=(Date.now()-(S.last||Date.now()))/1000;if(S.paused||away<30)return null;const sim=Math.min(TS()>1?6*3600:24*3600,away)*TS();const m0=S.money,e0=S.earn;S.offBill=0;S.offDay=0;S.offSold=0;S.offBought=0;
   const cnt=()=>Object.values(S.boxes).reduce((a,b)=>a+b.length,0)+Object.values(S.pbox).reduce((a,b)=>a+b.length,0);const ripe0=PLOTS.filter(p=>S.plots[p.id].st==='ripe').length;
   OFFSIM=true;try{let t=sim;while(t>0){const d=Math.min(t,sim>7200?(TS()>1?20:10):5);step(d,true);t-=d}}finally{OFFSIM=false}
   // 離線帳單：只從離線期間賺的錢扣，賺不夠最多扣 1 天，而且不會變成欠款
@@ -1578,7 +1584,7 @@ function offlineSim(){const away=(Date.now()-(S.last||Date.now()))/1000;if(S.pau
   // 歡迎回來：離線 2 小時以上，接下來 30 分鐘作物、動物長得比較快
   if(away>=7200)S.boostUntil=S.t+1800;
   const wl=prof().protect?[]:wildOffline(sim);
-  return {wl,away,sim:sim/TS(),bill,billAll,boost:away>=7200,money:Math.floor(S.money-m0),earn:Math.floor(S.earn-e0),boxes:cnt(),ripe:PLOTS.filter(p=>S.plots[p.id].st==='ripe').length,wither:PLOTS.filter(p=>['wither','rot'].includes(S.plots[p.id].st)).length,hungry:S.animals.filter(a=>a.food<=0&&ANIM[a.k].eat).length,ripe0}}
+  return {wl,away,sim:sim/TS(),bill,billAll,boost:away>=7200,money:Math.floor(S.money-m0),earn:Math.floor(S.earn-e0),boxes:cnt(),ripe:PLOTS.filter(p=>S.plots[p.id].st==='ripe').length,wither:PLOTS.filter(p=>['wither','rot'].includes(S.plots[p.id].st)).length,hungry:S.animals.filter(a=>a.food<=0&&ANIM[a.k].eat).length,ripe0,sold:S.offSold||0,bought:S.offBought||0}}
 const fmtAway=s=>s>=3600?`${Math.floor(s/3600)} 小時 ${Math.floor(s%3600/60)} 分`:`${Math.max(1,Math.floor(s/60))} 分鐘`;
 
 /* ======================= 待處理事項（右側清單＋彩色帶路箭頭） ======================= */
@@ -1926,7 +1932,7 @@ addEventListener('error',ev=>reportErr(ev.error||ev.message));
 let OFF=null;try{OFF=NETG?null:offlineSim()}catch(e){reportErr(e)}try{syncAnimals()}catch(e){reportErr(e)}
 if(OFF&&OFF.away>=60&&!S.inHome){P.o.visible=false;P.pos.set(HOME.x,0,HOME.z+2.55)}
 function showBack(OFF){setTimeout(()=>openPanel(`<h2>👋 歡迎回來！</h2><div>你離開了 <b>${fmtAway(OFF.away)}</b>${OFF.away>OFF.sim?`（最多計算 ${TS()>1?6:24} 小時）`:''}，這段時間農場繼續運作：<br>
-  💵 錢的變化：<b style="color:${OFF.money>=0?'#2a7a30':'#c0392b'}">${OFF.money>=0?'+':''}${OFF.money}</b>（離線收入 💵${OFF.earn}）<br>🧾 離線帳單：只扣了 💵${OFF.bill}${OFF.billAll>OFF.bill?`（原本 💵${OFF.billAll}，離線時最多只扣 1 天或離線賺到的錢，不會欠款）`:''}<br>${prof().protect?'🛡️ 離線保護：成熟的作物還在等你、產品沒有壞<br>':''}${OFF.boost?'🚀 歡迎回來加成：接下來 30 分鐘，作物和動物長得快 1.5 倍！<br>':''}
+  💵 錢的變化：<b style="color:${OFF.money>=0?'#2a7a30':'#c0392b'}">${OFF.money>=0?'+':''}${OFF.money}</b>（離線收入 💵${OFF.earn}）<br>🧾 離線帳單：只扣了 💵${OFF.bill}${OFF.billAll>OFF.bill?`（原本 💵${OFF.billAll}，離線時最多只扣 1 天或離線賺到的錢，不會欠款）`:''}<br>${OFF.sold||OFF.bought?`🤠 牧場工離線時賣掉 <b>${OFF.sold}</b> 隻長大的動物、買回 <b>${OFF.bought}</b> 隻小動物<br>`:''}${prof().protect?'🛡️ 離線保護：成熟的作物還在等你、產品沒有壞<br>':''}${OFF.boost?'🚀 歡迎回來加成：接下來 30 分鐘，作物和動物長得快 1.5 倍！<br>':''}
   ${OFF.ripe?`✅ 有 ${OFF.ripe} 格作物成熟等你採收<br>`:''}${OFF.wither?`🥀 有 ${OFF.wither} 格枯萎或壞掉了<br>`:''}${OFF.boxes?`📦 集貨箱、冷藏箱裡有 ${OFF.boxes} 件貨<br>`:''}${OFF.hungry?`😣 有 ${OFF.hungry} 隻動物肚子餓<br>`:''}${OFF.wl&&OFF.wl.length?`<div style="margin:4px 0;padding:6px 8px;background:#fff0ec;border-radius:10px;color:#a03010">🐗 <b>離線時野生動物來過</b>（衝刺／極速經營沒有離線保護）：<br>${OFF.wl.join('<br>')}</div>`:''}${S.debt?`⚠️ 欠款 💵${S.debt}<br>`:''}
   🌾 繼續經營你的農場吧！</div>`),1200)}
 function firstStart(){if(S.paused)setPause(true);
@@ -1986,7 +1992,7 @@ function layoutHUD(){const mob=W<=700;const r=q=>$(q).getBoundingClientRect();co
   else{b.style.top=(r('#money').bottom+6)+'px';const tt=r('#btns').bottom+8;t.style.top=tt+'px';t.style.maxHeight=Math.max(120,bt-tt-12)+'px';g.style.top='8px';bn.style.top=(r('#goal').bottom+6)+'px';const nc=$('#netChip');if(nc)nc.style.top=(r('#clock').bottom+6)+'px'}}
 RUN=true;started=true;if(HOSTCAP)setTimeout(()=>{if(!NET.role)hostCreate(HOSTCAP)},700);firstStart();fsLabel();setTimeout(()=>{dailyGift();if(!S.profileSet&&!NETG)setTimeout(()=>{if(!$('#modal').classList.contains('on'))profilePanel(1);else S.profileAsk=1},5000)},1500);
 frame();layoutHUD();
-window.__F={findPath,get PETX(){return PETX},spawnPet,PETW,get LORRY(){return LORRY},truckTrip,camera,collideT:collide,get nightDraw(){return nightDraw},get GUARDV(){return GUARDV},get curNight(){return curNight},animalModel,scene,get wildSpawn(){return wildSpawn},get HUNTER(){return HUNTER},get PATROL(){return PATROL},goTo,findPath,closePanel,S,step,PLOTS,P,syncAnimals,FIELDS,oneSow,oneReap,RINGS,SHOPS,PENS,LOTS,finishLot,ACT,openShop,enterHome,exitHome,strike,ledger,buildPanel,outB,offlineSim,OCC,showPets:()=>{PETS.forEach((p,i)=>{const o=petModel(p.id);o.position.set(P.pos.x-6+i*1.1,0,P.pos.z);o.rotation.y=.6;scene.add(o)})},layoutHUD,weatherAt,stormLevel,FI};
+window.__F={offlineSim,findPath,get PETX(){return PETX},spawnPet,PETW,get LORRY(){return LORRY},truckTrip,camera,collideT:collide,get nightDraw(){return nightDraw},get GUARDV(){return GUARDV},get curNight(){return curNight},animalModel,scene,get wildSpawn(){return wildSpawn},get HUNTER(){return HUNTER},get PATROL(){return PATROL},goTo,findPath,closePanel,S,step,PLOTS,P,syncAnimals,FIELDS,oneSow,oneReap,RINGS,SHOPS,PENS,LOTS,finishLot,ACT,openShop,enterHome,exitHome,strike,ledger,buildPanel,outB,offlineSim,OCC,showPets:()=>{PETS.forEach((p,i)=>{const o=petModel(p.id);o.position.set(P.pos.x-6+i*1.1,0,P.pos.z);o.rotation.y=.6;scene.add(o)})},layoutHUD,weatherAt,stormLevel,FI};
 
 /* ======================= 寵物、烏鴉、家裡裝潢、倉庫冰箱、畫面遠近 ======================= */
 var PETX=null,CROWV=null,DECOR_KEY='';
