@@ -123,15 +123,16 @@ button{font-family:inherit;cursor:pointer}
 .day.done:after{content:"✔";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:36px;color:#3fae50}
 .day.d7{grid-column:span 2}
 .claim{display:block;margin:14px auto 0;width:220px}
-.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
-.card{background:linear-gradient(#fff,#f1f7fc);border:3px solid #cfe1ee;border-radius:18px;padding:10px;text-align:center;position:relative;box-shadow:0 3px 0 #c7d7e3}
-.card .e{font-size:38px}
-.card .n{color:#163a6b;font-size:17px}
-.card .d{font-size:13px;color:#567;min-height:36px;line-height:1.4;margin:3px 0 6px}
-.card .own{position:absolute;top:6px;right:8px;background:#163a6b;color:#fff;font-size:12px;border-radius:9px;padding:2px 8px}
-.card button{border:0;border-radius:14px;background:linear-gradient(#ffd85a,#f2a91c);box-shadow:0 3px 0 #b9790b;color:#5a3500;padding:6px 14px;font-size:15px}
-.card button.use{background:linear-gradient(#6fdc7e,#3fae50);box-shadow:0 3px 0 #2f8a3d;color:#fff}
-.card button:disabled{filter:grayscale(1);opacity:.6}
+.cshop{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+@media (max-width:560px){.cshop{grid-template-columns:repeat(2,1fr)}}
+.ccard{background:linear-gradient(#fff,#f1f7fc);border:3px solid #cfe1ee;border-radius:18px;padding:10px;text-align:center;position:relative;box-shadow:0 3px 0 #c7d7e3}
+.ccard .e{font-size:38px}
+.ccard .n{color:#163a6b;font-size:17px}
+.ccard .d{font-size:13px;color:#567;min-height:36px;white-space:normal;word-break:break-all;line-height:1.4;margin:3px 0 6px}
+.ccard .own{display:inline-block;margin-bottom:2px;background:#163a6b;color:#fff;font-size:12px;border-radius:9px;padding:2px 8px}
+.ccard button{border:0;border-radius:14px;background:linear-gradient(#ffd85a,#f2a91c);box-shadow:0 3px 0 #b9790b;color:#5a3500;padding:6px 14px;font-size:15px}
+.ccard button.use{background:linear-gradient(#6fdc7e,#3fae50);box-shadow:0 3px 0 #2f8a3d;color:#fff}
+.ccard button:disabled{filter:grayscale(1);opacity:.6}
 .shake{animation:shake .4s}
 @keyframes shake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
 .task{display:flex;align-items:center;gap:10px;background:#fff;border:3px solid #dbe8f1;border-radius:16px;padding:10px;margin-bottom:8px}
@@ -314,7 +315,7 @@ body.ing #toast{top:138px}
     <button class="ib" data-p="credits"><div class="sq">📜</div><span>聲明</span></button>
   </div>
 </div>
-<div id="credit">遊戲製作：Eric Hu　版本 2.0.0</div>
+<div id="credit">遊戲製作：Eric Hu　版本 2.1.0</div>
 </div>
 <div id="game" class="hide">
   <div id="lbls"></div>
@@ -1031,8 +1032,8 @@ const PANELS={
    const html=`<div class="note">每天登入領一次鑽石，連續登入越領越多！第 7 天大禮包 💎200～斷掉一天會從第 1 天重新開始喔。</div><div class="days">${DAILY.map((g,i)=>{const done=claimedToday?i<=idx:i<idx;const t=!claimedToday&&i===idx;return `<div class="day ${done?'done':''} ${t?'today':''} ${i===6?'d7':''}"><div class="d">第 ${i+1} 天</div><div class="g">${i===6?'💎💎':'💎'}</div>${g}</div>`}).join('')}</div>
    <button class="big green claim" id="claimD" ${claimedToday?'disabled style="filter:grayscale(1)"':''}>${claimedToday?'明天再來！':'領取今日獎勵'}</button>`;
    openPanel('🎁 每日登入獎勵',html,()=>{const b=$('#claimD');b.onclick=()=>{if(G.daily.last===today())return;G.daily.last=today();G.daily.streak=streak+1;const amt=DAILY[idx];SFX.fanfare();confettiDom();gemsFly(b,12,amt);toast(`領到 💎${amt}！連續登入第 ${G.daily.streak} 天`);mark();refreshTop();setTimeout(()=>PANELS.daily(),900)}})},
- cards(useMode){const html=`<div class="note">${useMode?'點「使用」立刻發動卡片效果！':'用 💎 鑽石購買卡片，進入地圖後點 🃏 就能使用。'}</div><div class="cards">${CARDS.map(c=>`<div class="card" data-id="${c.id}"><span class="own">擁有 ×${G.cards[c.id]||0}</span><div class="e">${c.em}</div><div class="n">${c.name}</div><div class="d">${c.d}</div>${useMode?`<button class="use" ${(G.cards[c.id]||0)>0?'':'disabled'}>使用</button> `:''}<button class="buy">💎 ${c.p}</button></div>`).join('')}</div>`;
-   openPanel(useMode?'🃏 使用卡片':'🃏 卡片商店',html,()=>pb.querySelectorAll('.card').forEach(el=>{const c=CARDS.find(x=>x.id===el.dataset.id);
+ cards(useMode){const html=`<div class="note">${useMode?'點「使用」立刻發動卡片效果！':'用 💎 鑽石購買卡片，進入地圖後點 🃏 就能使用。'}</div><div class="cshop">${CARDS.map(c=>`<div class="ccard" data-id="${c.id}"><span class="own">擁有 ×${G.cards[c.id]||0}</span><div class="e">${c.em}</div><div class="n">${c.name}</div><div class="d">${c.d}</div>${useMode?`<button class="use" ${(G.cards[c.id]||0)>0?'':'disabled'}>使用</button> `:''}<button class="buy">💎 ${c.p}</button></div>`).join('')}</div>`;
+   openPanel(useMode?'🃏 使用卡片':'🃏 卡片商店',html,()=>pb.querySelectorAll('.ccard').forEach(el=>{const c=CARDS.find(x=>x.id===el.dataset.id);
      el.querySelector('.buy').onclick=()=>{if(G.gems<c.p){SFX.err();el.classList.remove('shake');void el.offsetWidth;el.classList.add('shake');toast('鑽石不夠喔！去領每日獎勵或完成任務吧');return}
        if(!el.dataset.ok){ask(`確定花 💎${c.p} 買「${c.em||''}${c.name||c.n||'卡片'}」嗎？`,()=>{el.dataset.ok=1;el.querySelector('.buy').click();delete el.dataset.ok});return}
        G.gems-=c.p;G.cards[c.id]=(G.cards[c.id]||0)+1;SFX.buy();bump('#cGem');bump('#gGem');refreshTop();el.querySelector('.own').textContent='擁有 ×'+G.cards[c.id];const u=el.querySelector('.use');if(u)u.disabled=false;el.animate([{transform:'scale(1)'},{transform:'scale(1.08)'},{transform:'scale(1)'}],{duration:300});toast(`買到「${c.name}」！`);mark();save(true)};
@@ -4228,5 +4229,71 @@ function fvShop(){if(!GW)return;const s=fvSt();const money=Math.floor(GW.st.mone
     pb.querySelectorAll('[data-fvuse]').forEach(b=>b.onclick=()=>{s.cur=b.dataset.fvuse;fvSync();SFX.click();save(true);fvShop()});
     pb.querySelectorAll('[data-fvoff]').forEach(b=>b.onclick=()=>{s.cur='';fvSync();SFX.click();save(true);fvShop()})})}
 document.addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('[data-fac]');if(t&&mode==='game'){SFX.click();fvShop()}});
+/* ======================= 🎁 獎勵中心（在遊戲畫面裡領）：每日登入、新手 7 日、每月簽到、在線獎勵、每日任務 ======================= */
+const ONLINE_STEPS=[{m:5,g:5},{m:15,g:10},{m:30,g:15,c:'run'},{m:60,g:30,c:'speed'}];
+// 新手 7 日：前 3 天送很多基礎資源和加速道具，第 3 天、第 7 天是大獎
+const NEWBIE=[{g:100,c:{run:1,refill:1},t:'新手大禮包'},{g:80,c:{speed:1,bag:1},t:'加速補給'},{g:300,c:{double:2,build:1,speed:1},t:'🏆 第 3 天大獎',big:1},
+  {g:50,c:{magnet:1}},{g:60,c:{crowd:1}},{g:80,c:{refill:1}},{g:500,c:{vip:2,build:2,night:1},t:'🏆 第 7 天終極大獎',big:1}];
+// 每月簽到：依「這個月累計簽到幾天」給獎勵，第 7、14、21、28 天有加碼
+const monthReward=n=>n===28?{g:150,c:{build:1,double:1}}:n===21?{g:60,c:{vip:1}}:n===14?{g:80,c:{speed:1}}:n===7?{g:40,c:{run:1}}:{g:n%5===0?20:10};
+const RW_ym=()=>{const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)};
+function rwSt(){G.rw=G.rw||{};const r=G.rw;r.on=r.on||{date:'',sec:0,got:{}};if(r.on.date!==today())r.on={date:today(),sec:0,got:{}};
+  r.mo=r.mo||{ym:'',n:0,last:''};if(r.mo.ym!==RW_ym())r.mo={ym:RW_ym(),n:0,last:''};r.nb=r.nb||{n:0,last:'',done:0};return r}
+const cardTxt=c=>Object.entries(c||{}).map(([k,n])=>{const d=CARDS.find(x=>x.id===k);return d?`${d.em}${d.name}×${n}`:''}).join('、');
+function rwGive(g,c,why,fromEl){if(g){G.gems+=g}for(const k in c||{})G.cards[k]=(G.cards[k]||0)+c[k];SFX.fanfare&&SFX.fanfare();try{confettiDom(30)}catch(e){}
+  try{if(fromEl&&g)gemsFly(fromEl,8,g,mode==='game'?'#gGem':'#cGem')}catch(e){}toast(`🎁 ${why}：${g?'💎'+g:''}${c&&Object.keys(c).length?' ＋ '+cardTxt(c):''}`,3500);mark();refreshTop();save(true);rwBtn()}
+// 可以領的項目數量
+function rwCount(){const r=rwSt();let n=0;const y=new Date(Date.now()-864e5);
+  if(G.daily.last!==today())n++;if(r.nb.n<7&&r.nb.last!==today())n++;if(r.mo.last!==today())n++;
+  ONLINE_STEPS.forEach(s=>{if(r.on.sec>=s.m*60&&!r.on.got[s.m])n++});n+=TASKS.filter(t=>(G.tasks.p[t.key]||0)>=t.goal&&!G.tasks.claimed[t.id]).length;return n}
+function inPlay(){return mode==='game'||mode==='farm'||mode==='fish'}
+// 在線時間：遊戲畫面開著、而且視窗在前面才算
+setInterval(()=>{if(document.visibilityState!=='visible'||!inPlay())return rwBtn();const r=rwSt();const before=rwCount();r.on.sec+=5;if(r.on.sec%60===0)mark();if(rwCount()>before)SFX.ding&&SFX.ding();rwBtn()},5000);
+function rwBtn(){let b=$('#rwBtn');if(!b){b=document.createElement('button');b.id='rwBtn';b.innerHTML='<span class="i">🎁</span><span class="t">領獎勵</span><i id="rwN"></i>';b.onclick=()=>{SFX.click();rwPanel()};document.body.appendChild(b)}
+  const n=rwCount();b.style.display=inPlay()&&n>0?'':'none';$('#rwN').textContent=n}
+setInterval(rwBtn,1500);
+(()=>{const st=document.createElement('style');st.textContent=`
+#rwBtn{position:fixed;left:10px;top:42%;z-index:9;border:none;border-radius:18px;padding:8px 12px 6px;background:linear-gradient(#ffe36a,#ffb21c);box-shadow:0 4px 0 #c27a00,0 0 0 3px #fff;color:#7a3a00;font-family:inherit;font-weight:900;display:flex;flex-direction:column;align-items:center;cursor:pointer;animation:rwPulse 1.1s ease-in-out infinite}
+#rwBtn .i{font-size:30px;line-height:1}#rwBtn .t{font-size:13px}#rwBtn i{position:absolute;top:-8px;right:-8px;background:#e53935;color:#fff;font-style:normal;font-size:13px;min-width:22px;height:22px;border-radius:11px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2px #fff}
+@keyframes rwPulse{0%,100%{transform:scale(1);filter:brightness(1)}50%{transform:scale(1.1) rotate(-4deg);filter:brightness(1.25) drop-shadow(0 0 10px #ffd02e)}}
+.rwTabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}.rwTabs button{flex:1;min-width:76px;border:none;border-radius:12px;padding:7px 4px;font-family:inherit;font-size:13px;background:#e3edf8;color:#24456e;position:relative}.rwTabs button.on{background:linear-gradient(#5aa8f5,#2f7bd6);color:#fff}
+.rwTabs button b{position:absolute;top:-5px;right:-4px;background:#e53935;color:#fff;border-radius:9px;font-size:11px;padding:0 5px}
+.rwGrid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.rwD{border-radius:10px;background:#f2f7ff;border:2px solid #cfe0f7;text-align:center;font-size:11px;padding:4px 2px;color:#24456e;min-height:58px}
+.rwD .g{font-size:12px;font-weight:800}.rwD.done{background:#e6f6e1;border-color:#7ccf6a;opacity:.75}.rwD.done::after{content:'✅';display:block}.rwD.now{border-color:#ffb21c;background:#fff6d6;box-shadow:0 0 0 2px #ffd02e;animation:rwPulse 1.3s infinite}.rwD.rwBig{background:#fff0f6;border-color:#ff8ab8}
+.rwRow{display:flex;align-items:center;gap:10px;background:#f2f7ff;border:2px solid #cfe0f7;border-radius:12px;padding:8px 10px;margin:6px 0}.rwRow .m{flex:1;color:#24456e;font-size:14px}.rwRow .m small{display:block;color:#6a7f9a}
+.rwRow button,.rwClaim{border:none;border-radius:12px;padding:8px 14px;font-family:inherit;font-size:14px;color:#fff;background:linear-gradient(#5ccf6a,#2e9d4a);box-shadow:0 3px 0 #1f6a32;cursor:pointer}.rwRow button:disabled,.rwClaim:disabled{filter:grayscale(1);opacity:.55}
+.rwClaim{display:block;width:100%;margin-top:10px;font-size:17px;padding:11px}.rwNb{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.rwNb .rwD{min-height:92px}
+@media (max-width:560px){#rwBtn{top:38%;padding:6px 8px 4px}#rwBtn .i{font-size:24px}.rwGrid{gap:3px}.rwD{font-size:10px}.rwNb{grid-template-columns:repeat(4,1fr)}}`;document.head.appendChild(st)})();
+
+let RW_TAB='';
+function rwPanel(tab){const r=rwSt();const cnt={daily:G.daily.last!==today()?1:0,nb:r.nb.n<7&&r.nb.last!==today()?1:0,mo:r.mo.last!==today()?1:0,on:ONLINE_STEPS.filter(s=>r.on.sec>=s.m*60&&!r.on.got[s.m]).length,task:TASKS.filter(t=>(G.tasks.p[t.key]||0)>=t.goal&&!G.tasks.claimed[t.id]).length};
+  const tabs=[['daily','🎁 每日登入'],...(r.nb.n<7?[['nb','🐣 新手 7 日']]:[]),['mo','📅 每月簽到'],['on','⏱️ 在線獎勵'],['task','📋 每日任務']];
+  tab=tab||RW_TAB||(tabs.find(t=>cnt[t[0]])||tabs[0])[0];if(!tabs.some(t=>t[0]===tab))tab=tabs[0][0];RW_TAB=tab;
+  let body='';
+  if(tab==='daily'){const claimed=G.daily.last===today();let streak=G.daily.streak;const y=new Date(Date.now()-864e5);const yd=y.getFullYear()+'-'+(y.getMonth()+1)+'-'+y.getDate();if(!claimed&&G.daily.last!==yd)streak=0;const idx=claimed?(streak-1)%7:streak%7;
+    body=`<div class="note">每天登入領一次鑽石，連續登入越領越多，第 7 天 💎200！中斷一天會從第 1 天重新開始。</div><div class="rwGrid">${DAILY.map((g,i)=>`<div class="rwD ${(claimed?i<=idx:i<idx)?'done':''} ${!claimed&&i===idx?'now':''} ${i===6?'rwBig':''}">第 ${i+1} 天<div class="g">💎${g}</div></div>`).join('')}</div>
+      <button class="rwClaim" id="rwGo" ${claimed?'disabled':''}>${claimed?'今天領過了，明天再來！':'領取今日獎勵'}</button>`;
+    var go=()=>{if(G.daily.last===today())return;G.daily.last=today();G.daily.streak=streak+1;rwGive(DAILY[idx],null,`每日登入第 ${G.daily.streak} 天`,$('#rwGo'))}}
+  else if(tab==='nb'){const can=r.nb.last!==today();
+    body=`<div class="note">🐣 新手限定！前 7 天每天登入都能領，前 3 天送大量鑽石和加速卡片，幫你快速衝過新手期；<b>第 3 天、第 7 天有大獎</b>！</div><div class="rwNb">${NEWBIE.map((d,i)=>`<div class="rwD ${i<r.nb.n?'done':''} ${i===r.nb.n&&can?'now':''} ${d.big?'rwBig':''}">第 ${i+1} 天<div class="g">💎${d.g}</div><div>${cardTxt(d.c)}</div></div>`).join('')}</div>
+      <button class="rwClaim" id="rwGo" ${can?'':'disabled'}>${can?`領取第 ${r.nb.n+1} 天：${NEWBIE[r.nb.n].t||'新手獎勵'}`:'今天領過了，明天再來！'}</button>`;
+    var go=()=>{if(r.nb.last===today()||r.nb.n>=7)return;const d=NEWBIE[r.nb.n];r.nb.n++;r.nb.last=today();rwGive(d.g,d.c,`新手第 ${r.nb.n} 天`,$('#rwGo'))}}
+  else if(tab==='mo'){const dm=new Date(new Date().getFullYear(),new Date().getMonth()+1,0).getDate();const can=r.mo.last!==today();
+    body=`<div class="note">📅 ${new Date().getMonth()+1} 月簽到板：每天簽到一次，累計第 7、14、21、28 天有加碼禮物（下個月 1 號重新開始）。這個月已簽到 <b>${r.mo.n}</b> 天。</div><div class="rwGrid">${Array.from({length:dm},(_,i)=>{const n=i+1,w=monthReward(n);return `<div class="rwD ${n<=r.mo.n?'done':''} ${n===r.mo.n+1&&can?'now':''} ${w.c?'rwBig':''}">${n}<div class="g">💎${w.g}</div>${w.c?`<div>${cardTxt(w.c)}</div>`:''}</div>`}).join('')}</div>
+      <button class="rwClaim" id="rwGo" ${can?'':'disabled'}>${can?`簽到（第 ${r.mo.n+1} 天）`:'今天已簽到 ✅'}</button>`;
+    var go=()=>{if(r.mo.last===today())return;r.mo.n++;r.mo.last=today();const w=monthReward(r.mo.n);rwGive(w.g,w.c,`每月簽到第 ${r.mo.n} 天`,$('#rwGo'))}}
+  else if(tab==='on'){const m=Math.floor(r.on.sec/60);
+    body=`<div class="note">⏱️ 今天在遊戲裡已經玩了 <b>${m}</b> 分鐘（每天凌晨重新計算）。玩滿時間就能領，越玩越多！</div>${ONLINE_STEPS.map(s=>{const ok=r.on.sec>=s.m*60,got=r.on.got[s.m];return `<div class="rwRow"><div style="font-size:26px">${got?'✅':ok?'🎁':'⏳'}</div><div class="m"><b>在線 ${s.m} 分鐘</b><small>💎${s.g}${s.c?' ＋ '+cardTxt({[s.c]:1}):''}${ok?'':`　還差 ${Math.ceil(s.m-r.on.sec/60)} 分鐘`}</small><div class="bar" style="margin-top:4px"><i style="width:${Math.min(100,r.on.sec/60/s.m*100)}%"></i></div></div><button data-on="${s.m}" ${ok&&!got?'':'disabled'}>${got?'已領取':ok?'領取':'未達成'}</button></div>`}).join('')}`;
+    var go=null}
+  else{body=`<div class="note">每日任務每天凌晨重置，完成後領取 💎 鑽石！</div>${TASKS.map(t=>{const p=Math.min(t.goal,G.tasks.p[t.key]||0),done=p>=t.goal,cl=G.tasks.claimed[t.id];
+    return `<div class="rwRow"><div style="font-size:26px">${t.em}</div><div class="m"><b>${t.name}</b><div class="bar" style="margin:4px 0"><i style="width:${p/t.goal*100}%"></i></div><small>${p.toLocaleString()} / ${t.goal.toLocaleString()}　獎勵 💎${t.r}</small></div><button data-tk="${t.id}" ${done&&!cl?'':'disabled'}>${cl?'已領取':done?'領取':'進行中'}</button></div>`}).join('')}`;var go=null}
+  openPanel('🎁 獎勵中心',`<div class="rwTabs">${tabs.map(([k,n])=>`<button data-rt="${k}" class="${k===tab?'on':''}">${n}${cnt[k]?`<b>${cnt[k]}</b>`:''}</button>`).join('')}</div>${body}`,()=>{
+    pb.querySelectorAll('[data-rt]').forEach(b=>b.onclick=()=>{SFX.click();RW_TAB=b.dataset.rt;rwPanel(b.dataset.rt)});
+    const g=$('#rwGo');if(g&&go)g.onclick=()=>{go();setTimeout(()=>rwPanel(tab),700)};
+    pb.querySelectorAll('[data-on]').forEach(b=>b.onclick=()=>{const s=ONLINE_STEPS.find(x=>x.m===+b.dataset.on);if(r.on.got[s.m]||r.on.sec<s.m*60)return;r.on.got[s.m]=1;rwGive(s.g,s.c?{[s.c]:1}:null,`在線 ${s.m} 分鐘獎勵`,b);setTimeout(()=>rwPanel(tab),700)});
+    pb.querySelectorAll('[data-tk]').forEach(b=>b.onclick=()=>{const t=TASKS.find(x=>x.id===b.dataset.tk);if(G.tasks.claimed[t.id])return;G.tasks.claimed[t.id]=true;rwGive(t.r,null,`每日任務「${t.name}」`,b);setTimeout(()=>rwPanel(tab),700)})})}
+// 首頁的「每日」「任務」按鈕移到遊戲畫面裡的 🎁 領獎勵
+(()=>{const hide=()=>document.querySelectorAll('.ib[data-p="daily"],.ib[data-p="tasks"]').forEach(b=>b.style.display='none');hide();setTimeout(hide,1000)})();
+window.__RW={rwPanel,rwCount,rwSt,rwBtn};
 </script>
 </body></html>
