@@ -1699,7 +1699,7 @@ function needTick(dt){S.need=S.need||{en:100,food:100,clean:100,fun:100};const n
 let ACT=null;
 const HOMEACT={sleep:{n:'睡覺',em:'🛏️',f:['bed2','bed','crib'],d:6,g:{en:100},txt:'💤 呼～呼～'},rest:{n:'看電視休息',em:'🛋️',f:['sofa','arm'],d:4.5,g:{en:30,fun:30},txt:'📺 好舒服～'},bath:{n:'洗澡',em:'🛁',f:['tub','shower'],d:5,g:{clean:100,fun:10},txt:'🫧 洗得香噴噴'},
   cook:{n:'煮飯吃飯',em:'🍳',f:['counter','oven','dtab'],d:5,g:{food:100},cost:60,txt:'🍳 開動囉！'},play:{n:'和寵物玩',em:'🐾',f:['rug','sofa'],d:4,g:{fun:45},txt:'🐶 好開心！'}};
-const myHome=()=>S.objs.find(o=>o.t==='house'&&o.home&&!(o.bt!=null&&o.bt<1));
+const myHome=()=>{const ok=o=>o&&o.t==='house'&&o.home&&!o.burnt&&!(o.bt!=null&&o.bt<1);if(IN.o&&ok(IN.o))return IN.o;if(ACT&&ok(ACT.o))return ACT.o;let b=null,bd=1e9;for(const o of S.objs)if(ok(o)){const d=ME?Math.hypot(o.x-ME.position.x,o.z-ME.position.z):0;if(d<bd){bd=d;b=o}}return b};
 function homeSpot(o,keys_){const items=(o.furn||[]);let it=null;for(const k of keys_){it=items.find(q=>q.k===k);if(it)break}if(!it&&!items.length){const d=PEEK_DEF.find(q=>keys_.includes(q[0]));if(d)it={x:d[1]*o.w,z:d[2]*o.d,r:d[3]||0,k:d[0]}}if(!it)it={x:0,z:0,r:0};
   const r=o.r||0,c=Math.cos(r),s=Math.sin(r);return {x:o.x+it.x*c+it.z*s,z:o.z-it.x*s+it.z*c,y:baseY(o)+.53+(it.f||0)*FH,f:it.f||0,r:r+(it.r||0),k:it.k}}
 function homePanel(){const o=myHome();const n=S.need||{};
@@ -1707,7 +1707,7 @@ function homePanel(){const o=myHome();const n=S.need||{};
    (o?`<div class="lab">在「${o.name||'我的家'}」可以做的事</div><div class="row2" style="flex-wrap:wrap">${Object.entries(HOMEACT).map(([k,a])=>`<button class="hb ${k==='sleep'?'p':k==='bath'?'b':k==='cook'?'o':'g'}" data-act="${k}" style="min-width:30%">${a.em} ${a.n}${a.cost&&S.mode!=='free'?`<br><small>${money(a.cost)}</small>`:''}</button>`).join('')}<button class="hb y" id="hDress" style="min-width:30%">👕 換衣服</button><button class="hb" id="hPet" style="min-width:30%">🐾 我的寵物</button></div><div style="font-size:12px;color:#7a6a4a">要先在家裡擺好對應的家具才能做：睡覺要床、休息要沙發、洗澡要浴缸或淋浴間、煮飯要流理台、烤箱或餐桌。走進自己家裡，下面也會出現這些按鈕。</div>`
    :`<div class="prow"><div class="em">🏠</div><div class="tx"><b>你還沒有家</b><small>選一棟蓋好的房子，在房子面板按「🏡 設為自宅」，就可以在家睡覺、洗澡、煮飯、換衣服。</small></div></div><div class="row2"><button class="hb y" id="hDress">👕 換衣服</button><button class="hb" id="hPet">🐾 我的寵物</button></div>`),
    ()=>{const P=$('#panel');P.querySelectorAll('[data-act]').forEach(b=>b.onclick=()=>{closePanel();homeAct(b.dataset.act)});$('#hDress').onclick=dressPanel;$('#hPet').onclick=petPanel})}
-function homeAct(k){const o=myHome();if(!o){toast('🏠 先把一棟房子設為自宅');return}const A=HOMEACT[k];if(!homeHas(o,k))return;if(A.cost&&!spend(A.cost,A.n))return;if(k==='play'&&!(S.pets||[]).length){toast('🐾 你還沒有寵物，先去「🐾 寵物店」領養一隻吧');return}
+function homeAct(k){if(!(IN.o&&IN.o.home)&&homesOf().length>1){toast('🏡 你有好幾間自宅，先選要回哪一間，進去之後再休息',2600);goHome();return}const o=myHome();if(!o){toast('🏠 先把一棟房子設為自宅');return}const A=HOMEACT[k];if(!homeHas(o,k))return;if(A.cost&&!spend(A.cost,A.n))return;if(k==='play'&&!(S.pets||[]).length){toast('🐾 你還沒有寵物，先去「🐾 寵物店」領養一隻吧');return}
   const sp=homeSpot(o,A.f);if(k==='cook'){const it=(o.furn||[]).find(q=>q.k===sp.k);const D=FUR[sp.k];const off=((D&&D.d)||.6)/2*((it&&it.s)||1)+.45;sp.x+=Math.sin(sp.r)*off;sp.z+=Math.cos(sp.r)*off;sp.r+=Math.PI}ACT={k,o,t:0,d:A.d,sp,back:{x:ME.position.x,z:ME.position.z}};ME.position.set(sp.x,sp.y,sp.z);ME.rotation.y=sp.r;CAM.tx=sp.x;CAM.tz=sp.z;CAM.dist=Math.min(CAM.dist,16);SFX.click();toast(`${A.em} ${A.n}…`,1600);TUTF.act=1;if(k==='sleep')sleepFx(true)}
 function sleepFx(on){let d=$('#sleepFx');if(!d){d=document.createElement('div');d.id='sleepFx';d.style.cssText='position:fixed;inset:0;background:#0a1020;z-index:20;pointer-events:none;opacity:0;transition:opacity 1.2s;display:flex;align-items:center;justify-content:center;font-size:48px;color:#fff';d.innerHTML='💤 Zzz…';document.body.appendChild(d)}d.style.opacity=on?'.85':'0'}
 function actTick(dt){const a=ACT,u=ME.userData,t=performance.now()/1000;a.t+=dt;const sp=a.sp;ME.position.set(sp.x,sp.y,sp.z);ME.rotation.set(0,sp.r,0);u.body.position.y=0;
@@ -2437,7 +2437,7 @@ function tpPanel2(){if(TPZ.z===1){TPZ.cx=0;TPZ.cz=0}openPanel(`<h2>🌀 瞬間�
   <div style="position:absolute;right:calc(50% - min(48%,260px) + 8px);top:14px;display:flex;flex-direction:column;gap:6px"><button class="hb g" id="tpZi" style="font-size:22px;padding:4px 12px">＋</button><button class="hb g" id="tpZo" style="font-size:22px;padding:4px 12px">－</button><button class="hb b" id="tpMe" style="font-size:18px;padding:4px 8px">🔵</button></div></div>
   <div class="lab">快速前往</div><div class="row2" style="flex-wrap:wrap">${homesOf().map(o=>`<button class="hb g" data-tq="${o.x},${o.z}">🏡 ${o.name||'我的家'}</button>`).join('')}${ZONES.filter(z=>z.x!=null).map(z=>`<button class="hb o" data-tq="${z.x},${z.z+z.r*.3}">${z.em} ${z.n}</button>`).join('')}${[...PEERS.values()].map(p=>`<button class="hb b" data-tq="${p.g.position.x},${p.g.position.z}">👥 ${p.n||'隊友'}</button>`).join('')}</div>
   <div class="row2"><button class="hb p" id="tpS">👆 改成點畫面上的地面</button></div>`,
-  ()=>{const cv=$('#tpC');const draw=()=>tpDraw(cv);draw();cv.onclick=e=>{const r=cv.getBoundingClientRect();const span=SZ/TPZ.z;const x=TPZ.cx-span/2+(e.clientX-r.left)/r.width*span,z=TPZ.cz-span/2+(e.clientY-r.top)/r.height*span;tpAsk(x,z)};
+  ()=>{const cv=$('#tpC');const draw=()=>tpDraw(cv);clearInterval(window.__tpIv);window.__tpIv=setInterval(()=>{if(!document.body.contains(cv)){clearInterval(window.__tpIv);return}draw()},1000);draw();cv.onclick=e=>{const r=cv.getBoundingClientRect();const span=SZ/TPZ.z;const x=TPZ.cx-span/2+(e.clientX-r.left)/r.width*span,z=TPZ.cz-span/2+(e.clientY-r.top)/r.height*span;tpAsk(x,z)};
    const zm=f=>{TPZ.z=clamp(TPZ.z*f,1,16);if(TPZ.z===1){TPZ.cx=0;TPZ.cz=0}else if(f>1&&TPZ.z===2&&!TPZ.cx&&!TPZ.cz){TPZ.cx=ME.position.x;TPZ.cz=ME.position.z}draw()};$('#tpZi').onclick=()=>zm(2);$('#tpZo').onclick=()=>zm(.5);$('#tpMe').onclick=()=>{TPZ.cx=ME.position.x;TPZ.cz=ME.position.z;if(TPZ.z<4)TPZ.z=4;draw()};
    cv.onwheel=e=>{e.preventDefault();zm(e.deltaY<0?1.5:1/1.5)};let dr=null;cv.onpointerdown=e=>{dr={x:e.clientX,y:e.clientY,cx:TPZ.cx,cz:TPZ.cz,m:0}};cv.onpointermove=e=>{if(!dr||TPZ.z===1)return;const r=cv.getBoundingClientRect();const k=SZ/TPZ.z/r.width;const dx=e.clientX-dr.x,dy=e.clientY-dr.y;if(Math.abs(dx)+Math.abs(dy)>6)dr.m=1;TPZ.cx=dr.cx-dx*k;TPZ.cz=dr.cz-dy*k;draw()};cv.onpointerup=e=>{if(dr&&dr.m){e.preventDefault();setTimeout(()=>dr=null,0);cv.onclick&&(cv._skip=1)}else dr=null};
    const oc=cv.onclick;cv.onclick=e=>{if(cv._skip){cv._skip=0;return}oc(e)};
@@ -2451,9 +2451,9 @@ function tpDraw(cv){const R=cv.width,x=cv.getContext('2d');const span=SZ/TPZ.z;T
   for(const Z of ZONES)if(Z.x!=null){const [px,py]=P(Z.x,Z.z);x.strokeStyle='rgba(255,255,255,.8)';x.lineWidth=2;x.beginPath();x.arc(px,py,Math.max(6,Z.r/span*R),0,7);x.stroke();lbl(Z.x,Z.z,Z.em,Z.n.replace(/（.*）/,''))}
   for(const o of S.objs)if(o.fac&&TPZ.z<4)lbl(o.x,o.z,'🏭','');
   for(const o of homesOf())lbl(o.x,o.z,'🏡',o.name||'我的家');
-  for(const p of PEERS.values())lbl(p.g.position.x,p.g.position.z,'👥',p.n||'隊友','rgba(200,230,255,.95)');
+  for(const p of PEERS.values()){const [qx,qz]=P(p.g.position.x,p.g.position.z);x.fillStyle='#e8502a';x.strokeStyle='#fff';x.lineWidth=3;x.beginPath();x.arc(qx,qz,8,0,7);x.fill();x.stroke();x.font=`bold ${Math.round(fs*.62)}px sans-serif`;const t='👥 '+(p.n||'隊友'),w=x.measureText(t).width+10;x.fillStyle='rgba(255,230,220,.95)';x.fillRect(qx-w/2,qz-fs*1.5,w,fs*.85);x.fillStyle='#8a2a10';x.fillText(t,qx,qz-fs*1.08)}
   if(GUIDE)lbl(GUIDE.x,GUIDE.z,'📍','');
-  const [mx,mz]=P(ME.position.x,ME.position.z);x.fillStyle='#3a8ad8';x.strokeStyle='#fff';x.lineWidth=3;x.beginPath();x.arc(mx,mz,8,0,7);x.fill();x.stroke();
+  const [mx,mz]=P(ME.position.x,ME.position.z);x.fillStyle='#3a8ad8';x.strokeStyle='#fff';x.lineWidth=3;x.beginPath();x.arc(mx,mz,8,0,7);x.fill();x.stroke();{x.font=`bold ${Math.round(fs*.62)}px sans-serif`;const t='🔵 你',w=x.measureText(t).width+10;x.fillStyle='rgba(220,236,255,.95)';x.fillRect(mx-w/2,mz-fs*1.5,w,fs*.85);x.fillStyle='#1a4a8a';x.fillText(t,mx,mz-fs*1.08)}
   x.fillStyle='rgba(0,0,0,.55)';x.fillRect(6,R-30,170,24);x.fillStyle='#fff';x.font='bold 15px sans-serif';x.textAlign='left';x.fillText(`🔍 放大 ${TPZ.z.toFixed(1).replace('.0','')} 倍・可以拖曳`,12,R-17)}
 /* ---- 道路：沿著地形補點、遇到建築物要繞路、路上的樹和石頭會清掉 ---- */
 function densePts(pts,st){if(pts.length<2)return pts;const out=[pts[0]];for(let i=1;i<pts.length;i++){const a=pts[i-1],b=pts[i];const L=Math.hypot(b.x-a.x,b.z-a.z);const n=Math.max(1,Math.ceil(L/st));for(let k=1;k<=n;k++)out.push({x:a.x+(b.x-a.x)*k/n,z:a.z+(b.z-a.z)*k/n})}return out}
@@ -3088,7 +3088,7 @@ function ruinMesh(o){const g=new THREE.Group();let sd=(o.id*9301+49297)%233280||
   for(let k=0;k<14+Math.round(W*D/8);k++){const s=.15+R()*.45;add(RUIN_G.ico,RUIN_M[R()<.5?2:R()<.6?0:3],(R()-.5)*W*.9,.45+s*.4,(R()-.5)*D*.9,s,s*.6,s,R()*3,R()*3,R()*3)}
   if(o.chimney){const h=2+R()*2;add(RUIN_G.box,RUIN_M[3],W*.25,.4+h/2,-D*.2,.7,h,.7)}
   g.userData.peak=3;g.userData.burnt=1;return g}
-const _place0=place;place=function(o){if(o.t==='house'&&o.burnt){const old=OBJM.get(o.id);if(old){OBJG.remove(old)}const g=ruinMesh(o);g.userData.id=o.id;g.position.set(o.x,baseY(o),o.z);g.rotation.y=o.r||0;OBJG.add(g);OBJM.set(o.id,g);return}_place0(o)};
+const _place0=place;place=function(o){if(o.t==='house'&&o.burnt){const old=OBJM.get(o.id);if(old){OBJG.remove(old)}const g=ruinMesh(o);g.userData.id=o.id;g.position.set(o.x,baseY(o),o.z);g.rotation.y=o.r||0;OBJG.add(g);OBJM.set(o.id,g);return}_place0(o);if(IN.o&&IN.o.id===o.id){const g=OBJM.get(o.id);if(g)g.visible=false}};
 // 燒毀的房子冒一點點煙
 let rsT=0;function ruinSmoke(dt){rsT-=dt;if(rsT>0)return;rsT=.8;for(const o of S.objs)if(o.burnt&&Math.hypot(o.x-CAM.tx,o.z-CAM.tz)<CAM.dist*2+40&&Math.random()<.5)dust(o.x+(Math.random()-.5)*o.w*.6,baseY(o)+1,o.z+(Math.random()-.5)*o.d*.6,1)}
 
@@ -3102,7 +3102,7 @@ function pauseSet(on){window.__pz=on;let d=$('#pzOv');if(!d){d=document.createEl
 /* ---- 晚上人物身上有光 ---- */
 const MELIT=new THREE.PointLight(0xffdcaa,0,18,1.5);scene.add(MELIT);
 const MEGLOW=new THREE.Mesh(new THREE.CircleGeometry(3.4,32),new THREE.MeshBasicMaterial({map:cTex(64,64,x=>{const g=x.createRadialGradient(32,32,0,32,32,32);g.addColorStop(0,'rgba(255,225,160,.9)');g.addColorStop(.5,'rgba(255,210,140,.35)');g.addColorStop(1,'rgba(255,200,120,0)');x.fillStyle=g;x.fillRect(0,0,64,64)}),transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,opacity:0}));MEGLOW.rotation.x=-Math.PI/2;MEGLOW.renderOrder=2;scene.add(MEGLOW);
-function meLight(){if(!ME)return;const n=clamp((NIGHT-.2)/.6,0,1);const on=n>0&&!INT&&ME.visible;MELIT.intensity=on?n*14:0;MELIT.visible=on;MEGLOW.visible=on;if(!on)return;const s=ME.scale.x;MELIT.position.set(ME.position.x,ME.position.y+3.2*s,ME.position.z);MELIT.distance=18*Math.max(1,s*.8);MEGLOW.position.set(ME.position.x,ME.position.y+.08,ME.position.z);MEGLOW.scale.setScalar(Math.max(1,s*.8));MEGLOW.material.opacity=n*.45}
+function meLight(){if(!ME)return;const n=clamp((NIGHT-.2)/.6,0,1);const on=n>0&&!INT&&ME.visible;MELIT.intensity=on?n*14:0;MEGLOW.visible=on;if(!on)return;const s=ME.scale.x;MELIT.position.set(ME.position.x,ME.position.y+3.2*s,ME.position.z);MELIT.distance=18*Math.max(1,s*.8);MEGLOW.position.set(ME.position.x,ME.position.y+.08,ME.position.z);MEGLOW.scale.setScalar(Math.max(1,s*.8));MEGLOW.material.opacity=n*.45}
 
 /* ---- 雪花、落葉、花瓣：不要方塊 ---- */
 (function partTex(){const mk=(o,tex,col,size)=>{o.material.map=tex;o.material.color.set(col);o.material.alphaTest=.15;o.material.transparent=true;o.material.size=size;o.userData.s0=null;o.material.needsUpdate=true};
@@ -3181,22 +3181,22 @@ let mgT=0,mgPay=0;function mgrTick(dt){if(!S.mgr||(typeof CO!=='undefined'&&CO.r
   dirty()}
 
 /* ---- 燈光：家裡擺了燈，晚上從外面看得到亮光；裝潢時燈具真的會照亮房間 ---- */
-const LAMPL=[];for(let i=0;i<6;i++){const l=new THREE.PointLight(0xffd29a,0,10,1.4);l.visible=false;scene.add(l);LAMPL.push(l)}let lampT=0;
+const LAMPL=[];for(let i=0;i<6;i++){const l=new THREE.PointLight(0xffd29a,0,10,1.4);scene.add(l);LAMPL.push(l)}let lampT=0;
 const lampItems=o=>(o.furn||[]).filter(it=>FUR[it.k]&&FUR[it.k].glow);
 function lampW(o,it){const r=o.r||0,c=Math.cos(r),s=Math.sin(r);return V(o.x+it.x*c+it.z*s,baseY(o)+.53+(it.f||0)*FH+FUR[it.k].glow*(it.s||1),o.z-it.x*s+it.z*c)}
 function lampTick(dt){lampT-=dt;if(lampT>0)return;lampT=.3;const L=[];
-  if(INT){const o=INT.o;for(const it of lampItems(o).filter(q=>(q.f||0)===INT.f).slice(0,6))L.push([lampW(o,it),7+NIGHT*9,9])}
+  if(INT){const o=INT.o;L.push([V(o.x,baseY(o)+.45+INT.f*FH+FH*.9,o.z),14+NIGHT*30,Math.max(o.w,o.d)*1.3+6]);for(const it of lampItems(o).filter(q=>(q.f||0)===INT.f).slice(0,5))L.push([lampW(o,it),9+NIGHT*12,10])}
   else if(PEEK&&!PEEK.o.burnt){const o=PEEK.o;for(const it of lampItems(o).filter(q=>(q.f||0)<3).slice(0,5))L.push([lampW(o,it),3+NIGHT*9,9])}
   if(!INT&&NIGHT>.25){const hs=S.objs.filter(o=>o.t==='house'&&!o.burnt&&(lampItems(o).length||lived(o))&&(!PEEK||PEEK.o!==o)&&Math.hypot(o.x-CAM.tx,o.z-CAM.tz)<CAM.dist*1.6+40).sort((a,b)=>Math.hypot(a.x-CAM.tx,a.z-CAM.tz)-Math.hypot(b.x-CAM.tx,b.z-CAM.tz));
     for(const o of hs){if(L.length>=6)break;const n=lampItems(o).length;L.push([V(o.x,baseY(o)+1.8,o.z),NIGHT*Math.min(40,10+n*6),Math.max(o.w,o.d)*.9+9])}}
-  LAMPL.forEach((l,i)=>{const q=L[i];if(!q){l.intensity=0;l.visible=false;return}l.visible=true;l.position.copy(q[0]);l.intensity=q[1];l.distance=q[2]})}
+  LAMPL.forEach((l,i)=>{const q=L[i];if(!q){l.intensity=0;return}l.position.copy(q[0]);l.intensity=q[1];l.distance=q[2]})}
 
-function bal2Tick(dt){layoutTick(dt);extTick(dt);repTick(dt);dmgFxTick(dt);mgrTick(dt);lampTick(dt)}
+function bal2Tick(dt){mobTick(dt);dashTick();layoutTick(dt);extTick(dt);repTick(dt);dmgFxTick(dt);mgrTick(dt);lampTick(dt)}
 
 /* ---- 畫面排版：左上角的小視窗由上往下排，不會互相蓋住（手機特別重要） ---- */
 let layT=0;function layoutTick(dt){layT-=dt;if(layT>0)return;layT=.4;const mob=innerWidth<=700;const vis=e=>e&&getComputedStyle(e).display!=='none'&&e.offsetHeight>0;
-  const nd=$('#needs');let y=vis(nd)?nd.getBoundingClientRect().bottom+4:96;
-  const wx=$('#wxChip');if(wx){if(mob){wx.style.left='8px';wx.style.top=y+'px';if(vis(wx))y+=wx.offsetHeight+4}else{wx.style.left='';wx.style.top=''}}
+  const nd=$('#needs');let y=vis(nd)?nd.getBoundingClientRect().bottom+4:96;const mi=$('#mobInfo');if(MOB.on&&!MOB.l&&vis(mi))y=mi.getBoundingClientRect().bottom+4;
+  const wx=$('#wxChip');if(wx){if(mob){wx.style.left='8px';wx.style.top=y+'px';if(vis(wx))y+=wx.offsetHeight+4}else{const r=nd&&vis(nd)?nd.getBoundingClientRect():null;wx.style.left=(r?r.right+6:250)+'px';wx.style.top=(r?r.top:78)+'px'}}
   const cc=$('#coopChip');if(vis(cc)){cc.style.top=y+'px';y+=cc.offsetHeight+4}
   const gb=$('#goalBox');if(gb){gb.style.top=y+'px';if(vis(gb))y=gb.getBoundingClientRect().bottom+6}
   const ag=$('#agChip');if(ag){if(mob){ag.style.right='auto';ag.style.left='8px';ag.style.top=y+'px';if(vis(ag))y+=ag.offsetHeight+4}else{ag.style.left='';ag.style.right='10px';ag.style.top=''}}
@@ -3204,6 +3204,44 @@ let layT=0;function layoutTick(dt){layT-=dt;if(layT>0)return;layT=.4;const mob=i
   barArrows()}
 function barArrows(){const bar=$('#bar');if(!bar)return;let L=$('#barL'),R=$('#barR');if(!L){const mk=(id,t,dx)=>{const b=document.createElement('button');b.id=id;b.textContent=t;b.style.cssText='position:fixed;z-index:7;bottom:calc(22px + env(safe-area-inset-bottom));width:30px;height:46px;border-radius:12px;border:2px solid #fff;background:rgba(232,112,26,.92);color:#fff;font-size:18px;font-weight:bold;box-shadow:0 2px 6px rgba(0,0,0,.3);display:none;padding:0';b.style[dx<0?'left':'right']='2px';b.onclick=()=>{SFX.click();bar.scrollBy({left:dx*Math.max(160,bar.clientWidth*.7),behavior:'smooth'})};document.body.appendChild(b);return b};L=mk('barL','◀',-1);R=mk('barR','▶',1);bar.addEventListener('scroll',()=>{layT=0})}
   const can=bar.scrollWidth>bar.clientWidth+8&&getComputedStyle(bar).display!=='none';L.style.display=can&&bar.scrollLeft>6?'block':'none';R.style.display=can&&bar.scrollLeft+bar.clientWidth<bar.scrollWidth-6?'block':'none'}
+
+/* ======================= 2.25：手機側邊收納、手機家具操作、選取虛線 ======================= */
+const MOB={on:false,l:0,r:0,t:0,b:0,j:1};
+const isMob=()=>matchMedia('(pointer:coarse)').matches&&Math.min(innerWidth,innerHeight)<=620;
+(function mobUI(){const st=document.createElement('style');const H=(k,sel)=>sel.split(',').map(q=>`body.mob:not(.o${k}) ${q.trim()}`).join(',')+'{display:none!important}';
+  st.textContent=H('L','#money,#needs,#wxChip,#goalBox,#agChip,#mats')+H('R','#rot')+H('T','#tbtn')+H('B','#bar,#sub,#credit,#barL,#barR')+H('J','#joyW')+
+  `body.mob.intOn #edit{display:none!important}body.mob.intOn.oE #edit{display:block!important}
+  body.mob #top{right:auto}body.mob #tbtn{position:fixed;right:44px;top:calc(6px + env(safe-area-inset-top));max-width:62%;justify-content:flex-end}
+  body:not(.mob) .mtab,body:not(.mob) #mobInfo,body:not(.mob) #furBub{display:none!important}body.mob.oL #mobInfo{display:none!important}
+  .mtab{position:fixed;z-index:12;width:34px;height:46px;border-radius:12px;border:2px solid #fff;background:rgba(232,112,26,.88);color:#fff;font-size:17px;font-weight:bold;box-shadow:0 2px 6px rgba(0,0,0,.3);padding:0;display:flex;align-items:center;justify-content:center}
+  #mtT{right:4px;top:calc(6px + env(safe-area-inset-top));width:36px;height:36px;background:rgba(58,138,216,.92)}#mtL{left:0;top:42%;border-radius:0 12px 12px 0}#mtR{right:0;top:42%;border-radius:12px 0 0 12px}body.mob.oR #mtR{right:60px}
+  #mtB{left:50%;transform:translateX(-50%);bottom:calc(2px + env(safe-area-inset-bottom));width:56px;height:26px;border-radius:12px 12px 0 0}body.mob.oB #mtB{bottom:calc(86px + env(safe-area-inset-bottom))}
+  #mtJ{left:4px;bottom:calc(2px + env(safe-area-inset-bottom));width:40px;height:30px;font-size:15px;background:rgba(90,90,90,.75)}body.mob.oB #mtJ{bottom:calc(86px + env(safe-area-inset-bottom))}
+  #mobInfo{position:fixed;left:8px;top:calc(6px + env(safe-area-inset-top));z-index:6;font-size:13px;font-weight:bold;padding:4px 10px;background:rgba(255,251,236,.94);border:2px solid #d8c8a0;border-radius:14px;color:#4a3010;cursor:pointer}
+  #furBub{position:fixed;left:50%;transform:translateX(-50%);top:calc(84px + env(safe-area-inset-top));z-index:14;display:none;gap:10px;padding:6px 10px;background:rgba(255,255,255,.55);border-radius:30px;box-shadow:0 3px 10px rgba(0,0,0,.25)}
+  #furBub button{width:54px;height:54px;border-radius:50%;border:3px solid #fff;font-size:24px;box-shadow:0 2px 6px rgba(0,0,0,.25);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;padding:0}#furBub small{font-size:10px;font-weight:bold;color:#fff;margin-top:2px}`;
+  document.head.appendChild(st);
+  const mk=(id,t,k)=>{const b=document.createElement('button');b.className='mtab';b.id=id;b.textContent=t;b.onclick=e=>{e.stopPropagation();SFX.click();MOB[k]=MOB[k]?0:1;mobApply()};document.body.appendChild(b);return b};
+  mk('mtT','☰','t');mk('mtL','▶','l');mk('mtR','◀','r');mk('mtB','▲','b');mk('mtJ','🕹️','j');
+  const mi=document.createElement('div');mi.id='mobInfo';mi.onclick=()=>{SFX.click();MOB.l=1;mobApply()};document.body.appendChild(mi);
+  const fb=document.createElement('div');fb.id='furBub';fb.innerHTML=`<button id="fbOk" style="background:#3ab85a">✔<small>放好</small></button><button id="fbRot" style="background:#e8a020">↻<small>轉向</small></button><button id="fbDup" style="background:#3a8ad8">⧉<small>複製</small></button><button id="fbDel" style="background:#e04a3a">📦<small>收起</small></button><button id="fbMore" style="background:#8a5ad8">⋯<small>更多</small></button>`;document.body.appendChild(fb);
+  fb.querySelector('#fbOk').onclick=()=>{SFX.place();INT.sel=null;intEdit();intBuild();dirty()};
+  fb.querySelector('#fbRot').onclick=()=>{const it=INT&&INT.sel;if(!it)return;snapUndo();it.r=(it.r||0)+Math.PI/2;SFX.click();intBuild();dirty()};
+  fb.querySelector('#fbDup').onclick=()=>{const b=$('#iDup');if(b)b.click()};fb.querySelector('#fbDel').onclick=()=>{const b=$('#iDel');if(b)b.click()};
+  fb.querySelector('#fbMore').onclick=()=>{SFX.click();document.body.classList.toggle('oE')};
+  addEventListener('resize',()=>mobApply());mobApply()})();
+function mobApply(){MOB.on=isMob();const c=document.body.classList;c.toggle('mob',MOB.on);for(const [k,K] of [['l','L'],['r','R'],['t','T'],['b','B'],['j','J']])c.toggle('o'+K,!!MOB[k]);
+  const t=(id,a,b,on)=>{const e=$(id);if(e)e.textContent=on?a:b};t('#mtL','◀','▶',MOB.l);t('#mtR','▶','◀',MOB.r);t('#mtB','▼','▲',MOB.b);t('#mtT','✕','☰',MOB.t);layT=0}
+let mobT=0;function mobTick(dt){mobT-=dt;if(mobT>0)return;mobT=.5;const c=document.body.classList;c.toggle('intOn',!!INT);if(!MOB.on)return;const mi=$('#mobInfo');if(mi){const h=`📅 ${calTxt()}`;if(mi.dataset.h!==h){mi.dataset.h=h;mi.textContent=h}}
+  const fb=$('#furBub');if(fb)fb.style.display=INT&&INT.sel?'flex':'none';if(!(INT&&INT.sel))c.remove('oE')}
+
+/* ---- 選到的家具：地上有會動的虛線框 ---- */
+const DSH=[];const DSHM=new THREE.MeshBasicMaterial({color:0xffffff,depthTest:false,transparent:true});const DSHG=new THREE.PlaneGeometry(1,1);DSHG.rotateX(-Math.PI/2);
+for(let i=0;i<64;i++){const m=new THREE.Mesh(DSHG,DSHM);m.renderOrder=10;m.visible=false;scene.add(m);DSH.push(m)}
+const _bx=new THREE.Box3();function dashTick(){const it=INT&&INT.sel;const fg=it&&INT.g&&INT.g.children.find(c=>c.userData.fid===it);if(!fg){if(DSH[0].visible)DSH.forEach(m=>m.visible=false);return}_bx.setFromObject(fg);
+  const mg=.16,y=_bx.min.y+.05,a=_bx.min.x-mg,b=_bx.max.x+mg,c=_bx.min.z-mg,d=_bx.max.z+mg;const per=2*((b-a)+(d-c));const seg=.28,step=.46;const t=(performance.now()/1000*.6)%step;let n=0;
+  const at=s=>{s=((s%per)+per)%per;const W=b-a,D=d-c;if(s<W)return [a+s,c,0];s-=W;if(s<D)return [b,c+s,1];s-=D;if(s<W)return [b-s,d,0];s-=W;return [a,d-s,1]};
+  for(let s=t;s<per&&n<DSH.length;s+=step){const [x,z,v]=at(s+seg/2);const m=DSH[n++];m.position.set(x,y,z);m.scale.set(v?.07:seg,1,v?seg:.07);m.visible=true}for(;n<DSH.length;n++)DSH[n].visible=false;DSHM.color.setHSL(.12,1,.6+.35*Math.sin(performance.now()/250))}
 
 /* ======================= 編輯面板（選到東西時出現） ======================= */
 const chipsH=(key,opts,cur,lock)=>`<div class="chips">${Object.entries(opts).map(([k,n])=>`<button data-${key}="${k}" class="${String(cur)===k?'on':''}" ${lock&&lock(k)?'disabled style="opacity:.4"':''}>${n}</button>`).join('')}</div>`;
