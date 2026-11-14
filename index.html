@@ -315,7 +315,7 @@ body.ing #toast{top:138px}
     <button class="ib" data-p="credits"><div class="sq">📜</div><span>聲明</span></button>
   </div>
 </div>
-<div id="credit">遊戲製作：Eric Hu　版本 2.24.0</div>
+<div id="credit">遊戲製作：Eric Hu　版本 2.24.1</div>
 </div>
 <div id="game" class="hide">
   <div id="lbls"></div>
@@ -4055,11 +4055,11 @@ async function slotSwitch(u,n){const o=slotOf(u);if(o.act===n)return;if(u.starts
   if(cur)await idbSet(u+'_'+o.act,cur);else await idbDel(u+'_'+o.act);const nx=await idbGet(u+'_'+n);UNITS[u].set(nx||null);await idbDel(u+'_'+n);o.act=n;slotPut(u,o)}
 async function slotDelete(u,n){const o=slotOf(u);if(o.act===n){if(u.startsWith('farm'))farmFlush();if(u.startsWith('fish')&&typeof fishFlush==='function')fishFlush();if(typeof IND!=='undefined'){const x=IND.find(x=>u.startsWith(x.id));if(x)indFlush(x.id)}UNITS[u].set(null)}else await idbDel(u+'_'+n);if(o.names)delete o.names[n];if(o.t)delete o.t[n];slotPut(u,o)}
 // 選擇存檔畫面
-async function slotPanel(ser,md,go){const u=ser+'_'+md;const o=slotOf(u);const rows=[];
+async function slotPanel(ser,md,go,ttl){const u=ser+'_'+md;const o=slotOf(u);const rows=[];
   for(let n=1;n<=SLOT_N;n++){const raw=n===o.act?UNITS[u].get():await idbGet(u+'_'+n);const m=slotMeta(u,raw);const nm=esc((o.names||{})[n]||`存檔 ${n}`);const tt=(m&&m.t)||(o.t||{})[n];const t=m&&tt?new Date(tt).toLocaleString('zh-TW',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'';
     rows.push(`<div class="task" style="${n===o.act?'border-color:#5ec46a;background:#f2fff0':''}"><div class="e">${['1️⃣','2️⃣','3️⃣','4️⃣','5️⃣'][n-1]}</div><div class="m"><b>${nm}</b>${n===o.act?' <small style="color:#2a8a3a">（上次玩的）</small>':''}<small>${m?`${m.txt}${t?`<br>🕒 ${t}`:''}`:'空的存檔'}</small></div>
       <div style="display:flex;flex-direction:column;gap:4px"><button class="sbtn" data-go="${n}" style="background:#2f9a4a;box-shadow:0 3px 0 #1f6a32">${m?'▶ 繼續':'🆕 開始'}</button><div style="display:flex;gap:4px"><button class="sbtn" data-nm="${n}" style="padding:4px 8px;background:#5aa8f5;box-shadow:0 2px 0 #2f7bd6">✏️</button>${m?`<button class="sbtn" data-del="${n}" style="padding:4px 8px;background:#e05a4a;box-shadow:0 2px 0 #a83a2a">🗑️</button>`:''}</div></div></div>`)}
-  openPanel(`💾 ${SER_N[ser]}・${MODE_N[md]}`,`<div class="note">選一個存檔開始。每個存檔的等級、錢、進度都分開。${md==='solo'?'':'<br>合作的存檔是<b>房主</b>的；加入朋友的房間不會用到你的存檔。'}</div>${rows.join('')}`,()=>{
+  openPanel(ttl?`💾 ${SER_N[ser]}・多人合作`:`💾 ${SER_N[ser]}・${MODE_N[md]}`,`<div class="note">${ttl?`<b>${ttl}</b><br>選好之後會馬上建立隊伍，給你 4 位數房號。<br>`:''}選一個存檔開始。每個存檔的等級、錢、進度都分開。${md==='solo'&&!ttl?'':'<br>合作的存檔是<b>房主</b>的；加入朋友的房間不會用到你的存檔。'}</div>${rows.join('')}`,()=>{
     pb.querySelectorAll('[data-go]').forEach(b=>b.onclick=async()=>{SFX.click();const n=+b.dataset.go;b.disabled=true;try{await slotSwitch(u,n)}catch(e){toast('❌ 換存檔失敗，請再試一次');b.disabled=false;return}const o2=slotOf(u);o2.t=o2.t||{};o2.t[n]=Date.now();slotPut(u,o2);SLOT_PICK[u]=Date.now();closePanel();go()});
     pb.querySelectorAll('[data-nm]').forEach(b=>b.onclick=()=>{const n=+b.dataset.nm;const v=prompt('存檔名稱（最多 10 個字）',(slotOf(u).names||{})[n]||`存檔 ${n}`);if(v==null)return;const o2=slotOf(u);o2.names=o2.names||{};o2.names[n]=v.trim().slice(0,10)||`存檔 ${n}`;slotPut(u,o2);slotPanel(ser,md,go)});
     pb.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{const n=+b.dataset.del;const nm=(slotOf(u).names||{})[n]||`存檔 ${n}`;ask(`確定要刪除「<b>${esc(nm)}</b>」嗎？`,()=>setTimeout(()=>ask('⚠️ 再確認一次：<b>真的要刪除嗎？</b><br><small>刪除後沒辦法復原</small>',async()=>{await slotDelete(u,n);toast('🗑️ 已刪除');slotPanel(ser,md,go)}),150))})})}
@@ -4092,7 +4092,7 @@ addEventListener('message',e=>{const m=e.data;if(!m||!fishIf||e.source!==fishIf.
 // 存檔一到五
 function fishFlush(){if(fishIf){try{fishIf.contentWindow.__farmSave&&fishIf.contentWindow.__farmSave();fishIf.contentWindow.__noSave=true}catch(e){}fishIf.remove();fishIf=null}}
 UNITS.fish_solo={get:()=>LS('zzdh_fish_v1'),set:v=>LSset('zzdh_fish_v1',v)};SER_N.fish='🐟 漁業與海洋';
-{const sf=startFish;startFish=function(opt){opt=opt||{};if(mode!=='home'||opt.noSlot)return sf(opt);slotPanel('fish','solo',()=>sf(Object.assign({},opt,{noSlot:1})))}}
+{const sf=startFish;startFish=function(opt){opt=opt||{};if(mode!=='home'||opt.noSlot||opt.ljoin)return sf(opt);slotPanel('fish','solo',()=>sf(Object.assign({},opt,{noSlot:1})),opt.lhost?'👑 建立隊伍：選要用哪一個存檔當大家的漁場':'')}}
 window.__FI={startFish,seriesUnlocked,fishLevel,get fishIf(){return fishIf}};
 
 /* ======================= 多人合作大廳：看到誰在線上、組隊、邀請、請求加入 ======================= */
@@ -4142,14 +4142,14 @@ function lbRender(){if(!LB.open||!$('#lbBody'))return;const me=lobbyUid(),L=LB.l
    ${mt?'':`<div class="lbsec"><b>👑 建立隊伍（我當房主）</b><div class="note2">先選要一起經營哪一個系列，隊伍會有固定房號，之後可以邀請線上的玩家。</div><div class="coRow2"><button class="sbtn" data-host="farm" style="background:#2fb04a">🌾 農業與畜牧</button>${typeof seriesUnlocked==='function'&&seriesUnlocked(1)?'<button class="sbtn" data-host="food" style="background:#e8701a">🍔 飲食與料理</button>':''}${[['fish','🐟 漁業與海洋','#2a8ad8'],['wood','🪵 林業與木工','#8a6a3a'],['mine','⛏️ 採礦與冶金','#6a6a7a'],['chem','⚗️ 化工與能源','#1a8a7a']].filter(([k])=>typeof seriesUnlocked!=='function'||k!=='fish'||seriesUnlocked(2)).filter(([k])=>k==='fish'||typeof indUnlocked!=='function'||indUnlocked(k)).map(([k,n,c])=>`<button class="sbtn" data-host="${k}" style="background:${c}">${n}</button>`).join('')}<button class="sbtn" data-host="build" style="background:#d9774b">🧱 建造與水泥</button></div></div>`}
    <div class="lbsec"><b>👥 線上的隊伍（${L.teams.length}）</b>${L.teams.map(t=>{const mine=t.mem.some(x=>x.lu===me),full=t.n>=t.cap;return `<div class="lbrow"><div style="flex:1"><b>${SER_ICON[t.series]||''}</b>　👑${esc(t.hostName)}${t.hostOn?'':'（房主暫時離線）'}<br><small>${t.mem.map(x=>`${x.on?'🟢':'⚪'}${esc(x.name)}`).join('　')}　（${t.n}/${t.cap} 人）</small></div>${mine?'<span class="lbtag">你在這隊</span>':full?'<span class="lbtag">已滿</span>':`<button class="sbtn" data-req="${t.code}" data-hn="${esc(t.hostName)}" style="background:#e8701a">🙋 請求加入</button>`}</div>`}).join('')||'<div class="note2">目前沒有隊伍，可以自己建立一個！</div>'}</div>
    <div class="lbsec"><b>🟢 線上還沒組隊的玩家（${idle.length}）</b>${idle.map(p=>`<div class="lbrow"><div style="flex:1">${esc(p.name)}<br><small>${SER_ICON[p.where]||''}</small></div>${amHost?`<button class="sbtn" data-inv="${p.lu}" data-nm="${esc(p.name)}" style="background:#2fb04a">📨 邀請</button>`:''}</div>`).join('')||'<div class="note2">目前沒有其他人在線上。請朋友打開同一個網址的遊戲，他就會出現在這裡。</div>'}${idle.length&&!amHost?'<div class="note2">💡 自己建立隊伍當房主，就可以邀請他們。</div>':''}</div>
-   <details class="lbsec"><summary>🔢 用房號加入（備用）</summary><div class="coRow2" style="margin-top:6px"><input id="lbCode" maxlength="4" inputmode="numeric" placeholder="房號" style="width:90px;font-size:18px;padding:6px;border-radius:10px;border:2px solid #cfe2f2;text-align:center"><button class="sbtn" data-mj="farm" style="background:#2fb04a">🌾 加入農場</button><button class="sbtn" data-mj="food" style="background:#e8701a">🍔 加入餐廳</button></div></details>`;
+   <details class="lbsec"><summary>🔢 用房號加入（備用）</summary><div class="coRow2" style="margin-top:6px"><input id="lbCode" maxlength="4" inputmode="numeric" placeholder="房號" style="width:90px;font-size:18px;padding:6px;border-radius:10px;border:2px solid #cfe2f2;text-align:center"><button class="sbtn" data-mj="farm" style="background:#2fb04a">🌾 加入農場</button><button class="sbtn" data-mj="food" style="background:#e8701a">🍔 加入餐廳</button>${[['build','🧱 加入建造','#c8502a'],['fish','🐟 加入漁場','#2a8ad8'],['wood','🪵 加入林場','#8a6a3a'],['mine','⛏️ 加入礦場','#6a6a7a'],['chem','⚗️ 加入化工廠','#1a8a7a']].map(([k,n,c])=>`<button class="sbtn" data-mj="${k}" style="background:${c}">${n}</button>`).join('')}</div></details>`;
   const b=$('#lbBody');if(b.dataset.h===h)return;b.dataset.h=h;b.innerHTML=h;
   b.querySelectorAll('[data-host]').forEach(x=>x.onclick=()=>{SFX.click();lobbyHost(x.dataset.host)});
   b.querySelectorAll('[data-req]').forEach(x=>x.onclick=()=>{SFX.click();ask(`是否要加入 <b>${x.dataset.hn}</b> 的隊伍中？<br><small>房主同意後就會自動進去</small>`,()=>{lbSend({t:'lreq',code:x.dataset.req});toast(`📨 已經送出申請，等 ${x.dataset.hn} 同意…`,3500)})});
   b.querySelectorAll('[data-inv]').forEach(x=>x.onclick=()=>{SFX.click();lbSend({t:'linvite',to:x.dataset.inv,code:mt.code,series:mt.series});toast(`📨 已經邀請 ${x.dataset.nm}，等他回覆`,3000)});
   b.querySelectorAll('[data-mj]').forEach(x=>x.onclick=()=>{const c=($('#lbCode').value||'').trim();if(!/^\d{4}$/.test(c)){toast('請輸入 4 位數房號');return}closePanel();lobbyJoin(x.dataset.mj,c)})}
 function lobbyPanel(){lbConnect();lbSend({t:'llist'});LB.open=true;
-  openPanel('👥 多人合作',`<div class="note2">和朋友一起經營<b>房主</b>的農場或餐廳（最多 4 人）。這裡會自動顯示線上的玩家和隊伍：<br>・自己建立隊伍當房主，再「📨 邀請」線上的玩家<br>・或對別人的隊伍按「🙋 請求加入」，房主同意後就會自動進去<br>只有房主可以同意，其他隊員會收到通知。</div><div id="lbBody"></div>`);
+  openPanel('👥 多人合作',`<div class="note2">和朋友一起經營<b>房主</b>的農場、餐廳、小鎮…（最多 4 人）。這裡會自動顯示線上的玩家和隊伍：<br>・自己建立隊伍當房主，再「📨 邀請」線上的玩家<br>・或對別人的隊伍按「🙋 請求加入」，房主同意後就會自動進去<br>只有房主可以同意，其他隊員會收到通知。</div><div id="lbBody"></div>`);
   setTimeout(lbRender,50);const iv=setInterval(()=>{if(!$('#lbBody')){LB.open=false;clearInterval(iv)}},800)}
 {const st=document.createElement('style');st.textContent=`.lbsec{margin:8px 0;padding:8px 10px;border-radius:14px;background:#f6fbff;border:2px solid #d8e8f4;font-size:15px}.lbrow{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px dashed #d8e8f4}.lbrow:first-of-type{border-top:none}.lbtag{font-size:13px;background:#e8f6e0;color:#2a7a2a;border-radius:10px;padding:3px 8px}.coRow2{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}.lbsec summary{cursor:pointer;font-weight:bold}`;document.head.appendChild(st)}
 // 首頁按鈕：單人經營、多人合作
@@ -4421,7 +4421,7 @@ function indSaveAll(){IND.forEach(x=>{try{x.ifr&&x.ifr.contentWindow.__farmSave&
 function indDrop(id){const x=INDB(id);if(x&&x.ifr){try{x.ifr.contentWindow.__noSave=true}catch(e){}x.ifr.remove();x.ifr=null}}
 function indReset(id){indDrop(id);try{localStorage.removeItem('zzdh_'+id+'_v1');if(id==='build'){localStorage.removeItem('zzdh_build_v1_free');localStorage.removeItem('zzdh_build_v1_lastmode')}}catch(e){}G.indLv=G.indLv||{};G.indLv[id]=0;if(id==='wood')G.woodLv=0;mark();save()}
 IND.forEach(x=>{UNITS[x.id+'_solo']={get:()=>LS('zzdh_'+x.id+'_v1'),set:v=>LSset('zzdh_'+x.id+'_v1',v)};SER_N[x.id]=x.em+' '+x.name});
-{const sf=startInd;startInd=function(id,opt){opt=opt||{};if(mode!=='home'||opt.noSlot)return sf(id);slotPanel(id,'solo',()=>sf(id))}}
+{const sf=startInd;startInd=function(id,opt){opt=opt||{};if(mode!=='home'||opt.noSlot||opt.ljoin)return sf(id,opt);slotPanel(id,'solo',()=>sf(id,opt),opt.lhost?'👑 建立隊伍：選要用哪一個小鎮當大家的小鎮':'')}}
 // 舊名字（相容）
 const startWood=o=>startInd('wood',o),exitWood=exitInd,woodLevel=()=>indLevel('wood'),woodUnlocked=()=>indUnlocked('wood'),woodFlush=()=>indFlush('wood');
 window.__WI={startInd,indLevel,indUnlocked,startWood};

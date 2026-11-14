@@ -1776,7 +1776,7 @@ function peerUpd(m){{let p=PEERS.get(m.uid);if(!p){p={uid:m.uid,g:makeMe(m.o||'w
 function peerGone(uid){const p=PEERS.get(uid);if(p){scene.remove(p.g);PEERS.delete(uid);const el=document.getElementById('pk_'+uid);el&&el.remove()}}
 let posT=0;const _pv=new THREE.Vector3();
 function peerTick(dt){posT-=dt;if(posT<=0){posT=.4;if(!CO.role)coopPos()}
-  const now=performance.now();for(const [uid,p] of PEERS){const el0=document.getElementById('pk_'+uid);if(now-p.seen>8000){scene.remove(p.g);PEERS.delete(uid);el0&&el0.remove();continue}
+  const now=performance.now();for(const [uid,p] of PEERS){const el0=document.getElementById('pk_'+uid);if(now-p.seen>25000){scene.remove(p.g);PEERS.delete(uid);el0&&el0.remove();continue}
     const g=p.g;const dx=p.tx-g.position.x,dz=p.tz-g.position.z,d=Math.hypot(dx,dz);if(d>50){g.position.x=p.tx;g.position.z=p.tz}else if(d>.05){const k=Math.min(1,dt*6);g.position.x+=dx*k;g.position.z+=dz*k;const s=Math.sin(now/1000*11);g.userData.legs[0].rotation.x=s*.6;g.userData.legs[1].rotation.x=-s*.6}else{g.userData.legs[0].rotation.x=g.userData.legs[1].rotation.x=0}
     g.rotation.y=p.r;g.position.y=Math.max(hAt(g.position.x,g.position.z),WATER_Y);g.scale.setScalar(clamp(CAM.dist/150,1,6)*1.05);
     // 畫面上的小指標：在畫面裡就顯示名字，在畫面外就貼在邊緣、箭頭指向隊友
@@ -2059,8 +2059,8 @@ function coopEnd(quiet){const was=CO.role;if(CO.ws){coopSend({t:'leave'});try{CO
     window.__noSave=false;const own=CO.own;CO.own=null;if(!own||!applyData(own)){load()}rebuildWorld();save();if(!quiet)toast('🏠 回到你自己的小鎮了',2400)}
   else if(was==='host'&&!quiet)toast('👋 隊伍解散了，繼續單人玩',2400);coopChip()}
 /* ---- 收到伺服器訊息 ---- */
-function coopMsg(m){CO.rx=CO.rx||{};CO.rx[m.t]=(CO.rx[m.t]||0)+1;switch(m.t){
-  case 'created':CO.code=m.code;CO.uid=m.uid;CO.slot=0;CO.hostUid=m.uid;CO.members=m.members||[];S.myCode=m.code;coopWait(false);coopInit();coopChip();dirty();
+function coopMsg(m){CO.rx=CO.rx||{};CO.rx[m.t]=(CO.rx[m.t]||0)+1;if((m.t==='peer'||m.t==='gone')&&$('#modal').classList.contains('on')&&/多人合作中/.test(($('#panel h2')||{}).textContent||''))setTimeout(()=>{if(CO.role)coopPanel()},400);switch(m.t){
+  case 'created':CO.code=m.code;CO.uid=m.uid;CO.slot=0;CO.hostUid=m.uid;CO.members=m.members||[];S.myCode=m.code;coopWait(false);coopInit();coopChip();dirty();if(CO.showP||!$('#modal').classList.contains('on')){CO.showP=0;setTimeout(coopPanel,200)}
     openPanel(`<h2>👑 隊伍建立好了！</h2><div style="text-align:center;font-size:18px">房號</div><div style="text-align:center;font-size:52px;font-weight:bold;letter-spacing:8px;color:#d86a00">${m.code}</div><div style="font-size:15px;line-height:1.8">把房號告訴朋友，朋友在「👥 多人合作」輸入房號，或在主畫面的「多人合作」大廳加入，就會進到你的小鎮一起蓋（最多 4 人）。<br>你的小鎮就是大家的小鎮，誰蓋什麼大家都會即時看到。</div><div class="row2"><button class="hb g" id="chOk">👍 開始一起蓋</button></div>`,()=>$('#chOk').onclick=closePanel);break;
   case 'joined':CO.uid=m.uid;CO.slot=m.slot||1;CO.members=m.members||[];const h=CO.members.find(x=>x.slot===0);CO.hostUid=h?h.uid:'';if(m.role==='host'){CO.role='host';coopWait(false);coopInit();coopChip();toast(`👑 回到你的隊伍（房號 ${m.code}）`,2500);break}
     coopWait(true,`📥 正在下載「${m.hostName||'房主'}」的小鎮…`);CO.hiT=0;coopSend({t:'b7hi',_to:CO.hostUid});coopChip();break;
@@ -2114,10 +2114,10 @@ function coopPos(){if(CO.role&&CO.ready)coopSend({t:'b7p',x:ME.position.x,z:ME.p
 /* ---- 畫面：隊伍狀態小標籤、多人合作面板 ---- */
 function coopChip(){let c=$('#coopChip');if(!c){c=document.createElement('div');c.id='coopChip';c.className='box';c.style.cssText='position:fixed;left:8px;top:calc(110px + env(safe-area-inset-top));z-index:6;padding:4px 12px;font-size:13px;font-weight:bold;cursor:pointer;display:none;background:#e8f4ff;border:2px solid #3a8ad8;border-radius:14px';c.onclick=()=>coopPanel();document.body.appendChild(c)}
   if(!CO.role){c.style.display='none';return}const on=CO.members.filter(x=>x.on!==false).length||1;c.innerHTML=`👥 房號 ${CO.code||'…'}・${on} 人${CO.role==='host'?'・👑房主':''}`;c.style.display='block'}
-function coopPanel(){const can=coopCan();
+function coopPanel(){const can=coopCan();if(!CO.role&&can){CO.showP=1;coopHost();return}
   if(CO.role){openPanel(`<h2>👥 多人合作中</h2><div style="text-align:center;font-size:16px">房號 <b style="font-size:32px;letter-spacing:4px;color:#d86a00">${CO.code}</b></div><div class="lab">隊友</div>${CO.members.slice().sort((a,b)=>a.slot-b.slot).map(x=>`<div class="prow"><div class="em">${x.slot===0?'👑':'👷'}</div><div class="tx"><b>${x.name||'玩家'}</b>${x.uid===CO.uid?'（我）':''}<small>${x.on===false?'⚫ 離線':'🟢 在線上'}</small></div>${x.uid!==CO.uid&&PEERS.get(x.uid)?`<button class="hb b" data-tpu="${x.uid}">🌀 瞬移過去</button>`:''}</div>`).join('')}
-    <div style="font-size:13px;color:#7a6a4a;line-height:1.7">大家共用同一個小鎮、同一筆錢和材料。誰蓋房子、擺家具、種樹、挖地形，所有人都會即時看到，也可以一起改同一棟房子。每個人的衣服、寵物、生活狀態是自己的。多人時不能用「上一步」。</div>
-    <div class="row2"><button class="hb r" id="cpLeave">${CO.role==='host'?'🚪 解散隊伍（回到單人）':'🚪 離開隊伍（回到自己的小鎮）'}</button></div>`,()=>{$('#cpLeave').onclick=()=>ask(CO.role==='host'?'要解散隊伍嗎？<br><small>朋友會回到他們自己的小鎮，你的小鎮進度會保留</small>':'要離開隊伍，回到你自己的小鎮嗎？',()=>coopEnd());$('#panel').querySelectorAll('[data-tpu]').forEach(b=>b.onclick=()=>{const p=PEERS.get(b.dataset.tpu);if(p){closePanel();tpGo(p.tx,p.tz)}})});return}
+    ${CO.role==='host'&&CO.members.length<2?`<div style="background:#fff6dc;border-radius:12px;padding:8px 10px;margin:6px 0;font-size:14px;line-height:1.8">📣 把房號 <b>${CO.code}</b> 告訴朋友：朋友在遊戲裡按「👥 多人」，在下面輸入房號按「加入」；或在億萬大亨主畫面「👥 多人合作」對你的隊伍按「🙋 請求加入」。</div><div class="lab">🙋 想改成加入朋友的小鎮？輸入朋友的房號</div><div class="row2"><input id="cpCode" maxlength="4" inputmode="numeric" placeholder="4 位數房號" style="flex:1;font-size:22px;padding:8px;border-radius:10px;border:2px solid #d8ccb4;text-align:center;letter-spacing:6px"><button class="hb b" id="cpJoin">加入</button></div>`:''}<div style="font-size:13px;color:#7a6a4a;line-height:1.7">大家共用同一個小鎮、同一筆錢和材料。誰蓋房子、擺家具、種樹、挖地形，所有人都會即時看到，也可以一起改同一棟房子。每個人的衣服、寵物、生活狀態是自己的。多人時不能用「上一步」。</div>
+    <div class="row2"><button class="hb r" id="cpLeave">${CO.role==='host'?'🚪 解散隊伍（回到單人）':'🚪 離開隊伍（回到自己的小鎮）'}</button></div>`,()=>{const cj=$('#cpJoin');if(cj)cj.onclick=()=>{const c=$('#cpCode').value.trim();if(c===CO.code){toast('這是你自己的房號喔');return}closePanel();coopEnd(true);setTimeout(()=>coopJoin(c),300)};$('#cpLeave').onclick=()=>ask(CO.role==='host'?'要解散隊伍嗎？<br><small>朋友會回到他們自己的小鎮，你的小鎮進度會保留</small>':'要離開隊伍，回到你自己的小鎮嗎？',()=>coopEnd());$('#panel').querySelectorAll('[data-tpu]').forEach(b=>b.onclick=()=>{const p=PEERS.get(b.dataset.tpu);if(p){closePanel();tpGo(p.tx,p.tz)}})});return}
   openPanel(`<h2>👥 多人合作</h2><div style="font-size:15px;line-height:1.8">和朋友用不同的手機、電腦，一起蓋<b>同一個小鎮</b>（最多 4 人）。你當房主，朋友就會進到你的小鎮；也可以輸入朋友的房號，加入他的小鎮。</div>${can?'':'<div style="background:#ffe8e0;border-radius:10px;padding:8px;margin:6px 0;font-size:14px">⚠️ 現在是試玩版網址，不能連線。請到你架設的「億萬大亨」網站（Render）上使用多人合作。</div>'}
    <div class="prow"><div class="em">👑</div><div class="tx"><b>我當房主</b><small>用你現在的小鎮開一個隊伍，會給你 4 位數房號</small></div><button class="hb g" id="cpHost">建立隊伍</button></div>
    <div class="prow"><div class="em">🙋</div><div class="tx"><b>加入朋友的小鎮</b><small>輸入朋友的房號（你自己的小鎮會先存好，離開隊伍後就回來）</small></div></div><div class="row2"><input id="cpCode" maxlength="4" inputmode="numeric" placeholder="4 位數房號" style="flex:1;font-size:22px;padding:8px;border-radius:10px;border:2px solid #d8ccb4;text-align:center;letter-spacing:6px"><button class="hb b" id="cpJoin">加入</button></div>`,
@@ -3191,7 +3191,19 @@ function lampTick(dt){lampT-=dt;if(lampT>0)return;lampT=.3;const L=[];
     for(const o of hs){if(L.length>=6)break;const n=lampItems(o).length;L.push([V(o.x,baseY(o)+1.8,o.z),NIGHT*Math.min(40,10+n*6),Math.max(o.w,o.d)*.9+9])}}
   LAMPL.forEach((l,i)=>{const q=L[i];if(!q){l.intensity=0;l.visible=false;return}l.visible=true;l.position.copy(q[0]);l.intensity=q[1];l.distance=q[2]})}
 
-function bal2Tick(dt){extTick(dt);repTick(dt);dmgFxTick(dt);mgrTick(dt);lampTick(dt)}
+function bal2Tick(dt){layoutTick(dt);extTick(dt);repTick(dt);dmgFxTick(dt);mgrTick(dt);lampTick(dt)}
+
+/* ---- 畫面排版：左上角的小視窗由上往下排，不會互相蓋住（手機特別重要） ---- */
+let layT=0;function layoutTick(dt){layT-=dt;if(layT>0)return;layT=.4;const mob=innerWidth<=700;const vis=e=>e&&getComputedStyle(e).display!=='none'&&e.offsetHeight>0;
+  const nd=$('#needs');let y=vis(nd)?nd.getBoundingClientRect().bottom+4:96;
+  const wx=$('#wxChip');if(wx){if(mob){wx.style.left='8px';wx.style.top=y+'px';if(vis(wx))y+=wx.offsetHeight+4}else{wx.style.left='';wx.style.top=''}}
+  const cc=$('#coopChip');if(vis(cc)){cc.style.top=y+'px';y+=cc.offsetHeight+4}
+  const gb=$('#goalBox');if(gb){gb.style.top=y+'px';if(vis(gb))y=gb.getBoundingClientRect().bottom+6}
+  const ag=$('#agChip');if(ag){if(mob){ag.style.right='auto';ag.style.left='8px';ag.style.top=y+'px';if(vis(ag))y+=ag.offsetHeight+4}else{ag.style.left='';ag.style.right='10px';ag.style.top=''}}
+  const it=$('#idleTip');if(it&&mob)it.style.top=Math.max(y,170)+'px';
+  barArrows()}
+function barArrows(){const bar=$('#bar');if(!bar)return;let L=$('#barL'),R=$('#barR');if(!L){const mk=(id,t,dx)=>{const b=document.createElement('button');b.id=id;b.textContent=t;b.style.cssText='position:fixed;z-index:7;bottom:calc(22px + env(safe-area-inset-bottom));width:30px;height:46px;border-radius:12px;border:2px solid #fff;background:rgba(232,112,26,.92);color:#fff;font-size:18px;font-weight:bold;box-shadow:0 2px 6px rgba(0,0,0,.3);display:none;padding:0';b.style[dx<0?'left':'right']='2px';b.onclick=()=>{SFX.click();bar.scrollBy({left:dx*Math.max(160,bar.clientWidth*.7),behavior:'smooth'})};document.body.appendChild(b);return b};L=mk('barL','◀',-1);R=mk('barR','▶',1);bar.addEventListener('scroll',()=>{layT=0})}
+  const can=bar.scrollWidth>bar.clientWidth+8&&getComputedStyle(bar).display!=='none';L.style.display=can&&bar.scrollLeft>6?'block':'none';R.style.display=can&&bar.scrollLeft+bar.clientWidth<bar.scrollWidth-6?'block':'none'}
 
 /* ======================= 編輯面板（選到東西時出現） ======================= */
 const chipsH=(key,opts,cur,lock)=>`<div class="chips">${Object.entries(opts).map(([k,n])=>`<button data-${key}="${k}" class="${String(cur)===k?'on':''}" ${lock&&lock(k)?'disabled style="opacity:.4"':''}>${n}</button>`).join('')}</div>`;
