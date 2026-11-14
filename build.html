@@ -642,7 +642,7 @@ function natLoot(o){if(o.k==='rock'||o.k==='bigrock'){const n=Math.round((o.k===
 const LV_T=(()=>{const a=[0,1500,4000,9000,18000,32000,55000,85000,130000,190000];while(a.length<100){const n=a.length;a.push(Math.round(a[n-1]*(n<25?1.18:n<40?1.12:n<70?1.075:1.05)/1000)*1000)}return a})();
 const lvOf=e=>{let l=1;for(let i=1;i<LV_T.length;i++)if(e>=LV_T[i])l=i+1;return l};const LV=()=>S&&S.mode==='free'?100:lvOf(S.earn||0);
 const START_PLOT=21*29+14;// 地圖南邊那一塊（正中央留給以後的大城堡）
-function newState(){const SP0=typeof pickStart==='function'?pickStart():START_PLOT;return {sp:SP0,v:3,mode:'biz',money:10000,earn:0,mat:{wood:60,brick:80,cement:40,stone:20,glass:20,tile:40,paint:10,steel:5,clay:0},crews:1,plots:Array.from({length:PN*PN},(_,i)=>i===SP0?1:0),objs:[],nid:0,time:10,autoT:0,stone:0,snd:1,cam:null,dug:{},first:1}}
+function newState(){const SP0=typeof pickStart==='function'?pickStart():START_PLOT;return {sp:SP0,v:3,mode:'biz',money:10000,earn:0,mat:{wood:0,brick:0,cement:0,stone:0,glass:0,tile:0,paint:0,steel:0,clay:0},crews:1,plots:Array.from({length:PN*PN},(_,i)=>i===SP0?1:0),objs:[],nid:0,time:10,autoT:0,stone:0,snd:1,cam:null,dug:{},first:1}}
 let WILD=[];// 原始地圖上的野生花草樹木（固定的，用編號記住哪些被拿掉）
 function wildGen(skip){let sd=12345;const r1=()=>{sd=(sd*16807)%2147483647;return sd/2147483647};const ks=['oak','oak','pine','pine','birch','bush','bush','rock','grass','daisy','maple','cypress','bigrock','azalea','willow','dead','redmaple','ginkgo','palm','sakura','fir'];WILD=[];
   for(let i=0;i<9000;i++){const x=-HALF+3+r1()*(SZ-6),z=-HALF+3+r1()*(SZ-6),a=r1(),b=r1(),c=r1(),sc=.75+r1()*.55,rr=r1()*6.28;const h=hAt(x,z);let k;
@@ -832,7 +832,7 @@ function matsOf(o){if(o.t==='lm')return Object.fromEntries(Object.entries(LM[o.k
 const mCost=m=>Object.entries(m).reduce((a,[k,v])=>a+v*MATD[k].p,0)*PF().mat;
 const mHave=m=>Object.entries(m).every(([k,v])=>(S.mat[k]||0)>=v);
 const mMiss=m=>{const r={};for(const [k,v] of Object.entries(m)){const d=v-(S.mat[k]||0);if(d>0)r[k]=d}return r};
-const mTxt=(m,showHave)=>Object.entries(m).map(([k,v])=>{const h=S.mat[k]||0;return `<span style="white-space:nowrap;${showHave&&h<v?'color:#c8302a;font-weight:bold':''}">${MATD[k].em}${MATD[k].n} ${v}${showHave?`<small style="color:#7a6a4a">（有 ${Math.floor(h)}）</small>`:''}</span>`}).join('　');
+const mTxt=(m,showHave)=>Object.entries(m).map(([k,v])=>{const h=S.mat[k]||0;return `<span style="white-space:nowrap;${showHave&&h<v?'color:#c8302a;font-weight:bold':''}">${MATD[k].em}${MATD[k].n} ${v}${showHave?`<span style="color:#7a6a4a;font-size:12px;font-weight:normal">（有 ${Math.floor(h)}）</span>`:''}</span>`}).join('　');
 function mTake(m){for(const [k,v] of Object.entries(m))S.mat[k]=(S.mat[k]||0)-v;dirty();matHud()}
 function mGive(m,f=1){for(const [k,v] of Object.entries(m))S.mat[k]=(S.mat[k]||0)+Math.floor(v*f);dirty();matHud()}
 // 要用材料：夠就扣掉；不夠就跳出明細表，可以一鍵買齊再開工
@@ -1713,7 +1713,7 @@ function actTick(dt){const a=ACT,u=ME.userData,t=performance.now()/1000;a.t+=dt;
   else if(a.k==='rest'||a.k==='play'){ME.position.y=sp.y+.1;u.legs[0].rotation.x=u.legs[1].rotation.x=-1.5;u.arms[0].rotation.x=u.arms[1].rotation.x=-.5+Math.sin(t*2)*.1;if(a.k==='play'&&Math.random()<dt*2)floatTxt(V(sp.x,sp.y+2,sp.z),'💕')}
   else if(a.k==='bath'){ME.position.y=sp.y-.25;u.legs[0].rotation.x=u.legs[1].rotation.x=-1.5;u.arms[0].rotation.x=-2+Math.sin(t*6)*.6;u.arms[1].rotation.x=-2+Math.cos(t*6)*.6;if(Math.random()<dt*6)dust(sp.x+rand(-.5,.5),sp.y+.6,sp.z+rand(-.5,.5),1)}
   else if(a.k==='cook'){u.legs[0].rotation.x=u.legs[1].rotation.x=0;u.arms[0].rotation.x=-1.2+Math.sin(t*9)*.3;u.arms[1].rotation.x=-1.1+Math.cos(t*8)*.3;if(Math.random()<dt*2)dust(sp.x,sp.y+1.3,sp.z,1)}
-  actGain(a,dt);if(a.t>=a.d){const A=HOMEACT[a.k];if(a.k==='sleep'){sleepFx(false);S.time=7;toast('🌅 早安！睡飽了，體力全滿',2400)}else toast(`${A.txt} ${Object.keys(A.g).map(k=>NEEDS.find(q=>q[0]===k)[1]).join('')} 恢復了！`,2200);
+  actGain(a,dt);if(a.t>=a.d){const A=HOMEACT[a.k];if(a.k==='sleep'){sleepFx(false);if(!(typeof CO!=='undefined'&&CO.role))S.time=7;toast(typeof CO!=='undefined'&&CO.role?'😴 睡飽了，體力全滿！（多人時不會跳過時間，其他人不受影響）':'🌅 早安！睡飽了，體力全滿',2400)}else toast(`${A.txt} ${Object.keys(A.g).map(k=>NEEDS.find(q=>q[0]===k)[1]).join('')} 恢復了！`,2200);
     ME.rotation.x=0;actEnd(a);S.mePos={x:ME.position.x,z:ME.position.z};ACT=null;if(a.k==='play')for(const p of S.pets||[])p.hap=Math.min(100,(p.hap||50)+30);dirty()}}
 /* ======================= 寵物（會跟著你走） ======================= */
 const PETD={
@@ -2174,7 +2174,7 @@ function inWalls(o){const G=new THREE.Group();G.position.set(o.x,baseY(o)+.45,o.
 function inHide(on,o){o=o||IN.o;if(!o)return;const g=OBJM.get(o.id);if(g)g.visible=!on;if(IN.wg){scene.remove(IN.wg);IN.wg=null}if(on)IN.wg=inWalls(o)}
 function inFloorVis(){if(!IN.o)return;if(typeof PEEK!=='undefined'&&PEEK&&PEEK.o===IN.o)PEEK.g.children.forEach((B,f)=>B.visible=f<=IN.f);if(IN.wg)IN.wg.children.forEach((B,f)=>B.visible=f<=IN.f)}
 function inFloor(f){if(!IN.o)return;IN.f=clamp(f,0,Math.min(IN.o.floors||1,6)-1);IN.done=0;IN.t=0;ctxSig='';SFX.click();toast(`🪜 到 ${IN.f+1} 樓`,1000)}
-function indoorTick(dt){if(!ME||INT){if(IN.o&&INT){inHide(false);IN.o=null}return}if(ACT){if(ACT.sp&&IN.o===ACT.o)IN.f=ACT.sp.f||0;inFloorVis();return}const o=houseAt(ME.position.x,ME.position.z);
+function indoorTick(dt){if(!ME||INT){if(IN.o&&INT){if(IN.wg){scene.remove(IN.wg);IN.wg=null}IN.o=null;IN.save=null;IN.t=0}return}if(ACT){if(ACT.sp&&IN.o===ACT.o)IN.f=ACT.sp.f||0;inFloorVis();return}const o=houseAt(ME.position.x,ME.position.z);
   if(o!==IN.o){if(IN.o)inHide(false);if(o&&!IN.o)IN.save={dist:CAM.dist,pitch:CAM.pitch};if(o){IN.t=0;IN.done=0;IN.f=0;IN.o=o;inHide(true,o);toast(o.home?'🏡 回到家了！可以看到整個屋子，下面可以選樓層、睡覺、洗澡、煮飯…':`🚪 走進「${o.name||'房子'}」裡面了`,2200)}else{IN.t=-1;IN.o=null}ctxT=0}
   if(IN.o){if(!S.objs.includes(IN.o)||IN.o.sold){inHide(false);IN.o=null;return}IN.t+=dt;const want=clamp(Math.max(IN.o.w,IN.o.d)*1.15+6,10,34);if(!IN.done&&(Math.abs(want-CAM.dist)>.4||Math.abs(1.22-CAM.pitch)>.02)&&IN.t<5){const k=Math.min(1,Math.max(dt,.03)*4);CAM.dist+=(want-CAM.dist)*k;CAM.pitch+=(1.22-CAM.pitch)*k;CAM.tx+=(IN.o.x-CAM.tx)*k;CAM.tz+=(IN.o.z-CAM.tz)*k}else IN.done=1;ME.position.y=baseY(IN.o)+.53+IN.f*FH;inFloorVis()}
   else if(IN.t<0&&IN.save){IN.t-=dt;const k=Math.min(1,Math.max(dt,.03)*4);CAM.dist+=(IN.save.dist-CAM.dist)*k;CAM.pitch+=(IN.save.pitch-CAM.pitch)*k;if(IN.t<-5||Math.abs(IN.save.dist-CAM.dist)<.4){IN.save=null;IN.t=0}}}
@@ -2242,13 +2242,13 @@ const NODEW={quarry:'顆石頭',forest:'棵樹',claypit:'堆黏土',mine:'塊鐵
 function nearNode(Z,r){let b=null,bd=r||1e9;for(const n of Z.nodes||[]){if(n.st!=='ok')continue;const d=Math.hypot(n.x-ME.position.x,n.z-ME.position.z);if(d<bd){bd=d;b=n}}return b}
 function gather(Z){if(performance.now()<GAT)return;const n=S.need;if(n&&n.en<3){SFX.err();toast('⚡ 太累了，回家睡覺或休息一下吧');return}
   const nd=nearNode(Z,4.5);if(!nd&&Z.free){GAT=performance.now()+450;GA=.55;const amt=Z.g;S.mat[Z.mat]=(S.mat[Z.mat]||0)+amt;if(n)n.en=Math.max(0,n.en-1.2);S.gst=S.gst||{};S.gst[Z.mat]=(S.gst[Z.mat]||0)+amt;SFX.click();const fx=ME.position.x+Math.sin(ME.rotation.y)*1.4,fz=ME.position.z+Math.cos(ME.rotation.y)*1.4;floatTxt(V(fx,hAt(fx,fz)+2,fz),`+${amt} ${MATD[Z.mat].em}`);dust(fx,hAt(fx,fz)+.3,fz,4);if(typeof matHud==='function')matHud();dirty();return}
-  if(!nd){const far=nearNode(Z);if(far){guideTo(far.x,far.z,`走到那${NODEW[Z.k]}旁邊`,null,2.5);toast(`🚶 走近一${NODEW[Z.k]}才能採，跟著地上的箭頭走`,2000)}else toast(`⏳ 這裡的${NODEW[Z.k].slice(1)}都被採完了，等 10 秒會再長出來`,2200);return}
+  if(!nd){const far=nearNode(Z);if(far){guideTo(far.x,far.z,`走到那${NODEW[Z.k]}旁邊`,null,2.5);toast(`🚶 走近一${NODEW[Z.k]}才能採，跟著地上的箭頭走`,2000)}else toast(`⏳ 這裡的${NODEW[Z.k].slice(1)}都被採完了，等 30 秒會再長出來`,2200);return}
   GAT=performance.now()+450;GA=.55;ME.rotation.y=Math.atan2(nd.x-ME.position.x,nd.z-ME.position.z);nd.hp--;nd.sh=.35;const amt=Z.g;S.mat[Z.mat]=(S.mat[Z.mat]||0)+amt;if(n)n.en=Math.max(0,n.en-1.2);S.gst=S.gst||{};S.gst[Z.mat]=(S.gst[Z.mat]||0)+amt;SFX.click();
   floatTxt(V(nd.x,hAt(nd.x,nd.z)+2.4,nd.z),`+${amt} ${MATD[Z.mat].em}`);dust(nd.x,hAt(nd.x,nd.z)+.5,nd.z,3);if(nd.hp<=0)nodeGone(nd);if(typeof matHud==='function')matHud();ctxSig='';dirty();if(GUIDE&&(GUIDE.zn===Z||GUIDE.r<3))guideOff()}
 function nodeGone(nd,remote){if(nd.st!=='ok')return;if(!remote&&typeof CO!=='undefined'&&CO.role&&CO.ready)coopSend({t:'b7n',z:nd.zk,i:nd.i});nd.st='gone';nd.t=0;SFX.build&&SFX.build();if(nd.tree){nd.fall=0;nd.fa=Math.random()*6.28}}
 function nodeTick(dt){const t=performance.now()/1000;for(const Z of ZONES)for(const nd of Z.nodes||[]){const g=nd.g;
   if(nd.st==='ok'){if(nd.sh>0){nd.sh-=dt;g.rotation.z=Math.sin(t*50)*.06*nd.sh/.35}else g.rotation.z=0}
-  else if(nd.st==='gone'){nd.t+=dt;if(nd.tree&&nd.t<.9){g.rotation.set(Math.min(1.5,nd.t*nd.t*2.2),nd.fa,0,'YXZ')}else{const k=Math.max(0,1-(nd.t-(nd.tree?.9:0))*3);g.scale.setScalar(nd.s*k);g.visible=k>0}if(nd.t>=10){nd.st='grow';nd.t=0;g.visible=true;g.rotation.set(0,nd.r0,0)}}
+  else if(nd.st==='gone'){nd.t+=dt;if(nd.tree&&nd.t<.9){g.rotation.set(Math.min(1.5,nd.t*nd.t*2.2),nd.fa,0,'YXZ')}else{const k=Math.max(0,1-(nd.t-(nd.tree?.9:0))*3);g.scale.setScalar(nd.s*k);g.visible=k>0}if(nd.t>=30){nd.st='grow';nd.t=0;g.visible=true;g.rotation.set(0,nd.r0,0)}}
   else if(nd.st==='grow'){nd.t+=dt;const k=Math.min(1,nd.t/1.6);g.scale.setScalar(nd.s*(.1+.9*k));if(k>=1){nd.st='ok';nd.hp=nd.hp0}}}}
 function gaTick(dt){if(GA<=0||!ME)return;GA-=dt;const u=ME.userData;const k=1-GA/.55;if(u.arms){u.arms[0].rotation.x=u.arms[1].rotation.x=-2.6+Math.sin(k*Math.PI)*2.2}}
 /* ---- 材料怎麼拿到、前往獲得 ---- */

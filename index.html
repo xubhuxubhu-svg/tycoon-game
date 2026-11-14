@@ -315,7 +315,7 @@ body.ing #toast{top:138px}
     <button class="ib" data-p="credits"><div class="sq">📜</div><span>聲明</span></button>
   </div>
 </div>
-<div id="credit">遊戲製作：Eric Hu　版本 2.21.0</div>
+<div id="credit">遊戲製作：Eric Hu　版本 2.22.0</div>
 </div>
 <div id="game" class="hide">
   <div id="lbls"></div>
@@ -1119,7 +1119,7 @@ function resetPanel(){let ser=0,md='solo';const draw=()=>{const sn=['🌾 第 1 
    pb.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{ser=+b.dataset.s;SFX.click();draw()});pb.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{md=b.dataset.m;SFX.click();draw()});
    const g=$('#rstGo');if(g)g.onclick=()=>ask(`確定要重置 <b>${sn[ser]}</b> 的<b>單人</b>進度嗎？`,()=>setTimeout(()=>ask('⚠️ 再確認一次：<b>真的要刪除嗎？</b><br><small>刪除後沒辦法復原，其他系列不受影響</small>',()=>{
      if(ser===0){try{if(farmIf){try{farmIf.contentWindow.__noSave=true}catch(e){}farmIf.remove();farmIf=null}localStorage.removeItem('zzdh_farm_v1');localStorage.removeItem('zzdh_tut_farm_v2')}catch(e){}G.farmLv=0;mark();save();toast('✅ 第 1 系列「農業與畜牧」的單人進度已經重置',3500);closePanel()}
-     else if(ser===2){try{if(fishIf){try{fishIf.contentWindow.__noSave=true}catch(e){}fishIf.remove();fishIf=null}localStorage.removeItem('zzdh_fish_v1');localStorage.removeItem('zzdh_tut_fish_v1')}catch(e){}G.fishLv=0;mark();save();toast('✅ 第 3 系列「漁業與海洋」的單人進度已經重置',3500);closePanel()}
+     else if(sn[ser]&&sn[ser].includes('漁業與海洋')){try{if(fishIf){try{fishIf.contentWindow.__noSave=true}catch(e){}fishIf.remove();fishIf=null}localStorage.removeItem('zzdh_fish_v1');localStorage.removeItem('zzdh_tut_fish_v1')}catch(e){}G.fishLv=0;mark();save();toast('✅ 第 3 系列「漁業與海洋」的單人進度已經重置',3500);closePanel()}
      else if(sn[ser]&&IND.some(x=>sn[ser].includes(x.name))){const x=IND.find(x=>sn[ser].includes(x.name));indReset(x.id);toast(`✅ 第 ${x.i+1} 系列「${x.name}」的單人進度已經重置`,3500);closePanel()}
      else{delete G.maps.food2;G.prog=G.prog||{};delete G.prog.food;try{localStorage.removeItem('zzdh_tut_food_v1')}catch(e){}hooks.beforeSave.length=0;save();location.reload()}}),150));
    const rr=$('#rstRoom');if(rr)rr.onclick=()=>{SFX.click();closePanel();if(ser>=2){toast('這個系列的合作模式之後才會開放',3500);return}if(ser===0)startFarm({coop:md==='duo'?2:4});else if(md==='duo')PANELS.duo();else PANELS.multi()}})};draw()}
@@ -4419,7 +4419,7 @@ addEventListener('message',e=>{const m=e.data;if(!m)return;const x=IND.find(q=>q
 function indFlush(id){const x=INDB(id);if(x&&x.ifr){try{x.ifr.contentWindow.__farmSave&&x.ifr.contentWindow.__farmSave();x.ifr.contentWindow.__noSave=true}catch(e){}x.ifr.remove();x.ifr=null}}
 function indSaveAll(){IND.forEach(x=>{try{x.ifr&&x.ifr.contentWindow.__farmSave&&x.ifr.contentWindow.__farmSave()}catch(e){}})}
 function indDrop(id){const x=INDB(id);if(x&&x.ifr){try{x.ifr.contentWindow.__noSave=true}catch(e){}x.ifr.remove();x.ifr=null}}
-function indReset(id){indDrop(id);try{localStorage.removeItem('zzdh_'+id+'_v1')}catch(e){}G.indLv=G.indLv||{};G.indLv[id]=0;if(id==='wood')G.woodLv=0;mark();save()}
+function indReset(id){indDrop(id);try{localStorage.removeItem('zzdh_'+id+'_v1');if(id==='build'){localStorage.removeItem('zzdh_build_v1_free');localStorage.removeItem('zzdh_build_v1_lastmode')}}catch(e){}G.indLv=G.indLv||{};G.indLv[id]=0;if(id==='wood')G.woodLv=0;mark();save()}
 IND.forEach(x=>{UNITS[x.id+'_solo']={get:()=>LS('zzdh_'+x.id+'_v1'),set:v=>LSset('zzdh_'+x.id+'_v1',v)};SER_N[x.id]=x.em+' '+x.name});
 {const sf=startInd;startInd=function(id,opt){opt=opt||{};if(mode!=='home'||opt.noSlot)return sf(id);slotPanel(id,'solo',()=>sf(id))}}
 // 舊名字（相容）
