@@ -49,7 +49,7 @@ input[type=range]{width:100%;accent-color:#e8901a}
 @media (max-width:700px){#tbtn [data-mh]{display:none}#bMore{display:inline-block}#sub{max-height:132px;overflow-y:auto;pointer-events:auto;align-content:flex-start;-webkit-overflow-scrolling:touch}#rot{left:auto;right:6px;top:calc(150px + env(safe-area-inset-top));bottom:auto}#rot button{width:46px;height:40px;font-size:18px}#hint{top:calc(150px + env(safe-area-inset-top));font-size:13px}#edit{left:8px;right:8px;width:auto;top:auto;bottom:calc(120px + env(safe-area-inset-bottom));max-height:42vh}#tbtn{max-width:56%}.hb{padding:6px 8px;font-size:13px}#mats{display:none}}
 </style></head><body>
 <div id="top"><div id="money" class="box"></div><div id="mats" class="box"></div><div id="tbtn">
-<button class="hb r" id="bUndo" style="font-weight:bold">↩️ 上一步</button><button class="hb g" id="bShop" style="font-weight:bold">🧱 建材行</button><button class="hb p" id="bTown" data-mh="1">🏘️ 小鎮</button><button class="hb b" id="bTp">🌀 瞬移</button><button class="hb o" id="bDress" data-mh="1">👕 換裝</button><button class="hb y" id="bPet" data-mh="1">🐾 寵物</button><button class="hb g" id="bSave" data-mh="1">💾 存檔</button><button class="hb y" id="bTime" data-mh="1">🌅 時間</button><button class="hb o" id="bTpl" data-mh="1">📐 樣式模版</button><button class="hb g" id="bLand" data-mh="1">🗺️ 買土地</button><button class="hb p" id="bSell" data-mh="1">🏷️ 賣房子</button><button class="hb" id="bHelp" data-mh="1">📖 說明</button><button class="hb" id="bSnd" data-mh="1">🔊</button><button class="hb" id="bFS" data-mh="1">⛶</button><button class="hb y" id="bMore">☰ 更多</button><button class="hb r" id="bExit">🚪 離開</button></div></div>
+<button class="hb r" id="bUndo" style="font-weight:bold">↩️ 上一步</button><button class="hb g" id="bShop" style="font-weight:bold">🧱 建材行</button><button class="hb p" id="bTown" data-mh="1">🏘️ 小鎮</button><button class="hb g" id="bCoop">👥 多人</button><button class="hb b" id="bTp">🌀 瞬移</button><button class="hb o" id="bDress" data-mh="1">👕 換裝</button><button class="hb y" id="bPet" data-mh="1">🐾 寵物</button><button class="hb g" id="bSave" data-mh="1">💾 存檔</button><button class="hb y" id="bTime" data-mh="1">🌅 時間</button><button class="hb o" id="bTpl" data-mh="1">📐 樣式模版</button><button class="hb g" id="bLand" data-mh="1">🗺️ 買土地</button><button class="hb p" id="bSell" data-mh="1">🏷️ 賣房子</button><button class="hb" id="bHelp" data-mh="1">📖 說明</button><button class="hb" id="bSnd" data-mh="1">🔊</button><button class="hb" id="bFS" data-mh="1">⛶</button><button class="hb y" id="bMore">☰ 更多</button><button class="hb r" id="bExit">🚪 離開</button></div></div>
 <div id="hint" class="box"></div>
 <div id="sub"></div>
 <div id="edit" class="box"></div>
@@ -124,7 +124,7 @@ const GLASS_L=new THREE.MeshStandardMaterial({color:0x5a7a98,roughness:.15,metal
 
 /* ======================= 地形：超大空地＋岩石山＋湖（可以開挖） ======================= */
 const CELL=3,SZ=1740,N=SZ/CELL+1,HALF=SZ/2;// 1740×1740 公尺（原本的 10 倍大），每格 3 公尺
-const WATER_Y=-.35;
+const WATER_Y=-.35;const TREG=[];// 多人合作：記錄改過的地形範圍
 let S=null;
 const HT=new Float32Array(N*N),RK=new Float32Array(N*N);
 const idx=(i,j)=>j*N+i;const gx=i=>i*CELL-HALF;
@@ -191,7 +191,7 @@ function brush(cx,cz,mode,rad,dt,ref){let dug=0,soil=0,touched=false;const i0=Ma
     else if(mode==='smooth'){const a=(HT[k-1]+HT[k+1]+HT[k-N]+HT[k+N])/4;h=h+(a-h)*Math.min(1,dt*6*w)}
     else if(mode==='grass'){if(S.dug)delete S.dug[k]}
     if(RK[k]>Math.max(0,h))RK[k]=Math.max(0,h);HT[k]=h;touched=true}
-  if(touched)terrainUpdate(i0-1,j0-1,i1+1,j1+1);brush.soil=soil*CELL*CELL*.5;return dug*CELL*CELL*.6}
+  if(touched){terrainUpdate(i0-1,j0-1,i1+1,j1+1);TREG.push([i0-1,j0-1,i1+1,j1+1])}brush.soil=soil*CELL*CELL*.5;return dug*CELL*CELL*.6}
 function packF(a,mul){const b=new Int16Array(a.length);for(let i=0;i<a.length;i++)b[i]=Math.round(clamp(a[i]*mul,-32000,32000));let s='';const u=new Uint8Array(b.buffer);for(let i=0;i<u.length;i+=8192)s+=String.fromCharCode.apply(null,u.subarray(i,i+8192));return btoa(s)}
 function unpackF(str,a,mul){try{const s=atob(str);const u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);const b=new Int16Array(u.buffer);if(b.length!==a.length)return false;for(let i=0;i<a.length;i++)a[i]=b[i]/mul;return true}catch(e){return false}}
 function plotUpdate(p){const a=p%PN,b=Math.floor(p/PN);const i0=Math.floor(a*PLOT/CELL)-1,j0=Math.floor(b*PLOT/CELL)-1;terrainUpdate(i0,j0,i0+PLOT/CELL+2,j0+PLOT/CELL+2)}
@@ -537,7 +537,7 @@ const GLOW_M=new THREE.SpriteMaterial({map:cTex(64,64,(x)=>{const g=x.createRadi
 function place(o){const old=OBJM.get(o.id);if(old){OBJG.remove(old);old.traverse(m=>{if(m.isMesh&&m.geometry)m.geometry.dispose()})}if(o.t==='nat'){natDirty=true;OBJM.delete(o.id);return}
   const g=makeMesh(o);if(!g)return;g.userData.id=o.id;if(o.t==='road'||o.t==='fence'){}else{g.position.set(o.x,o.t==='part'?o.y+(o.oy||0):baseY(o),o.z);g.rotation.order='YXZ';g.rotation.set(o.rx||0,o.r||0,o.rz||0);if(o.sc&&o.t!=='dec')g.scale.setScalar(o.sc);if(o.t==='dec'&&o.s)g.scale.setScalar(o.s)}if(o.bt!=null&&o.bt<1)g.position.y=baseY(o)-(1-o.bt)*((g.userData.peak||6)+.5);OBJG.add(g);OBJM.set(o.id,g);if(o.t==='house'||o.t==='tower')g.traverse(m=>{if(m.isMesh)m.castShadow=true})}
 function removeObj(o){const g=OBJM.get(o.id);if(g){OBJG.remove(g);g.traverse(m=>{if(m.isMesh&&m.geometry)m.geometry.dispose()})}OBJM.delete(o.id);S.objs=S.objs.filter(x=>x!==o);if(o.t==='nat')natDirty=true;tagDrop(o.id)}
-function addObj(o){o.id=S.nid=(S.nid||0)+1;if(S.mode==='free')o.free=1;S.objs.push(o);clearNat(o);place(o);return o}
+function addObj(o){o.id=(typeof CO!=='undefined'&&CO.role)?coopId():(S.nid=(S.nid||0)+1);if(S.mode==='free')o.free=1;S.objs.push(o);clearNat(o);place(o);return o}
 // 蓋東西的地方，原本的花草樹木會被清掉
 function clearNat(o){let n=0;for(const q of S.objs.slice()){if(q.t!=='nat')continue;let hit=false;if(o.t==='house'||o.t==='tower'||o.t==='lm')hit=inFoot(o,q.x,q.z,.8);else if(o.t==='dec'&&DEC[o.k]&&DEC[o.k].rad)hit=Math.hypot(q.x-o.x,q.z-o.z)<DEC[o.k].rad*(o.s||1);else if(o.t==='wall'){const c=Math.cos(-(o.r||0)),s=Math.sin(-(o.r||0));const dx=q.x-o.x,dz=q.z-o.z;hit=Math.abs(dx*c+dz*s)<o.len/2+.5&&Math.abs(-dx*s+dz*c)<1.2}else if(o.t==='road'){const w=(ROADS[o.k]||ROADS.road).w/2+.4;hit=o.pts.some(p=>Math.hypot(p.x-q.x,p.z-q.z)<w+.8)}
   if(hit){S.objs.splice(S.objs.indexOf(q),1);n++}}if(n)natDirty=true}
@@ -548,7 +548,7 @@ const blockedAt=(x,z)=>S.objs.some(o=>(o.t==='house'||o.t==='tower')&&inFoot(o,x
 // 把房子底下整平
 function flattenUnder(o){const y=hAt(o.x,o.z);const R=Math.max(o.w||o.rad*2,o.d||o.rad*2)/2+2;const i0=Math.floor((o.x+HALF-R)/CELL),i1=Math.ceil((o.x+HALF+R)/CELL),j0=Math.floor((o.z+HALF-R)/CELL),j1=Math.ceil((o.z+HALF+R)/CELL);
   for(let j=Math.max(1,j0);j<=Math.min(N-2,j1);j++)for(let i=Math.max(1,i0);i<=Math.min(N-2,i1);i++){const x=gx(i),z=gx(j);if(!owned(x,z))continue;const inside=inFoot(o,x,z,.6);const near=inFoot(o,x,z,1.8);if(!near)continue;const k=idx(i,j);const t=inside?1:.5;const nh=HT[k]+(y-HT[k])*t;if(nh<HT[k])RK[k]=Math.max(0,Math.min(RK[k],nh));HT[k]=nh}
-  terrainUpdate(i0-1,j0-1,i1+1,j1+1)}
+  terrainUpdate(i0-1,j0-1,i1+1,j1+1);TREG.push([i0-1,j0-1,i1+1,j1+1])}
 /* ---- 價錢 ---- */
 function costOf(o){if(['house','tower','wall','part','lm'].includes(o.t)&&typeof matsOf==='function'){return Math.round(mCost(matsOf(o))*1.15)}if(o.t==='house'){const r=(WALLS[o.wall]||WALLS.plaster).r;let c=o.w*o.d*o.floors*r+o.w*o.d*8;if(o.chimney)c+=200;if(o.balcony)c+=150*(o.floors-1);if(o.porch)c+=350;if(o.shutters)c+=60*o.floors;if(o.boxes)c+=40*o.floors;if(o.roof==='dome'||o.roof==='spire'||o.roof==='mansard')c+=o.w*o.d*6;if(o.sign)c+=300;return Math.round(c)}
   if(o.t==='tower')return Math.round(o.rad*o.rad*o.floors*70+400);if(o.t==='part'){const P=PART[o.k];return P?Math.round(20+P.w*Math.max(P.d,.5)*P.h*(P.cat==='castle'?14:P.cat==='roof'?10:P.cat==='open'?16:9)):0}if(o.t==='wall')return Math.round(o.len*(o.h||4.5)*25+(o.gate?500:0)+(o.slits?o.len*20:0)+(o.windows?o.len*40:0)+(o.walk?o.len*15:0));
@@ -597,7 +597,7 @@ const _p=V();function tagsDraw(){for(const [k,t] of TAGS){_p.copy(t.pos).project
 /* ======================= 復原（返回上一步） ======================= */
 const UNDO=[];// 可以回到前 50 步
 function snapUndo(){UNDO.push({objs:JSON.stringify(S.objs),money:S.money,mat:JSON.stringify(S.mat),T:packDiff(),dug:JSON.stringify(S.dug||{}),nid:S.nid});if(UNDO.length>50)UNDO.shift();undoBtn()}
-function undo(){if(INT)intExit();const u=UNDO.pop();if(!u){toast('沒有可以復原的步驟了');return}for(const [id,g] of OBJM){OBJG.remove(g)}OBJM.clear();S.objs=JSON.parse(u.objs);S.money=u.money;S.mat=JSON.parse(u.mat);S.nid=Math.max(S.nid,u.nid);HT.set(GH);RK.set(GR);unpackDiff(u.T);S.dug=JSON.parse(u.dug);terrainUpdate();for(const o of S.objs)if(o.t!=='nat')place(o);natDirty=true;SEL=null;editShow();SFX.del();toast('↩️ 回到上一步',1200);dirty();undoBtn()}
+function undo(){if(typeof CO!=='undefined'&&CO.role){toast('👥 多人合作的時候不能用「上一步」（會把隊友蓋的東西也一起復原），拆錯了可以直接選取刪除',3200);return}if(INT)intExit();const u=UNDO.pop();if(!u){toast('沒有可以復原的步驟了');return}for(const [id,g] of OBJM){OBJG.remove(g)}OBJM.clear();S.objs=JSON.parse(u.objs);S.money=u.money;S.mat=JSON.parse(u.mat);S.nid=Math.max(S.nid,u.nid);HT.set(GH);RK.set(GR);unpackDiff(u.T);S.dug=JSON.parse(u.dug);terrainUpdate();for(const o of S.objs)if(o.t!=='nat')place(o);natDirty=true;SEL=null;editShow();SFX.del();toast('↩️ 回到上一步',1200);dirty();undoBtn()}
 function undoBtn(){const b=document.getElementById('bUndo');if(b)b.style.opacity=UNDO.length?1:.45}
 /* ---- 更多樣式模版 ---- */
 const H_=(o)=>Object.assign({t:'house',floors:1,wall:'plaster',wallC:0xf4ead2,roof:'gable',roofM:'tile',roofC:0xb8583a,pitch:.75,trimC:0xffffff,win:'classic'},o);
@@ -764,7 +764,7 @@ function startTool(x,y){if(INT){intStart(x,y);return}const t=TOOL;
       end:()=>{if(mesh)scene.remove(mesh);if(pts.length<2)return;const ok=pts.filter(p=>owned(p.x,p.z));if(ok.length<pts.length){landHint();return}const o={t,k:tmp.k,pts:pts.map(p=>({x:Math.round(p.x*10)/10,z:Math.round(p.z*10)/10}))};snapUndo();if(!spend(costOf(o),t==='road'?'道路':'圍籬'))return;addObj(o);SFX.place();dirty()},cancel:()=>{if(mesh)scene.remove(mesh)}};return}
   if(t==='tree'||t==='flower'){snapUndo();const k=t==='tree'?TS.tree:TS.flower;const wat=NAT[k].water;const gap=t==='tree'?2.2:.8;let last=null,n=0;
     const put=(cx,cy)=>{const g=groundAt(cx,cy);if(!g||!owned(g.x,g.z))return;if(wat?g.y>WATER_Y-.05:g.y<WATER_Y)return;if(last&&Math.hypot(g.x-last.x,g.z-last.z)<gap)return;if(blockedAt(g.x,g.z))return;const jx=g.x+(n?rand(-.4,.4):0),jz=g.z+(n?rand(-.4,.4):0);
-      if(S.objs.some(o=>o.t==='nat'&&Math.hypot(o.x-jx,o.z-jz)<gap*.6))return;if(!spend(NAT[k].p))return;S.objs.push({t:'nat',k,x:jx,z:jz,s:wat?1:rand(.8,1.2),r:rand(0,6.28),id:++S.nid});last=g;n++;natDirty=true;SFX.brush();dirty()};
+      if(S.objs.some(o=>o.t==='nat'&&Math.hypot(o.x-jx,o.z-jz)<gap*.6))return;if(!spend(NAT[k].p))return;S.objs.push({t:'nat',k,x:jx,z:jz,s:wat?1:rand(.8,1.2),r:rand(0,6.28),id:CO.role?coopId():++S.nid});last=g;n++;natDirty=true;SFX.brush();dirty()};
     put(x,y);G={move:(cx,cy)=>put(cx,cy),end:()=>{}};return}
   if(t==='terra'||t==='water'&&(TS.water==='pond'||TS.water==='fill')){snapUndo();let lp=null,ref=null;const g0=groundAt(x,y);if(g0)ref=hAt(g0.x,g0.z);G={brush:1,cx:x,cy:y,move:(cx,cy)=>{G.cx=cx;G.cy=cy},end:()=>{dirty();refreshNear(CAM.tx,CAM.tz,40)}};G.ref=ref;return}
   if(t==='del'){const o=objAt(x,y);let moved=false,moved2=0;G={move:(cx,cy,dx,dy,dist)=>{if(dist>8){moved=true;const g=groundAt(cx,cy);if(!g)return;if(!moved2){moved2=1;snapUndo()}for(const q of S.objs.slice())if(q.t==='nat'&&Math.hypot(q.x-g.x,q.z-g.z)<1.8){removeObj(q);natLoot(q);SFX.brush()}}},end:(tap)=>{if(tap&&o)delAsk(o);dirty()}};return}
@@ -781,7 +781,7 @@ function landHint(){SFX.err();toast('🗺️ 這塊地還不是你的！按右�
 function newHouse(a){const hs=HSTYLE[TS.hstyle]&&HSTYLE[TS.hstyle][1];const d=hs?Object.assign({floors:2,shutC:0x3a5a3a},hs):TS.draft||{wall:'plaster',wallC:0xf4ead2,roof:'gable',roofM:'tile',roofC:0xb8583a,pitch:.75,trimC:0xffffff,win:'classic',shutters:1,shutC:0x3a5a3a,chimney:1,floors:2};
   const o=Object.assign({t:'house',r:0},JSON.parse(JSON.stringify(d)),{x:a.x,z:a.z,w:a.w,d:a.d});o.floors=Math.min(o.floors||2,4,maxFloors(o));delete o.sign;delete o.cinema;delete o.sold;if(hs&&hs.floors)o.floors=hs.floors;snapUndo();if(!useMats(matsOf(o),'蓋房子',()=>newHouse(a)))return;addObj(o);flattenUnder(o);refreshNear(o.x,o.z,8);place(o);startBuild(o);SEL=o.id;setTool('sel');editShow();dirty()}
 function placeTpl(t,x,z){const objs=t.o.map(q=>Object.assign({},JSON.parse(JSON.stringify(q)),{x:x+(q.dx||0),z:z+(q.dz||0),r:q.r||0}));for(const o of objs){delete o.dx;delete o.dz;if(o.t==='nat')o.s=1}
-  if(objs.some(o=>!owned(o.x,o.z))){landHint();return}const ST=o=>['house','tower','wall'].includes(o.t);const c=objs.filter(o=>!ST(o)).reduce((a,o)=>a+costOf(o),0);const tm=tplMats(t);snapUndo();if(S.mode!=='free'&&!mHave(tm)){useMats(tm,t.n,()=>placeTpl(t,x,z));return}if(!spend(c,t.n))return;if(S.mode!=='free')mTake(tm);for(const o of objs){if(o.t==='nat'){o.id=++S.nid;S.objs.push(o);natDirty=true;continue}addObj(o);if(o.t==='house'||o.t==='tower')flattenUnder(o)}
+  if(objs.some(o=>!owned(o.x,o.z))){landHint();return}const ST=o=>['house','tower','wall'].includes(o.t);const c=objs.filter(o=>!ST(o)).reduce((a,o)=>a+costOf(o),0);const tm=tplMats(t);snapUndo();if(S.mode!=='free'&&!mHave(tm)){useMats(tm,t.n,()=>placeTpl(t,x,z));return}if(!spend(c,t.n))return;if(S.mode!=='free')mTake(tm);for(const o of objs){if(o.t==='nat'){o.id=(typeof CO!=='undefined'&&CO.role)?coopId():++S.nid;S.objs.push(o);natDirty=true;continue}addObj(o);if(o.t==='house'||o.t==='tower')flattenUnder(o)}
   for(const o of objs)if(o.t!=='nat'){place(o);if(ST(o))startBuild(o);else riseAnim(o)}const h=objs.find(o=>o.t==='house');if(h)SEL=h.id;setTool('sel');editShow();dirty();toast(`${t.em} ${t.n} 開工了！工人正在施工`)}
 /* ---- 蓋起來的動畫：一層一層長出來 ---- */
 const RISE=[];function riseAnim(o){const g=OBJM.get(o.id);if(!g)return;g.scale.y=.02;RISE.push({g,t:0,o});SFX.hammer()}
@@ -865,7 +865,7 @@ const FAC={cement:{n:'水泥廠',em:'🏭',p:2500,d:'2 石材 → 1 水泥（每
  steel:{n:'鋼鐵廠',em:'🔩',p:5000,d:'3 石材 → 1 鋼筋（每 8 秒）',in:{stone:3},out:{steel:1},t:8,h:{w:12,d:9,floors:2,wall:'siding',wallC:0x8a8a92,roof:'shed',roofM:'metal',roofC:0x4a4a52,pitch:.5,win:'wide',chimney:1,sign:'🔩 鋼鐵廠',signBg:'#3a3a42'}},
  paint:{n:'油漆工廠',em:'🎨',p:2500,d:'1 黏土 → 1 油漆（每 6 秒）',in:{clay:1},out:{paint:1},t:6,h:{w:8,d:7,floors:1,wall:'plaster',wallC:0xf0e0f8,roof:'flat',win:'tall',sign:'🎨 油漆工廠',signBg:'#8a3a8a'}}};
 function placeFac(k,x,z){const f=FAC[k];const o=Object.assign({t:'house',x,z,r:0,trimC:0xffffff,fac:k},JSON.parse(JSON.stringify(f.h)));if(!owned(x,z)){landHint();return}snapUndo();if(!spend(f.p,f.n))return;addObj(o);flattenUnder(o);place(o);startBuild(o);SEL=o.id;setTool('sel');editShow();dirty()}
-let facT=0;function facTick(dt){facT+=dt;if(facT<1)return;const step=facT;facT=0;for(const o of S.objs){if(!o.fac||o.bt!=null&&o.bt<1)continue;const f=FAC[o.fac];o.ft=(o.ft||0)+step;while(o.ft>=f.t){o.ft-=f.t;if(!Object.entries(f.in).every(([k,v])=>(S.mat[k]||0)>=v)){o.idle=1;break}o.idle=0;for(const [k,v] of Object.entries(f.in))S.mat[k]-=v;const out=f.alt&&(o.flip=!o.flip)?f.alt:f.out;for(const [k,v] of Object.entries(out))S.mat[k]=(S.mat[k]||0)+v;
+let facT=0;function facTick(dt){if(CO.role==='guest')return;facT+=dt;if(facT<1)return;const step=facT;facT=0;for(const o of S.objs){if(!o.fac||o.bt!=null&&o.bt<1)continue;const f=FAC[o.fac];o.ft=(o.ft||0)+step;while(o.ft>=f.t){o.ft-=f.t;if(!Object.entries(f.in).every(([k,v])=>(S.mat[k]||0)>=v)){o.idle=1;break}o.idle=0;for(const [k,v] of Object.entries(f.in))S.mat[k]-=v;const out=f.alt&&(o.flip=!o.flip)?f.alt:f.out;for(const [k,v] of Object.entries(out))S.mat[k]=(S.mat[k]||0)+v;
     const g=OBJM.get(o.id);if(g&&CAM.dist<200){const y=(g.userData.peak||6);floatTxt(V(o.x,baseY(o)+y+1,o.z),Object.entries(out).map(([k,v])=>`+${v}${MATD[k].em}`).join(' '))}}}matHud()}
 function facOffline(sec){sec=Math.min(sec,21600);for(const o of S.objs){if(!o.fac)continue;const f=FAC[o.fac];let n=Math.floor(sec/f.t);for(const [k,v] of Object.entries(f.in))n=Math.min(n,Math.floor((S.mat[k]||0)/v));if(n<=0)continue;for(const [k,v] of Object.entries(f.in))S.mat[k]-=v*n;for(const [k,v] of Object.entries(f.out))S.mat[k]=(S.mat[k]||0)+v*n}}
 // 頭上飄的小字
@@ -1043,7 +1043,7 @@ Object.assign(FUR,{
 
 /* ======================= 出租：每分鐘收房租 ======================= */
 const rentOf=o=>o.free?0:Math.max(5,Math.round(valueOf(o).v*.006));
-let rentT=0;function rentTick(dt){rentT+=dt;if(rentT<60)return;rentT=0;let sum=0;for(const o of S.objs)if(o.t==='house'&&o.rent&&!o.sold)sum+=rentOf(o);if(sum>0){earn(sum);SFX.cash();toast(`🔑 收到房租 ${money(sum)}`,1800)}}
+let rentT=0;function rentTick(dt){if(CO.role==='guest')return;rentT+=dt;if(rentT<60)return;rentT=0;let sum=0;for(const o of S.objs)if(o.t==='house'&&o.rent&&!o.sold)sum+=rentOf(o);if(sum>0){earn(sum);SFX.cash();toast(`🔑 收到房租 ${money(sum)}`,1800)}}
 function rentOffline(sec){sec=Math.min(sec,21600);let sum=0;for(const o of S.objs)if(o.t==='house'&&o.rent&&!o.sold)sum+=rentOf(o);const n=Math.floor(sec/60);if(sum*n>0){S.money+=sum*n;S.earn=(S.earn||0)+sum*n;setTimeout(()=>toast(`🔑 你不在的時候收到房租 ${money(sum*n)}`,3000),2500)}}
 /* ======================= 小鎮的車子：沿著道路開來開去 ======================= */
 const CARS=[];const carColors=[0xc83a2a,0x2a5aa8,0xf0f0f0,0x2a2a2e,0xe8c020,0x3a8a4a,0x8a8a92];
@@ -1188,7 +1188,7 @@ function heliModel(c){const g=new THREE.Group();bat(g,B=>{const m=mat('',c,{meta
 const ANIMS=new Map();let tourT=60;
 function animTick(dt){const t=performance.now()/1000;BULBS.forEach((m,i)=>m.emissiveIntensity=.12+NIGHT*(1.5+Math.sin(t*5+i*1.3)*.9));FLASH_R.emissiveIntensity=Math.sin(t*12)>0?2:.1;FLASH_B.emissiveIntensity=Math.sin(t*12)>0?.1:2;
   for(const [id,a] of ANIMS){const g=OBJM.get(id);if(g!==a.g){ANIMS.delete(id);continue}if(Math.hypot(a.o.x-CAM.tx,a.o.z-CAM.tz)>CAM.dist*3+250)continue;try{DEC[a.o.k].anim.tick(a.g,t,dt,a.o)}catch(e){}}
-  tourT-=dt;if(tourT<=0){tourT=60;let s=0;for(const o of S.objs){if(o.t==='lm'&&!(o.bt!=null&&o.bt<1))s+=lmIncome(o);else if(o.t==='dec'&&DEC[o.k]&&DEC[o.k].inc)s+=DEC[o.k].inc}if(s>0&&!(S.mode==='free')){earn(s);floatTxt(V(CAM.tx,hAt(CAM.tx,CAM.tz)+6,CAM.tz),`🎡 觀光門票 +${money(s)}`)}}}
+  tourT-=dt;if(tourT<=0&&CO.role!=='guest'){tourT=60;let s=0;for(const o of S.objs){if(o.t==='lm'&&!(o.bt!=null&&o.bt<1))s+=lmIncome(o);else if(o.t==='dec'&&DEC[o.k]&&DEC[o.k].inc)s+=DEC[o.k].inc}if(s>0&&!(S.mode==='free')){earn(s);floatTxt(V(CAM.tx,hAt(CAM.tx,CAM.tz)+6,CAM.tz),`🎡 觀光門票 +${money(s)}`)}}}
 const reg=(g,o)=>{ANIMS.set(o.id,{g,o})};
 // 雲霄飛車的軌道
 const COASTER=(()=>{const P=[[0,2,-14],[14,2,-14],[24,4,-12],[30,12,-6],[30,17,2],[24,14,10],[14,6,14],[4,3,14],[-6,9,14],[-16,13,10],[-24,8,4],[-26,4,-4],[-20,10,-10],[-12,6,-14]].map(p=>V(p[0],p[1],p[2]));return new THREE.CatmullRomCurve3(P,true,'catmullrom',.5)})();
@@ -1430,7 +1430,7 @@ const JOY={x:0,y:0,on:false,id:null};
   #joy{width:118px;height:118px;border-radius:50%;background:rgba(255,255,255,.28);border:3px solid rgba(255,255,255,.75);box-shadow:0 3px 10px rgba(0,0,0,.25);position:relative;touch-action:none}
   #joyK{position:absolute;left:50%;top:50%;width:52px;height:52px;margin:-26px 0 0 -26px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff,#ffd060);border:3px solid #e8a020;box-shadow:0 2px 6px rgba(0,0,0,.3)}
   #joyC{font-size:13px;padding:5px 10px}
-  @media (max-width:700px){#joyW{bottom:calc(215px + env(safe-area-inset-bottom));left:8px}#joy{width:104px;height:104px}}`;document.head.appendChild(st);
+  @media (max-height:760px) and (min-width:701px){#joyW{left:80px;bottom:calc(140px + env(safe-area-inset-bottom))}}@media (max-width:700px){#joyW{bottom:calc(215px + env(safe-area-inset-bottom));left:8px}#joy{width:104px;height:104px}}`;document.head.appendChild(st);
   const w=document.createElement('div');w.id='joyW';w.innerHTML='<div id="joy"><div id="joyK"></div></div><button class="hb y" id="joyC">📍 回到我身邊</button>';document.body.appendChild(w);
   const J=document.getElementById('joy'),K=document.getElementById('joyK');const R=46;
   const mv=e=>{const r=J.getBoundingClientRect();let dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2);const L=Math.hypot(dx,dy);if(L>R){dx*=R/L;dy*=R/L}JOY.x=dx/R;JOY.y=dy/R;K.style.transform=`translate(${dx}px,${dy}px)`};
@@ -1589,8 +1589,8 @@ function partTick(o,dt,vy,sway,on){o.visible=on;if(!on)return;const p=o.geometry
 const GRAY=new THREE.Color(0x8a9098),ICE=new THREE.Color(0xd8eef8),WATERC=water.material.color.clone();
 function pickWx(se){const P=WXP[se];let r=Math.random()*100;for(const k in P){r-=P[k];if(r<=0)return k}return 'sun'}
 function weatherTick(dt){if(S.season==null){S.season=0;S.sAuto=1;S.wx='sun';S.wxAuto=1;S.sT=0;S.wxT=120}
-  if(S.sAuto){S.sT=(S.sT||0)+dt;if(S.sT>=SEASON_LEN){S.sT=0;S.season=(S.season+1)%4;const se=SEASONS[S.season];toast(`${se.em} ${se.n}來了！${['樹木開花、長出新葉','樹葉茂密，果樹開始結果','樹葉變紅變黃，開始落葉','下雪了，樹葉都掉光了'][S.season]}`,3600);if(S.wxAuto){S.wx=pickWx(S.season);S.wxT=rand(90,200)}dirty()}}
-  if(S.wxAuto){S.wxT=(S.wxT||120)-dt;if(S.wxT<=0){const nw=pickWx(S.season);if(nw!==S.wx){S.wx=nw;toast(`${WX[nw].em} 天氣變成「${WX[nw].n}」`,2000)}S.wxT=rand(90,220)}}
+  if(S.sAuto&&CO.role!=='guest'){S.sT=(S.sT||0)+dt;if(S.sT>=SEASON_LEN){S.sT=0;S.season=(S.season+1)%4;const se=SEASONS[S.season];toast(`${se.em} ${se.n}來了！${['樹木開花、長出新葉','樹葉茂密，果樹開始結果','樹葉變紅變黃，開始落葉','下雪了，樹葉都掉光了'][S.season]}`,3600);if(S.wxAuto){S.wx=pickWx(S.season);S.wxT=rand(90,200)}dirty()}}
+  if(S.wxAuto&&CO.role!=='guest'){S.wxT=(S.wxT||120)-dt;if(S.wxT<=0){const nw=pickWx(S.season);if(nw!==S.wx){S.wx=nw;toast(`${WX[nw].em} 天氣變成「${WX[nw].n}」`,2000)}S.wxT=rand(90,220)}}
   if(S.wx==='snow'&&S.season!==3)S.wx='rain';const W=WX[S.wx]||WX.sun;
   // 積雪：冬天下雪會慢慢積起來，其他季節慢慢融化
   const wantSnow=S.season===3?(S.wx==='snow'?1:.55):0;snowAmt+=(wantSnow-snowAmt)*Math.min(1,dt*(wantSnow>snowAmt?.08:.15));
@@ -1617,18 +1617,18 @@ if(!EMBED){BG7.el=new Audio();BG7.el.volume=.32;BG7.el.preload='none';const nx=(
   setInterval(()=>{if(!BG7.on||!S)return;if(!S.snd&&!BG7.el.paused)BG7.el.pause();else if(S.snd&&BG7.el.paused&&!document.hidden)BG7.el.play().catch(()=>{})},600);document.addEventListener('visibilitychange',()=>{if(document.hidden&&BG7.el)BG7.el.pause()})}
 /* ======================= 開始畫面／存檔畫面：繼續、開新遊戲、讀取、刪除 ======================= */
 function slotInfo(n){try{return JSON.parse(localStorage.getItem(SLOTK(n))||'null')}catch(e){return null}}
-function doExit(){save();if(EMBED){window.__farmHold=true;parent.postMessage({t:'exit'},'*')}else{location.reload()}}
+function doExit(){if(CO.role)coopEnd(true);save();if(EMBED){window.__farmHold=true;parent.postMessage({t:'exit'},'*')}else{location.reload()}}
 function newGame(){S=newState();genTerrain();wildGen(0);wildPlants();CAM.tx=0;CAM.tz=0;CAM.dist=60;S.mePos={x:0,z:4};rebuildWorld();S.first=0;save();toast('🆕 新的遊戲開始了！',2200)}
 function titleScreen(mode,first){const t=titleOf();const cur=`${t.em}${t.t}・${t.town}・💵${Math.floor(S.money).toLocaleString()}・🏠 ${S.objs.filter(o=>o.t==='house').length} 棟`;
   openPanel(`<h2 style="text-align:center;font-size:26px">🏗️ 建造與水泥</h2><div style="text-align:center;font-size:14px;color:#7a6a4a;margin-bottom:6px">${mode==='exit'?'要離開了嗎？可以先存檔，或讀取、刪除其他進度':first?'歡迎！第一次玩建議先跟著新手教學走一遍':'選擇要玩的進度'}</div>
   <div class="prow" style="background:#e8f8e0"><div class="em">▶️</div><div class="tx"><b>目前的進度（自動存檔）</b><small>${cur}</small></div><button class="hb g" id="tsGo">${mode==='exit'?'↩️ 回到遊戲':'▶ 繼續玩'}</button></div>
-  <div class="row2"><button class="hb o" id="tsNew">🆕 開新遊戲</button><button class="hb p" id="tsTut">🎓 新手教學${first?'（推薦）':''}</button><button class="hb b" id="tsMode">🎮 遊戲模式</button>${mode==='exit'?'<button class="hb r" id="tsExit">🚪 離開遊戲</button>':''}</div>
+  <div class="row2"><button class="hb o" id="tsNew">🆕 開新遊戲</button><button class="hb p" id="tsTut">🎓 新手教學${first?'（推薦）':''}</button><button class="hb b" id="tsMode">🎮 遊戲模式</button><button class="hb g" id="tsCoop">👥 多人合作</button>${mode==='exit'?'<button class="hb r" id="tsExit">🚪 離開遊戲</button>':''}</div>
   <div class="lab" style="margin-top:10px">💾 存檔格子（可以存 5 個進度）</div>`+[1,2,3,4,5].map(n=>{const d=slotInfo(n);return `<div class="prow"><div class="em">${d?'💾':'📭'}</div><div class="tx"><b>存檔 ${n}</b><small>${d?`${new Date(d.savedAt||d.last).toLocaleString('zh-TW')}<br>${d.ttl||''}・💵${Math.floor(d.money).toLocaleString()}`:'（空的）'}</small></div><div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;max-width:190px">${d?`<button class="hb b" data-ld="${n}">📂 進入</button>`:''}<button class="hb g" data-sv="${n}">💾 存到這裡</button>${d?`<button class="hb r" data-dl="${n}">🗑️ 刪除</button>`:''}</div></div>`}).join(''),
-  ()=>{const P=$('#panel');$('#tsGo').onclick=()=>{closePanel();if(first&&!S.tutDone)tutAsk()};$('#tsMode').onclick=modePanel;$('#tsTut').onclick=()=>{closePanel();tutStart()};
+  ()=>{const P=$('#panel');$('#tsGo').onclick=()=>{closePanel();if(first&&!S.tutDone)tutAsk()};$('#tsMode').onclick=modePanel;$('#tsCoop').onclick=coopPanel;$('#tsTut').onclick=()=>{closePanel();tutStart()};
    if($('#tsExit'))$('#tsExit').onclick=()=>{closePanel();doExit()};
-   $('#tsNew').onclick=()=>ask('🆕 開一個新的遊戲？<br><small>目前的進度會被清掉。想留著的話，先按「💾 存到這裡」存到格子裡。</small>',()=>{newGame();setTimeout(()=>ask('要跟著<b>新手教學</b>一步一步學怎麼玩嗎？',()=>tutStart()),400)});
+   $('#tsNew').onclick=()=>CO.role?toast('👥 多人合作中不能開新遊戲，先離開隊伍'):ask('🆕 開一個新的遊戲？<br><small>目前的進度會被清掉。想留著的話，先按「💾 存到這裡」存到格子裡。</small>',()=>{newGame();setTimeout(()=>ask('要跟著<b>新手教學</b>一步一步學怎麼玩嗎？',()=>tutStart()),400)});
    P.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{const n=b.dataset.sv;const go=()=>{try{const d=saveData();d.savedAt=Date.now();const tt=titleOf();d.ttl=tt.em+tt.t+'・'+tt.town;localStorage.setItem(SLOTK(n),JSON.stringify(d));SFX.cash();toast(`💾 已經存到「存檔 ${n}」`);titleScreen(mode,first)}catch(e){toast('😢 存檔空間不夠，請先刪掉一個存檔')}};if(slotInfo(n))ask(`要蓋掉「存檔 ${n}」原本的進度嗎？`,go);else go()});
-   P.querySelectorAll('[data-ld]').forEach(b=>b.onclick=()=>{const n=b.dataset.ld;ask(`📂 進入「存檔 ${n}」？<br><small>目前的進度會被換掉（想留著的話先存到別的格子）</small>`,()=>{const d=slotInfo(n);if(!d||!applyData(d)){toast('😢 這個存檔讀不到');return}rebuildWorld();save();SFX.build();toast(`📂 已經進入「存檔 ${n}」`)})});
+   P.querySelectorAll('[data-ld]').forEach(b=>b.onclick=()=>{const n=b.dataset.ld;if(CO.role){toast('👥 多人合作中不能讀取別的存檔，先離開隊伍');return}ask(`📂 進入「存檔 ${n}」？<br><small>目前的進度會被換掉（想留著的話先存到別的格子）</small>`,()=>{const d=slotInfo(n);if(!d||!applyData(d)){toast('😢 這個存檔讀不到');return}rebuildWorld();save();SFX.build();toast(`📂 已經進入「存檔 ${n}」`)})});
    P.querySelectorAll('[data-dl]').forEach(b=>b.onclick=()=>{const n=b.dataset.dl;ask(`🗑️ 確定要<b>刪除「存檔 ${n}」</b>嗎？<br><small>刪掉就找不回來了</small>`,()=>{localStorage.removeItem(SLOTK(n));SFX.del();toast(`🗑️ 已經刪除「存檔 ${n}」`);titleScreen(mode,first)})})})}
 /* ======================= 生活狀態：體力、飽足、清潔、心情 ======================= */
 const NEEDS=[['en','⚡','體力','#f0b020'],['food','🍔','飽足','#e86a3a'],['clean','🧼','清潔','#3ab0e8'],['fun','😊','心情','#e86ab8']];
@@ -1715,12 +1715,12 @@ function petPanel(){S.pets=S.pets||[];const ti=titleOf().i;const own=S.pets;
    P.querySelectorAll('[data-ren]').forEach(b=>b.onclick=()=>{const i=+b.dataset.ren;$('#petRen').style.display='flex';$('#petNm').value=S.pets[i].name||'';$('#petNm').focus();$('#petOk').onclick=()=>{const v=$('#petNm').value.trim();if(v){S.pets[i].name=v.slice(0,8);dirty()}petPanel()}})})}
 /* ======================= 隊友位置小指標（多人合作時） ======================= */
 const PEERS=new Map();
-addEventListener('message',e=>{const m=e.data;if(!m||typeof m!=='object')return;
-  if(m.t==='peer'){let p=PEERS.get(m.uid);if(!p){p={uid:m.uid,g:makeMe(m.o||'work'),o:m.o||'work',x:m.x,z:m.z};scene.add(p.g);p.g.position.set(m.x,hAt(m.x,m.z),m.z);PEERS.set(m.uid,p);toast(`👥 隊友「${m.n||'玩家'}」也在這個系列！`,2400)}
-    if(m.o&&m.o!==p.o){scene.remove(p.g);p.g=makeMe(m.o);p.o=m.o;scene.add(p.g)}Object.assign(p,{tx:m.x,tz:m.z,r:m.r||0,n:m.n||'玩家',tt:m.tt||'',seen:performance.now()})}
-  else if(m.t==='pgone'){const p=PEERS.get(m.uid);if(p){scene.remove(p.g);PEERS.delete(m.uid);const el=document.getElementById('pk_'+m.uid);el&&el.remove()}}});
+addEventListener('message',e=>{const m=e.data;if(!m||typeof m!=='object')return;if(m.t==='peer')peerUpd(m);else if(m.t==='pgone')peerGone(m.uid)});
+function peerUpd(m){{let p=PEERS.get(m.uid);if(!p){p={uid:m.uid,g:makeMe(m.o||'work'),o:m.o||'work',x:m.x,z:m.z};scene.add(p.g);p.g.position.set(m.x,hAt(m.x,m.z),m.z);PEERS.set(m.uid,p);toast(`👥 隊友「${m.n||'玩家'}」來了！`,2400)}
+    if(m.o&&m.o!==p.o){scene.remove(p.g);p.g=makeMe(m.o);p.o=m.o;scene.add(p.g)}Object.assign(p,{tx:m.x,tz:m.z,r:m.r||0,n:m.n||'玩家',tt:m.tt||'',seen:performance.now()})}}
+function peerGone(uid){const p=PEERS.get(uid);if(p){scene.remove(p.g);PEERS.delete(uid);const el=document.getElementById('pk_'+uid);el&&el.remove()}}
 let posT=0;const _pv=new THREE.Vector3();
-function peerTick(dt){posT-=dt;if(posT<=0){posT=.4;if(EMBED)try{parent.postMessage({t:'bpos',x:ME.position.x,z:ME.position.z,r:ME.rotation.y,o:S.outfit||'work',tt:titleOf().t},'*')}catch(e){}}
+function peerTick(dt){posT-=dt;if(posT<=0){posT=.4;if(!CO.role)coopPos()}
   const now=performance.now();for(const [uid,p] of PEERS){const el0=document.getElementById('pk_'+uid);if(now-p.seen>8000){scene.remove(p.g);PEERS.delete(uid);el0&&el0.remove();continue}
     const g=p.g;const dx=p.tx-g.position.x,dz=p.tz-g.position.z,d=Math.hypot(dx,dz);if(d>50){g.position.x=p.tx;g.position.z=p.tz}else if(d>.05){const k=Math.min(1,dt*6);g.position.x+=dx*k;g.position.z+=dz*k;const s=Math.sin(now/1000*11);g.userData.legs[0].rotation.x=s*.6;g.userData.legs[1].rotation.x=-s*.6}else{g.userData.legs[0].rotation.x=g.userData.legs[1].rotation.x=0}
     g.rotation.y=p.r;g.position.y=Math.max(hAt(g.position.x,g.position.z),WATER_Y);g.scale.setScalar(clamp(CAM.dist/150,1,6)*1.05);
@@ -1765,7 +1765,7 @@ let tutT=0;function tutTick(dt){if(!TUT)return;tutT-=dt;if(tutT>0)return;tutT=.2
   if(el&&el.offsetParent!==null){const b=el.getBoundingClientRect();r.style.display='block';r.style.left=(b.left-6)+'px';r.style.top=(b.top-6)+'px';r.style.width=(b.width+12)+'px';r.style.height=(b.height+12)+'px'}else r.style.display='none';
   if(!st.next&&st.ok&&st.ok(TUT.s))tutNext()}
 function lifeTick(dt){furFxTick(dt);if(ACT)actTick(dt);needTick(dt);petTick2(dt);peerTick(dt);tutTick(dt)}
-window.__ME=()=>ME;window.__FUR=()=>FUR;window.__L=()=>({furCheck,intEdit,INT,S,ACT,PEEK,TUT,MYPETS,PEERS,camera,CAM,homeAct,petPanel,titleScreen});
+window.__ME=()=>ME;window.__FUR=()=>FUR;window.__L=()=>({CO,coopHost,coopJoin,coopEnd,byId,furCheck,intEdit,INT,S,ACT,PEEK,TUT,MYPETS,PEERS,camera,CAM,homeAct,petPanel,titleScreen});
 /* ======================= 室內家具（重新製作：更細緻、每種都有多種款式） ======================= */
 const MIRROR_M=new THREE.MeshStandardMaterial({color:0xdcefff,roughness:.05,metalness:.15,emissive:0x6a7a88,emissiveIntensity:.45});
 const SCREEN_M=new THREE.MeshStandardMaterial({color:0x10202a,roughness:.2,emissive:0x2a6aa8,emissiveIntensity:.6});
@@ -1976,6 +1976,102 @@ function furFxTick(dt){const t=performance.now()/1000;for(let i=FXL.length-1;i>=
   if(u.fx==='flame'){const k=1+Math.sin(t*12+u.ph)*.25+Math.sin(t*23+u.ph*2)*.12;m.scale.set(1/k*1.1,k,1/k*1.1);m.position.y=u.base+(k-1)*.08}
   else if(u.fx==='fish'){const a=t*.6+u.ph;if(u.cyl){m.position.set(Math.sin(a)*u.r,u.y+Math.sin(t+u.ph)*.05,Math.cos(a)*u.r);m.rotation.y=a+Math.PI}else{const x=Math.sin(a)*u.r;m.position.set(x,u.y+Math.sin(t*1.3+u.ph)*.05,Math.sin(u.ph)*.1);m.rotation.y=Math.cos(a)>0?0:Math.PI}}
   else if(u.fx==='tv'){if(Math.random()<dt*1.5)m.material.color.setHSL(Math.random(),.6,.55)}}}
+/* ======================= 多人合作：大家一起蓋同一個小鎮（也可以單人玩） ======================= */
+// 房主的小鎮就是大家的小鎮：任何人蓋房子、擺家具、種樹、挖地形…所有人都會即時看到。
+const CO={ws:null,role:null,code:'',uid:'',slot:0,hostUid:'',members:[],cnt:0,ready:false,want:null,own:null,lastErr:''};
+const coopId=()=>20000000+CO.slot*1000000+(++CO.cnt);
+const COPERS=['outfit','outfits','pets','need','mePos','tutDone','first','snd'];// 每個人自己的東西，不共用
+const coopCan=()=>/^https?:$/.test(location.protocol)&&!/claude|anthropic|usercontent/.test(location.host);
+function coopUid(){let u='';try{u=localStorage.getItem('zzdh_build_uid')}catch(e){}if(!u){u='b'+Math.random().toString(36).slice(2,10);try{localStorage.setItem('zzdh_build_uid',u)}catch(e){}}return u}
+function coopLu(){try{return localStorage.getItem('zzdh_lobby_uid')||''}catch(e){return ''}}
+const coopName=()=>(PNAME||'玩家').slice(0,10);
+function coopSend(o){if(CO.ws&&CO.ws.readyState===1)CO.ws.send(JSON.stringify(o))}
+function coopConnect(onOpen){if(!coopCan()){coopFail('這個網址不能連線。多人合作要在你架設的「億萬大亨」網站（Render）上才能使用，試玩版只能單人玩。');return}
+  try{CO.ws&&CO.ws.close()}catch(e){}let ws;try{ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host+'/net')}catch(e){coopFail('連線失敗，請稍後再試');return}
+  CO.ws=ws;const to=setTimeout(()=>{if(ws.readyState!==1){coopFail('連不上伺服器（伺服器剛睡醒時要等約 30 秒，請再試一次）');try{ws.close()}catch(e){}}},15000);
+  ws.onopen=()=>{clearTimeout(to);onOpen()};ws.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch(_){return}try{coopMsg(m)}catch(err){console.error(err)}};
+  ws.onclose=()=>{if(CO.ws!==ws)return;CO.ws=null;if(CO.role){toast('📡 連線中斷了，正在重新連線…',2500);setTimeout(()=>{if(CO.role&&!CO.ws)coopConnect(()=>coopSend(CO.role==='host'?{t:'create',series:'build',cap:4,uid:CO.uid,name:coopName(),lu:coopLu(),code:CO.code}:{t:'join',code:CO.code,uid:CO.uid,name:coopName(),lu:coopLu()}))},2500)}}}
+function coopFail(msg){CO.lastErr=msg;coopWait(false);openPanel(`<h2>👥 多人合作</h2><div style="font-size:16px;line-height:1.8">😢 ${msg}</div><div class="row2"><button class="hb g" id="cfOk">知道了</button></div>`,()=>$('#cfOk').onclick=closePanel);if(CO.role==='guest'&&!CO.ready)coopEnd(true)}
+function coopWait(on,txt){let d=$('#coopWait');if(!d){d=document.createElement('div');d.id='coopWait';d.style.cssText='position:fixed;inset:0;z-index:30;background:rgba(20,30,50,.75);display:none;align-items:center;justify-content:center;color:#fff;font-size:20px;text-align:center;line-height:1.8';document.body.appendChild(d)}d.innerHTML=txt||'📡 正在連線…';d.style.display=on?'flex':'none'}
+/* ---- 建立隊伍／加入隊伍 ---- */
+function coopHost(){if(CO.role){coopPanel();return}if(INT)intExit();CO.uid=coopUid();CO.role='host';CO.slot=0;coopWait(true,'📡 正在建立隊伍…');
+  coopConnect(()=>coopSend({t:'create',series:'build',cap:4,uid:CO.uid,name:coopName(),lu:coopLu(),code:S.myCode||''}))}
+function coopJoin(code){code=String(code||'').trim();if(!/^\d{4}$/.test(code)){toast('請輸入 4 位數房號');return}if(CO.role)coopEnd(true);if(INT)intExit();
+  save();CO.own=JSON.parse(JSON.stringify(saveData()));CO.uid=coopUid();CO.role='guest';CO.code=code;CO.ready=false;window.__noSave=true;coopWait(true,`📡 正在加入房號 <b>${code}</b> 的小鎮…`);
+  coopConnect(()=>coopSend({t:'join',code,uid:CO.uid,name:coopName(),lu:coopLu()}))}
+function coopEnd(quiet){const was=CO.role;if(CO.ws){coopSend({t:'leave'});try{CO.ws.close()}catch(e){}}CO.ws=null;CO.role=null;CO.ready=false;CO.members=[];coopWait(false);for(const uid of [...PEERS.keys()])peerGone(uid);
+  if(was==='guest'){// 回到自己的小鎮
+    window.__noSave=false;const own=CO.own;CO.own=null;if(!own||!applyData(own)){load()}rebuildWorld();save();if(!quiet)toast('🏠 回到你自己的小鎮了',2400)}
+  else if(was==='host'&&!quiet)toast('👋 隊伍解散了，繼續單人玩',2400);coopChip()}
+/* ---- 收到伺服器訊息 ---- */
+function coopMsg(m){CO.rx=CO.rx||{};CO.rx[m.t]=(CO.rx[m.t]||0)+1;switch(m.t){
+  case 'created':CO.code=m.code;CO.uid=m.uid;CO.slot=0;CO.hostUid=m.uid;CO.members=m.members||[];S.myCode=m.code;coopWait(false);coopInit();coopChip();dirty();
+    openPanel(`<h2>👑 隊伍建立好了！</h2><div style="text-align:center;font-size:18px">房號</div><div style="text-align:center;font-size:52px;font-weight:bold;letter-spacing:8px;color:#d86a00">${m.code}</div><div style="font-size:15px;line-height:1.8">把房號告訴朋友，朋友在「👥 多人合作」輸入房號，或在主畫面的「多人合作」大廳加入，就會進到你的小鎮一起蓋（最多 4 人）。<br>你的小鎮就是大家的小鎮，誰蓋什麼大家都會即時看到。</div><div class="row2"><button class="hb g" id="chOk">👍 開始一起蓋</button></div>`,()=>$('#chOk').onclick=closePanel);break;
+  case 'joined':CO.uid=m.uid;CO.slot=m.slot||1;CO.members=m.members||[];const h=CO.members.find(x=>x.slot===0);CO.hostUid=h?h.uid:'';if(m.role==='host'){CO.role='host';coopWait(false);coopInit();coopChip();toast(`👑 回到你的隊伍（房號 ${m.code}）`,2500);break}
+    coopWait(true,`📥 正在下載「${m.hostName||'房主'}」的小鎮…`);CO.hiT=0;coopSend({t:'b7hi',_to:CO.hostUid});coopChip();break;
+  case 'peer':{const x=CO.members.find(q=>q.uid===m.uid);if(x){x.on=true;x.name=m.name}else CO.members.push({uid:m.uid,name:m.name,slot:m.slot,on:true});if(m.uid!==CO.uid)toast(`👋 「${m.name||'朋友'}」加入了小鎮！`,2600);coopChip();break}
+  case 'gone':{const x=CO.members.find(q=>q.uid===m.uid);if(x)x.on=false;peerGone(m.uid);if(m.host&&CO.role==='guest'){toast('👑 房主離開了，回到你自己的小鎮',3500);coopEnd(true);setTimeout(()=>toast('🏠 回到你自己的小鎮了',2500),300)}else toast(`👋 「${m.name||'朋友'}」離開了`,2000);coopChip();break}
+  case 'err':coopFail(m.msg||'連線發生錯誤');CO.role=null;break;
+  case 'b7hi':if(CO.role==='host'){coopSend({t:'b7full',_to:m._f,d:coopFullData()})}break;
+  case 'b7full':if(CO.role==='guest'&&!CO.ready)coopEnterGuest(m.d);break;
+  case 'b7o':if(CO.ready)coopApplyObjs(m);break;
+  case 'b7t':if(CO.ready)coopApplyTerrain(m);break;
+  case 'b7e':if(CO.ready)coopApplyEco(m);break;
+  case 'b7m':if(CO.ready)coopApplyMisc(m);break;
+  case 'b7p':if(CO.ready&&m._f!==CO.uid)peerUpd({uid:m._f,x:m.x,z:m.z,r:m.r,o:m.o,n:m.n,tt:m.tt});break;
+  case 'b7x':if(CO.ready&&m.s)toast(m.s,2400);break}}
+/* ---- 房主把整個小鎮傳給新加入的朋友 ---- */
+function coopFullData(){const d=saveData();for(const k of COPERS)delete d[k];return d}
+function coopEnterGuest(d){const mine={};for(const k of COPERS)if(S[k]!==undefined)mine[k]=S[k];if(!applyData(d)){coopFail('小鎮資料讀取失敗');return}Object.assign(S,mine);S.first=0;rebuildWorld();coopInit();CO.ready=true;coopWait(false);coopChip();
+  const h=CO.members.find(x=>x.slot===0);const p=S.mePos||{x:0,z:4};tpGo(S.cam?S.cam.x:p.x,S.cam?S.cam.z:p.z);toast(`🎉 進到「${h?h.name:'房主'}」的小鎮了！你做的任何事大家都看得到`,3500)}
+/* ---- 同步：記住已經送出去的狀態，只送有變的部分 ---- */
+const SENT=new Map();let WSENT=new Set(),EB=null,MISC='',syncT=0,coopDirty=false;
+const ojs=o=>JSON.stringify(o,(k,v)=>k==='bt'||k==='idle'||k==='spin'?undefined:v);
+const MISCK=['plots','crews','veh','tname','mode','tIdx'],HOSTK=['time','autoT','season','sAuto','wx','wxAuto','sT'];
+function ecoNow(){return {m:S.money,e:S.earn||0,mt:Object.assign({},S.mat)}}
+function miscNow(){const o={};for(const k of MISCK)o[k]=S[k];if(CO.role==='host')for(const k of HOSTK)o[k]=S[k];return JSON.stringify(o)}
+function coopInit(){SENT.clear();WSENT=new Set();for(const o of S.objs){if(o.wi!=null&&sameW(o)){WSENT.add(o.wi);continue}SENT.set(o.id,ojs(o))}EB=ecoNow();MISC=miscNow();TREG.length=0;CO.ready=CO.role==='host'?true:CO.ready;
+  let mx=0;for(const o of S.objs){const id=o.id|0;if(id>=20000000+CO.slot*1000000&&id<20000000+(CO.slot+1)*1000000)mx=Math.max(mx,id-20000000-CO.slot*1000000)}CO.cnt=Math.max(CO.cnt,mx)}
+function coopTick(dt){if(!CO.role)return;if(CO.role==='host'&&(!CO.code||!EB))return;if(CO.role==='guest'&&!CO.ready){CO.hiT=(CO.hiT||0)+dt;if(CO.hiT>6){CO.hiT=0;coopSend({t:'b7hi',_to:CO.hostUid})}return}
+  
+  // 物件
+  const up=[],rm=[],cur=new Set(),wild=new Set();for(const o of S.objs){if(o.wi!=null&&sameW(o)){wild.add(o.wi);continue}cur.add(o.id);const j=ojs(o);if(SENT.get(o.id)!==j){SENT.set(o.id,j);up.push(JSON.parse(j))}}
+  for(const id of SENT.keys())if(!cur.has(id)){rm.push(id);SENT.delete(id)}for(const wi of WSENT)if(!wild.has(wi)&&!cur.has(10000000+wi))rm.push(10000000+wi);WSENT=wild;
+  for(let i=0;i<up.length;i+=60)coopSend({t:'b7o',up:up.slice(i,i+60),rm:i===0?rm:[]});if(!up.length&&rm.length)coopSend({t:'b7o',up:[],rm});
+  // 地形
+  if(TREG.length){const regs=TREG.splice(0);const out=[];for(const [i0,j0,i1,j1] of regs){const a=Math.max(0,i0),b=Math.max(0,j0),c=Math.min(N-1,i1),d=Math.min(N-1,j1);const vals=[];for(let j=b;j<=d;j++)for(let i=a;i<=c;i++){const k=idx(i,j);vals.push(Math.round(HT[k]*100),Math.round(RK[k]*100),S.dug&&S.dug[k]?1:0)}out.push([a,b,c,d,vals])}coopSend({t:'b7t',r:out})}
+  // 錢、材料（用加減的方式合併，兩個人同時花錢也不會亂掉）
+  const e=ecoNow();const dm=e.m-EB.m,de=e.e-EB.e,dmt={};let any=Math.abs(dm)>.001||Math.abs(de)>.001;for(const k in e.mt){const v=(e.mt[k]||0)-(EB.mt[k]||0);if(Math.abs(v)>.001){dmt[k]=v;any=true}}if(any){coopSend({t:'b7e',m:dm,e:de,mt:dmt});EB=e}
+  // 土地、交通工具、小鎮名稱、天氣時間（天氣時間以房主為準）
+  const mi=miscNow();if(mi!==MISC){MISC=mi;coopSend({t:'b7m',d:JSON.parse(mi)})}}
+function coopApplyObjs(m){let natD=false;for(const id of m.rm||[]){const o=byId(id);if(o){if(SEL===id){SEL=null;editShow()}if(INT&&INT.o===o)intExit();removeObj(o);if(o.t==='nat')natD=true}SENT.delete(id);if(id>=10000000&&id<20000000)WSENT.delete(id-10000000)}
+  for(const u of m.up||[]){let o=byId(u.id);if(o){const bt=o.bt;for(const k of Object.keys(o))if(!(k in u))delete o[k];Object.assign(o,u);if(bt!=null&&o.bt==null&&u.bt==null){}}else{o=u;S.objs.push(o);if(o.wi!=null)WSENT.delete(o.wi)}
+    SENT.set(o.id,ojs(o));if(o.t==='nat')natD=true;else{place(o);if(o.bt!=null&&o.bt<1){const g=OBJM.get(o.id);if(g)g.position.y=baseY(o)-(1-o.bt)*((g.userData.peak||6)+.5)}}
+    if(INT&&INT.o===o){if(!o.furn)o.furn=[];o.iw=o.iw||[];o.flm=o.flm||{};o.iwc=o.iwc||{};if(INT.sel&&!o.furn.includes(INT.sel))INT.sel=null;intBuild()}else if(SEL===o.id&&!G)editShow()}
+  if(natD)natDirty=true;dirty()}
+function coopApplyTerrain(m){for(const [a,b,c,d,vals] of m.r){let q=0;for(let j=b;j<=d;j++)for(let i=a;i<=c;i++){const k=idx(i,j);HT[k]=vals[q++]/100;RK[k]=vals[q++]/100;if(vals[q++]){S.dug=S.dug||{};S.dug[k]=1}}terrainUpdate(a,b,c,d);refreshNear(gx((a+c)/2),gx((b+d)/2),Math.max(c-a,d-b)*CELL/2+2)}MMT=0}
+function coopApplyEco(m){S.money+=m.m||0;S.earn=(S.earn||0)+(m.e||0);for(const k in m.mt||{})S.mat[k]=(S.mat[k]||0)+m.mt[k];if(EB){EB.m+=m.m||0;EB.e+=m.e||0;for(const k in m.mt||{})EB.mt[k]=(EB.mt[k]||0)+m.mt[k]}}
+function coopApplyMisc(m){const d=m.d||{};if(d.plots){const before=S.plots.slice();S.plots=S.plots.map((v,i)=>v||d.plots[i]?1:0);S.plots.forEach((v,i)=>{if(v&&!before[i])plotUpdate(i)})}
+  if(d.crews)S.crews=Math.max(S.crews||1,d.crews);if(d.veh)S.veh=d.veh;if(d.tname!==undefined)S.tname=d.tname;if(d.mode)S.mode=d.mode;if(d.tIdx!=null)S.tIdx=Math.max(S.tIdx||0,d.tIdx);
+  if(CO.role==='guest')for(const k of HOSTK)if(d[k]!==undefined)S[k]=d[k];MISC=miscNow()}
+function coopPos(){if(CO.role&&CO.ready)coopSend({t:'b7p',x:ME.position.x,z:ME.position.z,r:ME.rotation.y,o:S.outfit||'work',n:coopName(),tt:titleOf().t});else if(EMBED&&!CO.role)try{parent.postMessage({t:'bpos',x:ME.position.x,z:ME.position.z,r:ME.rotation.y,o:S.outfit||'work',tt:titleOf().t},'*')}catch(e){}}
+/* ---- 畫面：隊伍狀態小標籤、多人合作面板 ---- */
+function coopChip(){let c=$('#coopChip');if(!c){c=document.createElement('div');c.id='coopChip';c.className='box';c.style.cssText='position:fixed;left:8px;top:calc(110px + env(safe-area-inset-top));z-index:6;padding:4px 12px;font-size:13px;font-weight:bold;cursor:pointer;display:none;background:#e8f4ff;border:2px solid #3a8ad8;border-radius:14px';c.onclick=()=>coopPanel();document.body.appendChild(c)}
+  if(!CO.role){c.style.display='none';return}const on=CO.members.filter(x=>x.on!==false).length||1;c.innerHTML=`👥 房號 ${CO.code||'…'}・${on} 人${CO.role==='host'?'・👑房主':''}`;c.style.display='block'}
+function coopPanel(){const can=coopCan();
+  if(CO.role){openPanel(`<h2>👥 多人合作中</h2><div style="text-align:center;font-size:16px">房號 <b style="font-size:32px;letter-spacing:4px;color:#d86a00">${CO.code}</b></div><div class="lab">隊友</div>${CO.members.slice().sort((a,b)=>a.slot-b.slot).map(x=>`<div class="prow"><div class="em">${x.slot===0?'👑':'👷'}</div><div class="tx"><b>${x.name||'玩家'}</b>${x.uid===CO.uid?'（我）':''}<small>${x.on===false?'⚫ 離線':'🟢 在線上'}</small></div>${x.uid!==CO.uid&&PEERS.get(x.uid)?`<button class="hb b" data-tpu="${x.uid}">🌀 瞬移過去</button>`:''}</div>`).join('')}
+    <div style="font-size:13px;color:#7a6a4a;line-height:1.7">大家共用同一個小鎮、同一筆錢和材料。誰蓋房子、擺家具、種樹、挖地形，所有人都會即時看到，也可以一起改同一棟房子。每個人的衣服、寵物、生活狀態是自己的。多人時不能用「上一步」。</div>
+    <div class="row2"><button class="hb r" id="cpLeave">${CO.role==='host'?'🚪 解散隊伍（回到單人）':'🚪 離開隊伍（回到自己的小鎮）'}</button></div>`,()=>{$('#cpLeave').onclick=()=>ask(CO.role==='host'?'要解散隊伍嗎？<br><small>朋友會回到他們自己的小鎮，你的小鎮進度會保留</small>':'要離開隊伍，回到你自己的小鎮嗎？',()=>coopEnd());$('#panel').querySelectorAll('[data-tpu]').forEach(b=>b.onclick=()=>{const p=PEERS.get(b.dataset.tpu);if(p){closePanel();tpGo(p.tx,p.tz)}})});return}
+  openPanel(`<h2>👥 多人合作</h2><div style="font-size:15px;line-height:1.8">和朋友用不同的手機、電腦，一起蓋<b>同一個小鎮</b>（最多 4 人）。你當房主，朋友就會進到你的小鎮；也可以輸入朋友的房號，加入他的小鎮。</div>${can?'':'<div style="background:#ffe8e0;border-radius:10px;padding:8px;margin:6px 0;font-size:14px">⚠️ 現在是試玩版網址，不能連線。請到你架設的「億萬大亨」網站（Render）上使用多人合作。</div>'}
+   <div class="prow"><div class="em">👑</div><div class="tx"><b>我當房主</b><small>用你現在的小鎮開一個隊伍，會給你 4 位數房號</small></div><button class="hb g" id="cpHost">建立隊伍</button></div>
+   <div class="prow"><div class="em">🙋</div><div class="tx"><b>加入朋友的小鎮</b><small>輸入朋友的房號（你自己的小鎮會先存好，離開隊伍後就回來）</small></div></div><div class="row2"><input id="cpCode" maxlength="4" inputmode="numeric" placeholder="4 位數房號" style="flex:1;font-size:22px;padding:8px;border-radius:10px;border:2px solid #d8ccb4;text-align:center;letter-spacing:6px"><button class="hb b" id="cpJoin">加入</button></div>`,
+   ()=>{$('#cpHost').onclick=()=>{closePanel();coopHost()};$('#cpJoin').onclick=()=>{const c=$('#cpCode').value;closePanel();coopJoin(c)}})}
+// 主遊戲大廳／網址指定：建立或加入隊伍
+addEventListener('message',e=>{const m=e.data;if(!m||m.t!=='coop')return;if(m.host)setTimeout(coopHost,300);else if(m.join)setTimeout(()=>coopJoin(m.join),300)});
+setTimeout(()=>{const h=QS.get('host'),j=QS.get('ljoin');if(h)coopHost();else if(j)coopJoin(j)},1500);
+
+// 同步用真實時間跑（畫面卡的時候也不會延遲）
+setInterval(()=>{try{coopTick(.4)}catch(e){console.error(e)}},400);setInterval(()=>{try{if(CO.role&&CO.ready)coopPos()}catch(e){}},500);
 
 /* ======================= 編輯面板（選到東西時出現） ======================= */
 const chipsH=(key,opts,cur,lock)=>`<div class="chips">${Object.entries(opts).map(([k,n])=>`<button data-${key}="${k}" class="${String(cur)===k?'on':''}" ${lock&&lock(k)?'disabled style="opacity:.4"':''}>${n}</button>`).join('')}</div>`;
@@ -2027,7 +2123,7 @@ function editBind(o){const e=$('#edit');const before=costOf(o);
   const pu=$('#pUp');if(pu)pu.onclick=()=>{const c=JSON.parse(JSON.stringify(o));delete c.id;c.y=o.y+PART[o.k].h;snapUndo();if(!useMats(matsOf(c),PART[o.k].n))return;addObj(c);SEL=c.id;SFX.place();dirty();editShow()};
   const ps=$('#pSide');if(ps)ps.onclick=()=>{const c=JSON.parse(JSON.stringify(o));delete c.id;const w=PART[o.k].w;c.x=o.x+Math.cos(o.r||0)*w;c.z=o.z-Math.sin(o.r||0)*w;if(!owned(c.x,c.z)){landHint();return}snapUndo();if(!useMats(matsOf(c),PART[o.k].n))return;addObj(c);SEL=c.id;SFX.place();dirty();editShow()};
   const dup=$('#eDup');if(dup)dup.onclick=()=>{snapUndo();const c=JSON.parse(JSON.stringify(o));delete c.id;delete c.sold;delete c.wild;delete c.home;delete c.bt;c.name='';const off=(o.w||o.rad*2||2)+2;c.x=o.x+off;if(!owned(c.x,c.z)){c.x=o.x-off;if(!owned(c.x,c.z)){landHint();return}}if(['house','tower','wall','part','lm'].includes(c.t)){if(!useMats(matsOf(c),'複製'))return;if(c.t==='lm'){c.bt=0}}else if(!spend(costOf(c)))return;
-    if(c.t==='nat'){c.id=++S.nid;S.objs.push(c);natDirty=true;SEL=c.id}else{addObj(c);if(c.t==='house'||c.t==='tower'){flattenUnder(c);place(c);startBuild(c)}SEL=c.id}SFX.place();dirty();editShow()};
+    if(c.t==="nat"){c.id=CO.role?coopId():++S.nid;S.objs.push(c);natDirty=true;SEL=c.id}else{addObj(c);if(c.t==='house'||c.t==='tower'){flattenUnder(c);place(c);startBuild(c)}SEL=c.id}SFX.place();dirty();editShow()};
   $('#eDel').onclick=()=>delAsk(o);const sl=$('#eSell');if(sl)sl.onclick=()=>sellOne(o);const er=$('#eRent');if(er)er.onclick=()=>{o.rent=o.rent?0:1;SFX.click();dirty();editShow();if(o.rent)toast('🔑 房客住進來了！每分鐘會收到房租',2200)};const ei=$('#eInt');if(ei)ei.onclick=()=>{SFX.click();intEnter(o)};const eh=$('#eHome');if(eh)eh.onclick=()=>{o.home=o.home?0:1;SFX.click();dirty();editShow();if(o.home)toast('🏡 設為自宅！家人會住進來',2000)};const nm=$('#eName');if(nm)nm.onclick=()=>{const v=prompt('房子的名字（最多 10 個字）',o.name||'');if(v!=null){o.name=v.trim().slice(0,10);dirty();editShow()}}}
 function delAsk(o){if(o.sold)return;const st=['house','tower','wall','part','lm'].includes(o.t);const back=o.wild||st?0:Math.round(costOf(o)*.5);const go=()=>{snapUndo();removeObj(o);if(st)mGive(matsOf(o),.5);if(o.t==='nat')natLoot(o);if(back)S.money+=back;SEL=null;editShow();SFX.del();dirty()};if(o.t==='nat'||o.t==='dec')return go();ask(`確定要拆掉嗎？<br><small>${st?'會拿回一半的材料':'會退回一半的錢 '+money(back)}</small>`,go)}
 /* ======================= 賣房子、拍賣 ======================= */
@@ -2114,6 +2210,7 @@ function helpPanel(first){openPanel(`<h2>🏗️ ${first?'歡迎來到「建造�
  🏡 <b>自宅生活</b>：左上角是體力、飽足、清潔、心情。點它可以在家睡覺、看電視休息、洗澡、煮飯、換衣服、和寵物玩。狀態都在 60 以上，工人蓋房子快 10%。<br>
  🐾 <b>寵物</b>：領養狗、貓、兔子、倉鼠、小豬、狐狸、熊貓、企鵝、小雞、烏龜…會跟著你走，可以摸摸、餵食、取名字。<br>
  👥 <b>隊友小指標</b>：多人合作時，隊友也在這個系列，畫面上會顯示隊友的位置；在畫面外會貼在邊緣用箭頭指方向和距離，點一下就能瞬移過去。<br>
+ 👥 <b>多人合作</b>：按「👥 多人」建立隊伍（拿到 4 位數房號）或輸入朋友的房號加入，最多 4 人一起蓋<b>同一個小鎮</b>：誰蓋房子、擺家具、種樹、挖地形、買東西，所有人都即時看得到，也可以一起改同一棟房子；錢和材料大家共用。離開隊伍就回到自己的小鎮。也可以在主畫面「多人合作」大廳組隊。<br>
  🌀 <b>瞬移</b>：點小地圖或畫面上的地方，確定後馬上過去。💾 <b>存檔</b>：可以另外存 3 個進度；離開、關網頁、斷線都會自動存。<br>
  🎮 <b>遊戲模式</b>：經營模式（要錢和材料）或自由創作模式（全部免費、全部解鎖），按左上角的錢就能切換。<br>
  🏷️ <b>賣房子</b>：裝飾越用心估價越高！可以直接賣或拍賣。賣掉的房子會留在小鎮上。<br>
@@ -2139,7 +2236,7 @@ function frame(){requestAnimationFrame(frame);if(window.__farmHold)return;const 
   buildTick(dt);peopleTick(dt);titleTick(dt);vehTick(dt);meTick(dt);animTick(dt);lifeTick(dt);rentTick(dt);carTick(dt);petTick(dt);facTick(dt);fltTick(dt);tagsDraw();if(saveT>0){saveT-=dt;if(saveT<=0)save()}renderer.render(scene,camera)}
 function resize(){W=innerWidth;H=innerHeight;renderer.setSize(W,H);camera.aspect=W/H;camera.updateProjectionMatrix()}addEventListener('resize',resize);
 /* ======================= 按鈕 ======================= */
-$('#bUndo').onclick=()=>{SFX.click();undo()};$('#money').onclick=()=>{SFX.click();moneyPanel()};$('#mats').onclick=()=>{SFX.click();matsPanel()};$('#bDress').onclick=()=>{SFX.click();dressPanel()};$('#bTp').onclick=()=>{SFX.click();tpPanel()};$('#bSave').onclick=()=>{SFX.click();titleScreen('save')};$('#bPet').onclick=()=>{SFX.click();petPanel()};$('#bTown').onclick=()=>{SFX.click();townPanel()};$('#bShop').onclick=()=>{SFX.click();shopTab='buy';shopPanel()};$('#bTime').onclick=()=>{SFX.click();timePanel()};$('#bTpl').onclick=()=>{SFX.click();tplPanel()};$('#bLand').onclick=()=>{SFX.click();landPanel()};$('#bSell').onclick=()=>{SFX.click();sellPanel()};$('#bHelp').onclick=()=>{SFX.click();helpPanel()};
+$('#bUndo').onclick=()=>{SFX.click();undo()};$('#money').onclick=()=>{SFX.click();moneyPanel()};$('#mats').onclick=()=>{SFX.click();matsPanel()};$('#bCoop').onclick=()=>{SFX.click();coopPanel()};$('#bDress').onclick=()=>{SFX.click();dressPanel()};$('#bTp').onclick=()=>{SFX.click();tpPanel()};$('#bSave').onclick=()=>{SFX.click();titleScreen('save')};$('#bPet').onclick=()=>{SFX.click();petPanel()};$('#bTown').onclick=()=>{SFX.click();townPanel()};$('#bShop').onclick=()=>{SFX.click();shopTab='buy';shopPanel()};$('#bTime').onclick=()=>{SFX.click();timePanel()};$('#bTpl').onclick=()=>{SFX.click();tplPanel()};$('#bLand').onclick=()=>{SFX.click();landPanel()};$('#bSell').onclick=()=>{SFX.click();sellPanel()};$('#bHelp').onclick=()=>{SFX.click();helpPanel()};
 $('#rL').onclick=()=>CAM.yaw+=Math.PI/8;$('#rR').onclick=()=>CAM.yaw-=Math.PI/8;$('#zI').onclick=()=>CAM.dist*=.8;$('#zO').onclick=()=>CAM.dist*=1.25;const VIEWS=[['🔭 正上方俯視',1.45],['🦅 高空斜看',1.12],['🏙️ 標準視角',.78],['🏡 低角度',.45],['🚶 平視（人的高度）',.16]];let viewI=2;$('#rTop').onclick=()=>{viewI=(viewI+1)%VIEWS.length;CAM.pitch=VIEWS[viewI][1];if(viewI===4&&CAM.dist>40)CAM.dist=25;if(viewI===0&&CAM.dist<30)CAM.dist=45;SFX.click();toast(`📷 ${VIEWS[viewI][0]}`,1200)};
 function setSnd(on,fromParent){S.snd=on?1:0;initAudio();if(A.out)A.out.gain.value=on?.6:0;$('#bSnd').textContent=on?'🔊':'🔇';if(EMBED&&!fromParent)try{parent.postMessage({t:'snd',on:!!on},'*')}catch(e){}}
 $('#bSnd').onclick=()=>setSnd(!S.snd);

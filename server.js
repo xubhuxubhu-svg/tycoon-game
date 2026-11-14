@@ -63,7 +63,7 @@ const server = http.createServer((req, res) => {
   });
 });
 
-const wss = new WebSocketServer({ server, maxPayload: 2 * 1024 * 1024 });
+const wss = new WebSocketServer({ server, maxPayload: 16 * 1024 * 1024 });
 function send(ws, obj) { if (ws && ws.readyState === 1) ws.send(typeof obj === 'string' ? obj : JSON.stringify(obj)); }
 
 /* ================= 億萬大亨：多人合作大廳 ================= */
