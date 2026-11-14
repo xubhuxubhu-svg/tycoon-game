@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#7fc85a">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>億萬大亨・林業與木工（測試版）</title>
+<link id="fontcss" href="https://fonts.googleapis.com/css2?family=Huninn&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:light}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+html,body{margin:0;height:100%;overflow:hidden;background:#bfe6ff;font-family:"Huninn","jf-openhuninn","PingFang TC","Microsoft JhengHei",sans-serif;touch-action:none;color:#234}
+canvas{display:block;width:100%;height:100%}
+button{font-family:inherit;cursor:pointer}
+#hud{position:fixed;inset:0;pointer-events:none;z-index:5}
+#hud>*{pointer-events:auto}
+.box{background:rgba(255,255,255,.95);border:3px solid #9ccf6a;border-radius:16px;box-shadow:0 3px 0 #6fa641,0 5px 12px rgba(0,0,0,.15);color:#2d4a18}
+#clock{position:absolute;left:8px;top:8px;padding:6px 12px;font-size:14px;line-height:1.45;min-width:170px}
+#clock b{font-size:17px}
+#fc{display:flex;gap:4px;margin-top:4px}
+#fc span{background:#eef7e2;border-radius:8px;padding:1px 6px;font-size:11px;text-align:center}
+#fc span.now{background:#ffe9a8}
+#money{position:absolute;right:8px;top:8px;padding:4px 14px;font-size:22px;color:#2a7a30}
+#btns{position:absolute;right:8px;top:54px;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;max-width:470px}
+.hb{border:none;border-radius:14px;padding:6px 11px;font-size:14px;color:#fff;background:linear-gradient(#7fc85a,#4f9a2f);box-shadow:0 3px 0 #356b1c;white-space:nowrap}
+.hb.y{background:linear-gradient(#ffcf5a,#e09a14);box-shadow:0 3px 0 #a86a00}
+.hb.b{background:linear-gradient(#5aa8f5,#2f7bd6);box-shadow:0 3px 0 #1f5ea8}
+.hb.rec{background:linear-gradient(#5fd0c0,#2a9a8a);box-shadow:0 3px 0 #1f6e62}
+.hb.g{background:linear-gradient(#bbb,#888);box-shadow:0 3px 0 #555}
+.hb.o{background:linear-gradient(#ffa25a,#e0602a);box-shadow:0 3px 0 #a84010}
+#todo{position:absolute;right:8px;top:136px;width:236px;max-height:calc(100vh - 290px);overflow:auto;padding:6px 8px;font-size:13px}
+#todo h4{margin:0 0 4px;font-size:14px;color:#3a6a1a;display:flex;justify-content:space-between;align-items:center}
+#todo h4 button{border:none;background:#eef7e2;border-radius:8px;font-size:12px;padding:1px 8px;color:#3a6a1a}
+#todo .it{display:flex;align-items:center;gap:6px;border-radius:10px;padding:4px 6px;margin:3px 0;cursor:pointer;background:#f6fbef;border-left:6px solid var(--c);line-height:1.3}
+#todo .it.on{background:#fff4c8;box-shadow:0 0 0 2px var(--c)}
+#todo .it small{display:block;color:#7a6a4a;font-size:11px}
+#todo .none{color:#7a9a6a;font-size:12px;text-align:center;padding:4px}
+
+#goal{position:absolute;left:50%;top:8px;transform:translateX(-50%);padding:6px 16px;font-size:15px;max-width:min(52vw,560px);text-align:center;border-color:#ffd36b;box-shadow:0 3px 0 #e0b040;cursor:pointer}
+#goal .tut{display:block;font-size:12px;color:#a06a00}
+#banner{position:absolute;left:50%;top:64px;transform:translateX(-50%);padding:8px 16px;font-size:16px;display:none;border-color:#ff9a7a;box-shadow:0 3px 0 #d0603a;color:#8a2a10;text-align:center;max-width:92vw}
+#bottom{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);display:flex;flex-direction:column;gap:5px;align-items:center;max-width:96vw}
+#seeds,#carry{display:flex;gap:5px;flex-wrap:wrap;justify-content:center}
+#seeds button{border:2px solid #fff;border-radius:12px;padding:3px 8px;font-size:13px;background:#8a5a2a;color:#fff;box-shadow:0 3px 0 rgba(0,0,0,.2)}
+#seeds button.sel{background:#ffcf3f;color:#5a3a00;box-shadow:0 0 0 3px #e09a14}
+#seeds .lab,#carry .lab{border-radius:12px;padding:3px 8px;font-size:13px;background:#2d4a18;color:#fff}
+#carry button{border:2px solid #fff;border-radius:12px;padding:3px 8px;font-size:13px;background:#4f9a2f;color:#fff;box-shadow:0 3px 0 rgba(0,0,0,.2)}
+#carry .full{background:#c0392b}
+#toast{position:fixed;left:50%;top:108px;transform:translate(-50%,-20px);background:#fff;border:3px solid #ffd36b;color:#7a4a00;padding:8px 16px;border-radius:16px;font-size:16px;opacity:0;transition:all .3s;z-index:20;pointer-events:none;text-align:center;max-width:92vw}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+#lbls{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:3}
+.lb{position:absolute;left:0;top:0;white-space:nowrap;will-change:transform;pointer-events:none;font-size:12px}
+.lb.act{pointer-events:auto}
+.pl{background:rgba(255,255,255,.93);border-radius:9px;padding:1px 6px;border:2px solid #9ccf6a;color:#2d4a18;text-align:center;line-height:1.3}
+.pl.ripe{border-color:#ffb300;background:#fff6d6}.pl.warn{border-color:#ff7043;background:#ffe6dc;color:#a03010}.pl.dead{border-color:#7a6a5a;background:#e8e0d8;color:#5a4a3a}.pl.dry{border-color:#4fa3e0;background:#e6f4ff;color:#1f5e98}.pl.dry{border-color:#e0402a;background:#fff0ec;color:#c0301a;font-size:17px;animation:wbob .8s ease-in-out infinite}.pl.low{border-color:#4fa3e0;background:#e6f4ff;color:#1f5e98;font-size:16px;animation:wbob 1.2s ease-in-out infinite}@keyframes wbob{50%{transform:translateY(-4px)}}
+.sign{background:#7a4a1a;color:#fff;border-radius:12px;padding:4px 10px;font-size:14px;border:2px solid #f0d090;box-shadow:0 3px 0 #4a2a08;text-align:center;line-height:1.35}
+.sign small{font-size:11px;color:#ffe7a8}
+.sign .bt{display:flex;gap:5px;justify-content:center;margin-top:3px}
+.sign .bt button{border:none;border-radius:10px;padding:3px 9px;font-size:13px;color:#fff;background:linear-gradient(#7fc85a,#4f9a2f);box-shadow:0 2px 0 #2f5a1a}
+.sign .bt button.h{background:linear-gradient(#ffcf5a,#e09a14);box-shadow:0 2px 0 #8a5a00}
+.shop{background:#fff;border-radius:12px;padding:3px 10px;font-size:15px;border:3px solid #5cc8ff;color:#1f5e98;text-align:center;box-shadow:0 3px 0 #3a9ad0}
+.ring{background:#fff;border-radius:10px;padding:2px 8px;font-size:12px;border:2px solid #4cd36a;color:#1f6a30;text-align:center;line-height:1.3}
+.ring.sell{border-color:#ffb300;color:#8a5a00}.ring.rel{border-color:#ff8ad8;color:#a0307a}
+.ptag{font-size:12px;color:#fff;background:#2f6fd1;border-radius:8px;padding:1px 6px;border:2px solid #fff}
+.float{position:fixed;font-size:20px;color:#fff;-webkit-text-stroke:5px #2a7a30;paint-order:stroke fill;transform:translate(-50%,-50%);pointer-events:none;z-index:6;white-space:nowrap}
+#joy{position:fixed;width:110px;height:110px;margin:-55px 0 0 -55px;border-radius:50%;background:rgba(255,255,255,.35);border:3px solid rgba(255,255,255,.8);display:none;z-index:4;pointer-events:none}
+#joy i{position:absolute;left:30px;top:30px;width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.9)}
+#modal{position:fixed;inset:0;background:rgba(20,40,10,.45);display:none;align-items:center;justify-content:center;z-index:30}
+#modal.on{display:flex}
+#panel{background:#fffef6;border-radius:22px;width:min(94vw,600px);max-height:88vh;overflow:auto;padding:14px 16px;box-shadow:0 0 0 6px #fff,0 0 0 11px #9ccf6a;color:#2d4a18;font-size:14px;line-height:1.6}
+#panel h2{margin:0 0 6px;font-size:20px;color:#3a6a1a}
+#panel .x{float:right;border:none;background:#ff8a8a;color:#fff;border-radius:12px;font-size:16px;padding:2px 10px}
+#panel table{border-collapse:collapse;width:100%;font-size:13px}#panel td,#panel th{border-bottom:1px solid #e3eed6;padding:3px 4px;text-align:center}
+.goods{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px;margin-top:6px}
+.gd{border:2px solid #d8eac4;border-radius:14px;padding:6px 8px;background:#fbfff5;display:flex;gap:8px;align-items:center}
+.gd.no{opacity:.55}
+.gd .em{font-size:34px;width:44px;text-align:center}
+.gd .inf{flex:1;font-size:12px;line-height:1.45;color:#4a5a3a}.gd .inf b{font-size:15px;color:#2d4a18}
+.gd .bb{display:flex;flex-direction:column;gap:4px}
+.gd .bb button{border:none;border-radius:10px;padding:3px 8px;font-size:13px;color:#fff;background:linear-gradient(#5aa8f5,#2f7bd6);box-shadow:0 2px 0 #1f5ea8;white-space:nowrap}
+.gd .bb button:disabled{background:#bbb;box-shadow:none}
+.chooser button{display:block;width:100%;margin:5px 0;border:2px solid #d8eac4;border-radius:12px;padding:6px 10px;font-size:15px;background:#fbfff5;text-align:left}
+#pause{position:fixed;inset:0;z-index:40;display:none;align-items:center;justify-content:center;background:rgba(20,40,10,.55)}
+#pause .box{padding:20px 26px;text-align:center;font-size:18px}
+#pause button{margin-top:12px}
+#night{position:fixed;inset:0;pointer-events:none;z-index:2;background:#0a1640;opacity:0;transition:opacity 1s}
+#tint{position:fixed;inset:0;pointer-events:none;z-index:2;opacity:0}
+#credit{position:fixed;left:8px;bottom:2px;font-size:10px;color:rgba(40,60,20,.6);z-index:4;pointer-events:none}
+
+#todo{transition:transform .35s ease}
+#todo .peek{display:none}
+#todo.min{transform:translateX(calc(100% - 46px));cursor:pointer;max-height:none!important;overflow:visible}
+#todo.min h4,#todo.min .it,#todo.min .none{display:none!important}
+#todo.min .peek{display:flex;flex-direction:column;align-items:center;width:34px;font-size:18px;line-height:1.2;padding:4px 0}
+#todo.min .peek b{font-size:18px;color:#c0392b}#todo.min .peek span{font-size:14px;color:#4f9a2f}
+#todo.min.urg{animation:urgB 1s infinite}
+@keyframes urgB{0%,100%{border-color:#9ccf6a;background:rgba(255,255,255,.95)}50%{border-color:#ff5a3a;background:#ffe0d6}}
+#todo .it.urg{animation:urgI 1s infinite}
+@keyframes urgI{0%,100%{background:#f6fbef}50%{background:#ffd8c8}}
+.lb{transition:opacity .25s}.lb.fade{opacity:.22}
+#netChip{position:absolute;left:8px;top:120px;font-size:13px;padding:3px 10px;cursor:pointer;border-color:#7ab8e0;box-shadow:0 3px 0 #4a8ab8;color:#1f4e78}#netChip small{font-size:11px;color:#6a8aa8}
+#hostWait{position:fixed;inset:0;z-index:45;display:flex;align-items:center;justify-content:center;background:rgba(20,30,50,.5)}#hostWait .box{padding:18px 22px;text-align:center;font-size:17px;line-height:1.6}#hostWait .hb{margin-top:10px;font-size:16px;padding:7px 18px}
+.durs{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin:6px 0}.durs button{border:2px solid #d8eac4;border-radius:12px;background:#fbfff5;padding:5px 4px;font-size:14px;font-family:inherit;color:#2d4a18}.durs button small{display:block;font-size:11px;color:#a06a00}.durs button.on{border-color:#ffb300;background:#fff4c8;box-shadow:0 0 0 2px #ffb300}
+.note2{background:#f6fbef;border-radius:12px;padding:6px 10px;font-size:13px;line-height:1.6;margin:6px 0;color:#4a5a3a}
+.prof{display:grid;gap:6px;margin:6px 0}.prof button{border:2px solid #d8eac4;border-radius:14px;background:#fbfff5;padding:8px 10px;text-align:left;font-family:inherit;color:#2d4a18;font-size:15px}.prof button span{font-size:12px;color:#5a6a4a;line-height:1.6}.prof button.on{border-color:#ffb300;background:#fff4c8;box-shadow:0 0 0 2px #ffb300}
+#seeds .durb{background:#2f7bd6;border-color:#fff}
+.shop .bt{display:flex;gap:5px;justify-content:center;margin-top:3px}.shop .bt button{border:none;border-radius:10px;padding:4px 10px;font-size:13px;color:#fff;background:linear-gradient(#5aa8f5,#2f7bd6);box-shadow:0 2px 0 #1f4e88;font-family:inherit}.shop small{font-size:11px;color:#8a6a3a}
+#ask2{position:fixed;inset:0;z-index:55;display:none;align-items:center;justify-content:center;background:rgba(20,40,10,.45)}#ask2 .box{padding:16px 20px;max-width:min(90vw,420px);text-align:center;font-size:16px;line-height:1.6}#ask2 .a2b{display:flex;gap:12px;justify-content:center;margin-top:12px}#ask2 .hb{font-size:17px;padding:8px 22px}
+.chooser button{color:#2d4a18}
+.hb.r{background:linear-gradient(#ff9a7a,#e0603a);box-shadow:0 3px 0 #a8401a}
+#bMenu{display:none}
+#money{cursor:pointer;text-align:right;line-height:1.15}
+#money .lv{display:block;font-size:12px;color:#8a6a00;position:relative;margin-top:2px;padding-bottom:4px}
+#money .lv i{position:absolute;left:0;bottom:0;height:3px;background:#ffc93c;border-radius:2px}
+#money .debt{display:block;font-size:12px;color:#c0392b}
+#homeUI{position:fixed;left:0;right:0;bottom:70px;z-index:25;display:none;justify-content:center;pointer-events:none}
+#homeUI .hm{pointer-events:auto;padding:8px 16px;text-align:center;font-size:15px;line-height:1.5;border-color:#ffb36b;box-shadow:0 3px 0 #d08a3a;max-width:94vw}#homeUI .act{color:#c0602a;font-weight:bold}#homeUI .hbtn{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:4px}#homeUI .hbtn .hb{font-size:14px;padding:6px 12px}
+.ward{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap}#wardCv{width:210px;height:210px;border-radius:18px;background:linear-gradient(#e8f6ff,#fffbe8);box-shadow:inset 0 0 0 3px #d8eac4}.winf{flex:1;min-width:180px;font-size:13px;line-height:1.6}
+.wgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:6px;margin:8px 0}.wgrid button{border:2px solid #d8eac4;border-radius:14px;background:#fbfff5;padding:4px;display:flex;flex-direction:column;align-items:center;font-family:inherit;color:#2d4a18}.wgrid button span{font-size:28px}.wgrid button b{font-size:12px}.wgrid button small{font-size:11px;color:#a06a00}.wgrid button.on{border-color:#ffb300;background:#fff4c8;box-shadow:0 0 0 2px #ffb300}
+.wbtn{display:flex;gap:12px;justify-content:center;margin:6px 0}.wbtn .hb{font-size:17px;padding:8px 24px}
+#homeUI .hb{font-size:18px;padding:8px 24px;margin-top:8px}
+#flash{position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:9}
+#panel h3{margin:10px 0 2px;font-size:16px;color:#5a7a2a}
+.gd.wide{grid-column:1/-1}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}
+.chips button{border:2px solid #9cc8f0;border-radius:10px;padding:5px 9px;font-size:13px;background:#fff;color:#1f5e98}
+.chips button.on{background:#dff3d0;border-color:#7fc85a;color:#2a6a1a}
+.bar{height:10px;background:#eee;border-radius:6px;overflow:hidden;margin:4px 0}.bar i{display:block;height:100%;background:linear-gradient(90deg,#ffc93c,#ff9a2a)}
+.wtag{font-size:11px;color:#fff;background:rgba(60,90,40,.85);border-radius:8px;padding:1px 6px}
+.say{background:#fff;border:3px solid #ffb300;border-radius:14px;padding:4px 10px;font-size:14px;color:#6a4a00;position:relative;text-align:center;line-height:1.35}
+.say:after{content:'';position:absolute;left:50%;bottom:-10px;margin-left:-8px;border:8px solid transparent;border-top-color:#ffb300;border-bottom:0}
+.sign.ripe{background:#c08a00;border-color:#ffe36a;box-shadow:0 3px 0 #7a5a00}.sign.warn{background:#c0461a;border-color:#ffc0a0}.sign.dry{background:#2f6fa8}.sign.broken{background:#6a5a4a}.sign.lot{background:#6a4aa8;border-color:#d8c8ff;box-shadow:0 3px 0 #3a2a6a}
+.sign .bt{flex-wrap:wrap}
+.sign .bt button.b{background:linear-gradient(#5aa8f5,#2f7bd6);box-shadow:0 2px 0 #1f4e88}.sign .bt button.r{background:linear-gradient(#ff8a8a,#d04040);box-shadow:0 2px 0 #8a2020}
+.ring.warn{border-color:#ff7043;color:#a03010;background:#ffece4}
+.pl{font-size:12px}
+@media (pointer:coarse){.sign .bt button{padding:7px 12px;font-size:14px}.gd .bb button{padding:7px 10px;font-size:14px}.chips button{padding:7px 11px}}
+@media (max-width:700px){
+ #btns{left:6px;right:6px;max-width:none}#goal{bottom:auto;top:120px}
+ #bottom{left:0;right:0;transform:none;max-width:none;bottom:6px;align-items:stretch}
+ #seeds,#carry{flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;padding:2px 8px;touch-action:pan-x;scrollbar-width:none}
+ #seeds::-webkit-scrollbar,#carry::-webkit-scrollbar{display:none}
+ #seeds>*,#carry>*{flex:none}
+ #toast{top:44%}
+ #bMenu{display:inline-block}#btns .more{display:none}#btns.open .more{display:inline-block}#money .lv{font-size:10px}#homeUI{bottom:80px}#homeUI .hm{font-size:13px}
+ .goods{grid-template-columns:1fr}.gd .em{font-size:28px;width:36px}#panel{padding:12px 12px;font-size:13px}#panel h2{font-size:18px}.say{font-size:13px}.shop{font-size:13px;padding:2px 8px}.sign{font-size:12px}
+ #clock{font-size:11px;min-width:0;padding:4px 8px}#clock b{font-size:13px}#fc span{font-size:9px;padding:1px 3px}
+ #goal{font-size:12px;max-width:calc(100vw - 16px);width:calc(100vw - 16px)}#goal .tut{font-size:10px}#banner{font-size:13px}
+ #money{font-size:17px}.hb{font-size:12px;padding:4px 8px}#btns{top:64px}
+ #todo{top:138px;right:4px;width:176px;font-size:11px;padding:4px 6px}#todo h4{font-size:12px}#todo .it small{font-size:10px}
+ #seeds button,#carry button,#seeds .lab,#carry .lab{font-size:11px;padding:2px 6px}
+}
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js"}}</script>
+</head>
+<body>
+<div id="night"></div><div id="tint"></div>
+<div id="lbls"></div>
+<div id="hud">
+  <div id="clock" class="box"></div>
+  <div id="goal" class="box"></div>
+  <div id="banner" class="box"></div>
+  <div id="money" class="box">💵 0</div>
+  <div id="btns"><button class="hb o" id="bSell">💵 一鍵賣貨</button><button class="hb r" id="bHome">🏠 回家</button><button class="hb b" id="bLedger">📒 帳本</button><button class="hb y" id="bFore">📅 今日行情</button><button class="hb" id="bPause">⏸️ 暫停</button><button class="hb g" id="bMenu">☰ 更多</button><button class="hb y more" id="bSpeed">⏩ ×1</button><button class="hb b more" id="bInfo">📖 說明</button><button class="hb more" id="bSnd">🔊</button><button class="hb g more" id="bReset">↺ 重來</button><button class="hb b more" id="bFS">⛶ 全畫面</button><button class="hb r more" id="bExit">🚪 離開遊戲</button></div>
+  <div id="todo" class="box"></div>
+  <div id="bottom"><div id="seeds"></div><div id="carry"></div></div>
+</div>
+<div id="toast"></div>
+<div id="homeUI"></div><div id="ask2"><div class="box"><div id="a2t"></div><div class="a2b"><button class="hb" id="a2y">✔ 確定</button><button class="hb g" id="a2n">✖ 取消</button></div></div></div><div id="flash"></div>
+<div id="joy"><i></i></div>
+<div id="modal"><div id="panel"></div></div>
+<div id="pause"><div class="box"><div style="font-size:40px">⏸️</div><span id="pTxt">遊戲暫停中</span><br><small id="pSub">時間、樹木、工廠都停止</small><br><button class="hb" id="bResume" style="font-size:18px;padding:8px 22px">▶ 繼續遊戲</button></div></div>
+<div id="credit">遊戲製作：Eric Hu　億萬大亨「林業與木工」測試版</div>
+<script type="module">
+import * as THREE from 'three';
+const $=s=>document.querySelector(s);
+const rand=(a,b)=>a+Math.random()*(b-a);
+const V=(x,y,z)=>new THREE.Vector3(x,y,z);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const lerpA=(a,b,t)=>{let d=((b-a+Math.PI)%(Math.PI*2)+Math.PI*2)%(Math.PI*2)-Math.PI;return a+d*Math.min(1,t)};
+const fmtR=s=>{s=Math.max(0,Math.ceil(s));const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return h?`${h}小時${String(m).padStart(2,'0')}分`:m?`${m}分${String(x).padStart(2,'0')}秒`:`${x}秒`};
+const esc=s=>String(s==null?'':s).replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+const QS=new URLSearchParams(location.search);const EMBED=QS.has('embed')&&window.parent!==window;let PNAME=(QS.get('name')||'').slice(0,10);
+const MOBILE=matchMedia('(max-width:700px)').matches||matchMedia('(pointer:coarse)').matches;
+
+/* ======================= 時間、季節、天氣 ======================= */
+const SEASON=['春','夏','秋','冬'],SEASON_EM=['🌸','☀️','🍁','⛄'];
+// 遊戲裡 1 天＝現實 1 小時；一季 6 天（6 小時），一年剛好是現實 1 天；天氣每 30 分鐘變一次
+const DAY=3600,DAYS_PER_SEASON=6,PERIOD=1800;
+const fmtReal=s=>{const tm=Math.round(s/60);const h=Math.floor(tm/60),m=tm%60;return h?(m?`${h} 小時 ${m} 分`:`${h} 小時`):`${Math.max(1,m)} 分鐘`};const gameDays=s=>fmtReal(s);
+const WEATHER={
+ sun:{n:'晴天',em:'☀️'},cloud:{n:'多雲',em:'⛅'},rain:{n:'下雨',em:'🌧️',wet:1},storm:{n:'大雷雨',em:'⛈️',wet:1,bolt:1,shelter:1},
+ hot:{n:'高溫炎熱',em:'🥵',hot:1},typhoon:{n:'颱風',em:'🌀',wet:1,typhoon:1,bolt:1,shelter:1},cold:{n:'寒流',em:'🥶',cold:1,shelter:1},snow:{n:'下雪',em:'🌨️',cold:1,wet:1,shelter:1}};
+const W_TABLE=[{sun:35,cloud:30,rain:30,storm:5},{sun:30,hot:25,rain:15,storm:15,typhoon:15},{sun:40,cloud:30,rain:15,typhoon:15},{sun:25,cloud:30,rain:15,cold:20,snow:10}];
+
+/* ======================= 農場等級（規模變大就解鎖新作物、新動物） ======================= */
+const PROFILES={
+ low:{n:'🌙 輕鬆經營',sub:'低收益',crop:28800,pen:28800,bill:.5,price:.85,protect:1,d:'適合平常上班、很久才上線一次：預設種 8 小時、動物 8 小時生產一次；帳單打 5 折；收購價 85 折。離線時作物不會枯萎、產品不會壞，也不會欠款。'},
+ mid:{n:'☀️ 標準經營',sub:'中收益',crop:14400,pen:14400,bill:1,price:1,protect:1,d:'平日下班後、假日都適合：預設種 4 小時、動物 4 小時生產一次；帳單、收購價都是原價。離線時作物不會枯萎、產品不會壞，離線最多只扣 1 天帳單，不會欠款。'},
+ high:{n:'🔥 衝刺經營',sub:'高收益',crop:1200,pen:1800,bill:1.5,price:1.25,protect:0,d:'假日有空一直玩：預設種 20 分鐘、動物每 30 分鐘；收購價 ×1.25，但帳單 ×1.5，而且離線時作物照樣會枯萎、產品會壞（離線仍不會欠款）。'},
+ ultra:{n:'⚡ 極速經營',sub:'超高收益',crop:3600,pen:3600,bill:1,price:1,protect:0,ts:10,d:'時間快 10 倍，作物幾分鐘就成熟（選 20 分鐘只要 2 分鐘），帳單每 6 分鐘扣一次，天氣每 3 分鐘變一次。要一直盯著玩，賺最快，但離線沒有保護、最多只算 6 小時。'}};
+const TS=()=>prof().ts||1;const RT=s=>s/TS();
+// 現實時間的時刻（例如：今天 18:40）
+function realAt(gs){const d=new Date(Date.now()+RT(gs)*1000/(S.speed||1));const n=new Date();const hm=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');const dd=Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate())-new Date(n.getFullYear(),n.getMonth(),n.getDate()))/864e5);return (dd===0?'今天 ':dd===1?'明天 ':dd===2?'後天 ':`${d.getMonth()+1}/${d.getDate()} `)+hm}
+const durName=s=>fmtReal(RT(s));
+// 畫面上顯示的時間都換成現實時間
+const fmt=s=>fmtR(RT(s)),fmtDur=s=>fmtReal(RT(s));
+const prof=()=>PROFILES[S.profile||'mid']||PROFILES.mid;
+const isWeekend=()=>{const d=new Date().getDay();return d===0||d===6};
+
+/* ======================= 立體場景 ======================= */
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,MOBILE?1.5:1.75));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;document.body.prepend(renderer.domElement);
+const scene=new THREE.Scene();scene.background=new THREE.Color(0xbfe6ff);scene.fog=new THREE.Fog(0xbfe6ff,50,115);
+const hemi=new THREE.HemisphereLight(0xffffff,0x8fae6a,2.0);scene.add(hemi);
+const sun=new THREE.DirectionalLight(0xffffff,1.6);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);Object.assign(sun.shadow.camera,{left:-26,right:26,top:26,bottom:-26,near:1,far:80});sun.shadow.bias=-.0008;sun.shadow.normalBias=.03;scene.add(sun,sun.target);
+const camera=new THREE.PerspectiveCamera(34,1,.5,300);
+const mc={};const M=(c,o={})=>{const k=c+JSON.stringify(o);return mc[k]||(mc[k]=new THREE.MeshLambertMaterial({color:c,...o}))};
+function mesh(g,m,sh=true){const x=new THREE.Mesh(g,m);x.castShadow=sh;x.receiveShadow=true;return x}
+function canvasTex(w,h,draw){const c=document.createElement('canvas');c.width=w;c.height=h;draw(c.getContext('2d'));const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t}
+const EMOJI='"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
+const FONT='"Huninn","PingFang TC","Microsoft JhengHei",sans-serif';
+const G={box:new THREE.BoxGeometry(1,1,1),sph:new THREE.SphereGeometry(1,14,10),sphL:new THREE.SphereGeometry(1,8,6),cyl:new THREE.CylinderGeometry(1,1,1,10),cone:new THREE.ConeGeometry(1,1,8),ico:new THREE.IcosahedronGeometry(1,1),tor:new THREE.TorusGeometry(1,.3,6,14),cap:new THREE.CapsuleGeometry(.5,1,4,8),half:new THREE.CylinderGeometry(1,1,1,16,1,false,0,Math.PI)};
+function B(w,h,d,c,x,y,z,p){const m=mesh(G.box,M(c));m.scale.set(w,h,d);m.position.set(x,y,z);(p||scene).add(m);return m}
+
+/* ---- 標籤 ---- */
+const LABELS=[];function label(html,pos,near){const el=document.createElement('div');el.className='lb';el.innerHTML=html;$('#lbls').appendChild(el);const L={el,pos,near:near||20,html};LABELS.push(L);return L}
+function setL(L,html){if(L.html!==html){L.html=html;L.el.innerHTML=html}}
+function dropL(L){if(!L)return;L.el.remove();const i=LABELS.indexOf(L);if(i>=0)LABELS.splice(i,1)}
+function roof(w,d,h,c,x,y,z,p){const r=mesh(new THREE.CylinderGeometry(.01,1,1,4),M(c));r.rotation.y=Math.PI/4;r.scale.set(w*.72,h,d*.72);r.position.set(x,y,z);(p||scene).add(r);return r}
+const emojiTex={};function eTex(e){return emojiTex[e]||(emojiTex[e]=canvasTex(128,128,g=>{g.font='96px '+EMOJI;g.textAlign='center';g.textBaseline='middle';g.fillText(e,64,72)}))}
+function sprite(e,s=.8){const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:eTex(e),transparent:true}));sp.scale.set(s,s,s);return sp}
+function makeFarmer(){const g=new THREE.Group();const body=new THREE.Group();g.add(body);
+  const torso=mesh(new THREE.CylinderGeometry(.3,.4,.72,16),M(0xe8584a));torso.position.y=.66;body.add(torso);
+  const ov=mesh(new THREE.BoxGeometry(.5,.45,.08),M(0x3a6ab8));ov.position.set(0,.6,.33);body.add(ov);for(const s of [-1,1]){const st=mesh(G.box,M(0x3a6ab8));st.scale.set(.07,.4,.05);st.position.set(.15*s,.9,.3);body.add(st)}
+  const head=mesh(new THREE.SphereGeometry(.3,18,14),M(0xf3c9a1));head.position.y=1.17;body.add(head);
+  const hat=mesh(new THREE.CylinderGeometry(.5,.55,.08,18),M(0xf0d070));hat.position.y=1.38;body.add(hat);const top=mesh(new THREE.CylinderGeometry(.26,.3,.25,16),M(0xf0d070));top.position.y=1.5;body.add(top);
+  const band=mesh(new THREE.CylinderGeometry(.305,.305,.07,16),M(0xd9483b));band.position.y=1.43;body.add(band);
+  for(const s of [-1,1]){const e=mesh(new THREE.SphereGeometry(.035,8,6),M(0x1d1d1d),false);e.position.set(.09*s,1.2,.27);body.add(e);const c=mesh(new THREE.SphereGeometry(.04,8,6),M(0xf2a08c),false);c.position.set(.15*s,1.12,.24);c.scale.set(1,.6,.5);body.add(c)}
+  const legs=[],arms=[];for(const s of [-1,1]){const p=new THREE.Group();p.position.set(.15*s,.32,0);const l=mesh(new THREE.BoxGeometry(.17,.3,.2),M(0x2a4a7b));l.position.y=-.15;const b=mesh(new THREE.BoxGeometry(.2,.12,.28),M(0x5a3a1a));b.position.set(0,-.27,.04);p.add(l,b);g.add(p);legs.push(p)}
+  for(const s of [-1,1]){const p=new THREE.Group();p.position.set(.36*s,.92,0);const a=mesh(new THREE.CapsuleGeometry(.09,.32,4,8),M(0xe8584a));a.position.y=-.2;const mt=mesh(new THREE.SphereGeometry(.09,8,6),M(0xf3c9a1));mt.position.y=-.42;p.add(a,mt);p.rotation.z=.18*s;body.add(p);arms.push(p)}
+  // 背上的菜籃子
+  const bk=new THREE.Group();bk.position.set(0,.78,-.42);body.add(bk);const bw=mesh(new THREE.CylinderGeometry(.34,.26,.55,14,1,true),new THREE.MeshLambertMaterial({color:0xc8964a,side:THREE.DoubleSide,map:canvasTex(64,32,c=>{c.fillStyle='#c8964a';c.fillRect(0,0,64,32);c.strokeStyle='#8a5a2a';c.lineWidth=2;for(let i=0;i<64;i+=8){c.beginPath();c.moveTo(i,0);c.lineTo(i+4,32);c.stroke()}for(let j=4;j<32;j+=8){c.beginPath();c.moveTo(0,j);c.lineTo(64,j);c.stroke()}})}));bk.add(bw);
+  const bb=mesh(new THREE.CylinderGeometry(.26,.26,.04,14),M(0x8a5a2a));bb.position.y=-.27;bk.add(bb);const rim=mesh(new THREE.TorusGeometry(.34,.035,6,18),M(0x8a5a2a));rim.rotation.x=Math.PI/2;rim.position.y=.27;bk.add(rim);
+  for(const s of [-1,1]){const st=mesh(G.box,M(0x6a4a2a));st.scale.set(.05,.55,.04);st.position.set(.18*s,.1,.36);bk.add(st)}
+  const fillG=new THREE.Group();fillG.position.y=.2;bk.add(fillG);
+  // 手提籠子（左手）
+  const cage=new THREE.Group();cage.position.set(.0,-.55,.0);arms[0].add(cage);const cb=mesh(G.box,M(0xc8964a));cb.scale.set(.5,.05,.4);cb.position.y=-.2;cage.add(cb);
+  const barM=M(0xd8b070);for(let i=0;i<8;i++){const a=i/8*6.28;const bar=mesh(G.cyl,barM,false);bar.scale.set(.015,.4,.015);bar.position.set(Math.cos(a)*.24,0,Math.sin(a)*.19);cage.add(bar)}
+  const ct=mesh(new THREE.CylinderGeometry(.26,.26,.04,12),M(0xc8964a));ct.scale.z=.8;ct.position.y=.2;cage.add(ct);const hd=mesh(new THREE.TorusGeometry(.12,.025,6,12,Math.PI),M(0x8a5a2a));hd.position.y=.22;cage.add(hd);
+  const cageIn=new THREE.Group();cageIn.position.y=-.17;cage.add(cageIn);cage.visible=false;
+  const anchor=new THREE.Group();anchor.position.set(0,.82,.5);body.add(anchor);
+  const sh=new THREE.Mesh(new THREE.CircleGeometry(.5,20),new THREE.MeshBasicMaterial({color:0,transparent:true,opacity:.12}));sh.rotation.x=-Math.PI/2;sh.position.y=.04;sh.visible=false;
+  g.userData={body,legs,arms,anchor,basket:bk,fillG,cage,cageIn,torso,ov,head,hat:[hat,top,band],straps:body.children.filter(c=>c.isMesh&&c!==ov&&c.material===M(0x3a6ab8)),armM:arms.map(a=>a.children[0]),handM:arms.map(a=>a.children[1]),legM:legs.map(l=>l.children[0]),bootM:legs.map(l=>l.children[1])};scene.add(g);return g}
+
+/* ======================= 換裝：農夫套裝、可愛動物裝 ======================= */
+const parts=[];function particle(pos,vel,color,size,life,grav=-6){if(parts.length>500)return;const m=new THREE.Mesh(G.ico,new THREE.MeshBasicMaterial({color,transparent:true}));m.position.copy(pos);m.scale.setScalar(size);scene.add(m);parts.push({m,vel,life,max:life,grav})}
+function puff(p,n=8,c=0xffffff,s=.15){for(let i=0;i<n;i++){const a=rand(0,6.28);particle(p.clone(),V(Math.cos(a)*rand(.5,1.5),rand(.6,1.8),Math.sin(a)*rand(.5,1.5)),c,s*rand(.6,1.2),rand(.4,.7),-2)}}
+function confetti(p,n=40){const cs=[0xff5a5a,0xffc93c,0x4cd36a,0x3fa9f5,0xb06cff,0xff8ad8];for(let i=0;i<n;i++){const a=rand(0,6.28),sp=rand(1.5,4);particle(p.clone().add(V(0,1,0)),V(Math.cos(a)*sp,rand(4,8),Math.sin(a)*sp),cs[i%6],rand(.07,.12),rand(1,1.6),-10)}}
+function updateParts(dt){for(let i=parts.length-1;i>=0;i--){const p=parts[i];p.life-=dt;p.vel.y+=p.grav*dt;p.m.position.addScaledVector(p.vel,dt);if(p.m.position.y<.03&&p.grav<-5){p.m.position.y=.03;p.vel.multiplyScalar(.4)}p.m.material.opacity=Math.min(1,p.life/p.max*2);if(p.life<=0){scene.remove(p.m);p.m.material.dispose();parts.splice(i,1)}}}
+const flights=[];function fly(m,from,to,dur,h,done){if(!m.parent)scene.add(m);m.position.copy(from);flights.push({m,from:from.clone(),to,dur,h,t:0,done})}
+function updateFlights(dt){for(let i=flights.length-1;i>=0;i--){const f=flights[i];f.t+=dt;const k=Math.min(1,f.t/f.dur);const to=typeof f.to==='function'?f.to():f.to;f.m.position.lerpVectors(f.from,to,k);f.m.position.y+=f.h*4*k*(1-k);if(k>=1){flights.splice(i,1);f.done&&f.done(f.m)}}}
+
+/* ======================= 音效 ======================= */
+const A={ctx:null};
+function initAudio(){if(A.ctx){if(A.ctx.state==='suspended')A.ctx.resume();return}try{A.ctx=new (window.AudioContext||window.webkitAudioContext)();A.out=A.ctx.createGain();A.out.gain.value=S.snd?.7:0;A.out.connect(A.ctx.destination);const b=A.ctx.createBuffer(1,A.ctx.sampleRate*2,A.ctx.sampleRate);const d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;A.noise=b}catch(e){}}
+function tone(f,dur,type='sine',vol=.2,slide=null,delay=0){if(!A.ctx)return;const t=A.ctx.currentTime+delay;const o=A.ctx.createOscillator(),g=A.ctx.createGain();o.type=type;o.frequency.setValueAtTime(f,t);if(slide)o.frequency.exponentialRampToValueAtTime(slide,t+dur);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.008);g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g);g.connect(A.out);o.start(t);o.stop(t+dur+.02)}
+function noise(dur,vol,freq,type='bandpass',delay=0){if(!A.ctx)return;const t=A.ctx.currentTime+delay;const s=A.ctx.createBufferSource();s.buffer=A.noise;const f=A.ctx.createBiquadFilter();f.type=type;f.frequency.value=freq;const g=A.ctx.createGain();g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+dur);s.connect(f);f.connect(g);g.connect(A.out);s.start(t,Math.random()*.5);s.stop(t+dur+.02)}
+const SFX={click(){tone(660,.07,'triangle',.15,990)},pick(n){tone(520+Math.min(n,30)*22,.1,'sine',.34,900+Math.min(n,30)*22);tone(1040+Math.min(n,30)*22,.08,'triangle',.16,null,.04)},place(){tone(220,.1,'triangle',.4,140);noise(.07,.25,1800)},
+ plant(){noise(.14,.3,600,'lowpass');tone(330,.12,'triangle',.26,500,.05)},water(){noise(.35,.26,2500,'bandpass')},harvest(){tone(784,.1,'triangle',.32);tone(1175,.18,'triangle',.28,null,.06)},
+ cash(){tone(1318,.09,'square',.045);tone(1760,.2,'square',.045,null,.07)},err(){tone(220,.15,'square',.07);tone(180,.2,'square',.07,null,.12)},buy(){tone(988,.06,'triangle',.14);tone(1480,.2,'triangle',.14,null,.06)},
+ moo(){tone(140,.6,'sawtooth',.06,110)},cluck(){tone(900,.05,'square',.04,700);tone(1100,.05,'square',.04,800,.08)},quack(){tone(500,.12,'sawtooth',.05,380)},oink(){tone(260,.18,'sawtooth',.06,200);tone(300,.12,'sawtooth',.05,240,.15)},baa(){tone(420,.4,'sawtooth',.05,380)},buzz(){tone(220,.4,'sawtooth',.03,240)},
+ thunder(){noise(1.6,.35,180,'lowpass')},crack(){noise(.25,.4,3000,'highpass');noise(1.4,.3,160,'lowpass',.05)},bad(){tone(392,.2,'triangle',.12,330);tone(311,.35,'triangle',.12,262,.18)},ding(){tone(1568,.3,'sine',.06);tone(2093,.35,'sine',.04,null,.04)},
+ thunk(){tone(120,.12,'sine',.25,60);noise(.08,.12,400,'lowpass')},hammer(){tone(800,.04,'square',.06);noise(.05,.12,2000)},door(){tone(300,.15,'triangle',.08,200);noise(.1,.06,800)},
+ fanfare(){[523,659,784,1047,784,1047,1319].forEach((f,i)=>tone(f,.26,'triangle',.16,null,i*.1))},talk(){[0,1,2].forEach(i=>tone(500+Math.random()*300,.06,'triangle',.05,null,i*.08))}};
+for(const k in SFX){const f=SFX[k];SFX[k]=(...a)=>{if(ACTOR){ACTOR.snd.push(k);return}return f(...a)}}
+addEventListener('pointerdown',initAudio,{capture:true});addEventListener('keydown',initAudio,{capture:true});
+let windNode=null;function windLevel(v){if(!A.ctx)return;if(!windNode){const s=A.ctx.createBufferSource();s.buffer=A.noise;s.loop=true;const f=A.ctx.createBiquadFilter();f.type='bandpass';f.frequency.value=500;f.Q.value=.6;const g=A.ctx.createGain();g.gain.value=0;s.connect(f);f.connect(g);g.connect(A.out);s.start();windNode={g,f}}windNode.g.gain.setTargetAtTime(v*.25,A.ctx.currentTime,.4);windNode.f.frequency.setTargetAtTime(300+v*500,A.ctx.currentTime,.4)}
+
+/* ======================= 介面小工具 ======================= */
+// 連線合作：房主幫其他玩家執行動作時（ACTOR），提示和音效轉送給那位玩家
+let ACTOR=null;
+// 確認視窗：買東西、雇人、選作物前都會再問一次
+function confirmAsk(html,yes){const e=document.getElementById('ask2');document.getElementById('a2t').innerHTML=html;e.style.display='flex';SFX.click();document.getElementById('a2y').onclick=()=>{e.style.display='none';yes()};document.getElementById('a2n').onclick=()=>{e.style.display='none';SFX.click()}}
+let toastT;function toast(t,ms=2600){if(ACTOR){ACTOR.msgs.push([t,ms]);return}const e=$('#toast');e.innerHTML=t;e.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove('show'),ms)}
+const hintAt={};function hint(key,t){if(ACTOR)key=ACTOR.uid+key;const now=performance.now();if(now-(hintAt[key]||0)<3500)return;hintAt[key]=now;SFX.err();toast(t,3200)}
+let W=1,H=1;const _v=new THREE.Vector3();function project(v){_v.copy(v).project(camera);return [(_v.x*.5+.5)*W,(-_v.y*.5+.5)*H,_v.z<1&&Math.abs(_v.x)<1.1&&Math.abs(_v.y)<1.1]}
+function floatAt(pos,txt,col='#2a7a30'){const [x,y,ok]=project(pos);if(!ok)return;const d=document.createElement('div');d.className='float';d.textContent=txt;d.style.webkitTextStroke='5px '+col;d.style.left=x+'px';d.style.top=y+'px';document.body.appendChild(d);d.animate([{opacity:0,transform:'translate(-50%,-30%) scale(.6)'},{opacity:1,offset:.2},{opacity:0,transform:'translate(-50%,-160%) scale(1)'}],{duration:1300}).onfinish=()=>d.remove()}
+function openPanel(html,after){$('#panel').innerHTML='<button class="x" id="px">✖</button>'+html;$('#modal').classList.add('on');$('#px').onclick=closePanel;after&&after()}
+function closePanel(){$('#modal').classList.remove('on')}
+$('#modal').onclick=e=>{if(e.target.id==='modal')closePanel()};
+function banner(msg,ms=7000){const b=$('#banner');b.innerHTML=msg;b.style.display='block';clearTimeout(banner.t);banner.t=setTimeout(()=>b.style.display='none',ms)}
+
+/* ======================= 各系列共用：把「林業」的用語換成這個系列的用語 ======================= */
+function makeWords(o){const W={};const a=(k,v)=>{if(v!=null)W[k]=v};
+  // 長的片語先放（換字的時候會先比對長的）
+  a('林業與木工',o.series);a('新手伐木工',o.newbie);a('林業車行',o.carShop);a('家具展示館',o.show);a('家具工廠',o.factory);a('木材市場',o.market);a('林務所',o.office);a('苗圃',o.nursery);
+  a('鋸木師傅',o.millMaster);a('木工師傅',o.workMaster);a('運材司機',o.driver);a('伐木工',o.worker);a('植樹員',o.planter);a('巡山員',o.ranger);
+  a('鋸木廠',o.mill);a('木工坊',o.work);a('木炭窯',o.wasteMach);
+  a('免費樹苗券',o.ticket);a('鋸成更值錢的木板',o.millVerb+'成更值錢的'+o.proc);a('鋸成木板',o.millVerb+'成'+o.proc);a('鋸木板',o.millVerb+o.proc);a('鋸好的',o.millVerb+'好的');a('鋸好',o.millVerb+'好');a('正在鋸',o.atMill);a('等著鋸',o.waitMill);a('鋸原木',o.millVerb+o.raw);
+  a('原木堆',o.raw+'堆');a('原木',o.raw);a('片木板',o.procU+o.proc);a('的木板','的'+o.proc);a('用木板','用'+o.proc);a('木板',o.procS);a('沒有'+o.procS,'沒有'+o.proc);
+  a('木屑',o.waste);a('木炭',o.waste2);a('木材',o.mat);a('林場',o.farm);a('林班',o.plot);
+  a('要種哪一種樹',o.pickType);a('樹種一覽',o.typeList);a('樹種',o.type);a('種新樹苗',o.plantNew);a('全部種回去',o.replantAll);a('種回去',o.replant);a('重新種樹',o.replantAgain);a('記得種樹',o.rememberPlant);a('種樹',o.plantV);a('種了',o.planted);a('自動種',o.autoPlant);a('要種',o.mustPlant);
+  a('樹苗',o.seed);a('樹頭',o.stump);a('成熟的樹',o.ripe);a('倒樹',o.fallTxt);a('砍樹',o.cutN);a('砍完樹',o.cutDone);a('砍完',o.cutDone);a('砍了',o.cut+'了');a('砍下',o.cut+'出');a('斧頭',o.tool);a('砍',o.cut);
+  a('森林永續值',o.eco+'值');a('森林火災',o.fire);a('森林設施',o.forest+'設施');a('森林',o.forest);a('永續',o.eco);a('棵',o.nodeU);a('樹',o.node);a('根',o.rawU);
+  a('筷子、椅子、床、吉他、小提琴、獨木舟、木帆船',o.ex1);a('家具、樂器、木船',o.ex2);a('家具',o.goods);a('作品集',o.album);a('背架',o.pack);
+  a('🪵',o.emRaw);a('🌲',o.emPlot);a('🪓',o.emTool);a('🪚',o.emMill);a('🔨',o.emWork);a('🌱',o.emSeed);a('木工',o.workS);a('木頭',o.raw);
+  a('生長肥料',o.fert);a('長大',o.grow);a('長高',o.grow);a('片',o.procU);a('施肥','使用'+(o.fert||''));
+  for(const k in (o.extra||{}))W[k]=o.extra[k];return W}
+/* ---- 共用模型：礦石、土堆、油井…（不是樹的系列用） ---- */
+const NM={};const nmM=c=>NM[c]||(NM[c]=new THREE.MeshLambertMaterial({color:c,flatShading:true}));
+function nodeModel(k,big=1){const T=TREES[k];const g=new THREE.Group();const piv=new THREE.Group();g.add(piv);const add=(geo,c,x,y,z,sx,sy,sz,ry)=>{const m=mesh(geo,nmM(c));m.position.set(x,y,z);m.scale.set(sx,sy==null?sx:sy,sz==null?sx:sz);if(ry)m.rotation.y=ry;piv.add(m);return m};
+  const sh=T.shape,b=T.base||0x8a8a86,o=T.ore||0xd88a3a;
+  if(sh==='rock'||sh==='speck'){add(G.ico,b,0,.9,0,1.3,1.05,1.2);add(G.ico,b,.9,.55,.4,.8);add(G.ico,b,-.8,.5,-.3,.75);add(G.ico,b,.2,1.7,-.2,.7);for(let i=0;i<(sh==='speck'?14:7);i++){const a=i*2.4;add(new THREE.OctahedronGeometry(1),o,Math.cos(a)*1.05,.5+((i*37)%10)/10*1.4,Math.sin(a)*.95,sh==='speck'?.13:.22,sh==='speck'?.13:.38,sh==='speck'?.13:.22,a)}}
+  else if(sh==='mound'){add(new THREE.ConeGeometry(1.7,1.6,9),b,0,.8,0,1);add(new THREE.ConeGeometry(1.1,1.1,8),o,.7,.55,.5,1);add(G.ico,o,-.6,.3,.6,.35)}
+  else if(sh==='layer'){for(let i=0;i<5;i++)add(G.box,i%2?b:o,0,.25+i*.42,0,2.4-i*.3,.42,2-i*.25,i*.15)}
+  else if(sh==='block'){for(let i=0;i<6;i++)add(G.box,i%3?b:o,((i%3)-1)*.9,.45+Math.floor(i/3)*.9,((i*7)%3-1)*.2,.85,.85,.85,i*.3)}
+  else if(sh==='column'){for(let i=0;i<7;i++){const a=i*.9,r=i?.6:0;add(new THREE.CylinderGeometry(.38,.38,1,6),i%2?b:o,Math.cos(a)*r,(1.4+((i*31)%7)/7*1.3)/2,Math.sin(a)*r,1,1.4+((i*31)%7)/7*1.3,1)}}
+  else if(sh==='crystal'){add(G.ico,b,0,.4,0,1.2,.6,1.1);for(let i=0;i<7;i++){const a=i*.9;const c=add(new THREE.ConeGeometry(.28,1.6,6),o,Math.cos(a)*.55,1.2,Math.sin(a)*.5,1,1+(i%3)*.3,1);c.rotation.set(Math.sin(a)*.4,0,Math.cos(a)*.4)}}
+  else if(sh==='pump'){add(G.box,0x5a5a5a,0,.15,0,2.6,.3,1.2);add(G.box,o,-.6,1.2,0,.25,2.1,.25);add(G.box,o,-.6,1.2,.4,.25,2.1,.25);const beam=new THREE.Group();beam.position.set(-.6,2.3,.2);piv.add(beam);const bm=mesh(G.box,nmM(b));bm.scale.set(3,.3,.3);beam.add(bm);const hd=mesh(G.box,nmM(b));hd.scale.set(.5,.9,.32);hd.position.set(1.5,-.3,0);beam.add(hd);const cw=mesh(G.box,nmM(0x3a3a3a));cw.scale.set(.6,.6,.5);cw.position.set(-1.4,-.3,0);beam.add(cw);add(G.cyl,0x3a3a3a,1,.6,.2,.08,1.2,.08);g.userData.beam=beam}
+  else if(sh==='well'){add(G.cyl,b,0,.8,0,.3,1.6,.3);add(G.box,o,0,1.2,0,.9,.25,.25);add(G.box,o,0,.6,0,.25,.25,.9);for(const s of [-1,1])add(G.cyl,0x6a6a6a,s*.5,.5,0,.12,1,.12);add(G.cyl,0x8a8a8a,0,2,0,.12,1.2,.12);const f=sprite('🔥',.9);f.position.y=2.9;piv.add(f);g.userData.flame=f}
+  else if(sh==='pan'){add(G.box,0x8a7a6a,0,.08,0,2.4,.16,2);add(G.box,0xbfe4f4,0,.17,0,2.1,.04,1.7);for(let i=0;i<4;i++)add(new THREE.ConeGeometry(.45,.6,8),o,-.7+i*.48,.45,((i*5)%3-1)*.4,1)}
+  else if(sh==='pool'){add(new THREE.CylinderGeometry(1.3,1.4,.3,14),0x8a8a86,0,.15,0,1);add(new THREE.CylinderGeometry(1.15,1.15,.06,14),b,0,.31,0,1);for(let i=0;i<5;i++)add(new THREE.OctahedronGeometry(.2),o,Math.cos(i*1.3)*.7,.45,Math.sin(i*1.3)*.7,1,1.6,1)}
+  else if(sh==='tank'){add(new THREE.SphereGeometry(1,14,10),b,0,1.3,0,1);for(let i=0;i<4;i++)add(G.cyl,0x6a6a6a,Math.cos(i*1.57)*.7,.4,Math.sin(i*1.57)*.7,.1,.8,.1);add(G.box,o,0,1.3,1,.5,.25,.1)}
+  else if(sh==='cane'){for(let i=0;i<7;i++){const a=i*.9,r=i?.5:0,h=2.2+((i*13)%5)*.2;const st=add(G.cyl,b,Math.cos(a)*r,h/2,Math.sin(a)*r,.09,h,.09);for(let j=0;j<3;j++)add(G.cone,o,Math.cos(a)*r+Math.cos(j*2)*.2,h-.3*j,Math.sin(a)*r+Math.sin(j*2)*.2,.12,.7,.05,j*2)}}
+  g.scale.setScalar(big*(T.sz||1));Object.assign(g.userData,{piv});return g}
+function pitModel(k,burnt){const g=new THREE.Group();const T=TREES[k];const well=['pump','well','tank','pool','pan'].includes(T.shape);
+  if(well){const c=mesh(G.cyl,nmM(burnt?0x2a2420:0x6a6a6a));c.scale.set(.25,.4,.25);c.position.y=.2;g.add(c);const cap=mesh(G.cyl,nmM(burnt?0x1a1612:0xc84a3a));cap.scale.set(.35,.08,.35);cap.position.y=.44;g.add(cap)}
+  else{const d=mesh(new THREE.CircleGeometry(.7,12),nmM(burnt?0x1a1612:0x4a3a2a),false);d.rotation.x=-Math.PI/2;d.position.y=.03;g.add(d);for(let i=0;i<4;i++){const r=mesh(G.ico,nmM(T.base||0x8a8a86));r.scale.setScalar(.16);r.position.set(Math.cos(i*1.6)*.6,.1,Math.sin(i*1.6)*.6);g.add(r)}}return g}
+function chunkModel(k){const T=TREES[k||K0];const g=new THREE.Group();if(SKIN.rawShape==='barrel'){const b=mesh(G.cyl,nmM(T.base||0x4a4a4a));b.scale.set(.2,.42,.2);b.rotation.z=Math.PI/2;g.add(b);for(const s of [-1,1]){const r=mesh(G.cyl,nmM(T.ore||0xd84a3a));r.scale.set(.205,.05,.205);r.rotation.z=Math.PI/2;r.position.x=s*.13;g.add(r)}return g}
+  const a=mesh(G.ico,nmM(T.base||0x8a8a86));a.scale.set(.24,.18,.2);g.add(a);for(let i=0;i<3;i++){const c=mesh(new THREE.OctahedronGeometry(1),nmM(T.ore||0xd88a3a));c.scale.setScalar(.07);c.position.set(Math.cos(i*2)*.17,.08,Math.sin(i*2)*.12);g.add(c)}g.scale.set(1.6,1,1);return g}
+function ingotModel(k){const T=TREES[k||K0];const s=SKIN.procShape;if(s==='can'){const g=new THREE.Group();const c=mesh(G.cyl,nmM(T.ore||0xd88a3a));c.scale.set(.18,.4,.18);c.position.y=.2;g.add(c);const t=mesh(G.cyl,nmM(0x3a3a3a));t.scale.set(.06,.1,.06);t.position.y=.44;g.add(t);return g}
+  if(s==='sack'){const m=mesh(G.box,nmM(T.ore||0xc8c0b0));m.scale.set(.9,.22,.5);return m}const g=new THREE.Group();const m=mesh(new THREE.CylinderGeometry(.24,.34,1,4),nmM(T.ore||0xd88a3a));m.rotation.y=Math.PI/4;m.rotation.z=Math.PI/2;m.scale.set(.5,1,.4);g.add(m);return g}
+function stdDeco(n,fn){for(let i=0;i<n;i++){let x,z;do{x=rand(-48,50);z=rand(-66,28)}while((x>-36&&x<44&&z>-62&&z<24)||Math.abs(x-RIVER_X(z))<5);const t=fn(i);t.position.set(x,groundH(x,z),z);t.rotation.y=rand(0,6);scene.add(t);DECO.push(t)}}
+function simpleTree(c,s){const g=new THREE.Group();const t=mesh(G.cyl,M(0x6a4a2a));t.scale.set(.25,2.4,.25);t.position.y=1.2;g.add(t);for(let i=0;i<3;i++){const k=mesh(new THREE.ConeGeometry(1.3-i*.3,1.4,8),M(c||0x2f6a32));k.position.y=2+i*.8;g.add(k)}g.scale.setScalar(s||1);return g}
+function rockDeco(c){const g=new THREE.Group();for(let i=0;i<3;i++){const r=mesh(G.ico,nmM(c||0x8a8a86));r.scale.set(rand(.8,1.8),rand(.6,1.3),rand(.8,1.6));r.position.set(rand(-1,1),.4,rand(-1,1));g.add(r)}return g}
+/* ======================= 系列外觀與資料：林業與木工 ======================= */
+const SKIN={id:'wood',name:'林業與木工',em:'🪵',k0:'cedar',wild:['cedar','pine','bamboo'],ks3:['cedar','pine','cypress'],fall:'tree',
+ player:{hat:0xf0a020,shirt:0x3a8a4a,name:'新手伐木工'},
+ env:{sky:0xcfe8f4,hemi:0x6a8a4a,far:[.24,.42,.2],near:[.42,.66,.32],bank:0x8a7a5a,mount:0x5a7a5a,path:0xc8b48a},
+ toolModel(g){const h=mesh(G.cyl,M(0x8a5a2a));h.scale.set(.04,.75,.04);h.position.y=-.15;h.rotation.x=1.3;g.add(h);const b=mesh(G.box,M(0xb8c0c8));b.scale.set(.06,.28,.24);b.position.set(0,-.12,.42);g.add(b)}};
+const K0=SKIN.k0;const WORDS={};
+const CUSTS=[['👵','王奶奶'],['👨‍🍳','餐廳老闆'],['👩‍🏫','幼兒園老師'],['🧑‍🎨','設計師'],['👨‍💼','飯店經理'],['👰','新娘'],['🧓','收藏家'],['👨‍👩‍👧','新家庭'],['🎻','音樂家'],['⛵','遊艇俱樂部']];
+PROFILES.low.d='適合平常上班、很久才上線一次：樹木長大時間 ×2（竹子 4 小時、杉木 8 小時）；帳單打 5 折；收購價 85 折。離線時不會發生火災、動物破壞，也不會欠款。';
+PROFILES.mid.d='平日下班後、假日都適合：竹子 2 小時、杉木 4 小時長大；帳單、收購價都是原價。離線時不會發生火災、動物破壞，離線最多只扣 1 天帳單。';
+PROFILES.high.d='假日有空一直玩：竹子 10 分鐘、杉木 20 分鐘就長大；收購價 ×1.25，但帳單 ×1.5，離線時一樣會發生火災、動物破壞（不會欠款）。';
+PROFILES.ultra.d='時間快 10 倍，樹木幾分鐘就長大，帳單每 6 分鐘扣一次。要一直盯著玩，賺最快，但離線沒有保護、最多只算 6 小時。';
+/* ---- 樹種：gm＝長大時間倍數（杉木＝1），p＝一根原木的收購價 ---- */
+const TREES={
+ bamboo:{n:'竹子',em:'🎋',lv:1,gm:.5,p:22,sap:6,logs:2,bark:0x7ab04a,leaf:0x6ab83a,wood:0xd8c070,shape:'bamboo'},
+ cedar:{n:'杉木',em:'🌲',lv:1,gm:1,p:40,sap:10,logs:2,bark:0x7a4a2a,leaf:0x2f6a32,wood:0xe0b880,shape:'cone'},
+ pine:{n:'松木',em:'🌲',lv:3,gm:1.2,p:58,sap:16,logs:2,bark:0x6a4026,leaf:0x3a7a3a,wood:0xe8c890,shape:'pine'},
+ cypress:{n:'檜木',em:'🌲',lv:7,gm:1.6,p:120,sap:34,logs:3,bark:0x8a5a3a,leaf:0x2a5a3a,wood:0xf0d090,shape:'cone'},
+ camphor:{n:'樟木',em:'🌳',lv:11,gm:1.8,p:160,sap:46,logs:3,bark:0x6a5a40,leaf:0x4a8a3a,wood:0xd8a868,shape:'round'},
+ beech:{n:'櫸木',em:'🌳',lv:15,gm:2,p:210,sap:60,logs:3,bark:0x9a9080,leaf:0x5a9a3a,wood:0xe0a870,shape:'round'},
+ maple:{n:'楓木',em:'🍁',lv:19,gm:2.2,p:270,sap:80,logs:3,bark:0x7a6a5a,leaf:0xd8502a,wood:0xf0d8b0,shape:'maple'},
+ teak:{n:'柚木',em:'🌳',lv:25,gm:2.6,p:380,sap:110,logs:4,bark:0x8a6a40,leaf:0x3a7a2a,wood:0xb8803a,shape:'tall'},
+ ebony:{n:'黑檀木',em:'🌑',lv:31,gm:3,p:600,sap:180,logs:4,bark:0x3a3030,leaf:0x2a4a2a,wood:0x3a2a22,shape:'round'}};
+/* ---- 木工作品：w＝要用哪些木板 [樹種,片數]，t＝做多久（遊戲秒），v＝價值 ---- */
+const PRODUCTS=[
+ {id:'chop',n:'竹筷',em:'🥢',lv:1,w:[['bamboo',1]],t:60,v:90},
+ {id:'spoon',n:'木湯匙',em:'🥄',lv:1,w:[['cedar',1]],t:90,v:130},
+ {id:'cutb',n:'木砧板',em:'🔪',lv:2,w:[['cedar',2]],t:150,v:240},
+ {id:'basket',n:'竹編籃',em:'🧺',lv:3,w:[['bamboo',3]],t:180,v:270},
+ {id:'stool',n:'小板凳',em:'🪑',lv:4,w:[['pine',2]],t:240,v:420},
+ {id:'bowl',n:'木碗',em:'🥣',lv:5,w:[['pine',1],['cedar',1]],t:200,v:360},
+ {id:'block',n:'積木玩具',em:'🧸',lv:6,w:[['pine',3]],t:300,v:620},
+ {id:'chair',n:'檜木椅',em:'🪑',lv:8,w:[['cypress',3]],t:420,v:1250},
+ {id:'shelf',n:'置物書架',em:'📚',lv:10,w:[['cypress',4],['pine',2]],t:540,v:2000},
+ {id:'horse',n:'搖搖木馬',em:'🐴',lv:12,w:[['camphor',4]],t:600,v:2300},
+ {id:'table',n:'樟木餐桌',em:'🍽️',lv:14,w:[['camphor',6]],t:900,v:3500},
+ {id:'bed',n:'櫸木床',em:'🛏️',lv:16,w:[['beech',7]],t:1100,v:4800},
+ {id:'wardrobe',n:'櫸木衣櫃',em:'🚪',lv:18,w:[['beech',8],['cypress',2]],t:1300,v:6200},
+ {id:'flute',n:'木笛',em:'🪈',lv:20,w:[['maple',2]],t:700,v:2600},
+ {id:'guitar',n:'木吉他',em:'🎸',lv:22,w:[['maple',5],['beech',1]],t:1500,v:7600},
+ {id:'shipm',n:'木船模型',em:'⛵',lv:24,w:[['teak',4]],t:1400,v:7400},
+ {id:'violin',n:'小提琴',em:'🎻',lv:26,w:[['maple',6],['ebony',1]],t:2000,v:12500},
+ {id:'canoe',n:'獨木舟',em:'🛶',lv:28,w:[['teak',10]],t:2600,v:17000},
+ {id:'chess',n:'黑檀棋盤',em:'♟️',lv:31,w:[['ebony',4]],t:1800,v:11000},
+ {id:'piano',n:'鋼琴外殼',em:'🎹',lv:33,w:[['ebony',10],['maple',4]],t:3600,v:36000},
+ {id:'sailboat',n:'木帆船',em:'⛵',lv:37,w:[['teak',18],['ebony',4]],t:5400,v:68000}];
+/* ---- 工具、交通工具 ---- */
+const TOOLS=[{id:'axe',n:'鐵斧頭',em:'🪓',p:0,lv:1,chop:1,d:'一開始就有的斧頭'},{id:'axe2',n:'鋼製伐木斧',em:'🪓',p:1500,lv:3,chop:1.6,d:'砍樹快 1.6 倍'},{id:'saw',n:'電鋸',em:'🪚',p:8000,lv:8,chop:2.6,d:'砍樹快 2.6 倍，會嗡嗡響'},{id:'saw2',n:'專業電鋸',em:'🪚',p:30000,lv:18,chop:4,d:'砍樹快 4 倍'}];
+const PACKS=[{id:'pack0',n:'肩膀扛',p:0,lv:1,cap:4},{id:'pack1',n:'木頭背架',em:'🎒',p:600,lv:2,cap:8,d:'可以背 8 根原木'},{id:'pack2',n:'加大背架',em:'🎒',p:4000,lv:6,cap:12,d:'可以背 12 根原木'}];
+const VEHS=[{id:'',n:'走路',em:'🚶',p:0,lv:1,sp:1,cap:0},{id:'cart',n:'手推車',em:'🛒',p:900,lv:2,sp:1.05,cap:6,d:'推著走，多載 6 根'},{id:'atv',n:'越野機車',em:'🏍️',p:6500,lv:5,sp:1.6,cap:4,smoke:1,d:'山路跑很快，多載 4 根'},
+ {id:'loader',n:'林業搬運車',em:'🚜',p:22000,lv:10,sp:1.4,cap:16,smoke:1,d:'後面有載物台，多載 16 根'},{id:'truck',n:'運材卡車',em:'🚛',p:70000,lv:16,sp:1.85,cap:30,smoke:1,d:'又快又能載，多載 30 根'},
+ {id:'harv',n:'伐木機',em:'🦾',p:180000,lv:24,sp:1.3,cap:24,smoke:1,chop:2,d:'大夾子一夾就倒，砍樹再快 2 倍，多載 24 根'}];
+/* ---- 員工 ---- */
+const STAFF=[
+ {id:'lumber',em:'👷',n:'伐木工',wage:45,lv:3,per:'lot',d:'負責一塊林班：成熟的樹自動砍倒，原木堆在林班旁邊'},
+ {id:'planter',em:'🧑‍🌾',n:'植樹員',wage:30,lv:4,per:'lot',d:'負責一塊林班：砍掉的地方自動種回樹苗（照林班設定的樹種，自動買樹苗）'},
+ {id:'driver',em:'🧑‍✈️',n:'運材司機',wage:60,lv:6,d:'開卡車把林班旁邊的原木堆載去鋸木廠（鋸木廠沒開就載去木材市場賣）'},
+ {id:'sawyer',em:'🧔',n:'鋸木師傅',wage:55,lv:7,d:'鋸木廠速度 ×2，木板自動收進倉庫'},
+ {id:'carpenter',em:'🧑‍🔧',n:'木工師傅',wage:70,lv:8,d:'工作台做完自動再做同一樣（木板夠的話）'},
+ {id:'sales',em:'🧑‍💼',n:'業務員',wage:65,lv:10,d:'訂單材料夠就自動交貨；倉庫作品太多時自動賣掉（9 折）'},
+ {id:'ranger',em:'🧑‍🚒',n:'巡山員',wage:50,lv:9,d:'巡邏森林：趕走黑熊、山豬，發現火災馬上撲滅'}];
+/* ---- 機器、設施 ---- */
+const MACH=[{id:'bandsaw',em:'⚙️',n:'大型帶鋸機',p:5000,lv:5,d:'鋸木廠速度 ×2（每天電費 💵20）',day:20},
+ {id:'kiln',em:'🔥',n:'木材乾燥窯',p:9000,lv:8,d:'木板烘乾後價值 ×1.25，做出來的作品也更值錢 ×1.15（每天燃料費 💵25）',day:25},
+ {id:'charcoal',em:'⚫',n:'木炭窯',p:6000,lv:6,d:'鋸木屑自動燒成木炭，賣價比木屑高 4 倍'},
+ {id:'termite',em:'🧪',n:'防蟲處理槽',p:7000,lv:9,d:'倉庫的木板不會被白蟻蛀'},
+ {id:'sprinkler',em:'🚿',n:'森林灑水塔',p:12000,lv:12,d:'森林火災不會擴散，下一次就自動撲滅（每天水費 💵15）',day:15},
+ {id:'bench2',em:'🛠️',n:'第 2 張工作台',p:3000,lv:4,d:'木工坊可以同時做 2 樣作品'},{id:'bench3',em:'🛠️',n:'第 3 張工作台',p:12000,lv:11,d:'同時做 3 樣'},{id:'bench4',em:'🛠️',n:'第 4 張工作台',p:40000,lv:20,d:'同時做 4 樣'},
+ {id:'show2',em:'🖼️',n:'展示館擴建',p:15000,lv:13,d:'展示台 4 → 8 個'},{id:'show3',em:'🏛️',n:'展示館豪華大廳',p:80000,lv:26,d:'展示台 8 → 12 個，訪客 ×1.5'},
+ {id:'wh2',em:'🏚️',n:'倉庫擴充',p:4000,lv:6,d:'倉庫 80 → 250 格'},{id:'flume',em:'🌊',n:'運木水道',p:20000,lv:14,d:'在木材市場賣原木時多給 15%；沿著河邊的水道把原木漂下山（司機載運量 ×2）'}];
+/* ---- 事件 ---- */
+const EVS={fire:{n:'森林火災',em:'🔥',d:'有一塊林班起火了！快去林班的圈圈滅火（巡山員、灑水塔會幫忙）',bad:1,lv:5},bear:{n:'黑熊出沒',em:'🐻',d:'黑熊跑進林班踩壞樹苗，走過去把牠嚇跑！',bad:1,lv:6},boar:{n:'山豬拱地',em:'🐗',d:'山豬在林班拱土，樹苗會被拱壞，走過去把牠趕走',bad:1,lv:3},
+ termite:{n:'白蟻入侵',em:'🐜',d:'倉庫的木板被白蟻蛀掉一部分（買防蟲處理槽就不怕）',bad:1,lv:7},expo:{n:'家具博覽會',em:'🎪',d:'今天作品收購價 ×1.5、訂單獎金加倍！',len:DAY*.5,lv:10},rush:{n:'木材缺貨潮',em:'📈',d:'原木、木板收購價 ×1.6',len:DAY*.5,lv:4},slide:{n:'土石流',em:'⛰️',d:'砍太多沒有種回去，山坡崩塌了！一塊林班被土石蓋住，要花錢整地',bad:1,lv:8}};
+/* ---- 模型 ---- */
+/* ---- 樹木模型 ---- */
+const barkTex=canvasTex(32,64,c=>{c.fillStyle='#fff';c.fillRect(0,0,32,64);c.strokeStyle='rgba(0,0,0,.28)';c.lineWidth=2;for(let i=0;i<7;i++){c.beginPath();const x=i*5+2;c.moveTo(x,0);for(let y=0;y<=64;y+=8)c.lineTo(x+Math.sin(y+i)*2,y);c.stroke()}});
+const ringTex=canvasTex(64,64,c=>{c.fillStyle='#e8c890';c.fillRect(0,0,64,64);c.strokeStyle='rgba(120,70,30,.5)';for(let r=4;r<32;r+=4){c.lineWidth=1.5;c.beginPath();c.arc(32,32,r,0,7);c.stroke()}c.strokeStyle='#6a4020';c.lineWidth=4;c.beginPath();c.arc(32,32,30,0,7);c.stroke()});
+const barkM=c=>{const k='bark'+c;return mc[k]||(mc[k]=new THREE.MeshLambertMaterial({color:c,map:barkTex}))};
+function treeModel(k,big=1){const T=TREES[k];const g=new THREE.Group();const piv=new THREE.Group();g.add(piv);
+  const tr=(h,r)=>{const m=mesh(new THREE.CylinderGeometry(r*.7,r,h,9),barkM(T.bark));m.position.y=h/2;piv.add(m);return m};
+  if(T.shape==='bamboo'){for(let i=0;i<5;i++){const a=i*1.3,rr=i?.35:0,h=rand(4.2,5.6);const st=new THREE.Group();st.position.set(Math.cos(a)*rr,0,Math.sin(a)*rr);st.rotation.set(rand(-.08,.08),0,rand(-.08,.08));piv.add(st);
+      const c=mesh(new THREE.CylinderGeometry(.09,.11,h,8),M(T.bark));c.position.y=h/2;st.add(c);for(let y=.6;y<h;y+=.7){const n=mesh(new THREE.TorusGeometry(.105,.025,4,10),M(0x5a8a3a),false);n.rotation.x=Math.PI/2;n.position.y=y;st.add(n)}
+      for(let j=0;j<6;j++){const l=mesh(G.cone,M(T.leaf),false);l.scale.set(.14,.7,.05);l.position.set(Math.cos(j)*.3,h-.2-j*.25,Math.sin(j)*.3);l.rotation.set(1.1,j,0);st.add(l)}}}
+  else if(T.shape==='cone'||T.shape==='pine'){tr(3.2,.28);const n=T.shape==='pine'?5:4;for(let i=0;i<n;i++){const r=(T.shape==='pine'?1.6:1.35)*(1-i/n*.7),h=T.shape==='pine'?1.1:1.5;const c=mesh(new THREE.ConeGeometry(r,h,9),M(i%2?T.leaf:new THREE.Color(T.leaf).multiplyScalar(.85).getHex()));c.position.y=1.8+i*(T.shape==='pine'?.7:.85);c.rotation.y=i;piv.add(c)}}
+  else{const h=T.shape==='tall'?3.8:2.6;tr(h,T.shape==='tall'?.3:.34);const br=T.shape==='tall'?1.25:1.5;for(let i=0;i<6;i++){const a=i*1.05,rr=i?br*.62:0;const s=mesh(G.ico,M(i%2?T.leaf:new THREE.Color(T.leaf).multiplyScalar(.82).getHex()));s.scale.setScalar(br*(i?.72:.9));s.position.set(Math.cos(a)*rr,h+.5+(i?rand(-.2,.4):.6),Math.sin(a)*rr);piv.add(s)}
+    if(T.shape==='maple')for(let i=0;i<5;i++){const s=mesh(G.ico,M(0xf0a02a));s.scale.setScalar(.5);s.position.set(rand(-1.2,1.2),h+rand(.2,1.4),rand(-1.2,1.2));piv.add(s)}}
+  g.scale.setScalar(big);g.userData={piv};return g}
+function stumpModel(k,burnt){const g=new THREE.Group();const c=mesh(new THREE.CylinderGeometry(.26,.32,.36,10),burnt?M(0x2a2420):barkM(TREES[k].bark));c.position.y=.18;g.add(c);const top=new THREE.Mesh(new THREE.CircleGeometry(.26,12),burnt?M(0x1a1612):new THREE.MeshLambertMaterial({map:ringTex}));top.rotation.x=-Math.PI/2;top.position.y=.365;g.add(top);return g}
+function logModel(k){const T=TREES[k||K0];const g=new THREE.Group();const c=mesh(new THREE.CylinderGeometry(.16,.16,1,9),barkM(T.bark));c.rotation.z=Math.PI/2;g.add(c);for(const s of [-1,1]){const e=new THREE.Mesh(new THREE.CircleGeometry(.155,10),new THREE.MeshLambertMaterial({map:ringTex}));e.position.x=s*.505;e.rotation.y=s*Math.PI/2;g.add(e)}return g}
+function boardModel(k){const m=mesh(G.box,M(TREES[k||K0].wood));m.scale.set(1.2,.06,.28);return m}
+/* ---- 建築位置 ---- */
+const PLACES={
+ home:{x:-6,z:16,w:6,d:5,h:3,wall:0xb8804a,roof:0x6a3a1e,log:1,style:'cabin',sign:'🏠 我的家',em:'🏠',n:'我的家'},
+ market:{x:12,z:15,w:7,d:5,h:3.2,wall:0xf0d8a8,roof:0x2a7a4a,style:'stall',c1:'#2a8a4a',c2:'#fff4d8',sign:'💵 木材市場',em:'💵',n:'木材市場'},
+ nursery:{x:-18,z:16,w:5.5,d:4.5,h:2.8,wall:0xe8f0d8,roof:0x4a9a3a,style:'glass',sign:'🌱 苗圃',signBg:'#3a8a3a',em:'🌱',n:'苗圃'},
+ tools:{x:24,z:16,w:5.5,d:4.5,h:2.8,wall:0xd8d0c0,roof:0xa83a2a,style:'shop',icon:'🪓',c1:'#c83a2a',sign:'🪓 工具行',em:'🪓',n:'工具行'},
+ cars:{x:34,z:6,w:7,d:6,h:3.4,wall:0xc8d8e8,roof:0x2a4a8a,style:'garage',sign:'🚛 林業車行',signBg:'#2a4a8a',em:'🚛',n:'林業車行'},
+ staff:{x:-28,z:12,w:5.5,d:4.5,h:2.8,wall:0xf4e0c0,roof:0x8a5a9a,style:'twostory',sign:'👷 人力仲介',signBg:'#6a3a8a',em:'👷',n:'人力仲介'},
+ office:{x:2,z:-3,w:6,d:4.5,h:3,wall:0xe8e0c8,roof:0x2a6a3a,style:'tower',flag:0x2a8a3a,sign:'🌲 林務所',signBg:'#2a6a3a',em:'🌲',n:'林務所'},
+ saw:{x:-24,z:0,w:9,d:7,h:4.2,wall:0x9a6a3a,roof:0x5a5a5a,log:1,style:'mill',sign:'🪚 鋸木廠',em:'🪚',n:'鋸木廠'},
+ work:{x:14,z:2,w:8,d:6,h:3.6,wall:0xc8a070,wall2:0x8a6a4a,roof:0x8a3a1a,log:1,style:'aframe',sign:'🔨 木工坊',em:'🔨',n:'木工坊'},
+ show:{x:30,z:-6,w:9,d:6,h:4,wall:0xf4ece0,roof:0x3a3a5a,style:'gallery',sign:'🏛️ 家具展示館',signBg:'#3a3a5a',em:'🏛️',n:'家具展示館'}};
+/* ---- 建築特色裝飾 ---- */
+SKIN.decor=()=>{
+// 鋸木廠：大圓鋸片、輸送台、煙囪
+const SAWBLADE=(()=>{const g=BLD.saw;const tb=B(3.2,.9,1.6,0x6a5a4a,2.6,.45,4.4,g);const bl=mesh(new THREE.CylinderGeometry(.9,.9,.06,24),M(0xc8ccd2));bl.rotation.x=Math.PI/2;bl.position.set(2.6,1.2,4.4);g.add(bl);for(let i=0;i<12;i++){const t=mesh(G.cone,M(0x9aa0a8),false);t.scale.set(.08,.18,.04);const a=i/12*Math.PI*2;t.position.set(Math.cos(a)*.95,Math.sin(a)*.95,0);t.rotation.z=a-Math.PI/2;bl.add(t)}
+  BLOCKS.push([PLACES.saw.x+2.6,PLACES.saw.z+4.4,3.2,1.6]);return bl})();
+// 木材市場前面的原木堆、苗圃的樹苗盆栽、林務所旗子
+{const g=BLD.market;for(let i=0;i<9;i++){const l=logModel(SKIN.ks3[i%3]);l.scale.setScalar(1.4);l.rotation.y=Math.PI/2;l.position.set(-4.4,.25+Math.floor(i/3)*.42,-1.2+(i%3)*.42-(Math.floor(i/3)%2)*.2);g.add(l)}}
+{const g=BLD.nursery;for(let i=0;i<6;i++){const p=new THREE.Group();p.position.set(-2+i*.8,0,3.2);g.add(p);B(.4,.35,.4,0xa8582a,0,.18,0,p);const t=treeModel(TK[i%4],.18);t.position.y=.35;p.add(t)}}
+for(let i=0;i<70;i++){let x,z;do{x=rand(-48,50);z=rand(-66,28)}while((x>-36&&x<44&&z>-62&&z<24)||Math.abs(x-RIVER_X(z))<5);const k=['cedar','pine','camphor','bamboo'][i%4];const t=treeModel(k,rand(.6,.95));t.position.set(x,groundH(x,z),z);t.rotation.y=rand(0,6);scene.add(t);DECO.push(t)}
+SKIN.anim=(rdt,t)=>{SAWBLADE.rotation.y+=rdt*((S.saw.cur?14:1.5))}};
+
+/* ======================= 共用：時間、價錢、存檔 ======================= */
+// 文字換成這個系列的用語（例如：原木→礦石）
+const WRE=Object.keys(WORDS).length?new RegExp(Object.keys(WORDS).sort((a,b)=>b.length-a.length).map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|'),'g'):null;
+const tr=s=>WRE&&typeof s==='string'?s.replace(WRE,m=>WORDS[m]):s;
+if(WRE){const w1=(f,i)=>function(...a){a[i]=tr(a[i]);return f.apply(this,a)};toast=w1(toast,0);hint=w1(hint,1);banner=w1(banner,0);openPanel=w1(openPanel,0);confirmAsk=w1(confirmAsk,0);floatAt=w1(floatAt,1);setL=w1(setL,1);label=w1(label,0)}
+const dayOf=t=>Math.floor(t/DAY),seasonOf=t=>Math.floor(dayOf(t)/DAYS_PER_SEASON)%4,hourOf=t=>(t%DAY)/DAY*24;
+function srand(n){let a=(S.seed+n*2654435761)>>>0;a=(a+0x6D2B79F5)>>>0;let t=a;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return ((t^t>>>14)>>>0)/4294967296}
+var TUTON=false;
+function weatherAt(i){if(S.forceW&&S.forceW.pi===i)return S.forceW.k;const se=seasonOf(i*PERIOD+1);const tb=W_TABLE[se];let tot=0;for(const k in tb)tot+=tb[k];let r=srand(i)*tot;for(const k in tb){r-=tb[k];if(r<=0)return k}return 'sun'}
+const curWk=()=>weatherAt(Math.floor(S.t/PERIOD)),curW=()=>WEATHER[curWk()];
+const isNight=()=>{const h=hourOf(S.t);return h>=19||h<5};
+
+/* ---- 等級：靠累計收入升級 ---- */
+const LV_EARN=(()=>{const a=[0,1500,4000,9000,18000,32000,55000,85000,130000,190000];while(a.length<40){const n=a.length;a.push(Math.round(a[n-1]*(n<25?1.18:1.12)/1000)*1000)}return a})();const LV_MAX=40;
+const woodLv=()=>{let l=1;for(let i=1;i<LV_EARN.length;i++)if((S.earn||0)>=LV_EARN[i])l=i+1;return l};
+const TK=Object.keys(TREES);
+const boardP=k=>Math.round(TREES[k].p*1.7);
+const PROD=id=>PRODUCTS.find(p=>p.id===id);
+/* ---- 林班（森林裡一塊一塊的地，每塊 4×3 棵樹） ---- */
+const LOTS=[];{const C=[-20,-6,8,22],R=[-14,-27,-40,-53];const LV=[1,2,4,6,9,12,15,18,21,25,29,33];let i=0;
+  for(const z of R)for(const x of C){if(i>=12)break;LOTS.push({i,x,z,w:9.2,d:7,lv:LV[i],p:i?Math.round(800*Math.pow(1.7,i)/100)*100:0,rent:i?20+i*15:0,n:(SKIN.plot||'林班')+' '+String.fromCharCode(65+i)});i++}}
+const LOT_SLOTS=(L)=>{const a=[];for(let r=0;r<3;r++)for(let c=0;c<4;c++)a.push({x:L.x-3.3+c*2.2,z:L.z-2.2+r*2.2});return a};
+const vehOf=()=>VEHS.find(v=>v.id===(S.veh||''))||VEHS[0];
+const toolOf=()=>TOOLS.slice().reverse().find(t=>S.own[t.id])||TOOLS[0];
+const packOf=()=>PACKS.slice().reverse().find(t=>S.own[t.id])||PACKS[0];
+const carryCap=()=>packOf().cap+vehOf().cap;
+const chopMul=()=>toolOf().chop*(vehOf().chop||1);
+const benchN=()=>1+(S.mach.bench2?1:0)+(S.mach.bench3?1:0)+(S.mach.bench4?1:0);
+const showN=()=>S.mach.show3?12:S.mach.show2?8:4;
+const whCap=()=>S.mach.wh2?250:80;
+/* ---- 價格（每天會變一點） ---- */
+function market(day){const r=i=>srand(day*131+i);const pr={};TK.forEach((k,i)=>pr[k]=Math.round((.85+r(i)*.35)*100)/100);PRODUCTS.forEach((p,i)=>pr[p.id]=Math.round((.85+r(40+i)*.4)*100)/100);const hot=PRODUCTS.filter(p=>p.lv<=woodLv()+2);const h=hot.length?hot[Math.floor(r(99)*hot.length)].id:'';if(h)pr[h]=Math.max(pr[h],1.3);return {pr,hot:h}}
+const ecoMul=()=>.85+(S.eco==null?60:S.eco)/100*.35;
+const evNow=k=>S.ev&&S.ev.k===k&&S.t<S.ev.end;
+const logPrice=k=>Math.max(1,Math.round(TREES[k].p*(market(dayOf(S.t)).pr[k]||1)*prof().price*ecoMul()*(evNow('rush')?1.6:1)*(S.mach.flume?1.15:1)));
+const boardPrice=k=>Math.max(1,Math.round(boardP(k)*(market(dayOf(S.t)).pr[k]||1)*prof().price*(evNow('rush')?1.6:1)));
+const prodPrice=(id,dry)=>{const p=PROD(id);return Math.max(1,Math.round(p.v*(market(dayOf(S.t)).pr[id]||1)*prof().price*ecoMul()*(evNow('expo')?1.5:1)*(dry?1.15:1)*(1+showBonus())))};
+const showBonus=()=>Math.min(.4,(S.show||[]).filter(Boolean).length*.02);
+
+/* ---- 存檔 ---- */
+const NETG=false,HOSTCAP=0;
+const KEY=EMBED?'zzdh_'+SKIN.id+'_v1':'zzdh_'+SKIN.id+'_test_v1';
+function newState(){return {money:300,t:DAY*.3,seed:(Math.random()*1e9)|0,earn:0,eco:60,carry:[],wh:{},prods:{},lots:{0:{own:1,auto:K0,slots:null,pile:0,pileK:{}}},saw:{q:[],cur:null,out:{},dust:0,coal:0},benches:[],orders:[],ordDay:-1,show:[],made:{},
+  staff:{},mach:{},own:{[TOOLS[0].id]:1,pack0:1},veh:'',vehOwn:{'':1},tc:{},lastP:-1,day:-1,profile:'mid',speed:1,zoom:3,notes:[],flow:[],ev:null,debt:0,unlockMsg:{},giftDay:'',fires:{},beasts:[],slide:{}}}
+let S;try{S=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){}
+if(!S||!S.lots)S=newState();
+{const d=newState();for(const k in d){if(S[k]===undefined||S[k]===null&&d[k]!==null)S[k]=d[k];else if(d[k]&&typeof d[k]==='object'&&!Array.isArray(d[k]))for(const j in d[k])if(S[k][j]===undefined)S[k][j]=d[k][j]}}
+// 每塊林班的 12 個樹位：{k 樹種, st:'empty'|'sap'|'tree'|'stump'|'burn', g 成長 0~1}
+function lotState(i){const L=S.lots[i];if(!L)return null;if(!L.slots){L.slots=Array.from({length:12},(_,j)=>({k:L.auto||K0,st:i===0||j%3?'tree':'sap',g:i===0?1:.4}))}return L}
+lotState(0);
+const save=()=>{if(window.__noSave)return;S.last=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+window.__farmSave=save;
+const whCount=()=>Object.values(S.wh).reduce((a,b)=>a+b,0)+Object.values(S.prods).reduce((a,b)=>a+b,0);
+const lotTreesN=()=>{let n=0;for(const i in S.lots){const L=S.lots[i];if(L.slots)n+=L.slots.filter(s=>s.st==='tree'||s.st==='sap').length}return n};
+
+/* ======================= 世界：山坡森林、小溪、村莊 ======================= */
+const ENV=SKIN.env;scene.background=new THREE.Color(ENV.sky);scene.fog=new THREE.Fog(ENV.sky,55,125);hemi.color.setHex(0xffffff);hemi.groundColor.setHex(ENV.hemi||0x6a8a4a);
+function noise2(x,z){return Math.sin(x*.37+z*.11)*.5+Math.sin(x*.13-z*.29)*.35+Math.sin((x+z)*.71)*.15}
+// 地面高度：村莊平坦，往北的森林慢慢變成山坡
+const groundH=(x,z)=>z<-7?Math.min(6,(-z-7)*.075)+noise2(x*.5,z*.5)*.18*Math.min(1,(-z-7)/6):0;
+const RIVER_X=z=>-38+Math.sin(z*.08)*2.2;
+{const W0=150,D0=150,N=110;const g=new THREE.PlaneGeometry(W0,D0,N,N);g.rotateX(-Math.PI/2);const p=g.attributes.position;const col=[];const c=new THREE.Color();
+  for(let i=0;i<p.count;i++){const x=p.getX(i),z=p.getZ(i);let y=groundH(x,z);const rx=RIVER_X(z);const dr=Math.abs(x-rx);if(dr<5)y-=(5-dr)*.35;if(x<-46)y+=(-46-x)*.25+noise2(x,z)*.6;if(x>44)y+=(x-44)*.3+noise2(x,z)*.6;if(z<-62)y+=(-62-z)*.6+noise2(x*.3,z*.3)*2;if(z>30)y+=(z-30)*.2;p.setY(i,y);
+    const forest=z<-8;if(dr<4.2)c.setHex(ENV.bank||0x8a7a5a);else if(forest)c.setRGB(ENV.far[0]+noise2(x,z)*.03,ENV.far[1]+noise2(z,x)*.05,ENV.far[2]);else c.setRGB(ENV.near[0]+noise2(x,z)*.04,ENV.near[1]+noise2(z,x)*.05,ENV.near[2]);col.push(c.r,c.g,c.b)}
+  g.setAttribute('color',new THREE.Float32BufferAttribute(col,3));g.computeVertexNormals();const m=mesh(g,new THREE.MeshLambertMaterial({vertexColors:true}),false);m.receiveShadow=true;scene.add(m)}
+// 小溪（水會流動）
+const waterTex=canvasTex(64,128,c=>{c.fillStyle='#5aa8d8';c.fillRect(0,0,64,128);c.strokeStyle='rgba(255,255,255,.45)';c.lineWidth=2;for(let i=0;i<14;i++){const y=i*9+Math.random()*4;c.beginPath();c.moveTo(Math.random()*20,y);c.quadraticCurveTo(32,y+4,64-Math.random()*20,y);c.stroke()}});waterTex.wrapS=waterTex.wrapT=THREE.RepeatWrapping;waterTex.repeat.set(1,8);
+const RIVER=(()=>{const pts=[];for(let z=-75;z<=45;z+=3)pts.push([RIVER_X(z),z]);const g=new THREE.BufferGeometry();const v=[],uv=[],ix=[];pts.forEach(([x,z],i)=>{v.push(x-3.4,-.25,z,x+3.4,-.25,z);uv.push(0,i/pts.length*8,1,i/pts.length*8);if(i){const a=(i-1)*2;ix.push(a,a+2,a+1,a+1,a+2,a+3)}});
+  g.setAttribute('position',new THREE.Float32BufferAttribute(v,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();const m=new THREE.Mesh(g,new THREE.MeshLambertMaterial({map:waterTex,transparent:true,opacity:.88}));scene.add(m);return m})();
+// 遠方的山
+for(let i=0;i<9;i++){const x=-70+i*18+rand(-4,4),z=-90-rand(0,12),h=rand(16,28);const m=mesh(new THREE.ConeGeometry(rand(14,20),h,7),M(ENV.mount||0x5a7a5a),false);m.position.set(x,h/2-2,z);scene.add(m);const s=mesh(new THREE.ConeGeometry(4.5,h*.26,7),M(0xf4f8fa),false);s.position.set(x,h-h*.13-1.6,z);scene.add(s)}
+/* ---- 建築 ---- */
+const BLOCKS=[],OCC=[];
+function signTex(t,bg='#7a4a22',fg='#fff6e0'){return canvasTex(256,64,c=>{c.fillStyle=bg;c.fillRect(0,0,256,64);c.strokeStyle='#4a2a12';c.lineWidth=6;c.strokeRect(3,3,250,58);c.fillStyle=fg;c.font='bold 34px '+FONT;c.textAlign='center';c.textBaseline='middle';c.fillText(t,128,34)})}
+// 三角屋頂（屋脊沿著 x 方向）
+function prism(len,dep,ht,col,mat){const s=new THREE.Shape();s.moveTo(-dep/2,0);s.lineTo(dep/2,0);s.lineTo(0,ht);s.lineTo(-dep/2,0);const g=new THREE.ExtrudeGeometry(s,{depth:len,bevelEnabled:false});g.translate(0,0,-len/2);g.rotateY(Math.PI/2);return mesh(g,mat||M(col))}
+const glassM=new THREE.MeshLambertMaterial({color:0xbfe8ff,transparent:true,opacity:.45});
+function stripeTex(a,b){return canvasTex(64,16,c=>{for(let i=0;i<8;i++){c.fillStyle=i%2?b:a;c.fillRect(i*8,0,8,16)}})}
+// 每一種建築都有自己的樣子：style 決定外型，extra 加上獨特的小東西
+function building(o){const g=new THREE.Group();g.position.set(o.x,0,o.z);scene.add(g);const {w,d,h}=o;const st=o.style||'hip';const F=d/2;
+  const plank=c=>new THREE.MeshLambertMaterial({color:c,map:canvasTex(64,64,cx=>{cx.fillStyle='#fff';cx.fillRect(0,0,64,64);for(let y=0;y<64;y+=10){cx.fillStyle='rgba(90,50,20,.35)';cx.fillRect(0,y,64,2);cx.fillStyle='rgba(255,255,255,.2)';cx.fillRect(0,y+3,64,2)}})});
+  const brick=c=>new THREE.MeshLambertMaterial({color:c,map:canvasTex(64,64,cx=>{cx.fillStyle='#fff';cx.fillRect(0,0,64,64);cx.fillStyle='rgba(0,0,0,.18)';for(let y=0;y<64;y+=8){cx.fillRect(0,y,64,1);for(let x=(y/8%2)*8;x<64;x+=16)cx.fillRect(x,y,1,8)}})});
+  const wallM=o.log?plank(o.wall):o.brick?brick(o.wall):M(o.wall);
+  const box=(x,y,z,sx,sy,sz,m)=>{const b=mesh(G.box,m||wallM);b.scale.set(sx,sy,sz);b.position.set(x,y,z);g.add(b);return b};
+  const door=(x,c)=>{B(1.3,2,.12,c||0x5a3418,x,1,F+.02,g);B(.12,.12,.1,0xf0c040,x+.45,1,F+.1,g)};
+  const win=(x,y,ww,hh)=>{B(ww||1,hh||.9,.1,0xbfe4f4,x,y,F+.03,g);B((ww||1)+.12,.1,.12,0x5a3a22,x,y-(hh||.9)/2-.05,F+.08,g)};
+  let top=h;
+  if(st==='cabin'){box(0,h/2,0,w,h,d);const r=prism(w+.8,d+1.2,o.rh||2,o.roof);r.position.y=h;g.add(r);top=h+(o.rh||2);
+    B(.7,3.2,.7,0x8a8a8a,w/2-1,h+1.2,-d/4,g);for(const s of [-1,1]){B(.18,2.2,.18,0x6a3a1e,s*(w/2-.4),1.1,F+1.1,g)}B(w,.15,1.4,o.roof,0,2.25,F+.7,g);B(w,.12,1.3,0x9a6a3a,0,.06,F+.65,g);door(0);win(-w/2+1.1,h*.55);win(w/2-1.1,h*.55)}
+  else if(st==='stall'){box(0,h/2,-d/4,w,h,d/2);B(w,.9,.6,0x9a6a3a,0,.45,F-.4,g);for(const s of [-1,1])B(.15,h,.15,0x6a3a1e,s*(w/2-.1),h/2,F-.1,g);
+    const aw=mesh(G.box,new THREE.MeshLambertMaterial({map:stripeTex(o.c1||'#e84a3a',o.c2||'#fff4e0')}));aw.scale.set(w+.4,.1,d/2+.8);aw.position.set(0,h+.1,F/2);aw.rotation.x=.25;g.add(aw);
+    for(let i=0;i<5;i++)B(.6,.45,.5,[0xe8a020,0x8ac04a,0xd84a3a][i%3],-w/2+.8+i*(w-1.6)/4,1.12,F-.4,g);const r=prism(w,d/2,1.2,o.roof);r.position.set(0,h,-d/4);g.add(r);top=h+1.3}
+  else if(st==='glass'){B(w,.5,d,0xd8d8d0,0,.25,0,g);const gb=mesh(G.box,glassM,false);gb.scale.set(w,h-.5,d);gb.position.y=.5+(h-.5)/2;g.add(gb);const r=prism(w,d,1.6,0,glassM);r.position.y=h;g.add(r);
+    for(let x=-w/2;x<=w/2+.01;x+=w/4){B(.08,h,.08,0xf0f0f0,x,h/2,F,g);B(.08,h,.08,0xf0f0f0,x,h/2,-F,g)}B(w,.08,.08,0xf0f0f0,0,h+1.6,0,g);for(let i=0;i<8;i++){const p=sprite(['🌱','🌿','🪴'][i%3],.7);p.position.set(-w/2+.7+(i%4)*(w-1.4)/3,1.1,i<4?-.8:.8);g.add(p)}door(0,0xf0f0f0);top=h+1.6}
+  else if(st==='shop'){box(0,h/2,0,w,h,d);B(w+.2,.5,d+.2,o.roof,0,h+.25,0,g);B(w*.75,1.1,.1,0xbfe4f4,-.6,1.4,F+.03,g);door(w/2-1);
+    const aw=mesh(G.box,new THREE.MeshLambertMaterial({map:stripeTex(o.c1||'#2a7ad8',o.c2||'#fff')}));aw.scale.set(w,.08,1.2);aw.position.set(0,2.4,F+.55);aw.rotation.x=.3;g.add(aw);
+    if(o.icon){const ic=sprite(o.icon,2.4);ic.position.set(0,h+1.8,0);g.add(ic);g.userData.icon=ic}top=h+.5}
+  else if(st==='garage'){box(0,h/2,0,w,h,d);const r=mesh(new THREE.CylinderGeometry(d/2,d/2,w,16,1,false,0,Math.PI),M(o.roof));r.rotation.z=Math.PI/2;r.rotation.y=Math.PI/2;r.rotation.x=0;r.position.y=h;r.rotation.set(0,0,Math.PI/2);r.rotation.order='YXZ';g.add(r);r.rotation.set(Math.PI/2,0,Math.PI/2);
+    for(const s of [-1,1]){const dr=mesh(G.box,new THREE.MeshLambertMaterial({color:0xb8bcc4,map:canvasTex(32,32,c=>{c.fillStyle='#fff';c.fillRect(0,0,32,32);c.fillStyle='rgba(0,0,0,.25)';for(let y=0;y<32;y+=4)c.fillRect(0,y,32,1)})}));dr.scale.set(w/2-.9,h*.75,.1);dr.position.set(s*w/4,h*.375,F+.03);g.add(dr)}
+    B(.5,.5,.1,0xf0c020,0,h*.85,F+.05,g);top=h+d/2}
+  else if(st==='twostory'){box(0,h/2,0,w,h,d);box(-w*.15,h+h*.4,-.2,w*.7,h*.8,d-.4);const r=mesh(new THREE.CylinderGeometry(.01,1,1,4),M(o.roof));r.rotation.y=Math.PI/4;r.scale.set(w*.55,1.5,d*.75);r.position.set(-w*.15,h*1.8+.75,-.2);g.add(r);
+    B(w*.7,.12,1,0x7a5a3a,-w*.15,h,F+.3,g);for(let i=0;i<6;i++)B(.06,.6,.06,0x7a5a3a,-w*.5+i*w*.14,h+.3,F+.75,g);door(w/4);win(-w/4,h*.55);win(-w*.15,h*1.4);top=h*1.8+1.5}
+  else if(st==='tower'){box(0,h/2,0,w,h,d);const r=prism(w,d+.6,1.6,o.roof);r.position.y=h;g.add(r);const tx=w/2+1.4;for(const sx of [-1,1])for(const sz of [-1,1]){const l=mesh(G.cyl,M(0x7a5a3a));l.scale.set(.1,7,.1);l.position.set(tx+sx*.7,3.5,sz*.7);g.add(l)}
+    B(2,1.4,2,o.wall,tx,7.6,0,g);const tr=mesh(new THREE.ConeGeometry(1.7,1.2,4),M(o.roof));tr.rotation.y=Math.PI/4;tr.position.set(tx,8.9,0);g.add(tr);for(let y=1;y<7;y+=1.2)B(.08,.08,1.5,0x7a5a3a,tx+.7,y,0,g);door(0);win(-w/2+1,h*.55);win(w/2-1,h*.55);
+    if(o.flag){const f=mesh(new THREE.PlaneGeometry(1,.6),new THREE.MeshLambertMaterial({color:o.flag,side:THREE.DoubleSide}));f.position.set(tx+.5,10.1,0);g.add(f);const p=mesh(G.cyl,M(0xdddddd));p.scale.set(.04,1.4,.04);p.position.set(tx,9.8,0);g.add(p);g.userData.flag=f}top=h+1.6}
+  else if(st==='mill'){box(0,h/2,0,w,h,d);for(let i=0;i<3;i++){const r=prism(d,w/3,1.4,o.roof);r.rotation.y=Math.PI/2;r.position.set(-w/3+i*w/3,h,0);g.add(r)}B(w*.6,h*.6,.1,0x2a2420,-w*.15,h*.3,F+.03,g);
+    const ch=mesh(G.cyl,M(o.chim||0x6a6a6a));ch.scale.set(.45,4,.45);ch.position.set(-w/2+.9,h+2,-d/2+.9);g.add(ch);g.userData.chim=V(o.x-w/2+.9,h+4.2,o.z-d/2+.9);top=h+1.4}
+  else if(st==='aframe'){B(w,.8,d,o.wall2||0x8a6a4a,0,.4,0,g);const r=prism(d,w+.4,h+1.5,o.roof);r.rotation.y=Math.PI/2;r.position.y=.6;g.add(r);r.scale.z=1;
+    const gl=new THREE.Shape();gl.moveTo(-w/2+.6,0);gl.lineTo(w/2-.6,0);gl.lineTo(0,h+.4);const gm=mesh(new THREE.ShapeGeometry(gl),glassM,false);gm.position.set(0,.8,F+.05);g.add(gm);door(0,0x6a3a1e);top=h+2}
+  else if(st==='gallery'){B(w+1,.4,d+1.4,0xe8e0d0,0,.2,.2,g);box(0,h/2+.4,-.5,w,h,d-1);B(w+.4,.6,d,o.roof,0,h+.7,0,g);const pd=prism(w+.4,1.2,1.1,o.roof);pd.rotation.y=Math.PI/2;pd.scale.set(1,1,1);
+    const tri=new THREE.Shape();tri.moveTo(-w/2-.2,0);tri.lineTo(w/2+.2,0);tri.lineTo(0,1.2);const tm=mesh(new THREE.ExtrudeGeometry(tri,{depth:.5,bevelEnabled:false}),M(0xf4ece0));tm.position.set(0,h+1,F-.3);g.add(tm);
+    for(let i=0;i<6;i++){const c=mesh(G.cyl,M(0xf8f4ec));c.scale.set(.22,h,.22);c.position.set(-w/2+.5+i*(w-1)/5,h/2+.4,F-.2);g.add(c)}door(0,0x3a2a1a);top=h+2.2}
+  else if(st==='dome'){box(0,h/2,0,w,h,d);const dm=mesh(new THREE.SphereGeometry(Math.min(w,d)/2,20,10,0,Math.PI*2,0,Math.PI/2),M(o.roof));dm.position.y=h;g.add(dm);door(0);win(-w/2+1,h*.55);win(w/2-1,h*.55);top=h+Math.min(w,d)/2}
+  else if(st==='factory'){box(0,h/2,0,w,h,d);for(let i=0;i<4;i++){const r=prism(d,w/4,1.2,o.roof);r.rotation.y=Math.PI/2;r.position.set(-w*3/8+i*w/4,h,0);r.scale.set(1,1,1);g.add(r);B(w/4-.2,.9,.06,0xbfe4f4,-w*3/8+i*w/4+w/8-.1,h+.5,0,g)}
+    for(const s of [-1,1]){const t=mesh(G.cyl,M(o.tank||0xd8dce0));t.scale.set(.9,h+1,.9);t.position.set(s*(w/2+1.1),(h+1)/2,-d/4);g.add(t)}const ch=mesh(G.cyl,M(o.chim||0xc84a3a));ch.scale.set(.5,6,.5);ch.position.set(w/2-1,h+3,-d/2+1);g.add(ch);for(let y=1;y<6;y+=1.2){const b=mesh(G.cyl,M(0xf0f0f0));b.scale.set(.52,.3,.52);b.position.set(w/2-1,h+y,-d/2+1);g.add(b)}
+    g.userData.chim=V(o.x+w/2-1,h+6.2,o.z-d/2+1);door(-w/4);B(w*.3,h*.55,.1,0x3a3a3a,w/5,h*.28,F+.03,g);top=h+1.2}
+  else if(st==='silo'){box(0,h/2,0,w,h,d);B(w+.2,.4,d+.2,o.roof,0,h+.2,0,g);for(let i=0;i<3;i++){const t=mesh(G.cyl,M(o.tank||0xc8c8c0));t.scale.set(1,h+3,1);t.position.set(-w/2+1+i*(w-2)/2,(h+3)/2,-d/2-1.2);g.add(t);const c=mesh(new THREE.ConeGeometry(1,.8,16),M(o.roof));c.position.set(-w/2+1+i*(w-2)/2,h+3.4,-d/2-1.2);g.add(c)}door(0);win(-w/2+1,h*.55);top=h+.4}
+  else{box(0,h/2,0,w,h,d);const rf=mesh(new THREE.CylinderGeometry(.01,1,1,4),M(o.roof));rf.rotation.y=Math.PI/4;rf.scale.set(w*.78,o.rh||1.8,d*.78);rf.position.y=h+(o.rh||1.8)/2;g.add(rf);door(0);if(w>4.5){win(-w/2+1.3,h*.6);win(w/2-1.3,h*.6)}top=h+(o.rh||1.8)}
+  if(o.sign){const s=new THREE.Mesh(new THREE.PlaneGeometry(Math.min(w-.4,4.2),1.05),new THREE.MeshLambertMaterial({map:signTex(o.sign,o.signBg)}));s.position.set(0,st==='glass'?h-.6:st==='aframe'?h*.75:h+.1,F+.14);if(st==='gallery')s.position.set(0,h+.1,F+.1);g.add(s)}
+  if(o.extra)o.extra(g,o);g.traverse(m=>{if(m.isMesh)m.castShadow=true});
+  BLOCKS.push([o.x,o.z,w,d]);OCC.push({g,x:o.x,z:o.z,w,d,op:1});return g}
+const BLD={};for(const k in PLACES){const p=PLACES[k];BLD[k]=building(p);p.rx=p.x;p.rz=p.z+p.d/2+1.6}
+const DECO=[];const DEC=SKIN.decor();
+const SAWPILE=new THREE.Group();SAWPILE.position.set(PLACES.saw.x-6.5,0,PLACES.saw.z+5.5);scene.add(SAWPILE);const BOARDPILE=new THREE.Group();BOARDPILE.position.set(PLACES.saw.x+7,0,PLACES.saw.z+5.6);scene.add(BOARDPILE);
+// 木工坊：工作台（會顯示正在做的東西）
+const BENCHV=[];{const g=BLD.work;for(let i=0;i<4;i++){const b=new THREE.Group();b.position.set(-2.8+i*1.9,0,4.4);g.add(b);const top=B(1.5,.12,.9,0xb8844a,0,.85,0,b);for(const sx of [-1,1])for(const sz of [-1,1])B(.1,.85,.1,0x7a4a22,sx*.65,.42,sz*.38,b);const sp=sprite('🪚',.6);sp.position.set(0,1.4,0);b.add(sp);b.userData={sp};b.visible=false;BENCHV.push(b)}BLOCKS.push([14,6.4,8,1.2])}
+// 展示館：展示台
+const PEDS=[];{const g=BLD.show;for(let i=0;i<12;i++){const p=new THREE.Group();p.position.set(-3.6+(i%6)*1.45,0,4.2+Math.floor(i/6)*1.2);g.add(p);B(.9,.6,.7,0xf0e8d8,0,.3,0,p);const sp=sprite('🪑',.8);sp.position.y=1.1;p.add(sp);p.userData={sp};p.visible=false;PEDS.push(p)}BLOCKS.push([30,-1.2,9,2.6])}
+// 路、路燈、村莊的裝飾樹
+const LAMPS=[];function path(x,z,w,d){const m=mesh(new THREE.PlaneGeometry(w,d),M(ENV.path||0xc8b48a),false);m.rotation.x=-Math.PI/2;m.position.set(x,.03,z);scene.add(m)}
+path(4,9,72,3.2);path(0,-20,3.2,60);path(-24,4.5,3,8);path(-12,-7,30,2.6);path(14,-7,36,2.6);
+for(const [x,z] of [[-12,9],[6,9],[20,9],[-30,9],[0,-10],[30,1]]){const p=mesh(G.cyl,M(0x3a3a3a));p.scale.set(.08,3,.08);p.position.set(x,1.5,z+1.8);scene.add(p);const l=mesh(G.sph,new THREE.MeshLambertMaterial({color:0xfff4c0,emissive:0}));l.scale.setScalar(.22);l.position.set(x,3.05,z+1.8);scene.add(l);LAMPS.push(l)}
+/* ---- 林班：樹位、標籤、原木堆 ---- */
+const LOTV=LOTS.map(L=>{const g=new THREE.Group();g.position.set(0,0,0);scene.add(g);const slots=LOT_SLOTS(L).map(p=>({x:p.x,z:p.z,y:groundH(p.x,p.z),o:null,key:''}));
+  const fence=new THREE.Group();scene.add(fence);const y0=groundH(L.x,L.z);for(let i=0;i<=8;i++){for(const s of [-1,1]){const p=mesh(G.box,M(0x8a5a2a));p.scale.set(.12,.7,.12);p.position.set(L.x-L.w/2+i*L.w/8,groundH(L.x-L.w/2+i*L.w/8,L.z+s*L.d/2)+.35,L.z+s*L.d/2);fence.add(p)}}
+  const lock=new THREE.Group();lock.position.set(L.x,y0+1.4,L.z);scene.add(lock);const lk=sprite('🔒',1.4);lock.add(lk);
+  const pile=new THREE.Group();pile.position.set(L.x+L.w/2-1,groundH(L.x+L.w/2-1,L.z+L.d/2+1.2),L.z+L.d/2+1.3);scene.add(pile);
+  const lab=label('',V(L.x,y0+4.8,L.z),26);const fireG=new THREE.Group();scene.add(fireG);
+  return {L,g,slots,lock,pile,lab,fireG}});
+// 依照狀態更新林班裡的樹
+function lotSync(i){const V0=LOTV[i];const st=S.lots[i];V0.lock.visible=!st||!st.own;const sl=st&&st.own?lotState(i).slots:null;
+  V0.slots.forEach((s,j)=>{const d=sl?sl[j]:null;const key=d?d.k+'|'+d.st+'|'+(d.st==='sap'?Math.floor(d.g*4):''):'wild';if(key===s.key)return;if(s.falling){if(performance.now()-(s.fallT||0)<5000)return;s.falling=false}s.key=key;if(s.o){scene.remove(s.o);s.o=null}
+    let o=null;if(!d){if((i+j)%3===0){o=treeModel(SKIN.wild[(i+j)%SKIN.wild.length],.62)}}else if(d.st==='tree')o=treeModel(d.k,.68);else if(d.st==='sap')o=treeModel(d.k,.15+d.g*.42);else if(d.st==='stump'||d.st==='burn')o=stumpModel(d.k,d.st==='burn');
+    if(o){o.position.set(s.x+((j*7)%3-1)*.15,s.y,s.z);o.rotation.y=j*1.7;scene.add(o);s.o=o}});
+  const pn=st&&st.own?Math.min(12,Math.ceil((st.pile||0)/2)):0;while(V0.pile.children.length<pn){const n=V0.pile.children.length;const l=logModel(Object.keys(st.pileK||{})[0]||K0);l.position.set((n%3)*.0,.18+Math.floor(n/3)*.3,(n%3)*.34-.34);l.rotation.y=0;V0.pile.add(l)}while(V0.pile.children.length>pn)V0.pile.remove(V0.pile.children[V0.pile.children.length-1])}
+/* ---- 玩家 ---- */
+const P={o:makeFarmer(),pos:null,face:0,spd:0,walk:0,auto:null};P.pos=P.o.position;P.pos.set(0,0,12);
+{const u=P.o.userData;u.basket.visible=false;u.cage.visible=false;u.hat.forEach(h=>h.material=M(SKIN.player.hat));u.torso.material=M(SKIN.player.shirt);u.armM.forEach(a=>a.material=M(SKIN.player.shirt))}
+// 背上的原木
+const BACK=new THREE.Group();BACK.position.set(0,.85,-.42);P.o.userData.body.add(BACK);
+// 手上的斧頭
+const AXE=(()=>{const g=new THREE.Group();g.position.set(0,-.45,.05);P.o.userData.arms[1].add(g);SKIN.toolModel(g);g.visible=false;return g})();
+const PTAG=label(`<div class="pl me">${esc(PNAME||SKIN.player.name)}</div>`,V(),99);
+function backSync(){const n=Math.min(10,S.carry.length);while(BACK.children.length<n){const k=S.carry[BACK.children.length]||K0;const l=logModel(k);l.scale.set(.75,.75,.75);const i=BACK.children.length;l.position.set(0,(i>>1)*.24,(i%2)*.22-.11);BACK.add(l)}while(BACK.children.length>n)BACK.remove(BACK.children[BACK.children.length-1])}
+/* ---- 地上的圓圈（站上去就會做事） ---- */
+const RINGS=[];
+function addRing(o){const r=Object.assign({r:1.1,stay:0,cd:0},o);const col={shop:0x2a7ad8,sell:0xff9a10,lot:0x2aa05a,saw:0xa86a2a,work:0xe8701a,show:0x8a4ad8,home:0xe0403a,office:0x2a8a5a}[o.kind]||0xffffff;
+  const y=.07+groundH(r.x,r.z);r.m=new THREE.Group();r.m.position.set(r.x,y,r.z);scene.add(r.m);
+  const disc=mesh(new THREE.CircleGeometry(r.r,32),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.22,depthWrite:false}),false);disc.rotation.x=-Math.PI/2;r.m.add(disc);
+  const ring=mesh(new THREE.RingGeometry(r.r*.8,r.r,32),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.95,side:THREE.DoubleSide,depthWrite:false}),false);ring.rotation.x=-Math.PI/2;ring.position.y=.01;r.m.add(ring);r.m.material=ring.material;
+  r.L=label('',V(r.x,1.6+y,r.z),7);RINGS.push(r);return r}
+for(const k of ['nursery','tools','cars','staff'])addRing({kind:'shop',shop:k,x:PLACES[k].rx,z:PLACES[k].rz,t:PLACES[k].em+' '+PLACES[k].n});
+const MARKET=addRing({kind:'sell',x:PLACES.market.rx,z:PLACES.market.rz,r:1.4,t:'💵 木材市場（賣原木、作品）'});
+addRing({kind:'home',x:PLACES.home.rx,z:PLACES.home.rz,t:'🏠 我的家'});addRing({kind:'office',x:PLACES.office.rx,z:PLACES.office.rz,t:'🌲 林務所（租林班）'});
+const SAWR=addRing({kind:'saw',x:PLACES.saw.rx+2.6,z:PLACES.saw.rz+1.3,r:1.3,t:'🪚 鋸木廠（放原木）'});const WORKR=addRing({kind:'work',x:PLACES.work.rx,z:PLACES.work.rz+1.5,r:1.3,t:'🔨 木工坊'});const SHOWR=addRing({kind:'show',x:PLACES.show.rx,z:PLACES.show.rz+2.6,r:1.3,t:'🏛️ 展示館・訂單'});
+LOTS.forEach(L=>addRing({kind:'lot',li:L.i,x:L.x,z:L.z+L.d/2+1.3,r:1.15,t:'🌲 '+L.n}));
+/* ---- 碰撞 ---- */
+function onWalk(x,z){if(S.inHome)return Math.abs(x-HOMEIN.x)<4.6&&z>HOMEIN.z-3.3&&z<HOMEIN.z+3.4;return x>-33&&x<42&&z>-60&&z<26}
+function collide(p,o){if(!onWalk(p.x,p.z)){if(onWalk(o.x,p.z))p.x=o.x;else if(onWalk(p.x,o.z))p.z=o.z;else{p.x=o.x;p.z=o.z}}if(S.inHome)return;
+  for(let i=0;i<LOTV.length;i++){const st=S.lots[i];if(!st||!st.own||!st.slots)continue;const L=LOTS[i];if(Math.abs(p.x-L.x)>L.w/2+1||Math.abs(p.z-L.z)>L.d/2+1)continue;LOTV[i].slots.forEach((v,j)=>{const q=st.slots[j];if(!q||q.st!=='tree'||v.falling)return;const dx=p.x-v.x,dz=p.z-v.z,dd=Math.hypot(dx,dz),R=.55;if(dd<R&&dd>1e-4){p.x=v.x+dx/dd*R;p.z=v.z+dz/dd*R}})}
+  for(const [x,z,w,d] of BLOCKS){const dx=p.x-x,dz=p.z-z;if(Math.abs(dx)<w/2+.35&&Math.abs(dz)<d/2+.35){const ox=w/2+.35-Math.abs(dx),oz=d/2+.35-Math.abs(dz);if(ox<oz)p.x+=Math.sign(dx||1)*ox;else p.z+=Math.sign(dz||1)*oz}}}
+/* ---- 家裡（小木屋室內） ---- */
+const HOMEIN={x:0,z:300};const HOMEG=new THREE.Group();HOMEG.position.set(HOMEIN.x,0,HOMEIN.z);HOMEG.visible=false;scene.add(HOMEG);
+{const fl=mesh(new THREE.PlaneGeometry(10,8),new THREE.MeshLambertMaterial({color:0xc89a62,map:canvasTex(64,64,c=>{c.fillStyle='#c89a62';c.fillRect(0,0,64,64);c.fillStyle='rgba(90,50,20,.25)';for(let y=0;y<64;y+=8)c.fillRect(0,y,64,1)})}),false);fl.rotation.x=-Math.PI/2;HOMEG.add(fl);
+  B(10,3.4,.3,0xa8703a,0,1.7,-4,HOMEG);for(const s of [-1,1])B(.3,3.4,8,0xa8703a,s*5,1.7,0,HOMEG);B(2.4,1.2,1.2,0x7a4a2a,-3,.6,-3,HOMEG);B(2.6,.5,1.4,0xe8e0d0,-3,1.3,-3,HOMEG);B(1.6,.8,1,0x8a5a2a,3,.4,-3.2,HOMEG);
+  const fp=B(2,1.8,.8,0x8a8a8a,0,.9,-3.6,HOMEG);const fire=sprite('🔥',.9);fire.position.set(0,.8,-3.1);HOMEG.add(fire);HOMEG.userData.fire=fire}
+/* ---- 鏡頭：從南邊往北看森林 ---- */
+const ZOOMS=[{n:'特寫',k:.65},{n:'近',k:.82},{n:'標準',k:1},{n:'遠',k:1.3},{n:'超遠',k:1.7}];
+const CAMDIR=V(0,1.28,1).normalize();
+const camT=V();function camUpdate(rdt){const z=ZOOMS[S.zoom==null?2:S.zoom]||ZOOMS[2];const dist=(W<H?30:24)*z.k*(S.inHome?.5:1);camT.lerp(V(P.pos.x,P.pos.y,P.pos.z),Math.min(1,rdt*6));camera.position.copy(camT).add(CAMDIR.clone().multiplyScalar(dist));camera.lookAt(camT.x,camT.y+.6,camT.z);
+  sun.position.set(camT.x+14,camT.y+26,camT.z+10);sun.target.position.set(camT.x,camT.y,camT.z)}
+// 擋住人物的建築變透明（鏡頭在南邊，所以人物在建築北邊時會被擋）
+function fadeOcc(rdt){for(const o of OCC){const behind=P.pos.z<o.z+o.d/2&&P.pos.z>o.z-o.d/2-6&&Math.abs(P.pos.x-o.x)<o.w/2+1.5;const tgt=behind?.3:1;if(Math.abs(o.op-tgt)<.01)continue;o.op+=(tgt-o.op)*Math.min(1,rdt*8);if(Math.abs(o.op-tgt)<.02)o.op=tgt;
+  o.g.traverse(m=>{if(!m.isMesh||m.isSprite)return;if(!m.material.userData.cl){m.material=m.material.clone();m.material.userData.cl=1;m.material.userData.op0=m.material.transparent?m.material.opacity:1;m.material.userData.tr0=m.material.transparent}const mt=m.material;mt.transparent=o.op<.999||mt.userData.tr0;mt.opacity=mt.userData.op0*o.op;mt.depthWrite=o.op>.999&&!mt.userData.tr0})}}
+function worldAnim(rdt,t){waterTex.offset.y-=rdt*.12;SKIN.anim&&SKIN.anim(rdt,t);const night=isNight();LAMPS.forEach(l=>l.material.emissive.setHex(night?0xffd060:0));
+  DECO.forEach((d,i)=>{if(i%4)return;d.rotation.z=Math.sin(t*.8+i)*.015*(curW().typhoon?6:1)})}
+
+
+/* ======================= 看得到的動作：砍樹、倒樹、員工、車子、火災、野生動物 ======================= */
+// 樹倒下的動畫（以樹根為支點往外倒，砸到地上會彈一下、揚起塵土）
+const FALLS=[];function fallAnim(i,j,dir){const s=LOTV[i].slots[j];if(!s.o)return;s.falling=true;const o=s.o;o.userData.s0=o.scale.x;s.fallT=performance.now();FALLS.push({s,o,t:0,dir:dir!=null?dir:rand(0,6.28),i})}
+function fallTick(dt){for(let q=FALLS.length-1;q>=0;q--){const f=FALLS[q];f.t+=dt;const piv=f.o.userData.piv||f.o;f.o.rotation.y=f.dir;
+  if(SKIN.fall==='crumble'){if(!f.boom){f.boom=1;SFX.thunk&&SFX.thunk();puff(f.o.position.clone().add(V(0,.6,0)),18,SKIN.chip||0x9a8a7a,.22)}const k=Math.min(1,f.t/.9);f.o.position.x+=Math.sin(f.t*60)*.02;f.o.scale.setScalar(Math.max(.01,(f.o.userData.s0||1)*(1-k)));if(k>=1){scene.remove(f.o);f.s.o=null;f.s.falling=false;f.s.key='';FALLS.splice(q,1);lotSync(f.i)}continue}
+  if(f.t<1.1){const k=f.t/1.1;piv.rotation.x=Math.pow(k,2.2)*Math.PI/2}else if(f.t<1.45){const k=(f.t-1.1)/.35;piv.rotation.x=Math.PI/2-Math.sin(k*Math.PI)*.12;if(!f.boom){f.boom=1;puff(f.o.position.clone().add(V(Math.sin(f.dir)*2,.3,Math.cos(f.dir)*2)),16,0xb8a070,.25);SFX.thunk&&SFX.thunk();if(Math.hypot(P.pos.x-f.o.position.x,P.pos.z-f.o.position.z)<14)shake=.25}}
+  else{const k=Math.min(1,(f.t-1.45)/.5);f.o.scale.setScalar(Math.max(.01,1-k));if(k>=1){scene.remove(f.o);f.s.o=null;f.s.falling=false;f.s.key='';FALLS.splice(q,1);lotSync(f.i)}}}}
+let shake=0;
+/* ---- 林班的圈圈：滅火、趕動物，其他時候打開林班面板 ---- */
+const CH={t:0,swing:0,li:-1,pk:0};
+function lotAction(r,rdt){const i=r.li,L=LOTS[i],st=S.lots[i];if(!st||!st.own||S.slide[i]){if(!r.done){r.done=1;lotPanel(i)}return}
+  if(S.fires[i]){CH.t+=rdt;CH.swing+=rdt*10;if(Math.random()<rdt*30)particle(P.pos.clone().add(V(rand(-.3,.3),1.4,-.6)),V(rand(-.5,.5),rand(1,2),-rand(2,4)),0x8ad0ff,.09,.6,-6);
+    if(CH.t>2.4){CH.t=0;delete S.fires[i];SFX.water&&SFX.water();notify(`💧 你撲滅了 ${L.n} 的火！`);tutDo('fire');fireSync()}else if(!r.msg){r.msg=1;toast('💧 站著不動，正在提水滅火…',2000)}return}
+  const bs=S.beasts.filter(b=>b.li===i);if(bs.length){S.beasts=S.beasts.filter(b=>b.li!==i);SFX.err();toast(`📣 你大喊一聲，把${bs.map(b=>EVS[b.k].em).join('')}趕回深山了！`,2600);beastSync(true);return}
+  if(!r.done){r.done=1;lotPanel(i)}}
+/* ---- 砍樹：要走到樹的旁邊，站著就會砍 ---- */
+const isBuzz=()=>toolOf().buzz||toolOf().id.startsWith('saw');
+function treeNear(R){let best=null,bd=R;for(const i in S.lots){if(!lotOK(i))continue;const L=LOTS[i];if(Math.abs(P.pos.x-L.x)>L.w/2+R+1||Math.abs(P.pos.z-L.z)>L.d/2+R+1)continue;const sl=lotState(i).slots;
+  sl.forEach((s,j)=>{if(s.st!=='tree')return;const v=LOTV[i].slots[j];if(v.falling)return;const d=Math.hypot(v.x-P.pos.x,v.z-P.pos.z);if(d<bd){bd=d;best={i:+i,j,d}}})}return best}
+function standPos(i,j,from){const v=LOTV[i].slots[j];const f=from||P.pos;let dx=f.x-v.x,dz=f.z-v.z;const d=Math.hypot(dx,dz)||1;if(d<.2){dx=0;dz=1}return V(v.x+dx/(d||1)*.95,0,v.z+dz/(d||1)*.95)}
+function goChop(i){const sl=lotState(i).slots;let b=-1,bd=1e9;sl.forEach((s,j)=>{if(s.st!=='tree'||LOTV[i].slots[j].falling)return;const v=LOTV[i].slots[j];const d=Math.hypot(v.x-P.pos.x,v.z-P.pos.z);if(d<bd){bd=d;b=j}});if(b<0)return false;goTo(standPos(i,b));return true}
+function chopTick(rdt,still){if(S.inHome||!still){AXE.visible=false;return}
+  // 撿林班旁邊的原木堆
+  for(const i in S.lots){const st=S.lots[i];if(!st.own||!st.pile)continue;const pp=LOTV[i].pile.position;if(Math.hypot(pp.x-P.pos.x,pp.z-P.pos.z)<1.5){AXE.visible=false;if(S.carry.length>=carryCap()){hint('full','🪵 背不下了！先去鋸木廠或木材市場（右下角「一鍵賣貨」）');return}
+    CH.pk+=rdt;if(CH.pk>=.22){CH.pk=0;const k=Object.keys(st.pileK||{})[0]||K0;st.pile--;if(st.pileK&&st.pileK[k]){st.pileK[k]--;if(!st.pileK[k])delete st.pileK[k]}S.carry.push(k);SFX.pick(S.carry.length);backSync();lotSync(i)}return}}
+  const tg=treeNear(1.45);if(!tg){AXE.visible=false;CH.t=0;return}const {i,j}=tg;const st=S.lots[i];
+  if(S.fires[i]){AXE.visible=false;hint('fire','🔥 失火了！先到林班前面的圈圈站著滅火');return}
+  if(S.carry.length>=carryCap()){AXE.visible=false;hint('full','🪵 背不下了！先去鋸木廠或木材市場（右下角「一鍵賣貨」）');return}
+  if(CH.li!==i*100+j){CH.li=i*100+j;CH.t=0}
+  AXE.visible=true;CH.t+=rdt*chopMul();CH.swing+=rdt*(isBuzz()?28:9);const s=LOTV[i].slots[j];P.face=Math.atan2(s.x-P.pos.x,s.z-P.pos.z);const chip=SKIN.chip||0xe8c890;
+  if(isBuzz()){if(Math.random()<rdt*20)particle(V(s.x,s.y+.6,s.z),V(rand(-1,1),rand(.5,1.5),rand(-1,1)),chip,.06,.5,-4);if(Math.random()<rdt*4)SFX.buzz&&SFX.buzz()}else if(Math.sin(CH.swing)>.97&&!CH.hit){CH.hit=1;SFX.hammer&&SFX.hammer();puff(V(s.x,s.y+.7,s.z),4,chip,.08)}else if(Math.sin(CH.swing)<0)CH.hit=0;
+  if(CH.t>=2.2){CH.t=0;const lot=lotState(i);const k=lot.slots[j].k;const n=fellSlot(i,j,'me');const got=carryAdd(k,n);if(got<n){st.pile=(st.pile||0)+n-got;st.pileK=st.pileK||{};st.pileK[k]=(st.pileK[k]||0)+n-got}
+    floatAt(V(s.x,s.y+2.4,s.z),`🪵 ${TREES[k].n} ×${n}`,'#8a5a2a');setTimeout(()=>{backSync();SFX.pick(S.carry.length)},1200);
+    if(!st.tip){st.tip=1;toast('🌱 砍完記得種回去！走到林班前面的圈圈，按「全部種回去」；雇植樹員會自動種',4600)}
+    // 還背得下就自動走去下一棵
+    if(S.carry.length<carryCap())setTimeout(()=>{if(!P.auto&&!S.inHome&&!panelOn()&&treeNear(1.6)==null)goChop(i)},1300)}}
+/* ---- 員工（看得到的人） ---- */
+function makeWorker(shirt,hat){const o=makeFarmer();const u=o.userData;u.basket.visible=false;u.cage.visible=false;u.torso.material=M(shirt);u.armM.forEach(a=>a.material=M(shirt));u.hat.forEach(h=>h.material=M(hat||0xf0d070));o.visible=true;return o}
+const NPCS=[];// {id,key,o,tgt,act,at,L}
+function npcFor(id,key){let n=NPCS.find(x=>x.id===id&&x.key===key);if(n)return n;const col={lumber:[0xd84a2a,0xf0a020],planter:[0x4a9a3a,0xf0d070],driver:[0x2a5aa8,0xffffff],sawyer:[0x8a5a2a,0x5a5a5a],carpenter:[0x6a4a9a,0xe0e0e0],sales:[0x2a3a5a,0x2a3a5a],ranger:[0xe86a1a,0xd83a2a]}[id]||[0x888888,0xffffff];
+  const o=makeWorker(col[0],col[1]);const s=STAFF.find(x=>x.id===id);n={id,key,o,tgt:null,act:'',at:0,walk:0,L:label(`<div class="pl" style="font-size:11px">${s.em}${s.n}${key!=null&&key!==''?' ('+LOTS[key].n.slice(-1)+')':''}</div>`,V(),12)};
+  // 伐木工手上拿斧頭、司機開卡車
+  if(id==='lumber'||id==='ranger'){const a=new THREE.Group();a.position.set(0,-.45,.05);o.userData.arms[1].add(a);const h=mesh(G.cyl,M(0x8a5a2a));h.scale.set(.04,.75,.04);h.rotation.x=1.3;h.position.y=-.15;a.add(h);if(id==='lumber'){const b=mesh(G.box,M(0xb8c0c8));b.scale.set(.06,.28,.24);b.position.set(0,-.12,.42);a.add(b)}else{const f=mesh(G.cyl,M(0xd83a2a));f.scale.set(.12,.4,.12);f.position.set(0,-.1,.3);a.add(f)}}
+  if(id==='driver'){n.truck=vehModel('truck');scene.add(n.truck);n.o.visible=false}
+  const home={lumber:()=>{const L=LOTS[key];return V(L.x-L.w/2-1,0,L.z+L.d/2+1)},planter:()=>{const L=LOTS[key];return V(L.x+L.w/2+.8,0,L.z+L.d/2+.8)},driver:()=>V(-16,0,4.5),sawyer:()=>V(-21.4,0,5.2),carpenter:()=>V(12,0,6.8),sales:()=>V(28,0,-1.4),ranger:()=>V(0,0,-12)}[id];
+  n.home=home();o.position.copy(n.home);NPCS.push(n);return n}
+function npcSync(){const want=new Set();STAFF.forEach(s=>{const v=S.staff[s.id];if(!v)return;if(s.per==='lot'){for(const k in v)if(v[k]&&S.lots[k]&&S.lots[k].own){want.add(s.id+'|'+k);npcFor(s.id,+k)}}else{want.add(s.id+'|');npcFor(s.id,'')}});
+  for(let q=NPCS.length-1;q>=0;q--){const n=NPCS[q];if(!want.has(n.id+'|'+n.key)){scene.remove(n.o);if(n.truck)scene.remove(n.truck);dropL(n.L);NPCS.splice(q,1)}}}
+function npcGo(n,v,act,then){n.tgt=v.clone();n.then=then;n.act=act||''}
+function npcTick(dt){for(const n of NPCS){const o=n.o,u=o.userData;n.at+=dt;o.visible=!S.inHome&&n.id!=='driver';
+  if(n.id==='driver'){driverTick(n,dt);continue}
+  let mv=0;if(n.tgt){const dx=n.tgt.x-o.position.x,dz=n.tgt.z-o.position.z,d=Math.hypot(dx,dz);if(d>.15){const sp=Math.min(d,3.4*dt);o.position.x+=dx/d*sp;o.position.z+=dz/d*sp;o.rotation.y=lerpA(o.rotation.y,Math.atan2(dx,dz),dt*10);mv=1}else{n.tgt=null;const th=n.then;n.then=null;n.at=0;th&&th()}}
+  o.position.y=groundH(o.position.x,o.position.z);n.walk+=dt*(mv?9:0);const sw=mv?Math.sin(n.walk):0;u.legs[0].rotation.x=sw*.6;u.legs[1].rotation.x=-sw*.6;u.arms[0].rotation.x=sw*.5;
+  // 工作動作
+  if(n.act==='chop'&&!mv){u.arms[1].rotation.x=-1.4+Math.abs(Math.sin(n.at*8))*1.6;if(Math.sin(n.at*8)>.98&&Math.random()<.5)SFX.hammer&&Math.hypot(P.pos.x-o.position.x,P.pos.z-o.position.z)<12&&SFX.hammer()}
+  else if(n.act==='plant'&&!mv){u.body.position.y=-.25;u.arms[1].rotation.x=-1+Math.sin(n.at*6)*.3}
+  else if(n.act==='saw'||n.act==='hammer'){u.arms[1].rotation.x=-1.1+Math.sin(n.at*(n.act==='saw'?10:7))*.6;u.arms[0].rotation.x=-.8}
+  else{u.body.position.y=0;if(!mv)u.arms[1].rotation.x=0}
+  // 沒事做就走回崗位，偶爾走動
+  if(!n.tgt&&!n.busy){if(n.id==='sawyer'){n.act=S.saw.cur?'saw':''}else if(n.id==='carpenter'){n.act=S.benches.some(Boolean)?'hammer':'';if(n.at>6){n.at=0;const bi=Math.floor(Math.random()*benchN());npcGo(n,V(14-2.8+bi*1.9,0,6.8),n.act)}}
+    else if(n.id==='ranger'){if(n.at>2){n.at=0;const fi=Object.keys(S.fires)[0],bb=S.beasts[0];let tg;if(fi!=null){const L=LOTS[fi];tg=V(L.x,0,L.z+L.d/2+1.2)}else if(bb){const L=LOTS[bb.li];tg=V(L.x+rand(-3,3),0,L.z+L.d/2+1.2)}else tg=V(rand(-26,28),0,[-7,-20,-33,-46][Math.floor(rand(0,4))]);npcGo(n,tg,'')}}
+    else if(n.id==='sales'){if(n.at>8){n.at=0;npcGo(n,Math.random()<.5?n.home:V(PLACES.market.rx,0,PLACES.market.rz),'')}}
+    else if(Math.hypot(o.position.x-n.home.x,o.position.z-n.home.z)>.5)npcGo(n,n.home,'')}
+  n.L.pos.copy(o.position).setY(o.position.y+2.1)}}
+// 運材司機開卡車：林班 → 鋸木廠
+function driverTick(n,dt){const t=n.truck;t.visible=!S.inHome;if(!n.route){t.position.set(n.home.x,0,n.home.z);t.rotation.y=Math.PI/2;n.L.pos.copy(t.position).setY(3.2);return}
+  const r=n.route;const a=r.pts[r.k],b=r.pts[r.k+1];if(!b){n.route=null;return}const d=a.distanceTo(b);r.u+=dt*7/d;if(r.u>=1){r.u=0;r.k++;if(r.k===r.load){r.full=true}return}
+  t.position.lerpVectors(a,b,r.u);t.position.y=groundH(t.position.x,t.position.z);t.rotation.y=lerpA(t.rotation.y,Math.atan2(b.x-a.x,b.z-a.z),dt*6);t.userData.bed.visible=!!r.full;n.L.pos.copy(t.position).setY(t.position.y+3.2);
+  if(Math.random()<dt*14)smokeAt(t,V(.5,1.9,-.6));t.userData.wheels.forEach(w=>w.rotation.x+=dt*8)}
+function driverRun(i){const n=NPCS.find(x=>x.id==='driver');if(!n||n.route)return;const L=LOTS[i];const pile=V(L.x+L.w/2-1,0,L.z+L.d/2+2.4);const H=n.home.clone();const pts=[H,V(0,0,4.5),V(0,0,-7),V(pile.x,0,-7),pile,V(pile.x,0,-7),V(0,0,-7),V(0,0,4.5),H];n.route={pts,k:0,u:0,load:4,full:false}}
+/* ---- 車子（玩家騎的、司機開的） ---- */
+function vehModel(id){const g=new THREE.Group();const W=[];const wheel=(r,x,y,z,w)=>{const q=new THREE.Group();q.position.set(x,y,z);g.add(q);const t=mesh(new THREE.CylinderGeometry(r,r,w||.2,14),M(0x22252b));t.rotation.z=Math.PI/2;q.add(t);const h=mesh(new THREE.CylinderGeometry(r*.5,r*.5,(w||.2)+.02,10),M(0xc8ccd2));h.rotation.z=Math.PI/2;q.add(h);W.push(q)};
+  const bed=new THREE.Group();g.add(bed);
+  if(id==='cart'){B(.9,.08,1,0x9a6a3a,0,.55,.95,g);for(const s of [-1,1])B(.06,.28,1,0x7a4a22,s*.45,.7,.95,g);B(.9,.28,.06,0x7a4a22,0,.7,1.43,g);wheel(.28,0,.28,.95,.12);for(const s of [-1,1]){const h=mesh(G.cyl,M(0x7a4a22));h.scale.set(.03,.9,.03);h.rotation.x=1.2;h.position.set(s*.3,.75,.35);g.add(h)}bed.position.set(0,.6,.95)}
+  else if(id==='atv'){B(.9,.35,1.4,0x3a8a3a,0,.6,0,g);B(.5,.15,.6,0x2a2a2a,0,.85,-.15,g);B(.95,.1,.4,0x2a2a2a,0,.8,.55,g);B(.95,.1,.4,0x2a2a2a,0,.8,-.6,g);for(const sx of [-1,1])for(const sz of [-1,1])wheel(.3,sx*.55,.3,sz*.5,.26);const hb=mesh(G.cyl,M(0x2a2a2a));hb.scale.set(.03,.8,.03);hb.rotation.z=Math.PI/2;hb.position.set(0,1.05,.45);g.add(hb);bed.position.set(0,.95,-.65)}
+  else if(id==='loader'){B(1.2,.6,1.2,0xe8a020,0,.8,.7,g);B(.9,.7,.8,0xbfe4f4,0,1.45,.7,g);B(1.3,.12,1.8,0x5a5a5a,0,.7,-.9,g);for(const s of [-1,1]){const p=mesh(G.box,M(0x3a3a3a));p.scale.set(.08,.8,.08);p.position.set(s*.6,1.1,-1.75);g.add(p)}wheel(.5,-.68,.5,.7,.3);wheel(.5,.68,.5,.7,.3);wheel(.35,-.68,.35,-1.1,.25);wheel(.35,.68,.35,-1.1,.25);const ex=mesh(G.cyl,M(0x3a3a3a));ex.scale.set(.07,.6,.07);ex.position.set(.45,1.5,1.1);g.add(ex);bed.position.set(0,.8,-.9)}
+  else if(id==='truck'){B(1.5,1,1.3,0xc83a2a,0,1.1,1.5,g);B(1.4,.5,.05,0xbfe4f4,0,1.35,2.16,g);B(1.5,.2,3.2,0x4a4a4a,0,.65,-.6,g);for(const s of [-1,1])for(const z of [-1.9,-.5,.6]){const p=mesh(G.box,M(0x2a2a2a));p.scale.set(.08,1,.08);p.position.set(s*.7,1.2,z);g.add(p)}
+    for(const s of [-1,1]){wheel(.38,s*.72,.38,1.5,.26);wheel(.38,s*.72,.38,-.4,.26);wheel(.38,s*.72,.38,-1.6,.26)}const ex=mesh(G.cyl,M(0x7a7a7a));ex.scale.set(.07,1,.07);ex.position.set(.7,1.9,.8);g.add(ex);bed.position.set(0,.8,-.6)}
+  else if(id==='harv'){B(1.4,.7,2.2,0xf0c020,0,.9,0,g);B(1,.8,.9,0xbfe4f4,0,1.6,.2,g);for(const s of [-1,1]){B(.35,.5,2.4,0x2a2a2a,s*.75,.35,0,g)}const arm=new THREE.Group();arm.position.set(0,1.4,1);g.add(arm);const a1=mesh(G.box,M(0xe0a010));a1.scale.set(.2,.2,1.8);a1.position.z=.8;a1.rotation.x=-.3;arm.add(a1);const cl=mesh(new THREE.TorusGeometry(.35,.07,6,12,Math.PI*1.4),M(0x5a5a5a));cl.position.set(0,.2,1.7);arm.add(cl);g.userData.arm=arm;bed.position.set(0,1.3,-.8)}
+  g.userData.wheels=W;g.userData.bed=bed;if(id==='truck'||id==='loader'||id==='harv'){for(let q=0;q<9;q++){const l=logModel(SKIN.ks3[q%3]);l.scale.set(.9,.9,.9);l.rotation.y=Math.PI/2;l.position.set(((q%3)-1)*.38,Math.floor(q/3)*.3+.15,0);bed.add(l)}}g.traverse(m=>{if(m.isMesh)m.castShadow=true});return g}
+function smokeAt(o,local){o.updateMatrixWorld(true);const p=o.localToWorld(local.clone());particle(p,V(rand(-.15,.15),rand(.7,1.2),rand(-.15,.15)),[0x1e1e1e,0x333333,0x4a4a4a][Math.floor(rand(0,3))],rand(.08,.14),rand(.9,1.4),.35)}
+let VEHM=null;function vehSync(){const v=vehOf();if(VEHM&&VEHM.userData.id===v.id)return;if(VEHM){P.o.remove(VEHM);VEHM=null}const u=P.o.userData;u.legs.forEach(l=>l.rotation.set(0,0,0));u.body.position.set(0,0,0);if(BACK.parent!==u.body){u.body.add(BACK);BACK.position.set(0,.85,-.42)}
+  if(!v.id)return;VEHM=vehModel(v.id);VEHM.userData.id=v.id;P.o.add(VEHM);if(v.id!=='cart'&&v.id!=='atv'){VEHM.userData.bed.children.slice().forEach(c=>VEHM.userData.bed.remove(c));VEHM.userData.bed.add(BACK);BACK.position.set(0,0,0)}}
+function vehPose(speed,dt){const v=vehOf();if(!VEHM)return;const u=P.o.userData;VEHM.userData.wheels.forEach(w=>w.rotation.x+=speed*dt/.3);
+  if(v.id==='cart'){u.arms.forEach(a=>a.rotation.x=-1.1)}else{const lift={atv:.55,loader:.95,truck:1.05,harv:1.2}[v.id]||.5;const z={truck:1.4,loader:.6,harv:.2}[v.id]||0;u.body.position.set(0,lift,z);u.legs.forEach(l=>l.rotation.x=-1.3);u.arms.forEach(a=>a.rotation.x=-1.1)}
+  if(v.smoke&&speed>.4&&Math.random()<dt*20)smokeAt(P.o,{atv:V(.3,.6,-.8),loader:V(.45,1.9,1.1),truck:V(.7,2.5,.8),harv:V(.5,2,-1)}[v.id]||V(0,1,-1))}
+/* ---- 火災、野生動物（畫面上） ---- */
+const FIRES=new Map();function fireSync(){for(const [i,g] of FIRES)if(!S.fires[i]){scene.remove(g);FIRES.delete(i)}for(const i in S.fires){if(FIRES.has(i))continue;const g=new THREE.Group();const L=LOTS[i];g.position.set(L.x,groundH(L.x,L.z),L.z);for(let q=0;q<8;q++){const f=sprite('🔥',rand(1.2,2));f.position.set(rand(-L.w/2+1,L.w/2-1),rand(.6,1.6),rand(-L.d/2+.5,L.d/2-.5));g.add(f)}scene.add(g);FIRES.set(i,g)}}
+function fireTick(t){for(const [i,g] of FIRES){g.children.forEach((f,q)=>{f.scale.setScalar(1.4+Math.sin(t*9+q)*.3);f.position.y=1+Math.abs(Math.sin(t*5+q))*.6});if(Math.random()<.4)particle(g.position.clone().add(V(rand(-3,3),2.5,rand(-2,2))),V(rand(-.3,.3),rand(2,3),rand(-.3,.3)),Math.random()<.5?0x5a5a5a:0x3a3a3a,rand(.2,.35),1.6,.4)}}
+function beastModel(k){const g=new THREE.Group();const c=k==='bear'?0x2a2220:0x5a4030;const bd=mesh(G.sph,M(c));bd.scale.set(k==='bear'?.75:.55,k==='bear'?.6:.42,k==='bear'?1.1:.85);bd.position.y=k==='bear'?.9:.55;g.add(bd);const h=mesh(G.sph,M(c));h.scale.setScalar(k==='bear'?.42:.32);h.position.set(0,k==='bear'?1.2:.62,k==='bear'?.9:.75);g.add(h);
+  const sn=mesh(G.sph,M(k==='bear'?0x6a5040:0xc89080));sn.scale.set(.16,.13,.18);sn.position.set(0,k==='bear'?1.1:.55,k==='bear'?1.28:1.05);g.add(sn);for(const s of [-1,1]){const e=mesh(G.sph,M(c));e.scale.setScalar(.12);e.position.set(s*.25,k==='bear'?1.55:.88,k==='bear'?.85:.7);g.add(e);const ey=mesh(G.sph,M(0x111111));ey.scale.setScalar(.05);ey.position.set(s*.14,k==='bear'?1.28:.7,k==='bear'?1.25:1.0);g.add(ey)}
+  if(k==='boar')for(const s of [-1,1]){const t=mesh(G.cone,M(0xfff8e8));t.scale.set(.04,.18,.04);t.position.set(s*.12,.5,1.12);t.rotation.x=-.8;g.add(t)}const legs=[];for(const sx of [-1,1])for(const sz of [-1,1]){const l=mesh(G.cyl,M(c));l.scale.set(.13,k==='bear'?.6:.4,.13);l.position.set(sx*.32,k==='bear'?.3:.2,sz*.45);g.add(l);legs.push(l)}g.userData.legs=legs;return g}
+const BEASTV=[];function beastSync(scared){while(BEASTV.length>S.beasts.length){const b=BEASTV.pop();if(scared){const o=b.o;const run={t:0};const go=()=>{run.t+=.03;o.position.z-=.5;o.position.y=groundH(o.position.x,o.position.z);if(run.t<1)setTimeout(go,30);else scene.remove(o)};o.rotation.y=Math.PI;go()}else scene.remove(b.o);dropL(b.L)}
+  S.beasts.forEach((b,q)=>{if(!BEASTV[q]){const o=beastModel(b.k);const L=LOTS[b.li];o.position.set(L.x+rand(-3,3),0,L.z+rand(-2,2));scene.add(o);BEASTV[q]={o,a:rand(0,6),L:label(`<div class="pl warn">${EVS[b.k].em} ${EVS[b.k].n}！</div>`,V(),18),li:b.li}}})}
+function beastTick(dt,t){BEASTV.forEach((b,q)=>{const L=LOTS[b.li];b.a+=dt*.6;const o=b.o;o.position.x=L.x+Math.cos(b.a)*3.2;o.position.z=L.z+Math.sin(b.a*1.3)*2;o.position.y=groundH(o.position.x,o.position.z);o.rotation.y=Math.atan2(-Math.sin(b.a)*3.2,Math.cos(b.a*1.3)*2.6);o.userData.legs.forEach((l,k)=>l.rotation.x=Math.sin(t*8+k*1.6)*.5);b.L.pos.copy(o.position).setY(o.position.y+2.4)})}
+/* ---- 處理事件佇列：倒樹、種樹、運材、鋸木 ---- */
+function evqTick(){while(EVQ.length){const e=EVQ.shift();if(e.t==='fell'){if(e.who==='lumber'){const n=NPCS.find(x=>x.id==='lumber'&&x.key===e.i);const s=LOTV[e.i].slots[e.j];if(n&&!n.busy&&!s.falling){s.falling=true;s.fallT=performance.now();n.busy=1;npcGo(n,V(s.x+.9,0,s.z+.9),'chop',()=>{n.act='chop';setTimeout(()=>{n.busy=0;n.act='';s.falling=false;fallAnim(e.i,e.j,Math.PI*.75)},1600)})}else fallAnim(e.i,e.j)}else fallAnim(e.i,e.j,e.who==='me'?Math.atan2(LOTV[e.i].slots[e.j].x-P.pos.x,LOTV[e.i].slots[e.j].z-P.pos.z):null)}
+  else if(e.t==='plant'){const s=LOTV[e.i].slots[e.j];const n=NPCS.find(x=>x.id==='planter'&&x.key===e.i);if(n&&!n.busy){n.busy=1;npcGo(n,V(s.x+.7,0,s.z+.7),'plant',()=>{n.act='plant';setTimeout(()=>{n.busy=0;n.act='';puff(V(s.x,s.y+.3,s.z),6,0x8ad06a,.1);lotSync(e.i)},1100)})}else{lotSync(e.i);puff(V(s.x,s.y+.3,s.z),5,0x8ad06a,.1)}}
+  else if(e.t==='haul'){driverRun(e.i);lotSync(e.i)}else if(e.t==='burn'||e.t==='trample'){lotSync(e.i)}else if(e.t==='made'){const b=BENCHV[e.bi];if(b)confetti(b.getWorldPosition(V()).add(V(0,1,0)),18)}}}
+
+/* ======================= 經營系統 ======================= */
+function tutDo(k){S.tc=S.tc||{};S.tc[k]=(S.tc[k]||0)+1}const tcN=k=>(S.tc&&S.tc[k])||0;
+const MONEY_MAX=100000000;// 每個系列最多賺 1 億
+function earn(v,kind){v=Math.round(v);if(v>0){v=Math.min(v,MONEY_MAX-S.money);if(v<=0){if(!(earn.t>performance.now())){earn.t=performance.now()+60000;try{notify('💰 林場的錢已經到 1 億（這個系列的上限），不能再賺錢了')}catch(e){}}return}}if(!v)return;
+  S.money+=v;if(EMBED)try{parent.postMessage({t:'earn',v},'*')}catch(e){}const lv0=woodLv();S.earn=(S.earn||0)+v;S.flow.push([S.t,v,kind||'sell']);if(woodLv()>lv0)levelUp(lv0,woodLv());
+  if(S.debt&&S.money>0){const p=Math.min(S.debt,Math.floor(S.money));S.debt-=p;S.money-=p}}
+function spend(v,kind){v=Math.round(v);if(S.money<v){hint('nomoney',`💵 錢不夠！還差 💵${(v-Math.floor(S.money)).toLocaleString()}`);return false}S.money-=v;S.flow.push([S.t,-v,kind||'buy']);SFX.cash&&SFX.cash();return true}
+function notify(msg,big){S.notes.unshift([S.t,msg]);if(S.notes.length>60)S.notes.length=60;if(OFFSIM)return;if(big)banner(msg,6000);else toast(msg,3600)}
+var OFFSIM=false;const EVQ=[];const fx=e=>{if(!OFFSIM)EVQ.push(e)};
+function unlocksAt(l){const u=[];TK.forEach(k=>{if(TREES[k].lv===l)u.push(TREES[k].em+TREES[k].n)});PRODUCTS.forEach(p=>{if(p.lv===l)u.push(p.em+p.n)});LOTS.forEach(L=>{if(L.lv===l&&L.i)u.push('🌲'+L.n)});
+  STAFF.forEach(s=>{if(s.lv===l)u.push(s.em+s.n)});MACH.forEach(m=>{if(m.lv===l)u.push(m.em+m.n)});TOOLS.forEach(t=>{if(t.lv===l&&t.p)u.push(t.em+t.n)});VEHS.forEach(v=>{if(v.lv===l&&v.id)u.push(v.em+v.n)});Object.entries(EVS).forEach(([k,e])=>{if(e.lv===l&&!e.bad)u.push(e.em+e.n)});return u}
+function levelUp(a,b){for(let l=a+1;l<=b;l++){const u=unlocksAt(l);if(OFFSIM){S.notes.unshift([S.t,`🎉 等級 ${l}${u.length?'：解鎖 '+u.join('、'):''}`]);continue}setTimeout(()=>{SFX.fanfare();confetti(P.pos,80);banner(`🎉 林場等級升到 <b>${l}</b>！${u.length?'<br>解鎖：'+u.slice(0,8).join('、'):''}`,7000);S.notes.unshift([S.t,`🎉 等級 ${l}${u.length?'：解鎖 '+u.join('、'):''}`])},300+(l-a-1)*2500)}}
+/* ---- 林班 ---- */
+const lotOK=i=>S.lots[i]&&S.lots[i].own&&!S.slide[i];
+const staffOn=(id,key)=>{const v=S.staff[id];return !!(v&&(key==null?v:v[key]))};
+function fellSlot(i,j,who){const L=lotState(i),s=L.slots[j];if(s.st!=='tree')return 0;const T=TREES[s.k];s.st='stump';s.g=0;S.eco=clamp((S.eco==null?60:S.eco)-.35,0,100);S.cut=(S.cut||0)+1;tutDo('chop');fx({t:'fell',i,j,k:s.k,who});return T.logs}
+function plantSlot(i,j,k,free){const L=lotState(i),s=L.slots[j];if(s.st==='tree'||s.st==='sap')return false;const T=TREES[k];if(T.lv>woodLv())return false;
+  if(!free){if(S.freeSap>0)S.freeSap--;else{if(S.money<T.sap)return false;S.money-=T.sap;S.flow.push([S.t,-T.sap,'sap'])}}s.k=k;s.st='sap';s.g=0;S.eco=clamp((S.eco==null?60:S.eco)+.45,0,100);tutDo('plant');fx({t:'plant',i,j});return true}
+function growOf(k){return prof().crop*TREES[k].gm}
+/* ---- 原木、木板、作品 ---- */
+function carryAdd(k,n){let a=0;while(n-->0&&S.carry.length<carryCap()){S.carry.push(k);a++}return a}
+function sellCarry(){if(!S.carry.length){hint('nolog','🪵 身上沒有原木可以賣');return}let v=0;const cnt={};S.carry.forEach(k=>{v+=logPrice(k);cnt[k]=(cnt[k]||0)+1});S.carry=[];earn(v,'log');SFX.cash();tutDo('sell');
+  floatAt(P.pos.clone().setY(2.4),'+💵'+v.toLocaleString(),'#c07a00');toast(`💵 賣了 ${Object.entries(cnt).map(([k,n])=>TREES[k].n+'×'+n).join('、')}，得到 💵${v.toLocaleString()}`,3200)}
+function sawDrop(){if(!S.carry.length)return 0;const room=400-S.saw.q.length;const n=Math.min(room,S.carry.length);S.saw.q.push(...S.carry.splice(0,n));tutDo('saw');return n}
+const SAW_T=()=>24/(S.mach.bandsaw?2:1)/(S.staff.sawyer?2:1);
+function sawCollect(){let n=0;for(const k in S.saw.out){const room=whCap()-whCount();const m=Math.min(room,S.saw.out[k]);if(m<=0)break;S.wh[k]=(S.wh[k]||0)+m;S.saw.out[k]-=m;n+=m;if(!S.saw.out[k])delete S.saw.out[k]}return n}
+const boardsHave=w=>w.every(([k,n])=>(S.wh[k]||0)>=n);
+function benchStart(bi,id,rep){const p=PROD(id);if(!p||p.lv>woodLv())return false;if(!boardsHave(p.w)){return false}p.w.forEach(([k,n])=>{S.wh[k]-=n;if(!S.wh[k])delete S.wh[k]});S.benches[bi]={id,t0:S.t,dur:p.t,rep:rep!=null?rep:(S.benches[bi]&&S.benches[bi].rep)};tutDo('craft');return true}
+function benchDone(bi,offline){const b=S.benches[bi];if(!b)return;if(whCount()>=whCap()){b.full=1;return}b.full=0;S.prods[b.id]=(S.prods[b.id]||0)+1;const first=!S.made[b.id];S.made[b.id]=(S.made[b.id]||0)+1;const p=PROD(b.id);fx({t:'made',bi,id:b.id});
+  if(first&&!offline)notify(`${p.em} 第一次做出「${p.n}」！已收進倉庫（作品集 +1）`,1);S.benches[bi]=null;if(b.rep&&staffOn('carpenter')&&benchStart(bi,b.id,true)){}else if(b.rep&&staffOn('carpenter')&&!offline)notify(`🧑‍🔧 木工師傅：木板不夠做「${p.n}」了`)}
+function sellProds(list,mul,kind){let v=0;for(const [id,n] of list){if(!(S.prods[id]>=n))continue;S.prods[id]-=n;if(!S.prods[id])delete S.prods[id];v+=prodPrice(id,S.mach.kiln)*n*(mul||1)}v=Math.round(v);if(v)earn(v,kind||'prod');return v}
+function sellBoards(k,n){n=Math.min(n,S.wh[k]||0);if(!n)return 0;S.wh[k]-=n;if(!S.wh[k])delete S.wh[k];const v=Math.round(boardPrice(k)*(S.mach.kiln?1.25:1)*n);earn(v,'board');return v}
+/* ---- 訂單 ---- */
+function newOrder(){const ok=PRODUCTS.filter(p=>p.lv<=woodLv());if(!ok.length)return;const r=Math.random;const n=1+(woodLv()>=6&&r()<.5?1:0)+(woodLv()>=14&&r()<.35?1:0);const items=[];
+  for(let i=0;i<n;i++){const p=ok[Math.floor(Math.pow(r(),.6)*ok.length)];if(items.some(x=>x[0]===p.id))continue;items.push([p.id,1+Math.floor(r()*(p.v<1000?4:p.v<5000?2:1))])}
+  const base=items.reduce((a,[id,q])=>a+PROD(id).v*q,0);const c=CUSTS[Math.floor(r()*CUSTS.length)];S.orders.push({id:Date.now()+Math.floor(r()*1e6),em:c[0],who:c[1],items,pay:Math.round(base*1.55*(evNow('expo')?2:1)*(1+showBonus())),until:S.t+DAY*(n>1?1.2:.8)})}
+const orderOK=o=>o.items.every(([id,q])=>(S.prods[id]||0)>=q);
+function orderDo(o,auto){if(!orderOK(o))return false;o.items.forEach(([id,q])=>{S.prods[id]-=q;if(!S.prods[id])delete S.prods[id]});S.orders=S.orders.filter(x=>x!==o);earn(o.pay,'order');tutDo('order');S.ordDone=(S.ordDone||0)+1;
+  if(!OFFSIM){SFX.cash();SFX.fanfare&&SFX.fanfare();toast(`${o.em} ${o.who}收到貨很滿意！得到 💵${o.pay.toLocaleString()}${auto?'（業務員交貨）':''}`,3600)}return true}
+/* ---- 事件 ---- */
+function evStart(k,li){const e=EVS[k];if(k==='fire'){const owned=Object.keys(S.lots).filter(i=>lotOK(i)&&lotState(i).slots.some(s=>s.st==='tree'||s.st==='sap'));if(!owned.length)return;const i=li!=null?li:owned[Math.floor(Math.random()*owned.length)];
+    if(S.mach.sprinkler&&!S.sprUsed){S.sprUsed=1;notify(`🚿 林班 ${LOTS[i].n.slice(-1)} 冒煙了，灑水塔馬上撲滅！`);return}S.sprUsed=0;S.fires[i]={n:1,t:S.t};notify(`🔥 <b>${LOTS[i].n} 發生森林火災</b>！快去林班的圈圈滅火${staffOn('ranger')?'（巡山員已經趕過去）':''}`,1);SFX.bad&&SFX.bad();return}
+  if(k==='bear'||k==='boar'){const owned=Object.keys(S.lots).filter(i=>lotOK(i));if(!owned.length)return;const i=owned[Math.floor(Math.random()*owned.length)];S.beasts.push({li:+i,k,t:S.t});notify(`${e.em} ${e.n}：${LOTS[i].n}！${e.d}`,1);SFX.bad&&SFX.bad();return}
+  if(k==='termite'){if(S.mach.termite)return;let lost=0;for(const w in S.wh){const n=Math.ceil(S.wh[w]*.15);S.wh[w]-=n;lost+=n;if(S.wh[w]<=0)delete S.wh[w]}if(lost)notify(`🐜 白蟻入侵倉庫，蛀掉 ${lost} 片木板！（買防蟲處理槽就不怕）`,1);return}
+  if(k==='slide'){const owned=Object.keys(S.lots).filter(i=>lotOK(i)&&+i>0);if(!owned.length)return;const i=owned[Math.floor(Math.random()*owned.length)];S.slide[i]=1;notify(`⛰️ <b>土石流</b>！${LOTS[i].n} 被土石蓋住了。砍完要記得種回去！到林班的圈圈花錢整地`,1);SFX.bad&&SFX.bad();return}
+  S.ev={k,end:S.t+(e.len||DAY*.3)};notify(`${e.em} 事件：<b>${e.n}</b>！${e.d}`,1);SFX.ding&&SFX.ding()}
+/* ---- 每天 ---- */
+function billsOf(){let w=0;STAFF.forEach(s=>{const v=S.staff[s.id];if(!v)return;w+=s.per==='lot'?Object.values(v).filter(Boolean).length*s.wage:s.wage});const m=MACH.reduce((a,x)=>a+(S.mach[x.id]&&x.day?x.day:0),0);let f=0;for(const i in S.lots)if(S.lots[i].own)f+=LOTS[i].rent;const vh=vehOf().id?Math.round(vehOf().p/400):0;return {w,m,f,vh,tot:Math.round((w+m+f+vh)*prof().bill)}}
+function newDay(day,offline){const B=billsOf();if(B.tot){let pay=B.tot;if(S.money<pay){if(offline&&prof().protect){pay=Math.max(0,Math.floor(S.money))}else{S.debt+=pay-Math.floor(Math.max(0,S.money));pay=Math.floor(Math.max(0,S.money))}}S.money-=pay;S.flow.push([S.t,-pay,'bill']);S.lastBill=B;if(!offline)notify(`🧾 今天的帳單：薪水 💵${B.w}、設備 💵${B.m}、林班租金 💵${B.f}${B.vh?'、車子保養 💵'+B.vh:''}（共 💵${pay}）`)}
+  // 永續值：樹苗多就慢慢變好
+  let sap=0,stump=0;for(const i in S.lots){if(!lotOK(i))continue;lotState(i).slots.forEach(s=>{if(s.st==='sap'||s.st==='tree')sap++;else if(s.st==='stump'||s.st==='burn'||s.st==='empty')stump++})}S.eco=clamp((S.eco==null?60:S.eco)+(sap>stump?2:-3),0,100);
+  S.orders=S.orders.filter(o=>{if(S.t>o.until){if(!offline)notify(`⌛ ${o.em}${o.who}的訂單過期了`);return false}return true})}
+/* ---- 每一小段時間 ---- */
+function step(dt,offline){S.t+=dt;const prot=offline&&prof().protect;const w=curW();
+  const day=dayOf(S.t);if(S.day<0)S.day=day;if(day!==S.day){S.day=day;newDay(day,offline)}
+  // 林班：樹苗長大、員工
+  S.stT=S.stT||{};for(const i in S.lots){if(!lotOK(i))continue;const L=lotState(i);
+    for(const s of L.slots)if(s.st==='sap'){s.g+=dt/growOf(s.k);if(s.g>=1){s.g=1;s.st='tree'}}
+    if(S.fires[i]||S.beasts.some(b=>b.li==i))continue;
+    if(staffOn('lumber',i)){S.stT['l'+i]=(S.stT['l'+i]||0)+dt;while(S.stT['l'+i]>=30){S.stT['l'+i]-=30;const j=L.slots.findIndex(s=>s.st==='tree');if(j<0){S.stT['l'+i]=0;break}const n=fellSlot(i,j,'lumber');L.pile=(L.pile||0)+n;L.pileK=L.pileK||{};L.pileK[L.slots[j].k]=(L.pileK[L.slots[j].k]||0)+n}}
+    if(staffOn('planter',i)){S.stT['p'+i]=(S.stT['p'+i]||0)+dt;while(S.stT['p'+i]>=20){S.stT['p'+i]-=20;const j=L.slots.findIndex(s=>s.st!=='tree'&&s.st!=='sap');if(j<0){S.stT['p'+i]=0;break}const k=TREES[L.auto]&&TREES[L.auto].lv<=woodLv()?L.auto:K0;if(!plantSlot(i,j,k)){S.stT['p'+i]=0;break}}}}
+  // 運材司機：把林班旁的原木堆載走
+  if(staffOn('driver')){S.stT.d=(S.stT.d||0)+dt;if(S.stT.d>=45){S.stT.d=0;let cap=S.mach.flume?40:20;for(const i in S.lots){const L=S.lots[i];if(!L.pile||cap<=0)continue;const take=Math.min(L.pile,cap);cap-=take;L.pile-=take;let left=take;const ks=Object.keys(L.pileK||{});const got=[];for(const k of ks){const m=Math.min(left,L.pileK[k]);L.pileK[k]-=m;left-=m;for(let q=0;q<m;q++)got.push(k);if(!L.pileK[k])delete L.pileK[k]}
+    if(S.saw.q.length+got.length<=400)S.saw.q.push(...got);else{const v=got.reduce((a,k)=>a+logPrice(k)*.9,0);earn(v,'log')}fx({t:'haul',i:+i,n:got.length})}}}
+  // 鋸木廠
+  if(S.saw.q.length||S.saw.cur){if(!S.saw.cur&&S.saw.q.length){const outN=Object.values(S.saw.out).reduce((a,b)=>a+b,0);if(outN<60||staffOn('sawyer'))S.saw.cur={k:S.saw.q.shift(),g:0}}
+    if(S.saw.cur){S.saw.cur.g+=dt/SAW_T();if(S.saw.cur.g>=1){const k=S.saw.cur.k;S.saw.cur=null;S.saw.out[k]=(S.saw.out[k]||0)+2;S.saw.dust+=1;fx({t:'board',k});if(staffOn('sawyer'))sawCollect()}}}
+  if(S.mach.charcoal&&S.saw.dust>=5){const n=Math.floor(S.saw.dust/5);S.saw.dust-=n*5;S.saw.coal+=n}
+  // 工作台
+  for(let bi=0;bi<benchN();bi++){const b=S.benches[bi];if(b&&S.t>=b.t0+b.dur)benchDone(bi,offline)}
+  // 展示館：訪客門票、作品帶來的人氣
+  const disp=(S.show||[]).filter(Boolean);if(disp.length){S.showCash=(S.showCash||0)+disp.reduce((a,id)=>a+PROD(id).v,0)*.012*dt/3600*(S.mach.show3?1.5:1)*prof().price*24/24}
+  // 訂單
+  if(S.ordT==null)S.ordT=0;S.ordT+=dt;if(S.ordT>=DAY/8){S.ordT=0;if(S.orders.length<3+(woodLv()>=12?1:0)&&PRODUCTS.some(p=>p.lv<=woodLv()))newOrder()}
+  if(staffOn('sales')){for(const o of S.orders.slice())if(orderOK(o))orderDo(o,1);if(whCount()>whCap()*.85){const list=Object.entries(S.prods).filter(([id])=>!S.orders.some(o=>o.items.some(x=>x[0]===id)));if(list.length){const [id]=list.sort((a,b)=>b[1]-a[1])[0];sellProds([[id,1]],.9,'prod')}}if((S.showCash||0)>=1){earn(S.showCash,'show');S.showCash=0}}
+  // 火災、野生動物
+  for(const i in S.fires){const f=S.fires[i];if(!lotOK(i)){delete S.fires[i];continue}if(staffOn('ranger')&&S.t-f.t>90){delete S.fires[i];if(!offline)notify(`🧑‍🚒 巡山員撲滅了 ${LOTS[i].n} 的火災`);continue}
+    if(S.t-f.t>(f.n*80)){const L=lotState(i);const j=L.slots.findIndex(s=>s.st==='tree'||s.st==='sap');if(j<0){delete S.fires[i];continue}L.slots[j].st='burn';f.n++;S.eco=clamp(S.eco-1,0,100);fx({t:'burn',i,j})}}
+  for(const b of S.beasts.slice()){if(staffOn('ranger')&&S.t-b.t>60){S.beasts=S.beasts.filter(x=>x!==b);if(!offline)notify(`🧑‍🚒 巡山員把${EVS[b.k].em}趕跑了`);continue}if(S.t-b.t>(b.n||1)*120){b.n=(b.n||1)+1;const L=lotState(b.li);const j=L.slots.findIndex(s=>s.st==='sap');if(j>=0){L.slots[j].st='empty';fx({t:'trample',i:b.li,j})}}if(S.t-b.t>DAY*.25)S.beasts=S.beasts.filter(x=>x!==b)}
+  // 颱風：成熟的樹被吹倒（變成原木堆）
+  if(w.typhoon&&!prot&&!TUTON){S.tyT=(S.tyT||0)+dt;if(S.tyT>300){S.tyT=0;for(const i in S.lots){if(!lotOK(i))continue;const L=lotState(i);const j=L.slots.findIndex(s=>s.st==='tree');if(j>=0&&Math.random()<.3){const n=fellSlot(i,j,'wind');L.pile=(L.pile||0)+n;L.pileK=L.pileK||{};L.pileK[L.slots[j].k]=(L.pileK[L.slots[j].k]||0)+n}}}}
+  // 隨機事件（每 30 分鐘遊戲時間檢查一次）
+  const pi=Math.floor(S.t/PERIOD);if(pi!==S.lastP){S.lastP=pi;if(!prot&&!TUTON){const lv=woodLv(),r=Math.random();const se=seasonOf(S.t);
+    if(lv>=EVS.fire.lv&&(w.hot||(se===1||se===2)&&curWk()==='sun')&&r<.07)evStart('fire');else if(lv>=EVS.boar.lv&&r<.12)evStart('boar');else if(lv>=EVS.bear.lv&&r<.16)evStart('bear');else if(lv>=EVS.termite.lv&&r<.19)evStart('termite');
+    else if(!S.ev||S.t>S.ev.end){if(lv>=EVS.expo.lv&&r<.24)evStart('expo');else if(lv>=EVS.rush.lv&&r<.29)evStart('rush')}
+    if((S.eco==null?60:S.eco)<25&&lv>=EVS.slide.lv&&Math.random()<.2)evStart('slide')}}}
+function offlineSim(){const last=S.last||Date.now();const away=Math.max(0,(Date.now()-last)/1000);if(away<5)return null;const cap=(prof().ts?6:12)*3600;const gs=Math.min(away,cap)*TS()*(S.speed||1);const m0=S.money,cut0=S.cut||0,ord0=S.ordDone||0;
+  OFFSIM=true;try{let left=gs;while(left>0){const d=Math.min(left,20);step(d,true);left-=d}}finally{OFFSIM=false}S.last=Date.now();return {away,gs,earn:Math.round(S.money-m0),cut:(S.cut||0)-cut0,ord:(S.ordDone||0)-ord0}}
+function dailyGift(){const d=new Date().toDateString();if(S.giftDay===d)return;S.giftDay=d;S.freeSap=(S.freeSap||0)+6;setTimeout(()=>notify('🎁 每日禮物：免費樹苗券 ×6（種樹時自動使用）',1),2500)}
+
+/* ======================= 介面、商店、每一幀 ======================= */
+{const st=document.createElement('style');st.textContent=`
+.box{border-color:#8ac07a;box-shadow:0 3px 0 #5a9a4a,0 5px 12px rgba(0,0,0,.15);color:#2a3a1a}#panel{box-shadow:0 0 0 6px #fff,0 0 0 11px #8ac07a;color:#2a3a1a;font-size:15px}#panel h2{color:#3a6a1a}#panel h3{color:#6a4a1a;margin:10px 0 4px}
+.row{display:flex;align-items:center;gap:8px;padding:8px;margin:6px 0;border-radius:14px;background:#f6faf0;border:2px solid #dce8cc}.row .tx{flex:1;line-height:1.4}.row .tx small{display:block;color:#5a6a4a;font-size:13px}.row .em{font-size:30px;width:40px;text-align:center}
+.row.lock{opacity:.5}.row.own{background:#eef9e2;border-color:#b0d890}.row.warn{background:#fff1e6;border-color:#f0b080}.row button,.pbtn{font-family:inherit;border:none;border-radius:12px;padding:8px 12px;font-size:15px;color:#fff;background:linear-gradient(#5aa8f5,#2f7bd6);box-shadow:0 3px 0 #1f5ea8;white-space:nowrap}
+.row button.g,.pbtn.g{background:linear-gradient(#5ee07a,#2fb04a);box-shadow:0 3px 0 #1f8a38}.row button.o,.pbtn.o{background:linear-gradient(#ffb04a,#e8701a);box-shadow:0 3px 0 #a8501a}.row button.r,.pbtn.r{background:linear-gradient(#f07a6a,#c8402a);box-shadow:0 3px 0 #8a2a1a}.row button:disabled,.pbtn:disabled{opacity:.4}
+.btns2{display:flex;flex-direction:column;gap:5px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}.tabs button{font-family:inherit;border:2px solid #d4e4c4;background:#fff;border-radius:12px;padding:5px 10px;font-size:14px;color:#3a5a2a}.tabs button.on{background:#ffe9a8;border-color:#ffb300}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0}.chips button{font-family:inherit;border:2px solid #d4e4c4;background:#fff;border-radius:12px;padding:6px 10px;font-size:15px}.chips button.on{background:#ffe9a8;border-color:#ffb300}.chips button:disabled{opacity:.4}
+.grid12{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin:6px 0}.grid12 div{background:#eef4e4;border-radius:10px;text-align:center;padding:6px 2px;font-size:22px;line-height:1.1}.grid12 small{display:block;font-size:11px;color:#5a6a4a}
+.bar{height:8px;background:#e4ead8;border-radius:5px;overflow:hidden;margin-top:3px}.bar i{display:block;height:100%;background:linear-gradient(90deg,#8ad06a,#3aa04a)}
+#carry .lab{background:#5a3a1a}#carry button{background:#3a8a3a}#money{color:#3a6a1a}.pl{border-color:#8ac07a;color:#2a3a1a}.ptag{background:#3a8a3a}.pl.warn{background:#fff0e0;border-color:#e8701a;color:#a8401a}.pl.ripe{background:#eaffd8;border-color:#3aa04a}
+.big3{font-size:17px}.note{font-size:13px;color:#6a7a5a}`;document.head.appendChild(st)}
+/* ---- 自動走路（繞過建築和林班） ---- */
+const inBlk=(x,z,m)=>{for(const [bx,bz,w,d] of BLOCKS)if(Math.abs(x-bx)<w/2+m&&Math.abs(z-bz)<d/2+m)return true;return false};
+const NODES=[];for(const x of [-31,-27,-13,1,15,29,38,40.5])for(const z of [-58,-48.2,-35.2,-22.2,-9.2,-7,-3,4.5,9,13,20,24])if(onWalk(x,z)&&!inBlk(x,z,.45))NODES.push(V(x,0,z));
+function segOK(a,b){const d=a.distanceTo(b),n=Math.ceil(d/.4);for(let i=1;i<n;i++){const t=i/n,x=a.x+(b.x-a.x)*t,z=a.z+(b.z-a.z)*t;if(!onWalk(x,z)||inBlk(x,z,.3))return false}return true}
+let ADJ=null;function adj(){if(ADJ)return ADJ;ADJ=NODES.map((a,i)=>NODES.map((b,j)=>i!==j&&a.distanceTo(b)<30&&segOK(a,b)?a.distanceTo(b):0));return ADJ}
+function route(from,to){if(segOK(from,to))return [to];const A=adj(),n=NODES.length;const S0=NODES.map(v=>segOK(from,v)?from.distanceTo(v):0),E0=NODES.map(v=>segOK(v,to)?v.distanceTo(to):0);
+  const dist=Array(n).fill(1e9),prev=Array(n).fill(-1),done=Array(n).fill(0);for(let i=0;i<n;i++)if(S0[i])dist[i]=S0[i];let best=1e9,bi=-1;
+  for(let k=0;k<n;k++){let u=-1;for(let i=0;i<n;i++)if(!done[i]&&dist[i]<1e9&&(u<0||dist[i]<dist[u]))u=i;if(u<0)break;done[u]=1;if(E0[u]&&dist[u]+E0[u]<best){best=dist[u]+E0[u];bi=u}for(let v=0;v<n;v++){const w=A[u][v];if(w&&!done[v]&&dist[u]+w<dist[v]){dist[v]=dist[u]+w;prev[v]=u}}}
+  if(bi<0){let m=1e9;for(let i=0;i<n;i++)if(dist[i]<1e9){const dd=NODES[i].distanceTo(to);if(dd<m){m=dd;bi=i}}if(bi<0)return [to]}
+  const pts=[to];for(let v=bi;v>=0;v=prev[v])pts.unshift(NODES[v].clone());return pts}
+function goTo(v,then){if(!v)return;if(S.inHome)exitHome();const t=V(v.x,0,v.z);P.auto={pts:route(P.pos.clone().setY(0),t),then,stuck:0};$('#btns').classList.remove('open')}
+const ringPos=r=>V(r.x,0,r.z);
+/* ---- 共用 ---- */
+let curShop='';
+const lockTxt=lv=>`🔒 等級 ${lv}`;
+const money=v=>'💵'+Math.round(v).toLocaleString();
+function row(em,name,desc,btn,cls){return `<div class="row ${cls||''}"><div class="em">${em}</div><div class="tx"><b>${name}</b><small>${desc}</small></div>${btn||''}</div>`}
+function bbtn(a,v,txt,dis,c){return `<button class="${c||''}" data-a="${a}" data-v="${v}" ${dis?'disabled':''}>${txt}</button>`}
+const panelOn=()=>$('#modal').classList.contains('on');
+function machRows(ids){const lv=woodLv();return MACH.filter(m=>ids.includes(m.id)).map(m=>row(m.em,m.n,m.d,S.mach[m.id]?'<b style="color:#2fb04a">已經有了</b>':lv<m.lv?lockTxt(m.lv):bbtn('mach',m.id,money(m.p)),lv<m.lv?'lock':S.mach[m.id]?'own':'')).join('')}
+const boardsTxt=w=>w.map(([k,n])=>`${TREES[k].em}${TREES[k].n}木板×${n}<span style="color:${(S.wh[k]||0)>=n?'#2fb04a':'#c0392b'}">（有${S.wh[k]||0}）</span>`).join('、');
+const fert=()=>200+woodLv()*80;
+/* ---- 商店（苗圃、工具行、車行、人力仲介） ---- */
+function openShop(k){curShop=k;const lv=woodLv();let h='';const sh=PLACES[k]||{em:'',n:''};
+  if(k==='nursery'){h=`<h2>🌱 苗圃</h2><div class="note">種樹的時候會自動跟苗圃買樹苗（有「免費樹苗券」會先用券）。到林班的圈圈可以設定每塊林班要種哪一種樹。</div><div class="big3">🎟️ 免費樹苗券：${S.freeSap||0} 張</div>`+
+    row('🧪','生長肥料',`所有林班的樹苗馬上長大一半（現在有 ${Object.keys(S.lots).reduce((a,i)=>a+(lotOK(i)?lotState(i).slots.filter(s=>s.st==='sap').length:0),0)} 棵樹苗）`,bbtn('fert',1,money(fert())))+
+    '<h3>🌲 樹種一覽</h3>'+TK.map(t=>{const T=TREES[t];const lk=T.lv>lv;return row(T.em,T.n,lk?`等級 ${T.lv} 解鎖`:`長大要 ${durName(growOf(t))}・一棵砍下 ${T.logs} 根原木・原木今天 ${money(logPrice(t))}/根・木板 ${money(boardPrice(t))}/片`,lk?lockTxt(T.lv):`<b>樹苗 ${money(T.sap)}</b>`,lk?'lock':'')}).join('')}
+  else if(k==='tools'){h=`<h2>🪓 工具行</h2><div class="note">好工具砍樹更快，背架讓你一次背更多原木。</div><h3>砍樹工具（現在用：${toolOf().em}${toolOf().n}）</h3>`+
+    TOOLS.map(t=>row(t.em,t.n,t.d,S.own[t.id]?(toolOf().id===t.id?'<b style="color:#2fb04a">使用中</b>':'<b>已經有了</b>'):t.lv>lv?lockTxt(t.lv):bbtn('tool',t.id,money(t.p)),S.own[t.id]?'own':t.lv>lv?'lock':'')).join('')+
+    `<h3>背架（現在：${packOf().n}，可背 ${packOf().cap} 根）</h3>`+PACKS.filter(p=>p.p).map(t=>row(t.em,t.n,t.d,S.own[t.id]?'<b style="color:#2fb04a">已經有了</b>':t.lv>lv?lockTxt(t.lv):bbtn('tool',t.id,money(t.p)),S.own[t.id]?'own':t.lv>lv?'lock':'')).join('')}
+  else if(k==='cars'){h=`<h2>🚛 林業車行</h2><div class="note">交通工具跑得更快、能多載原木。車子每天要付保養費（車價的 1/400）。買了之後可以隨時換回走路。</div>`+
+    VEHS.map(v=>{const own=S.vehOwn[v.id];const on=(S.veh||'')===v.id;return row(v.em,v.n,v.id?`${v.d}・速度 ×${v.sp}${v.chop?'・砍樹 ×'+v.chop:''}${v.smoke?'・會冒黑煙':''}`:'用走的，不用保養費',on?'<b style="color:#2fb04a">使用中</b>':own?bbtn('ride',v.id,v.id?'🚗 開這台':'🚶 改用走的','','g'):v.lv>lv?lockTxt(v.lv):bbtn('car',v.id,money(v.p)),on?'own':v.lv>lv&&!own?'lock':'')}).join('')}
+  else if(k==='staff'){const lots=Object.keys(S.lots).filter(i=>S.lots[i].own);h=`<h2>👷 人力仲介</h2><div class="note">員工每天領薪水（看「📒 帳本」）。伐木工、植樹員是「一塊林班一個人」，點林班的按鈕雇用或解雇。</div>`+
+    STAFF.map(s=>{const lk=s.lv>lv;if(s.per==='lot'){const v=S.staff[s.id]||{};return `<div class="row ${lk?'lock':''}"><div class="em">${s.em}</div><div class="tx"><b>${s.n}</b>（每人每天 ${money(s.wage)}）<small>${s.d}</small>${lk?'':`<div class="chips">${lots.map(i=>`<button data-a="lotstaff" data-v="${s.id}|${i}" class="${v[i]?'on':''}">${v[i]?'✅':'➕'} ${LOTS[i].n.slice(-1)}</button>`).join('')}</div>`}</div>${lk?lockTxt(s.lv):''}</div>`}
+      return row(s.em,s.n,`${s.d}（每天 ${money(s.wage)}）`,S.staff[s.id]?bbtn('fire',s.id,'解雇','','r'):lk?lockTxt(s.lv):bbtn('hire',s.id,'雇用','','g'),S.staff[s.id]?'own':lk?'lock':'')}).join('')}
+  openPanel(h,()=>bindShop(k))}
+function bindShop(k){$('#panel').querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{const a=b.dataset.a,v=b.dataset.v;const re=()=>{if(curShop===k&&panelOn())reopen(k)};
+  if(a==='fert'){const n=Object.keys(S.lots).reduce((x,i)=>x+(lotOK(i)?lotState(i).slots.filter(s=>s.st==='sap').length:0),0);if(!n){hint('nosap','🌱 現在沒有樹苗可以施肥');return}confirmAsk(`買 <b>🧪生長肥料</b>？<br>${money(fert())}，${n} 棵樹苗馬上長大一半`,()=>{if(!spend(fert(),'fert'))return;for(const i in S.lots)if(lotOK(i))lotState(i).slots.forEach(s=>{if(s.st==='sap'){s.g+=.5;if(s.g>=1){s.g=1;s.st='tree'}}});for(const i in S.lots)lotSync(i);SFX.plant&&SFX.plant();toast('🧪 施肥完成，樹苗長高了！');re()})}
+  else if(a==='tool'){const t=TOOLS.find(x=>x.id===v)||PACKS.find(x=>x.id===v);confirmAsk(`買 <b>${t.em||''}${t.n}</b>？<br>${money(t.p)}`,()=>{if(!spend(t.p,'tool'))return;S.own[v]=1;toast(`✅ 買了 ${t.em||''}${t.n}`);tutDo('buy_'+v);re()})}
+  else if(a==='car'){const c=VEHS.find(x=>x.id===v);confirmAsk(`買 <b>${c.em}${c.n}</b>？<br>${money(c.p)}，每天保養 ${money(Math.round(c.p/400))}`,()=>{if(!spend(c.p,'car'))return;S.vehOwn[v]=1;S.veh=v;vehSync();notify(`${c.em} 買了 ${c.n}！已經開上路`,1);re()})}
+  else if(a==='ride'){S.veh=v;vehSync();SFX.click();toast(v?`${vehOf().em} 開上 ${vehOf().n}`:'🚶 改用走的');re()}
+  else if(a==='hire'){const s=STAFF.find(x=>x.id===v);confirmAsk(`雇用 <b>${s.em}${s.n}</b>？<br>每天薪水 ${money(s.wage)}`,()=>{S.staff[v]=1;npcSync();toast(`${s.em} ${s.n}開始上班了`);SFX.ding&&SFX.ding();re()})}
+  else if(a==='fire'){const s=STAFF.find(x=>x.id===v);confirmAsk(`確定要解雇 <b>${s.em}${s.n}</b>？`,()=>{delete S.staff[v];npcSync();re()})}
+  else if(a==='lotstaff'){const [id,i]=v.split('|');const s=STAFF.find(x=>x.id===id);S.staff[id]=S.staff[id]||{};if(S.staff[id][i]){confirmAsk(`解雇 ${LOTS[i].n} 的 <b>${s.em}${s.n}</b>？`,()=>{delete S.staff[id][i];npcSync();re()})}else confirmAsk(`在 <b>${LOTS[i].n}</b> 雇用 ${s.em}${s.n}？<br>每天薪水 ${money(s.wage)}`,()=>{S.staff[id][i]=1;npcSync();toast(`${s.em} ${s.n}到 ${LOTS[i].n} 上班了`);SFX.ding&&SFX.ding();tutDo('hire');re()})}
+  else if(a==='mach'){const m=MACH.find(x=>x.id===v);confirmAsk(`買 <b>${m.em}${m.n}</b>？<br>${money(m.p)}`,()=>{if(!spend(m.p,'machine'))return;S.mach[v]=1;toast(`✅ ${m.em}${m.n} 裝好了`);re()})}
+  else if(a==='lot'){buyLot(+v,re)}
+  else if(a==='gotoLot'){closePanel();const L=LOTS[+v];goTo(V(L.x,0,L.z+L.d/2+1.3))}})}
+function reopen(k){if(/^lot\d+$/.test(k)){lotPanel(+k.slice(3));return}({nursery:()=>openShop('nursery'),tools:()=>openShop('tools'),cars:()=>openShop('cars'),staff:()=>openShop('staff'),office:officePanel,saw:sawPanel,work:workPanel,show:showPanel,market:marketPanel})[k]?.()}
+/* ---- 林務所：租林班 ---- */
+function buyLot(i,re){const L=LOTS[i];if(L.lv>woodLv()){hint('lotlv',`🔒 ${L.n} 要等級 ${L.lv}`);return}confirmAsk(`租下 <b>🌲${L.n}</b>？<br>${money(L.p)}，每天租金 ${money(L.rent)}<br><small>裡面已經長了一些樹，可以直接砍</small>`,()=>{if(!spend(L.p,'lot'))return;S.lots[i]={own:1,auto:K0,slots:null,pile:0,pileK:{}};lotState(i);lotSync(i);notify(`🌲 租下了 ${L.n}！`,1);tutDo('lot');re&&re()})}
+function officePanel(){curShop='office';const lv=woodLv();const eco=Math.round(S.eco==null?60:S.eco);
+  openPanel(`<h2>🌲 林務所</h2><div class="big3">🌿 森林永續值：<b style="color:${eco>=50?'#2fb04a':eco>=25?'#e8701a':'#c0392b'}">${eco}</b> / 100</div><div class="bar"><i style="width:${eco}%"></i></div><div class="note">砍樹會讓永續值下降，種回去會上升。永續值越高，原木、作品賣得越貴（最多 +20%）；低於 25 的話山坡可能發生土石流！</div><h3>林班</h3>`+
+    LOTS.map(L=>{const st=S.lots[L.i];const own=st&&st.own;return row('🌲',L.n,own?(S.slide[L.i]?'⛰️ 被土石蓋住了，要整地':`租用中・每天租金 ${money(L.rent)}・樹 ${lotState(L.i).slots.filter(s=>s.st==='tree').length} 棵、樹苗 ${lotState(L.i).slots.filter(s=>s.st==='sap').length} 棵`):L.lv>lv?`等級 ${L.lv} 可以租`:`租金 ${money(L.p)}，之後每天 ${money(L.rent)}`,own?bbtn('gotoLot',L.i,'🚶 過去','','g'):L.lv>lv?lockTxt(L.lv):bbtn('lot',L.i,money(L.p)),own?'own':L.lv>lv?'lock':'')}).join('')+'<h3>森林設施</h3>'+machRows(['sprinkler','flume']),()=>bindShop('office'))}
+/* ---- 林班的面板 ---- */
+const slotEm=s=>s.st==='tree'?TREES[s.k].em:s.st==='sap'?'🌱':s.st==='stump'?'🪵':s.st==='burn'?'⬛':'🟫';
+function replantCost(i){const L=lotState(i);let n=0,c=0,f=S.freeSap||0;const k=L.auto;L.slots.forEach(s=>{if(s.st!=='tree'&&s.st!=='sap'){n++;if(f>0)f--;else c+=TREES[k].sap}});return {n,c}}
+function lotPanel(i){curShop='lot'+i;const L=LOTS[i],st=S.lots[i];const lv=woodLv();
+  if(!st||!st.own){openPanel(`<h2>🌲 ${L.n}</h2>${L.lv>lv?`<div class="big3">🔒 林場等級 ${L.lv} 才能租這塊林班</div>`:`<div class="big3">這塊林班還沒有租。租金 ${money(L.p)}，之後每天 ${money(L.rent)}。</div><button class="pbtn g" id="lb">🌲 租下這塊林班</button>`}<div class="note">也可以到「🌲 林務所」一次看全部林班。</div>`,()=>{const b=$('#lb');if(b)b.onclick=()=>buyLot(i,()=>lotPanel(i))});return}
+  if(S.slide[i]){const c=Math.max(1500,Math.round(L.p*.25/100)*100);openPanel(`<h2>⛰️ ${L.n}（土石流）</h2><div class="big3">山坡崩塌，林班被土石蓋住了。整地要 ${money(c)}，整完可以重新種樹。</div><div class="note">砍完樹要記得種回去，森林永續值才不會太低。</div><button class="pbtn o" id="cl">🚜 花 ${money(c)} 整地</button>`,()=>{$('#cl').onclick=()=>{if(!spend(c,'clear'))return;delete S.slide[i];lotState(i).slots.forEach(s=>{s.st='empty';s.g=0});S.eco=clamp((S.eco||0)+8,0,100);lotSync(i);toast('🚜 整地完成！記得種樹');lotPanel(i)}});return}
+  const sl=lotState(i);const rc=replantCost(i);const ripe=sl.slots.filter(s=>s.st==='tree').length;
+  const h=`<h2>🌲 ${L.n}</h2>${S.fires[i]?'<div class="row warn">🔥 失火了！站在林班的圈圈上不動就會滅火</div>':''}${S.beasts.some(b=>b.li===i)?'<div class="row warn">🐾 有野生動物！走到林班的圈圈就會把牠趕走</div>':''}
+   <div class="grid12">${sl.slots.map(s=>`<div>${slotEm(s)}<small>${s.st==='tree'?'可以砍':s.st==='sap'?Math.floor(s.g*100)+'%':s.st==='stump'?'樹頭':s.st==='burn'?'燒掉了':'空地'}</small>${s.st==='sap'?`<small>${realAt(growOf(s.k)*(1-s.g))}</small>`:''}</div>`).join('')}</div>
+   <div class="note">走進林班，走到成熟的樹旁邊站著就會砍（${ripe} 棵可以砍），原木會背在身上。${st.pile?`林班旁邊堆了 <b>${st.pile}</b> 根原木，走過去就會撿起來。`:''}</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin:6px 0"><button class="pbtn o" id="gch" ${ripe?'':'disabled'}>🪓 走去砍樹</button>${st.pile?'<button class="pbtn" id="gpl">🪵 去撿原木堆</button>':''}</div>
+   <h3>要種哪一種樹</h3><div class="chips">${TK.map(k=>`<button data-k="${k}" class="${sl.auto===k?'on':''}" ${TREES[k].lv>lv?'disabled':''}>${TREES[k].em}${TREES[k].n}${TREES[k].lv>lv?' 🔒'+TREES[k].lv:''}</button>`).join('')}</div>
+   <div class="note">${TREES[sl.auto].n}：長大 ${durName(growOf(sl.auto))}、樹苗 ${money(TREES[sl.auto].sap)}、原木今天 ${money(logPrice(sl.auto))}/根</div>
+   <button class="pbtn g" id="rp" ${rc.n?'':'disabled'}>🌱 全部種回去（${rc.n} 棵，${rc.c?money(rc.c):'用免費券'}）</button>
+   <h3>這塊林班的員工</h3>${STAFF.filter(s=>s.per==='lot').map(s=>row(s.em,s.n,`${s.d}（每天 ${money(s.wage)}）`,staffOn(s.id,i)?bbtn('lotstaff',s.id+'|'+i,'解雇','','r'):s.lv>lv?lockTxt(s.lv):bbtn('lotstaff',s.id+'|'+i,'雇用','','g'),staffOn(s.id,i)?'own':s.lv>lv?'lock':'')).join('')}`;
+  openPanel(h,()=>{$('#panel').querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{sl.auto=b.dataset.k;SFX.click();lotPanel(i)});
+    $('#gch').onclick=()=>{closePanel();if(!goChop(i))hint('notree','🌲 現在沒有成熟的樹可以砍')};{const gp=$('#gpl');if(gp)gp.onclick=()=>{closePanel();const pp=LOTV[i].pile.position;goTo(V(pp.x,0,pp.z+.6))}}
+    $('#rp').onclick=()=>{let n=0;sl.slots.forEach((s,j)=>{if(s.st!=='tree'&&s.st!=='sap'&&plantSlot(i,j,sl.auto))n++});if(n){SFX.plant&&SFX.plant();toast(`🌱 種了 ${n} 棵${TREES[sl.auto].n}`);lotSync(i)}else hint('nomoney','💵 錢不夠買樹苗');lotPanel(i)};
+    curShop='lot'+i;bindShop('lot'+i)})}
+/* ---- 鋸木廠 ---- */
+function sawPanel(){curShop='saw';const q={};S.saw.q.forEach(k=>q[k]=(q[k]||0)+1);const out=Object.entries(S.saw.out);const ob=Object.entries(S.wh);
+  openPanel(`<h2>🪚 鋸木廠</h2><div class="note">原木放進來會自動鋸成木板（1 根原木 → 2 片木板＋木屑），一根要 ${durName(SAW_T())}。木板拿去木工坊做家具，或直接賣掉。</div>
+   <div class="row"><div class="em">🪵</div><div class="tx"><b>等著鋸的原木：${S.saw.q.length} 根</b><small>${Object.entries(q).map(([k,n])=>TREES[k].n+'×'+n).join('、')||'沒有'}${S.saw.cur?`<br>正在鋸：${TREES[S.saw.cur.k].n} ${Math.floor(S.saw.cur.g*100)}%`:''}</small></div>${S.carry.length?bbtn('drop',1,`放進 ${S.carry.length} 根`,'','g'):''}</div>
+   <div class="row ${out.length?'warn':''}"><div class="em">📦</div><div class="tx"><b>鋸好的木板：${out.reduce((a,[,n])=>a+n,0)} 片</b><small>${out.map(([k,n])=>TREES[k].n+'×'+n).join('、')||'沒有'}${staffOn('sawyer')?'<br>🧔 鋸木師傅會自動收進倉庫':'<br>累積到 60 片就會停下來，記得收'}</small></div>${out.length?bbtn('col',1,'收進倉庫','','g'):''}</div>
+   <h3>📦 倉庫的木板（${whCount()}/${whCap()} 格）</h3>${ob.length?ob.map(([k,n])=>row(TREES[k].em,`${TREES[k].n}木板 ×${n}`,`一片 ${money(boardPrice(k)*(S.mach.kiln?1.25:1))}${S.mach.kiln?'（烘乾過）':''}`,bbtn('sellb',k,'全部賣掉','','o'))).join(''):'<div class="note">倉庫裡沒有木板</div>'}
+   <div class="row"><div class="em">⚫</div><div class="tx"><b>木屑 ${S.saw.dust}・木炭 ${S.saw.coal}</b><small>木屑一袋 💵3，木炭一包 💵14${S.mach.charcoal?'（木炭窯會自動把 5 袋木屑燒成 1 包木炭）':''}</small></div>${S.saw.dust+S.saw.coal?bbtn('selld',1,'賣掉','','o'):''}</div>
+   <h3>機器</h3>${machRows(['bandsaw','kiln','charcoal','termite','wh2'])}`,()=>{bindShop('saw');$('#panel').querySelectorAll('[data-a]').forEach(b=>{const a=b.dataset.a,v=b.dataset.v;if(a==='drop')b.onclick=()=>{const n=sawDrop();backSync();toast(`🪵 放了 ${n} 根原木進鋸木廠`);sawPanel()};else if(a==='col')b.onclick=()=>{const n=sawCollect();toast(n?`📦 收了 ${n} 片木板進倉庫`:'📦 倉庫滿了！先賣掉一些或擴充倉庫');SFX.pick(n);tutDo('collect');sawPanel()};
+      else if(a==='sellb')b.onclick=()=>{const n=S.wh[v];const val=sellBoards(v,n);SFX.cash();toast(`💵 賣了 ${TREES[v].n}木板 ×${n}，得到 ${money(val)}`);sawPanel()};else if(a==='selld')b.onclick=()=>{const v2=S.saw.dust*3+S.saw.coal*14;S.saw.dust=0;S.saw.coal=0;earn(v2,'coal');SFX.cash();toast(`💵 賣了木屑、木炭，得到 ${money(v2)}`);sawPanel()}})})}
+/* ---- 木工坊 ---- */
+function workPanel(){curShop='work';const lv=woodLv();
+  const bs=Array.from({length:benchN()},(_,bi)=>{const b=S.benches[bi];if(!b)return row('🛠️',`工作台 ${bi+1}`,'空著，選一樣作品開始做',bbtn('pick',bi,'選作品','','g'));const p=PROD(b.id);const k=clamp((S.t-b.t0)/b.dur,0,1);
+    return `<div class="row ${b.full?'warn':'own'}"><div class="em">${p.em}</div><div class="tx"><b>工作台 ${bi+1}：${p.n}</b><small>${b.full?'⚠️ 倉庫滿了，做好的放不進去':`${Math.floor(k*100)}%・${realAt(b.t0+b.dur-S.t)} 做好`}${staffOn('carpenter')?`<br>🔁 做完自動再做：${b.rep?'開':'關'}`:''}</small><div class="bar"><i style="width:${k*100}%"></i></div></div><div class="btns2">${staffOn('carpenter')?bbtn('rep',bi,b.rep?'🔁 關掉重複':'🔁 一直做'):''}</div></div>`}).join('');
+  const pr=Object.entries(S.prods);
+  openPanel(`<h2>🔨 木工坊</h2><div class="note">用倉庫裡的木板做家具、樂器、木船。做好的作品可以賣、交訂單、放展示館。</div>${bs}
+   <h3>📦 倉庫的作品</h3>${pr.length?pr.map(([id,n])=>{const p=PROD(id);return `<span style="display:inline-block;margin:3px 6px;font-size:16px">${p.em}${p.n}×${n}</span>`}).join(''):'<div class="note">還沒有作品</div>'}
+   <h3>📦 倉庫的木板</h3><div>${Object.entries(S.wh).map(([k,n])=>`<span style="display:inline-block;margin:3px 6px">${TREES[k].em}${TREES[k].n}×${n}</span>`).join('')||'<span class="note">沒有木板，先去鋸木廠鋸原木</span>'}</div>
+   <h3>機器</h3>${machRows(['bench2','bench3','bench4'])}`,()=>{bindShop('work');$('#panel').querySelectorAll('[data-a="pick"]').forEach(b=>b.onclick=()=>pickProd(+b.dataset.v));$('#panel').querySelectorAll('[data-a="rep"]').forEach(b=>b.onclick=()=>{const x=S.benches[+b.dataset.v];if(x)x.rep=!x.rep;workPanel()})})}
+function pickProd(bi){const lv=woodLv();openPanel(`<h2>🛠️ 工作台 ${bi+1}：要做什麼？</h2><div class="note">綠色的數字代表木板夠。價錢是今天的收購價。</div>`+PRODUCTS.map(p=>{const lk=p.lv>lv,ok=boardsHave(p.w);return row(p.em,p.n,lk?`等級 ${p.lv} 解鎖`:`要：${boardsTxt(p.w)}<br>做 ${durName(p.t)}・今天賣 ${money(prodPrice(p.id,S.mach.kiln))}`,lk?lockTxt(p.lv):bbtn('mk',p.id,'開始做',!ok,'g'),lk?'lock':ok?'':'')}).join('')+'<button class="pbtn" id="bk">↩ 回木工坊</button>',
+  ()=>{$('#bk').onclick=workPanel;$('#panel').querySelectorAll('[data-a="mk"]').forEach(b=>b.onclick=()=>{if(benchStart(bi,b.dataset.v,staffOn('carpenter'))){SFX.hammer&&SFX.hammer();toast(`🔨 開始做 ${PROD(b.dataset.v).em}${PROD(b.dataset.v).n}`);workPanel()}else hint('noboard','🪵 木板不夠')})})}
+/* ---- 展示館、訂單 ---- */
+let showTab='ord';
+function showPanel(){curShop='show';const tabs=`<div class="tabs"><button data-t="ord" class="${showTab==='ord'?'on':''}">📜 客人訂單（${S.orders.length}）</button><button data-t="ped" class="${showTab==='ped'?'on':''}">🏛️ 展示台</button></div>`;let h='<h2>🏛️ 家具展示館</h2>'+tabs;
+  if(showTab==='ord'){h+=`<div class="note">客人會來下訂單，湊齊作品就能交貨，價錢比直接賣高很多！訂單過一段時間會過期。${staffOn('sales')?'🧑‍💼 業務員會自動交貨。':''}</div>`+(S.orders.length?S.orders.map((o,q)=>`<div class="row ${orderOK(o)?'own':''}"><div class="em">${o.em}</div><div class="tx"><b>${o.who}</b>：${o.items.map(([id,n])=>`${PROD(id).em}${PROD(id).n}×${n}<span style="color:${(S.prods[id]||0)>=n?'#2fb04a':'#c0392b'}">（有${S.prods[id]||0}）</span>`).join('、')}<small>酬勞 <b>${money(o.pay)}</b>・${realAt(o.until-S.t)} 過期</small></div>${bbtn('od',q,'交貨',!orderOK(o),'g')}</div>`).join(''):'<div class="note">現在沒有訂單，過一陣子客人就會來。</div>')}
+  else{const c=Math.floor(S.showCash||0);h+=`<div class="note">把作品放上展示台，會有參觀的人買門票（越貴的作品門票越多），而且每放一樣，全部作品、訂單的價錢 +2%（最多 +40%，現在 +${Math.round(showBonus()*100)}%）。</div>
+    <div class="row"><div class="em">🎫</div><div class="tx"><b>門票錢：${money(c)}</b><small>${staffOn('sales')?'業務員會自動收':'記得來收'}</small></div>${bbtn('cash',1,'收錢',c<1,'g')}</div>`+
+    Array.from({length:showN()},(_,q)=>{const id=S.show[q];return id?row(PROD(id).em,`展示台 ${q+1}：${PROD(id).n}`,`價值 ${money(PROD(id).v)}`,bbtn('unshow',q,'拿下來')):row('⬜',`展示台 ${q+1}`,'空著',bbtn('putshow',q,'放作品',!Object.keys(S.prods).length,'g'))}).join('')+'<h3>擴建</h3>'+machRows(['show2','show3'])}
+  openPanel(h,()=>{bindShop('show');$('#panel').querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{showTab=b.dataset.t;showPanel()});$('#panel').querySelectorAll('[data-a]').forEach(b=>{const a=b.dataset.a,v=+b.dataset.v;
+    if(a==='od')b.onclick=()=>{orderDo(S.orders[v]);showPanel()};else if(a==='cash')b.onclick=()=>{const c=Math.floor(S.showCash||0);earn(c,'show');S.showCash-=c;SFX.cash();floatAt(P.pos.clone().setY(2.4),'+'+money(c),'#c07a00');showPanel()};
+    else if(a==='unshow')b.onclick=()=>{const id=S.show[v];S.show[v]=null;S.prods[id]=(S.prods[id]||0)+1;showPanel()};
+    else if(a==='putshow')b.onclick=()=>{openPanel('<h2>🏛️ 放哪一樣作品？</h2>'+Object.entries(S.prods).map(([id,n])=>row(PROD(id).em,PROD(id).n+' ×'+n,`價值 ${money(PROD(id).v)}`,bbtn('ps',id,'放上去','','g'))).join(''),()=>{$('#panel').querySelectorAll('[data-a="ps"]').forEach(x=>x.onclick=()=>{const id=x.dataset.v;S.prods[id]--;if(!S.prods[id])delete S.prods[id];S.show[v]=id;tutDo('show');SFX.place();showPanel()})})}})})}
+/* ---- 木材市場 ---- */
+function marketPanel(){curShop='market';const mk=market(dayOf(S.t));const pr=Object.entries(S.prods);const keep=id=>S.orders.some(o=>o.items.some(x=>x[0]===id));
+  openPanel(`<h2>💵 木材市場</h2><div class="note">身上的原木站上圈圈就會自動賣掉。作品、木板也可以在這裡賣。價錢每天都會變，看「📅 今日行情」。${mk.hot?`<br>🔥 今天熱門：<b>${PROD(mk.hot).em}${PROD(mk.hot).n}</b>`:''}</div>
+   <h3>作品</h3>${pr.length?pr.map(([id,n])=>{const p=PROD(id);return row(p.em,`${p.n} ×${n}`,`一個 ${money(prodPrice(id,S.mach.kiln))}${keep(id)?'・⚠️ 訂單要用':''}`,`<div class="btns2">${bbtn('s1',id,'賣 1 個','','o')}${n>1?bbtn('sa',id,'全部賣','','o'):''}</div>`)}).join('')+`<button class="pbtn o" id="sAll">💵 一鍵賣掉作品（保留訂單要用的）</button>`:'<div class="note">倉庫裡沒有作品</div>'}
+   <h3>木板</h3>${Object.entries(S.wh).map(([k,n])=>row(TREES[k].em,`${TREES[k].n}木板 ×${n}`,`一片 ${money(boardPrice(k)*(S.mach.kiln?1.25:1))}`,bbtn('sb',k,'全部賣','','o'))).join('')||'<div class="note">沒有木板</div>'}`,()=>{$('#panel').querySelectorAll('[data-a]').forEach(b=>{const a=b.dataset.a,v=b.dataset.v;b.onclick=()=>{let val=0;if(a==='s1')val=sellProds([[v,1]]);else if(a==='sa')val=sellProds([[v,S.prods[v]]]);else if(a==='sb')val=sellBoards(v,S.wh[v]);if(val){SFX.cash();floatAt(P.pos.clone().setY(2.4),'+'+money(val),'#c07a00');tutDo('sellp')}marketPanel()}});
+    const sa=$('#sAll');if(sa)sa.onclick=()=>{const list=Object.entries(S.prods).map(([id,n])=>{let need=0;S.orders.forEach(o=>o.items.forEach(([x,q])=>{if(x===id)need+=q}));return [id,Math.max(0,n-need)]}).filter(x=>x[1]>0);const val=sellProds(list);if(val){SFX.cash();toast(`💵 賣掉作品，得到 ${money(val)}`)}else hint('none','都是訂單要用的，先交貨吧');marketPanel()}})}
+/* ---- 家、紀錄、帳本、說明 ---- */
+function homePanel(){openPanel(`<h2>🏠 我的家</h2><div class="note">颱風天待在家裡最安全。</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0"><button class="pbtn" id="hRec">📋 紀錄看板</button><button class="pbtn g" id="hDex">📖 作品集</button><button class="pbtn o" id="hProf">⚙️ 經營模式</button></div>`,()=>{$('#hRec').onclick=recPanel;$('#hDex').onclick=dexPanel;$('#hProf').onclick=()=>profilePanel()})}
+function dexPanel(){const n=PRODUCTS.filter(p=>S.made[p.id]).length;openPanel(`<h2>📖 作品集（${n}/${PRODUCTS.length}）</h2><div class="note">每種作品第一次做出來就會收進作品集。</div><div class="grid12">${PRODUCTS.map(p=>`<div style="${S.made[p.id]?'':'opacity:.35;filter:grayscale(1)'}">${p.em}<small>${S.made[p.id]?p.n+' ×'+S.made[p.id]:'？？？'}</small></div>`).join('')}</div>`)}
+const KIND_N={log:'賣原木',board:'賣木板',prod:'賣作品',order:'訂單',show:'展示館門票',coal:'木屑木炭',sap:'買樹苗',tool:'工具',car:'車子',lot:'林班',machine:'設備',bill:'每天帳單',fun:'遊樂場',grant:'獎勵',fert:'肥料',clear:'整地',sell:'賣東西',buy:'買東西'};
+function ledger(tab){tab=tab||'money';const fl=S.flow.filter(f=>S.t-f[0]<DAY);const inc={},out={};fl.forEach(([t,v,k])=>{(v>0?inc:out)[k]=((v>0?inc:out)[k]||0)+Math.abs(v)});const B=billsOf();const lv=woodLv();
+  const tabs=`<div class="tabs">${[['money','💵 收支'],['bill','🧾 帳單'],['lv','⭐ 等級'],['note','🔔 通知']].map(([k,n])=>`<button data-t="${k}" class="${tab===k?'on':''}">${n}</button>`).join('')}</div>`;let h='<h2>📒 帳本</h2>'+tabs;
+  if(tab==='money'){const ti=Object.values(inc).reduce((a,b)=>a+b,0),to=Object.values(out).reduce((a,b)=>a+b,0);h+=`<div class="note">最近一天（遊戲時間）的收入和支出</div><h3>收入 ${money(ti)}</h3>${Object.entries(inc).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<div>${KIND_N[k]||k}：${money(v)}</div>`).join('')||'<div class="note">還沒有收入</div>'}<h3>支出 ${money(to)}</h3>${Object.entries(out).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<div>${KIND_N[k]||k}：${money(v)}</div>`).join('')||'<div class="note">還沒有支出</div>'}`}
+  else if(tab==='bill'){h+=`<div class="big3">每天帳單大約 ${money(B.tot)}（${realAt(DAY-(S.t%DAY))} 扣款）</div><div>👷 員工薪水：${money(B.w)}</div><div>⚙️ 設備費用：${money(B.m)}</div><div>🌲 林班租金：${money(B.f)}</div><div>🚛 車子保養：${money(B.vh)}</div><div class="note">經營模式「${prof().n}」：帳單 ×${prof().bill}</div>${S.debt?`<div class="row warn">💸 欠款 ${money(S.debt)}，賺的錢會先拿去還</div>`:''}`}
+  else if(tab==='lv'){const nx=LV_EARN[lv];h+=`<div class="big3">⭐ 林場等級 ${lv} / ${LV_MAX}</div><div>累計收入 ${money(S.earn||0)}${nx?`，升到 ${lv+1} 級還差 ${money(Math.max(0,nx-S.earn))}`:''}</div><h3>接下來會解鎖</h3>${[1,2,3,4,5].map(d=>lv+d).filter(l=>l<=LV_MAX).map(l=>{const u=unlocksAt(l);return u.length?`<div><b>等級 ${l}</b>：${u.join('、')}</div>`:''}).join('')}`}
+  else h+=S.notes.slice(0,40).map(([t,m])=>`<div style="border-bottom:1px dashed #dce8cc;padding:4px 0">${m}</div>`).join('')||'<div class="note">還沒有通知</div>';
+  openPanel(h,()=>$('#panel').querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>ledger(b.dataset.t)))}
+function forePanel(){const d=dayOf(S.t);const mk=market(d);const lv=woodLv();const pi=Math.floor(S.t/PERIOD);
+  openPanel(`<h2>📅 今日行情</h2><div class="note">每天的收購價都不一樣（100% 是平常價）。森林永續值 ${Math.round(S.eco)}，價格 ×${ecoMul().toFixed(2)}。${S.ev&&S.t<S.ev.end?`<br>${EVS[S.ev.k].em} 事件：<b>${EVS[S.ev.k].n}</b>，${EVS[S.ev.k].d}`:''}</div>
+   <h3>天氣</h3><div>${[0,1,2,3].map(k=>{const x=WEATHER[weatherAt(pi+k)];return `${['現在','30 分後','1 小時後','1.5 小時後'][k]}：${x.em}${x.n}`}).join('　')}</div><div class="note">颱風會把成熟的樹吹倒；大熱天比較容易發生森林火災。</div>
+   <h3>原木</h3>${TK.filter(k=>TREES[k].lv<=lv).map(k=>`<div>${TREES[k].em}${TREES[k].n}：${money(logPrice(k))}（${Math.round((mk.pr[k]||1)*100)}%）</div>`).join('')}
+   <h3>作品</h3>${PRODUCTS.filter(p=>p.lv<=lv).map(p=>`<div>${p.em}${p.n}：${money(prodPrice(p.id,S.mach.kiln))}（${Math.round((mk.pr[p.id]||1)*100)}%）${mk.hot===p.id?' 🔥熱門':''}</div>`).join('')}`)}
+function recPanel(){const L=[];for(const i in S.lots){if(!S.lots[i].own)continue;const sl=lotState(i).slots;L.push(`🌲 ${LOTS[i].n}：樹 ${sl.filter(s=>s.st==='tree').length}、樹苗 ${sl.filter(s=>s.st==='sap').length}、空地 ${sl.filter(s=>s.st!=='tree'&&s.st!=='sap').length}${S.lots[i].pile?`、原木堆 ${S.lots[i].pile}`:''}${S.fires[i]?' 🔥失火':''}${S.slide[i]?' ⛰️土石流':''}`)}
+  L.push(`🪚 鋸木廠：等著鋸 ${S.saw.q.length} 根、鋸好 ${Object.values(S.saw.out).reduce((a,b)=>a+b,0)} 片`);for(let bi=0;bi<benchN();bi++){const b=S.benches[bi];L.push(`🛠️ 工作台 ${bi+1}：${b?PROD(b.id).em+PROD(b.id).n+' '+realAt(b.t0+b.dur-S.t)+' 做好':'空著'}`)}
+  L.push(`📜 訂單 ${S.orders.length} 張・🏛️ 展示 ${(S.show||[]).filter(Boolean).length} 樣・📦 倉庫 ${whCount()}/${whCap()}`);openPanel(`<h2>📋 紀錄看板</h2>${L.map(x=>`<div style="padding:4px 0;border-bottom:1px dashed #dce8cc">${x}</div>`).join('')}<div class="note">一共砍了 ${S.cut||0} 棵樹，完成 ${S.ordDone||0} 張訂單。</div>`)}
+function helpPanel(){openPanel(`<h2>📖 林業與木工說明</h2><div style="font-size:15px;line-height:1.7">
+ 1️⃣ <b>砍樹</b>：走進林班，走到成熟的樹旁邊站著，就會揮斧頭砍樹，原木背在身上；砍完會自動走去下一棵。<br>
+ 2️⃣ <b>種回去</b>：砍完要種新樹苗（走到林班前面的綠色圈圈，會跳出林班面板 →「全部種回去」），不然森林永續值會下降，太低會發生土石流。<br>
+ 3️⃣ <b>賣原木或鋸木板</b>：原木可以直接到 💵 木材市場賣，也可以拿去 🪚 鋸木廠鋸成木板（更值錢）。<br>
+ 4️⃣ <b>做作品</b>：在 🔨 木工坊用木板做筷子、椅子、床、吉他、小提琴、獨木舟、木帆船…越高級越值錢。<br>
+ 5️⃣ <b>交訂單</b>：🏛️ 展示館有客人下訂單，湊齊作品交貨可以拿到高額酬勞；作品放展示台還能賺門票。<br>
+ 6️⃣ <b>變成大老闆</b>：雇伐木工、植樹員、運材司機、鋸木師傅、木工師傅、業務員，整條生產線就會自己動起來。<br>
+ ⚠️ 注意森林火災（站在林班圈圈滅火）、黑熊和山豬（走過去趕走）、颱風和白蟻。<br>
+ 💸 錢不夠付帳單會欠款，之後賺的錢會先拿去還。<br>
+ 🎯 這個系列最多可以賺到 💵1 億。</div>`)}
+function profilePanel(first){openPanel(`<h2>⚙️ 經營模式</h2>${first?'<div class="big3">第一次來，先選一個適合你的經營模式（之後可以在「☰ 更多」改）</div>':''}${Object.keys(PROFILES).map(k=>{const p=PROFILES[k];return `<div class="row ${S.profile===k?'own':''}"><div class="tx"><b>${p.n}（${p.sub}）</b><small>${p.d}</small></div><button data-p="${k}">${S.profile===k?'使用中':'選這個'}</button></div>`}).join('')}`,
+  ()=>$('#panel').querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{S.profile=b.dataset.p;S.profileSet=1;SFX.click();toast('⚙️ 經營模式：'+prof().n);closePanel()}))}
+function bagPanel(){const c={};S.carry.forEach(k=>c[k]=(c[k]||0)+1);openPanel(`<h2>🪵 身上的原木（${S.carry.length}/${carryCap()}）</h2>${Object.entries(c).map(([k,n])=>row(TREES[k].em,`${TREES[k].n} ×${n}`,`一根 ${money(logPrice(k))}`)).join('')||'<div class="note">身上沒有原木</div>'}<div class="note">背的數量：${packOf().n} ${packOf().cap} 根${vehOf().cap?`＋${vehOf().n} ${vehOf().cap} 根`:''}</div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="pbtn o" id="gm">💵 去木材市場賣</button><button class="pbtn" id="gs">🪚 去鋸木廠</button></div>`,()=>{$('#gm').onclick=()=>{closePanel();MARKET.done=0;goTo(ringPos(MARKET))};$('#gs').onclick=()=>{closePanel();SAWR.done=0;goTo(ringPos(SAWR))}})}
+/* ---- 家裡 ---- */
+const HRING=[addRing({kind:'hin',a:'exit',x:HOMEIN.x,z:HOMEIN.z+2.6,t:'🚪 出門'}),addRing({kind:'hin',a:'bed',x:HOMEIN.x-3,z:HOMEIN.z-1.6,t:'🛏️ 休息'}),addRing({kind:'hin',a:'rec',x:HOMEIN.x+3,z:HOMEIN.z-1.6,t:'📋 紀錄看板'}),addRing({kind:'hin',a:'dex',x:HOMEIN.x,z:HOMEIN.z-1.2,t:'📖 作品集'})];
+HRING.forEach(r=>{r.m.position.y=.07;r.L.pos.y=1.6});
+let homeBack=null;
+function enterHome(){if(S.inHome)return;homeBack=P.pos.clone();S.inHome=1;HOMEG.visible=true;P.auto=null;P.pos.set(HOMEIN.x,0,HOMEIN.z+1.2);camT.copy(P.pos);scene.fog.far=600;scene.background=new THREE.Color(0x3a2a20);SFX.door&&SFX.door();toast('🏠 回到家了！颱風天待在家裡最安全',2600);tutDo('home')}
+function exitHome(){if(!S.inHome)return;S.inHome=0;HOMEG.visible=false;const r=RINGS.find(r=>r.kind==='home');P.pos.set(r.x,0,r.z+1.6);camT.copy(P.pos);scene.fog.far=140;scene.background=new THREE.Color(0xbfe6ff);SFX.door&&SFX.door()}
+/* ---- 站在圈圈上 ---- */
+function ringAction(r,rdt){if(r.kind==='lot'){if(r.stay<.35||P.auto)return;lotAction(r,rdt);return}
+  if(r.kind==='saw'){if(r.stay<.3||P.auto)return;if(S.carry.length){r.cd-=rdt;if(r.cd>0)return;r.cd=.12;S.saw.q.length<400?(S.saw.q.push(S.carry.pop()),SFX.place()):hint('sawfull','🪚 鋸木廠排滿了');backSync();if(!S.carry.length)tutDo('saw');return}
+    if(!r.done){r.done=1;const n=sawCollect();if(n){toast(`📦 收了 ${n} 片木板進倉庫`);tutDo('collect');SFX.pick(n)}sawPanel()}return}
+  if(r.done||r.stay<.35||P.auto)return;r.done=1;SFX.click();
+  if(r.kind==='hin'){({exit:exitHome,rec:recPanel,dex:dexPanel,bed:()=>{toast('😴 休息一下，體力恢復了！',2200)}})[r.a]();return}
+  if(r.kind==='shop')openShop(r.shop);else if(r.kind==='sell'){if(S.carry.length){sellCarry();backSync()}marketPanel()}else if(r.kind==='home')enterHome();else if(r.kind==='office')officePanel();
+  else if(r.kind==='work')workPanel();else if(r.kind==='show')showPanel()}
+/* ---- 待處理 ---- */
+const lotRing=i=>RINGS.find(r=>r.kind==='lot'&&r.li===+i);
+let TASKS=[];function buildTasks(){const T=[];const add=(em,t,s,pos,c,urg)=>T.push({em,t,s,pos,c:c||'#3a8a3a',urg});
+  for(const i in S.fires)add('🔥',`${LOTS[i].n}失火了！`,'快去林班滅火',ringPos(lotRing(i)),'#c0392b',1);
+  S.beasts.forEach(b=>add(EVS[b.k].em,`${LOTS[b.li].n}有${EVS[b.k].n.slice(0,2)}`,'走過去趕走',ringPos(lotRing(b.li)),'#c0392b',1));
+  for(const i in S.slide)add('⛰️',`${LOTS[i].n}土石流`,'要整地',ringPos(lotRing(i)),'#e8701a');
+  if(S.carry.length>=carryCap())add('🪵','原木背滿了','去鋸木廠或木材市場',ringPos(SAWR),'#e8701a',1);
+  const out=Object.values(S.saw.out).reduce((a,b)=>a+b,0);if(out>=10&&!staffOn('sawyer'))add('📦',`鋸好 ${out} 片木板`,'去鋸木廠收',ringPos(SAWR),out>=60?'#c0392b':'#e8701a',out>=60);
+  for(let bi=0;bi<benchN();bi++){if(!S.benches[bi]&&Object.keys(S.wh).length){add('🛠️',`工作台 ${bi+1} 空著`,'選一樣作品來做',ringPos(WORKR));break}}
+  S.orders.forEach(o=>{if(orderOK(o)&&!staffOn('sales'))add(o.em,`${o.who}的訂單可以交了`,money(o.pay),ringPos(SHOWR),'#2fb04a',1)});
+  if((S.showCash||0)>=100&&!staffOn('sales'))add('🎫',`展示館門票 ${money(S.showCash)}`,'去收錢',ringPos(SHOWR));
+  for(const i in S.lots){if(!lotOK(i))continue;const sl=lotState(i).slots;const em=sl.filter(s=>s.st!=='tree'&&s.st!=='sap').length;const rp=sl.filter(s=>s.st==='tree').length;if(em>=4&&!staffOn('planter',i))add('🌱',`${LOTS[i].n} ${em} 塊空地`,'要種回去',ringPos(lotRing(i)),(S.eco||0)<35?'#c0392b':'#3a8a3a',(S.eco||0)<35);else if(rp>=6&&!staffOn('lumber',i))add('🌲',`${LOTS[i].n} ${rp} 棵可以砍`,'走到樹旁邊就會砍',ringPos(lotRing(i)));if(S.lots[i].pile>=6&&!staffOn('driver'))add('🪵',`${LOTS[i].n}堆了 ${S.lots[i].pile} 根原木`,'去搬',ringPos(lotRing(i)))}
+  if(S.debt)add('💸',`欠款 ${money(S.debt)}`,'賺錢會先還',null,'#c0392b');return T.slice(0,9)}
+let todoMin=false;function renderTodo(){const e=$('#todo');const urg=TASKS.filter(t=>t.urg).length;let h=`<h4>📋 待處理 <button id="tdm">${todoMin?'打開':'收起'}</button></h4>${TASKS.map((t,i)=>`<div class="it ${t.urg?'urg':''}" data-ti="${i}" style="--c:${t.c}">${t.em}<div>${t.t}<small>${t.s}</small></div></div>`).join('')||'<div class="none">目前沒有要做的事 👍</div>'}<div class="peek">📋<b>${urg||''}</b><span>${TASKS.length}</span></div>`;h=tr(h);
+  if(e.dataset.h!==h){e.dataset.h=h;e.innerHTML=h;e.querySelectorAll('[data-ti]').forEach(d=>d.onclick=()=>{const t=TASKS[+d.dataset.ti];if(t&&t.pos){SFX.click();RINGS.forEach(r=>{if(Math.hypot(r.x-t.pos.x,r.z-t.pos.z)<.1)r.done=0});goTo(t.pos)}});$('#tdm').onclick=ev=>{ev.stopPropagation();todoMin=!todoMin;e.classList.toggle('min',todoMin);e.dataset.h=''}}
+  e.classList.toggle('min',todoMin);e.classList.toggle('urg',todoMin&&urg>0);if(todoMin)e.onclick=()=>{if(todoMin){todoMin=false;e.dataset.h='';renderTodo()}};else e.onclick=null}
+function goalTxt(){if(!tcN('chop'))return '🪓 走進 <b>林班 A</b>，走到成熟的樹旁邊站著就會砍樹（點這裡看說明）';if(!tcN('sell')&&!tcN('saw'))return '🪵 把原木拿去 <b>💵木材市場</b> 賣，或 <b>🪚鋸木廠</b> 鋸成木板';if(!tcN('plant'))return '🌱 回到林班圈圈，按「全部種回去」種新樹苗';
+  const lv=woodLv();if(!tcN('saw'))return '🪚 試試把原木放進鋸木廠，鋸成更值錢的木板';if(!tcN('collect'))return '📦 去鋸木廠收鋸好的木板';if(!tcN('craft'))return '🔨 去木工坊，用木板做第一樣作品';if(!tcN('order')&&S.orders.length)return '📜 去展示館看客人的訂單';if(lv>=2&&!tcN('lot'))return '🌲 去林務所租第二塊林班';if(lv>=3&&!tcN('hire'))return '👷 去人力仲介雇一位伐木工';
+  const nx=LV_EARN[lv];return nx?`⭐ 升到等級 ${lv+1}：還差 ${money(Math.max(0,nx-S.earn))}`:'🏆 已經是最高等級！'}
+/* ---- 上方資訊 ---- */
+let moneyShown=Math.floor(S.money);
+function hud(){const hr=hourOf(S.t),day=dayOf(S.t),se=seasonOf(S.t),dIn=day%DAYS_PER_SEASON+1,year=Math.floor(day/(DAYS_PER_SEASON*4))+1;const h=Math.floor(hr),mi=Math.floor((hr-h)*6)*10;const pi=Math.floor(S.t/PERIOD);const w=curW(),night=isNight();
+  const fc=[0,1,2].map(k=>{const x=WEATHER[weatherAt(pi+k)];return `<span class="${k?'':'now'}">${['現在','30 分後','1 小時後'][k]}<br>${x.em}${x.n}</span>`}).join('');
+  const html=tr(`<b>${['🌸','☀️','🍁','❄️'][se]} 第${year}年 ${SEASON[se]}天 第${dIn}天</b>　🕒 ${String(h).padStart(2,'0')}:${String(mi).padStart(2,'0')}${night?' 🌙':''}<br>${w.em} ${w.n}　🌿 永續 ${Math.round(S.eco)}${S.ev&&S.t<S.ev.end?`　${EVS[S.ev.k].em}${EVS[S.ev.k].n}`:''}<div id="fc">${fc}</div>`);const c=$('#clock');if(c.dataset.h!==html){c.dataset.h=html;c.innerHTML=html}
+  const m=Math.floor(S.money);if(moneyShown!==m)moneyShown+=Math.sign(m-moneyShown)*Math.max(1,Math.ceil(Math.abs(m-moneyShown)*.2));const lv=woodLv(),nx=LV_EARN[lv];
+  const mh=tr(`💵 ${moneyShown.toLocaleString()}<span class="lv">⭐ 林場等級 ${lv}/${LV_MAX}${nx?`<i style="width:${Math.min(100,(S.earn-(LV_EARN[lv-1]||0))/(nx-(LV_EARN[lv-1]||0))*100)|0}%"></i>`:''}</span>${S.debt?`<span class="debt">欠款 💵${S.debt}</span>`:''}`);const me=$('#money');if(me.dataset.h!==mh){me.dataset.h=mh;me.innerHTML=mh}
+  const g=$('#goal'),gh=tr(goalTxt());if(g.dataset.h!==gh){g.dataset.h=gh;g.innerHTML=gh}
+  const ch=tr(`<span class="lab">🪵 原木 ${S.carry.length}/${carryCap()}</span><button id="cBag">查看</button><span class="lab">${toolOf().em} ${vehOf().em}${S.freeSap?' 🎟️'+S.freeSap:''} 📦${whCount()}/${whCap()}</span>`);const ce=$('#carry');if(ce.dataset.h!==ch){ce.dataset.h=ch;ce.innerHTML=ch;$('#cBag').onclick=()=>{SFX.click();bagPanel()}}}
+function layoutHUD(){const mob=W<=700;const r=q=>$(q).getBoundingClientRect();const b=$('#btns'),g=$('#goal'),t=$('#todo'),bn=$('#banner');const bt=Math.min(r('#bottom').top,$('#bSell').offsetParent?r('#bSell').top:1e9);
+  if(mob){const top=Math.max(r('#clock').bottom,r('#money').bottom)+6;b.style.top=top+'px';const gt=r('#btns').bottom+6;g.style.top=gt+'px';const tt=r('#goal').bottom+6;t.style.top=tt+'px';t.style.maxHeight=Math.max(90,bt-tt-10)+'px';bn.style.top=(tt+4)+'px';$('#toast').style.top=(tt+4)+'px'}
+  else{b.style.top=(r('#money').bottom+6)+'px';const tt=r('#btns').bottom+8;t.style.top=tt+'px';t.style.maxHeight=Math.max(120,bt-tt-12)+'px';g.style.top='8px';bn.style.top=(r('#goal').bottom+6)+'px'}}
+/* ---- 按鈕 ---- */
+const addBtn=(id,txt,cls,fn,before)=>{const b=document.createElement('button');b.className='hb '+cls;b.id=id;b.textContent=txt;const p=$('#btns');before?p.insertBefore(b,$(before)):p.appendChild(b);b.onclick=()=>{SFX.click();$('#btns').classList.remove('open');fn()};return b};
+addBtn('bRec','📋 紀錄看板','rec',recPanel,'#bPause');
+addBtn('bProf','⚙️ 經營模式','y more',()=>profilePanel());addBtn('bZoom','🔍 畫面：標準','b more',()=>{S.zoom=((S.zoom==null?2:S.zoom)+1)%ZOOMS.length;zoomLabel();toast('🔍 畫面：'+ZOOMS[S.zoom].n)});addBtn('bDex','📖 作品集','g more',dexPanel);
+const zoomLabel=()=>{$('#bZoom').textContent='🔍 畫面：'+ZOOMS[S.zoom==null?2:S.zoom].n};zoomLabel();
+addEventListener('wheel',e=>{if(panelOn())return;S.zoom=clamp((S.zoom==null?2:S.zoom)+(e.deltaY>0?1:-1),0,ZOOMS.length-1);zoomLabel()},{passive:true});
+$('#bMenu').onclick=()=>{SFX.click();$('#btns').classList.toggle('open');setTimeout(layoutHUD,0)};
+$('#bSell').onclick=()=>{SFX.click();closePanel();if(Math.hypot(P.pos.x-MARKET.x,P.pos.z-MARKET.z)<1.4&&!S.inHome){if(S.carry.length){sellCarry();backSync()}marketPanel();return}MARKET.done=0;goTo(ringPos(MARKET));toast('🚶 走去木材市場…')};
+$('#bHome').onclick=()=>{SFX.click();closePanel();if(S.inHome){exitHome();return}const r=RINGS.find(r=>r.kind==='home');r.done=0;goTo(ringPos(r));toast('🚶 走回家…',1500)};
+$('#bLedger').onclick=()=>{SFX.click();ledger()};$('#bFore').onclick=()=>{SFX.click();forePanel()};$('#bInfo').onclick=()=>{SFX.click();$('#btns').classList.remove('open');helpPanel()};
+function setPause(on){S.paused=on?1:0;$('#pause').style.display=on?'flex':'none';$('#bPause').textContent=on?'▶ 繼續':'⏸️ 暫停'}
+$('#bPause').onclick=()=>{SFX.click();setPause(!S.paused)};$('#bResume').onclick=()=>{SFX.click();setPause(false)};
+$('#bSpeed').onclick=()=>{S.speed=S.speed>=10?1:S.speed*5>10?10:S.speed*5;$('#bSpeed').textContent='⏩ ×'+S.speed};$('#bSpeed').textContent='⏩ ×'+(S.speed||1);
+function setSnd(on,fromParent){S.snd=on?1:0;initAudio();if(A.out)A.out.gain.value=S.snd?.7:0;$('#bSnd').textContent=S.snd?'🔊 聲音':'🔇 靜音';if(EMBED&&!fromParent)try{parent.postMessage({t:'snd',on:!!S.snd},'*')}catch(e){}}
+if(S.snd==null)S.snd=1;$('#bSnd').onclick=()=>{setSnd(!S.snd)};setTimeout(()=>setSnd(S.snd,1),500);
+$('#bReset').onclick=()=>{confirmAsk('確定要<b>重新開始</b>林場嗎？所有進度都會清除！',()=>{window.__noSave=1;localStorage.removeItem(KEY);location.reload()})};
+$('#bFS').onclick=()=>{SFX.click();if(EMBED){parent.postMessage({t:'fs'},'*');return}const d=document.documentElement;try{if(!document.fullscreenElement)(d.requestFullscreen||d.webkitRequestFullscreen).call(d);else document.exitFullscreen()}catch(e){}};
+$('#bExit').onclick=()=>{SFX.click();if(!EMBED){location.href='index.html';return}confirmAsk('確定要<b>離開林場</b>，回到「億萬大亨」主畫面嗎？<br><small>進度會自動存檔</small>',()=>{save();holdGame();parent.postMessage({t:'exit'},'*')})};
+$('#money').onclick=()=>{SFX.click();ledger('lv')};$('#goal').onclick=()=>{SFX.click();helpPanel()};
+/* ---- 移動（鏡頭在南邊：畫面右邊＝東、畫面下面＝南） ---- */
+const keys={};addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true});addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
+const cv=renderer.domElement;const joy={on:false,id:null,dx:0,dy:0};
+cv.addEventListener('pointerdown',e=>{if(joy.on)return;joy.on=true;joy.id=e.pointerId;joy.sx=e.clientX;joy.sy=e.clientY;joy.dx=joy.dy=0;const j=$('#joy');j.style.display='block';j.style.left=e.clientX+'px';j.style.top=e.clientY+'px';try{cv.setPointerCapture(e.pointerId)}catch(_){}$('#btns').classList.remove('open')});
+cv.addEventListener('pointermove',e=>{if(!joy.on||e.pointerId!==joy.id)return;let dx=e.clientX-joy.sx,dy=e.clientY-joy.sy;const L=Math.hypot(dx,dy),R=48;if(L>R){dx*=R/L;dy*=R/L}joy.dx=dx/R;joy.dy=dy/R;$('#joy').firstChild.style.transform=`translate(${dx}px,${dy}px)`});
+const endJ=e=>{if(e.pointerId===joy.id){joy.on=false;joy.dx=joy.dy=0;$('#joy').style.display='none';joy.id=null}};cv.addEventListener('pointerup',endJ);cv.addEventListener('pointercancel',endJ);
+const SR=V(1,0,0),SD=V(0,0,1);
+function input(){let x=0,y=0;if(keys.a||keys.arrowleft)x--;if(keys.d||keys.arrowright)x++;if(keys.w||keys.arrowup)y--;if(keys.s||keys.arrowdown)y++;if(joy.on&&Math.hypot(joy.dx,joy.dy)>.15){x+=joy.dx;y+=joy.dy}const L=Math.hypot(x,y);if(L>1){x/=L;y/=L}return [x,y]}
+/* ---- 畫面上的東西跟著狀態變 ---- */
+let syncT=0,wTime=0;
+function lotLabel(i){const st=S.lots[i],L=LOTS[i];if(!st||!st.own)return L.lv>woodLv()?`🔒 ${L.n}（等級 ${L.lv}）`:`🌲 ${L.n}（可以租）`;if(S.slide[i])return `⛰️ ${L.n} 土石流`;if(S.fires[i])return `🔥 ${L.n} 失火了！`;if(S.beasts.some(b=>b.li==i))return `🐾 ${L.n} 有野生動物`;
+  const sl=lotState(i).slots;const rp=sl.filter(s=>s.st==='tree').length,sp=sl.filter(s=>s.st==='sap').length;return `🌲 ${L.n}：🪓${rp} 🌱${sp}${st.pile?' 🪵'+st.pile:''}`}
+function worldTick(rdt){wTime+=rdt;syncT-=rdt;if(syncT<=0){syncT=.5;
+  for(let i=0;i<LOTS.length;i++){lotSync(i);const warn=S.fires[i]||S.slide[i]||S.beasts.some(b=>b.li==i);setL(LOTV[i].lab,warn?`<div class="pl warn">${lotLabel(i)}</div>`:`<div class="pl" style="font-size:16px">${LOTS[i].n}</div>`)}
+  npcSync();fireSync();beastSync();vehSync();
+  RINGS.forEach(r=>{let t=r.t,lk=false;if(r.kind==='lot'){lk=LOTS[r.li].lv>woodLv()&&!(S.lots[r.li]&&S.lots[r.li].own);t=lotLabel(r.li)}else if(r.kind==='saw'){const o=Object.values(S.saw.out).reduce((a,b)=>a+b,0);t=`🪚 鋸木廠（排隊 ${S.saw.q.length}${o?'・鋸好 '+o+' 片':''}）`}
+    else if(r.kind==='work'){const n=S.benches.filter(Boolean).length;t=`🔨 木工坊（${n}/${benchN()} 張在做）`}else if(r.kind==='show'){t=`🏛️ 展示館・訂單 ${S.orders.length} 張${orderOK&&S.orders.some(orderOK)?' ✅可交貨':''}`}
+    r.m.visible=r.kind==='hin'?!!S.inHome:true;r.m.material.opacity=lk?.3:.95;setL(r.L,`<div class="pl">${t}</div>`)});
+  BENCHV.forEach((b,i)=>{b.visible=i<benchN();const x=S.benches[i];const em=x?PROD(x.id).em:'🪚';if(b.userData.em!==em){b.userData.em=em;b.userData.sp.material.map=eTex(em)}b.userData.sp.visible=!!x});
+  PEDS.forEach((p,i)=>{p.visible=i<showN();const id=S.show[i];p.userData.sp.visible=!!id;if(id&&p.userData.id!==id){p.userData.id=id;p.userData.sp.material.map=eTex(PROD(id).em)}});
+  {const n=Math.min(15,Math.ceil(S.saw.q.length/2));while(SAWPILE.children.length<n){const q=SAWPILE.children.length;const l=logModel(S.saw.q[q*2]||K0);l.position.set(0,.18+Math.floor(q/5)*.3,(q%5)*.34-.7);SAWPILE.add(l)}while(SAWPILE.children.length>n)SAWPILE.remove(SAWPILE.children[SAWPILE.children.length-1])}
+  {const tot=Object.values(S.wh).reduce((a,b)=>a+b,0)+Object.values(S.saw.out).reduce((a,b)=>a+b,0);const n=Math.min(16,Math.ceil(tot/4));const ks=Object.keys(S.wh).concat(Object.keys(S.saw.out));while(BOARDPILE.children.length<n){const q=BOARDPILE.children.length;const b=boardModel(ks[q%Math.max(1,ks.length)]||K0);b.position.set(0,.06+q*.1,0);b.rotation.y=(q%2)*.08;BOARDPILE.add(b)}while(BOARDPILE.children.length>n)BOARDPILE.remove(BOARDPILE.children[BOARDPILE.children.length-1])}}
+  evqTick();fallTick(rdt);npcTick(rdt);beastTick(rdt,wTime);fireTick(wTime);worldAnim(rdt,wTime);if(!S.inHome)fadeOcc(rdt);
+  {const hb=$('#bHome');const ht=S.inHome?'🚪 出門':'🏠 回家';if(hb.textContent!==ht)hb.textContent=ht}
+  if(HOMEG.userData.fire)HOMEG.userData.fire.scale.setScalar(.9+Math.sin(wTime*9)*.1)}
+/* ---- 每一幀 ---- */
+function resize(){W=innerWidth;H=innerHeight;renderer.setSize(W,H);camera.aspect=W/H;camera.updateProjectionMatrix()}addEventListener('resize',()=>{resize();layoutHUD()});resize();
+const clock=new THREE.Clock();let taskT=0,RUN=false,HOLD=false;
+function frame(){requestAnimationFrame(frame);try{frameBody()}catch(e){console.error(e);if(typeof reportErr==='function')reportErr(e)}}
+function frameBody(){if(HOLD){clock.getDelta();return}const rdt=Math.min(.05,clock.getDelta());
+  if(!S.paused&&RUN){let gdt=rdt*(S.speed||1)*TS();while(gdt>0){const d=Math.min(gdt,TS()>1?5:2);step(d,false);gdt-=d}}
+  let [ix,iy]=S.paused||!RUN?[0,0]:input();let speed=0,mv=null;
+  if(ix||iy){P.auto=null;mv=V(0,0,0).addScaledVector(SR,ix).addScaledVector(SD,iy)}
+  else if(P.auto&&!S.paused){const tgt=P.auto.pts[0];const d=Math.hypot(tgt.x-P.pos.x,tgt.z-P.pos.z);if(d<.3||P.auto.stuck>.7){P.auto.stuck=0;if(P.auto.pts.length>1)P.auto.pts.shift();else{const th=P.auto.then;P.auto=null;if(th)th()}}else mv=V(tgt.x-P.pos.x,0,tgt.z-P.pos.z).normalize().multiplyScalar(Math.min(1,d*2))}
+  if(mv){const mag=Math.min(1,mv.length());mv.normalize();const old=P.pos.clone();P.pos.addScaledVector(mv,6.4*vehOf().sp*mag*rdt);collide(P.pos,old);speed=Math.hypot(old.x-P.pos.x,old.z-P.pos.z)/rdt;P.face=Math.atan2(mv.x,mv.z);if(P.auto)P.auto.stuck=speed<.5?(P.auto.stuck||0)+rdt:0}
+  P.pos.y=S.inHome?0:groundH(P.pos.x,P.pos.z);
+  const u=P.o.userData;P.o.rotation.y=lerpA(P.o.rotation.y,P.face,rdt*14);P.walk+=rdt*speed*2.3;const sw=speed>.2?Math.sin(P.walk):0,kk=Math.min(1,speed/4);
+  if(VEHM)vehPose(speed,rdt);else{if(u.legs){u.legs[0].rotation.x=sw*.7*kk;u.legs[1].rotation.x=-sw*.7*kk}if(u.body)u.body.position.y=Math.abs(Math.cos(P.walk))*.07*kk;if(u.arms){u.arms[0].rotation.x=sw*.6*kk;u.arms[1].rotation.x=-sw*.6*kk}}
+  // 站在圈圈上
+  if(!S.paused&&RUN){let onR=null;for(const r of RINGS){if(r.kind==='hin'?!S.inHome:S.inHome)continue;if(Math.hypot(P.pos.x-r.x,P.pos.z-r.z)<r.r){onR=r;break}}if(onR!==P.onR){if(P.onR){P.onR.stay=0;P.onR.done=0;P.onR.msg=0}P.onR=onR;CH.t=0}
+    if(onR&&!panelOn()&&$('#ask2').style.display!=='flex'){onR.stay+=rdt;ringAction(onR,rdt)}}
+  if(RUN&&!S.paused&&!panelOn())chopTick(rdt,!mv&&!P.auto);else AXE.visible=false;if(AXE.visible&&u.arms)u.arms[1].rotation.x=-1.7+Math.abs(Math.sin(CH.swing))*1.9;
+  worldTick(rdt);camUpdate(rdt);if(shake>0){shake=Math.max(0,shake-rdt);camera.position.x+=rand(-1,1)*shake;camera.position.y+=rand(-1,1)*shake}updateParts(rdt);updateFlights(rdt);
+  // 晚上
+  const hr=hourOf(S.t);const nk=hr>=19||hr<5?1:hr>=17?(hr-17)/2:hr<7?(7-hr)/2:0;$('#night').style.opacity=(nk*.45).toFixed(2);sun.intensity=1.1-nk*.6;
+  PTAG.pos.copy(P.pos).setY(P.pos.y+2.15+(VEHM?.9:0));
+  for(const L of LABELS){const d=Math.hypot(L.pos.x-P.pos.x,L.pos.z-P.pos.z);const nr=L.near>=50?L.near:Math.min(L.near,L.near>=18?L.near:7);if(!L.near||d>nr||!L.html){L.el.style.display='none';continue}const [x,y,ok]=project(L.pos);if(!ok){L.el.style.display='none';continue}L.el.style.display='';L.el.style.transform=`translate(${x|0}px,${y|0}px) translate(-50%,-100%)`}
+  taskT-=rdt;if(taskT<=0){taskT=.5;TASKS=buildTasks();renderTodo();layoutHUD();if(S.flow.length>400)S.flow=S.flow.filter(f=>S.t-f[0]<DAY*3);save.t=(save.t||0)+1;if(save.t%10===0)save()}
+  hud();if(typeof tutTick==='function')tutTick(rdt);renderer.render(scene,camera)}
+addEventListener('beforeunload',()=>save());document.addEventListener('visibilitychange',()=>{if(document.hidden)save()});
+/* ======================= 接進「億萬大亨」主遊戲 ======================= */
+function holdGame(){HOLD=true;RUN=false;save();window.__farmHold=true}
+function resumeGame(){window.__farmHold=false;HOLD=false;const off=offlineSim();clock.getDelta();RUN=true;if(off&&off.away>=60)showBack(off)}
+function showBack(o){openPanel(`<h2>👋 歡迎回來！</h2><div class="big3">你離開了 ${fmtReal(o.away)}</div><div>這段時間林場賺了 ${money(Math.max(0,o.earn))}${o.earn<0?`（付了帳單 ${money(-o.earn)}）`:''}</div><div>🌲 員工砍了 ${o.cut} 棵樹・📜 完成 ${o.ord} 張訂單</div><div class="note">樹苗、鋸木廠、工作台都有繼續進行。看「📋 紀錄看板」和「📒 帳本 → 通知」了解詳細。</div>`)}
+if(EMBED){['#bSpeed','#bReset'].forEach(q=>{const e=$(q);if(e)e.remove()});S.speed=1;$('#credit').textContent='遊戲製作：Eric Hu';
+  const fb=document.createElement('button');fb.className='hb y more';fb.id='bFun';fb.textContent='🎡 遊樂場';$('#btns').insertBefore(fb,$('#bFS'));
+  fb.onclick=()=>{SFX.click();$('#btns').classList.remove('open');parent.postMessage({t:'fun',money:Math.floor(S.money)},'*')};
+  setInterval(()=>{try{parent.postMessage({t:'sync',money:Math.floor(S.money),paused:!!(S.paused||HOLD),lv:woodLv(),series:'wood'},'*')}catch(e){}},1000);
+  addEventListener('message',e=>{const m=e.data;if(!m||e.source!==parent)return;if(m.t==='money'){S.money+=m.d;S.flow.push([S.t,m.d,'fun'])}else if(m.t==='snd')setSnd(m.on,1);else if(m.t==='pause')holdGame();else if(m.t==='resume'){if(m.name!=null){PNAME=String(m.name).slice(0,10);setL(PTAG,`<div class="pl me">${esc(PNAME||'新手伐木工')}</div>`)}resumeGame()}})}
+else if(!QS.has('dev')){['#bReset','#bSpeed','#bExit'].forEach(q=>{const e=$(q);if(e)e.remove()});S.speed=1}
+/* ---- 開始 ---- */
+if(S.inHome){S.inHome=0}
+{const off=offlineSim();for(let i=0;i<LOTS.length;i++)lotSync(i);backSync();vehSync();npcSync();fireSync();beastSync();EVQ.length=0;camT.copy(P.pos);RUN=true;frame();layoutHUD();setTimeout(()=>{dailyGift();if(off&&off.away>=60)showBack(off);else if(!S.profileSet)setTimeout(()=>{if(!panelOn())typeof tutStart==='function'?tutStart():profilePanel(1)},2500)},1200)}
+window.__G={goChop,treeNear,CH,AXE,route,segOK,onWalk,enterHome,exitHome,S,step,goTo,openShop,RINGS,P,offlineSim,earn,MARKET,SAWR,WORKR,SHOWR,lotPanel,sawPanel,workPanel,showPanel,officePanel,marketPanel,LOTV,NPCS,EVQ,buildTasks};
+/* ======================= 第一次來：簡單的歡迎說明 ======================= */
+function tutStart(){openPanel(`<h2>🌲 歡迎來到「林業與木工」！</h2><div style="font-size:16px;line-height:1.8">
+ 你繼承了山上的一小塊林班（林班 A），從一把斧頭開始，把它經營成大林場和家具工廠吧！<br>
+ 🪓 <b>砍樹</b>：走進林班，走到樹旁邊站著就會砍<br>
+ 🌱 <b>種回去</b>：走到林班前面的綠色圈圈，在面板按「全部種回去」<br>
+ 🪚 <b>鋸木板</b>：原木放進鋸木廠，鋸成木板<br>
+ 🔨 <b>做作品</b>：木工坊用木板做家具、樂器、木船<br>
+ 📜 <b>交訂單</b>：展示館的客人出高價買作品</div><div class="note">畫面上方的黃色提示會一步一步告訴你下一步。手機用手指在畫面上拖曳就能走路。</div><button class="pbtn g" id="tsOk" style="font-size:18px;margin-top:8px">👍 開始</button>`,()=>{$('#tsOk').onclick=()=>{closePanel();setTimeout(()=>profilePanel(1),300)}})}
+</script>
+</body>
+</html>
