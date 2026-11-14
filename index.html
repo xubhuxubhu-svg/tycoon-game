@@ -315,7 +315,7 @@ body.ing #toast{top:138px}
     <button class="ib" data-p="credits"><div class="sq">📜</div><span>聲明</span></button>
   </div>
 </div>
-<div id="credit">遊戲製作：Eric Hu　版本 2.16.0</div>
+<div id="credit">遊戲製作：Eric Hu　版本 2.19.0</div>
 </div>
 <div id="game" class="hide">
   <div id="lbls"></div>
@@ -3902,8 +3902,8 @@ function farmLevel(){let best=G.farmLv||0;if(DEV_UNLOCK)best=Math.max(best,SERIE
 function pickSeries(kind){if(farmLevel()<SERIES_UNLOCK_LV){if(kind==='solo')startFarm();else startFarm({coop:kind==='duo'?2:4});return}
   openPanel(kind==='solo'?'▶ 選擇系列':kind==='duo'?'👥 雙人合作：選擇系列':'👨‍👩‍👧‍👦 多人合作：選擇系列',`<div class="note">每個系列的進度和錢都是分開的。</div><div style="display:flex;flex-direction:column;gap:12px;align-items:center;margin:10px 0">
    <button class="big green" id="ps1" style="width:260px">🌾 第 1 系列　農業與畜牧</button><button class="big" id="ps2" style="width:260px;background:linear-gradient(#ffb35a,#ff8a1a)">🍔 第 2 系列　飲食與料理</button>${seriesUnlocked(2)?`<button class="big" id="ps3" style="width:260px;background:linear-gradient(#4fc3f7,#0288d1)">🐟 第 3 系列　漁業與海洋${kind==='solo'?'':'<br><small>（合作模式之後開放）</small>'}</button>`:''}${IND.filter(x=>seriesUnlocked(x.i)).map(x=>`<button class="big" id="ps${x.i+1}" style="width:260px;background:linear-gradient(${x.grad})">${x.em} 第 ${x.i+1} 系列　${x.name}${kind==='solo'?'':'<br><small>（合作模式之後開放）</small>'}</button>`).join('')}</div>`,()=>{
-   IND.forEach(x=>{const pb=$('#ps'+(x.i+1));if(pb)pb.onclick=()=>{SFX.click();if(kind!=='solo'&&x.id==='build'){closePanel();startInd('build',{lhost:4});return}if(kind!=='solo'){toast(`${x.em}「${x.name}」目前只有單人模式，合作模式之後開放`,3500);return}closePanel();startInd(x.id)}});
-   const p3=$('#ps3');if(p3)p3.onclick=()=>{SFX.click();if(kind!=='solo'){toast('🐟「漁業與海洋」目前只有單人模式，合作模式之後開放',3500);return}closePanel();startFish()};
+   IND.forEach(x=>{const pb=$('#ps'+(x.i+1));if(pb)pb.onclick=()=>{SFX.click();if(kind!=='solo'){closePanel();startInd(x.id,{lhost:4});return}closePanel();startInd(x.id)}});
+   const p3=$('#ps3');if(p3)p3.onclick=()=>{SFX.click();if(kind!=='solo'){closePanel();startFish({lhost:4});return}closePanel();startFish()};
    $('#ps1').onclick=()=>{SFX.click();closePanel();if(kind==='solo')startFarm();else startFarm({coop:kind==='duo'?2:4})};
    $('#ps2').onclick=()=>{SFX.click();closePanel();if(kind==='solo')startGame({coop:false});else if(kind==='duo')PANELS.duo();else PANELS.multi()}})}
 
@@ -4075,8 +4075,8 @@ SERIES[2].count=0;
 function fishLevel(){let best=G.fishLv||0;try{const d=JSON.parse(localStorage.getItem('zzdh_fish_v1')||'null');if(d){let l=1;for(let i=1;i<FARM_LV_EARN.length;i++)if((d.earn||0)>=FARM_LV_EARN[i])l=i+1;best=Math.max(best,l)}}catch(e){}return best}
 function startFish(opt={}){initAudio();mode='farm';document.body.classList.add('ing');$('#home').classList.add('hide');$('#tapHint').style.display='none';$('#fishHost').style.display='block';
   FARM={money:0,fish:1,post:m=>{try{fishIf&&fishIf.contentWindow.postMessage(m,'*')}catch(e){}}};
-  if(!fishIf){fishIf=document.createElement('iframe');fishIf.allow='autoplay; fullscreen; accelerometer; gyroscope';fishIf.src='fish.html?embed=1&name='+encodeURIComponent(G.name||'');fishIf.onload=()=>farmSnd();$('#fishHost').appendChild(fishIf)}
-  else{FARM.post({t:'resume',name:G.name||''});farmSnd()}
+  if(!fishIf){fishIf=document.createElement('iframe');fishIf.allow='autoplay; fullscreen; accelerometer; gyroscope';fishIf.src='fish.html?embed=1&name='+encodeURIComponent(G.name||'')+(opt.lhost?'&host='+opt.lhost:opt.ljoin?'&ljoin='+opt.ljoin:'');fishIf.onload=()=>farmSnd();$('#fishHost').appendChild(fishIf)}
+  else{FARM.post({t:'resume',name:G.name||''});farmSnd();if(opt.lhost)FARM.post({t:'coop',host:opt.lhost});else if(opt.ljoin)FARM.post({t:'coop',join:opt.ljoin})}
   farmMiniT=rand(120,200);clearInterval(farmMiniIv);
   farmMiniIv=setInterval(()=>{if(!FARM||!FARM.fish||MG||VSX||$('#modal').classList.contains('on')||FARM.paused||FARM.tut)return;farmMiniT-=1;if(farmMiniT<=0){farmMiniT=rand(200,320);miniNotice(miniNext())}},1000)}
 function exitFish(){if(FARM)FARM.post({t:'pause'});clearInterval(farmMiniIv);if(MG&&MG.stage==='notice'){MG=null;$('#mini').style.display='none'}
@@ -4098,7 +4098,7 @@ window.__FI={startFish,seriesUnlocked,fishLevel,get fishIf(){return fishIf}};
 /* ======================= 多人合作大廳：看到誰在線上、組隊、邀請、請求加入 ======================= */
 function lobbyUid(){let u='';try{u=localStorage.getItem('zzdh_lobby_uid')}catch(e){}if(!u){u='L'+Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);try{localStorage.setItem('zzdh_lobby_uid',u)}catch(e){}}return u}
 const LB={ws:null,list:{players:[],teams:[]},open:false,where:'',name:'',retry:0,ok:false};
-const SER_ICON={farm:'🌾 農業與畜牧',food:'🍔 飲食與料理',fish:'🐟 漁業與海洋',build:'🧱 建造與水泥',home:'🏠 在首頁'};
+const SER_ICON={farm:'🌾 農業與畜牧',food:'🍔 飲食與料理',fish:'🐟 漁業與海洋',wood:'🪵 林業與木工',mine:'⛏️ 採礦與冶金',chem:'⚗️ 化工與能源',build:'🧱 建造與水泥',home:'🏠 在首頁'};
 function lbWhere(){if(mode==='home')return 'home';if(typeof FARM!=='undefined'&&FARM)return FARM.fish?'fish':FARM.ind?FARM.ind:'farm';return 'food'}
 function lbName(){return (G.name||'').trim()||'玩家'}
 function lbConnect(){if(!(location.protocol==='http:'||location.protocol==='https:'))return;if(LB.ws&&LB.ws.readyState<2)return;
@@ -4122,14 +4122,15 @@ function lbPop(html,yes,no,cb){const d=document.createElement('div');d.style.css
   const done=ok=>{d.remove();cb(ok)};d.querySelector('[data-y]').onclick=()=>done(true);d.querySelector('[data-n]').onclick=()=>done(false);setTimeout(()=>{if(d.isConnected){d.remove();cb(false)}},60000)}
 // 加入隊伍
 function lobbyJoin(series,code){code=String(code||'');if(!/^\d{4}$/.test(code))return;closePanel();LB.open=false;
-  if(series==='build'){if(typeof FARM!=='undefined'&&FARM&&!(FARM.ind==='build')){FARM.fish?exitFish():FARM.ind?exitInd():exitFarm()}startInd('build',{ljoin:code});return}
+  if(['build','wood','mine','chem'].includes(series)){if(typeof FARM!=='undefined'&&FARM&&!(FARM.ind===series)){FARM.fish?exitFish():FARM.ind?exitInd():exitFarm()}startInd(series,{ljoin:code});return}
+  if(series==='fish'){if(typeof FARM!=='undefined'&&FARM&&!FARM.fish){FARM.ind?exitInd():exitFarm()}startFish({ljoin:code});return}
   if(series==='food'){if(typeof FARM!=='undefined'&&FARM){FARM.fish?exitFish():FARM.ind?exitInd():exitFarm()}netJoin(code);return}
   if(typeof FARM!=='undefined'&&FARM&&FARM.fish)exitFish();if(typeof FARM!=='undefined'&&FARM&&FARM.ind)exitInd();
   if(typeof FARM!=='undefined'&&FARM&&!FARM.fish&&!FARM.ind&&farmIf){FARM.post({t:'ljoin',code});return}
   if(mode!=='home'){toast('先回到首頁再加入喔',2500);return}
   startFarm({noSlot:1,ljoin:code})}
 // 建立隊伍（我當房主）
-function lobbyHost(series){closePanel();if(series==='food'){netCreate(4);return}if(series==='build'){if(mode!=='home'){toast('先回到首頁再建立隊伍喔',2500);return}startInd('build',{lhost:4});return}
+function lobbyHost(series){closePanel();if(series==='food'){netCreate(4);return}if(['build','wood','mine','chem','fish'].includes(series)){if(mode!=='home'){toast('先回到首頁再建立隊伍喔',2500);return}if(series==='fish')startFish({lhost:4});else startInd(series,{lhost:4});return}
   let old=false;try{old=!!localStorage.getItem('zzdh_farm_coop2')}catch(e){}
   if(mode!=='home'){toast('先回到首頁再建立隊伍喔',2500);return}
   if(old)openPanel('👑 建立隊伍',`<div>要用哪一個合作存檔？以前「雙人合作」的進度也可以繼續用。</div><div class="coRow2"><button class="sbtn" id="lh4">👥 多人存檔（最多 4 人）</button><button class="sbtn" id="lh2" style="background:#9a6ad8">📦 以前的雙人存檔（2 人）</button></div>`,()=>{$('#lh4').onclick=()=>{closePanel();startFarm({coop:4,lhost:4})};$('#lh2').onclick=()=>{closePanel();startFarm({coop:2,lhost:2})}});
@@ -4138,7 +4139,7 @@ function lbRender(){if(!LB.open||!$('#lbBody'))return;const me=lobbyUid(),L=LB.l
   const idle=L.players.filter(p=>p.lu!==me&&!p.team);
   const h=`${LB.ok?'':'<div style="color:#c0392b">⚠️ 連不上伺服器。多人合作要在你架設的「億萬大亨」網站上才能使用，正在重新連線…</div>'}
    <div class="lbsec">🙋 你：<b>${esc(lbName())}</b>　${mt?`在 <b>${esc(mt.hostName)}</b> 的隊伍（${SER_ICON[mt.series]}，房號 ${mt.code}）${amHost?' 👑 你是房主':''}`:'還沒有組隊'}</div>
-   ${mt?'':`<div class="lbsec"><b>👑 建立隊伍（我當房主）</b><div class="note2">先選要一起經營哪一個系列，隊伍會有固定房號，之後可以邀請線上的玩家。</div><div class="coRow2"><button class="sbtn" data-host="farm" style="background:#2fb04a">🌾 農業與畜牧</button>${typeof seriesUnlocked==='function'&&seriesUnlocked(1)?'<button class="sbtn" data-host="food" style="background:#e8701a">🍔 飲食與料理</button>':''}<button class="sbtn" data-host="build" style="background:#d9774b">🧱 建造與水泥</button></div></div>`}
+   ${mt?'':`<div class="lbsec"><b>👑 建立隊伍（我當房主）</b><div class="note2">先選要一起經營哪一個系列，隊伍會有固定房號，之後可以邀請線上的玩家。</div><div class="coRow2"><button class="sbtn" data-host="farm" style="background:#2fb04a">🌾 農業與畜牧</button>${typeof seriesUnlocked==='function'&&seriesUnlocked(1)?'<button class="sbtn" data-host="food" style="background:#e8701a">🍔 飲食與料理</button>':''}${[['fish','🐟 漁業與海洋','#2a8ad8'],['wood','🪵 林業與木工','#8a6a3a'],['mine','⛏️ 採礦與冶金','#6a6a7a'],['chem','⚗️ 化工與能源','#1a8a7a']].filter(([k])=>typeof seriesUnlocked!=='function'||k!=='fish'||seriesUnlocked(2)).filter(([k])=>k==='fish'||typeof indUnlocked!=='function'||indUnlocked(k)).map(([k,n,c])=>`<button class="sbtn" data-host="${k}" style="background:${c}">${n}</button>`).join('')}<button class="sbtn" data-host="build" style="background:#d9774b">🧱 建造與水泥</button></div></div>`}
    <div class="lbsec"><b>👥 線上的隊伍（${L.teams.length}）</b>${L.teams.map(t=>{const mine=t.mem.some(x=>x.lu===me),full=t.n>=t.cap;return `<div class="lbrow"><div style="flex:1"><b>${SER_ICON[t.series]||''}</b>　👑${esc(t.hostName)}${t.hostOn?'':'（房主暫時離線）'}<br><small>${t.mem.map(x=>`${x.on?'🟢':'⚪'}${esc(x.name)}`).join('　')}　（${t.n}/${t.cap} 人）</small></div>${mine?'<span class="lbtag">你在這隊</span>':full?'<span class="lbtag">已滿</span>':`<button class="sbtn" data-req="${t.code}" data-hn="${esc(t.hostName)}" style="background:#e8701a">🙋 請求加入</button>`}</div>`}).join('')||'<div class="note2">目前沒有隊伍，可以自己建立一個！</div>'}</div>
    <div class="lbsec"><b>🟢 線上還沒組隊的玩家（${idle.length}）</b>${idle.map(p=>`<div class="lbrow"><div style="flex:1">${esc(p.name)}<br><small>${SER_ICON[p.where]||''}</small></div>${amHost?`<button class="sbtn" data-inv="${p.lu}" data-nm="${esc(p.name)}" style="background:#2fb04a">📨 邀請</button>`:''}</div>`).join('')||'<div class="note2">目前沒有其他人在線上。請朋友打開同一個網址的遊戲，他就會出現在這裡。</div>'}${idle.length&&!amHost?'<div class="note2">💡 自己建立隊伍當房主，就可以邀請他們。</div>':''}</div>
    <details class="lbsec"><summary>🔢 用房號加入（備用）</summary><div class="coRow2" style="margin-top:6px"><input id="lbCode" maxlength="4" inputmode="numeric" placeholder="房號" style="width:90px;font-size:18px;padding:6px;border-radius:10px;border:2px solid #cfe2f2;text-align:center"><button class="sbtn" data-mj="farm" style="background:#2fb04a">🌾 加入農場</button><button class="sbtn" data-mj="food" style="background:#e8701a">🍔 加入餐廳</button></div></details>`;

@@ -68,7 +68,7 @@ const rand=(a,b)=>a+Math.random()*(b-a);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const V=(x,y,z)=>new THREE.Vector3(x,y,z);
 const QS=new URLSearchParams(location.search);const EMBED=QS.has('embed')&&window.parent!==window;let PNAME=(QS.get('name')||'').slice(0,10);
-const KEY=EMBED?'zzdh_build_v1':'zzdh_build_test_v1';
+const KEY0=EMBED?'zzdh_build_v1':'zzdh_build_test_v1';let KEY=(()=>{try{return localStorage.getItem(KEY0+'_lastmode')==='free'?KEY0+'_free':KEY0}catch(e){return KEY0}})();
 const money=v=>'💵'+Math.round(v).toLocaleString();
 const MONEY_MAX=1e10;
 let W=innerWidth,H=innerHeight;
@@ -285,7 +285,7 @@ function buildHouse(o){const g=new THREE.Group();const B=new Batch();const {w,d}
   // 煙囪
   if(o.chimney&&rt!=='flat'&&rt!=='dome'){const cx=along?w*.28:0,cz=along?-d*.18:d*.28;const ch=peak-top+1.2;B.add(boxG(.75,ch+1,.75,2.5),mat('brick',0xa8583a),mxAt(cx,top+ch/2,cz));B.add(boxG(.95,.18,.95),mat('',0x6a6a6a),mxAt(cx,top+ch+.55,cz))}
   // 招牌（商店、電影院）
-  if(o.sign){const tx=cTex(256,64,(x,cw,chh)=>{x.fillStyle=o.signBg||'#2a2a2e';x.fillRect(0,0,cw,chh);x.fillStyle=o.signFg||'#ffd860';x.font='bold 38px Huninn, sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText(o.sign,cw/2,chh/2+2)});tx.wrapS=tx.wrapT=THREE.ClampToEdgeWrapping;
+  if(o.sign){const tx=cTex(256,64,(x,cw,chh)=>{x.fillStyle=o.signBg||'#2a2a2e';x.fillRect(0,0,cw,chh);x.fillStyle=o.signFg||'#ffd860';let fs=38;x.font='bold 38px Huninn, sans-serif';while(x.measureText(o.sign).width>cw-14&&fs>14){fs-=2;x.font=`bold ${fs}px Huninn, sans-serif`}x.textAlign='center';x.textBaseline='middle';x.fillText(o.sign,cw/2,chh/2+2)});tx.wrapS=tx.wrapT=THREE.ClampToEdgeWrapping;
     const sw=Math.min(w-.6,o.cinema?w-.4:5);const sm=new THREE.Mesh(new THREE.PlaneGeometry(sw,sw/4),new THREE.MeshStandardMaterial({map:tx,emissive:0xffffff,emissiveMap:tx,emissiveIntensity:.35}));sm.position.set(0,base+(o.cinema?Math.min(H-1.2,6.5):2.85),d/2+.1);g.add(sm);sm.userData.sign=1}
   if(o.cinema){const cw=Math.min(w-1,9);B.add(boxG(cw,.3,2.4),mat('',0x2a2a2e),mxAt(0,base+3.6,d/2+1.2));for(let q=0;q<14;q++)B.add(new THREE.SphereGeometry(.09,6,4),GLASS_L,mxAt(-cw/2+.3+q*(cw-.6)/13,base+3.42,d/2+2.38));
     for(const s of [-1,1])B.add(planeG(1.3,1.9,1.3),mat('',[0xd84a3a,0x3a6ad8][s>0?1:0],{emissive:0x331111}),mxAt(s*(w/2-1.4),base+1.6,d/2+.04))}
@@ -453,7 +453,7 @@ Object.assign(NAT,{
 const NATG=new THREE.Group();scene.add(NATG);let natDirty=true;
 function natRebuild(){natDirty=false;while(NATG.children.length){const c=NATG.children.pop();c.dispose&&c.dispose()}const by={};const CH=SZ/5;for(const o of S.objs)if(o.t==='nat'){const ck=o.k+'|'+Math.floor((o.x+HALF)/CH)+'|'+Math.floor((o.z+HALF)/CH);(by[ck]=by[ck]||[]).push(o)}
   for(const ck in by){const k=ck.split('|')[0];const def=NAT[k];if(!def)continue;const list=by[ck];def.parts.forEach(pt=>{const im=new THREE.InstancedMesh(pt.geo,pt.m,list.length);im.castShadow=k!=='grass'&&k!=='daisy';im.receiveShadow=true;
-    list.forEach((o,i)=>{const m=mxAt(o.x,hAt(o.x,o.z)-.05+(o.oy||0),o.z,o.r||0,o.s||1,o.s||1,o.s||1);if(o.rx||o.rz)m.multiply(new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(o.rx||0,0,o.rz||0)));im.setMatrixAt(i,m.multiply(pt.mx))});im.instanceMatrix.needsUpdate=true;im.computeBoundingSphere();NATG.add(im)})}}
+    list.forEach((o,i)=>{const hv=natHV(o);const m=mxAt(o.x,hAt(o.x,o.z)-.05+(o.oy||0),o.z,o.r||0,(o.s||1)*hv[0],(o.s||1)*hv[1],(o.s||1)*hv[0]);if(o.rx||o.rz)m.multiply(new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(o.rx||0,0,o.rz||0)));im.setMatrixAt(i,m.multiply(pt.mx));natTint(im,k,pt,o,i)});im.instanceMatrix.needsUpdate=true;if(im.instanceColor)im.instanceColor.needsUpdate=true;im.computeBoundingSphere();NATG.add(im)})}}
 /* ======================= 擺設 ======================= */
 const DEC={
  lamp:{n:'路燈',em:'🏮',p:60,parts:o=>{const B=new Batch(),m=mat('',0x2a2a2e,{metalness:.5,roughness:.4});B.add(new THREE.CylinderGeometry(.07,.1,3.4,8),m,mxAt(0,1.7,0));B.add(new THREE.CylinderGeometry(.18,.22,.25,8),m,mxAt(0,.12,0));B.add(boxG(.06,.06,.5),m,mxAt(0,3.3,.22));B.add(new THREE.CylinderGeometry(.12,.22,.35,6),m,mxAt(0,3.25,.45));B.add(new THREE.SphereGeometry(.13,8,6),LAMP_M,mxAt(0,3.05,.45));return B}},
@@ -508,9 +508,9 @@ const LAMP_M=new THREE.MeshStandardMaterial({color:0xfff4d0,emissive:0xffc860,em
 const ROADS={road:{n:'柏油馬路',w:5,t:'asphalt',p:12,c:0xffffff},cobble:{n:'石板路',w:3,t:'cobble',p:8,c:0xffffff},path:{n:'泥土小路',w:1.8,t:'dirt',p:2,c:0xffffff},paver:{n:'人行步道',w:2.2,t:'paver',p:5,c:0xffffff},step:{n:'踏腳石小徑',w:1.2,t:'stone',p:3,c:0xffffff},brick:{n:'紅磚步道',w:2.4,t:'brick',p:6,c:0xc8684a},rail:{n:'鐵軌',w:2.6,t:'dirt',p:20,c:0x9a8a7a}};
 const FENCES={wood:{n:'木柵欄',p:6},picket:{n:'白色籬笆',p:8},stone:{n:'矮石牆',p:12},iron:{n:'鐵欄杆',p:14,lv:3},hedge:{n:'樹籬',p:10},castle:{n:'城堡矮牆',p:18,lv:2}};
 function smoothPts(pts){if(pts.length<3)return pts;const out=[pts[0]];for(let i=1;i<pts.length-1;i++){const a=pts[i-1],b=pts[i],c=pts[i+1];out.push({x:(a.x+2*b.x+c.x)/4,z:(a.z+2*b.z+c.z)/4})}out.push(pts[pts.length-1]);return out}
-function buildRoad(o){const R=ROADS[o.k]||ROADS.road;const pts=smoothPts(o.pts);if(o.k==='step'){const B=new Batch(),m=mat('stone',0xc8c0b4);let acc=0;for(let i=1;i<pts.length;i++){const a=pts[i-1],b=pts[i];const L=Math.hypot(b.x-a.x,b.z-a.z);for(let s=0;s<L;s+=.9){const t2=s/L,x=a.x+(b.x-a.x)*t2,z=a.z+(b.z-a.z)*t2;B.add(new THREE.CylinderGeometry(.42,.45,.12,7),m,mxAt(x+rand(-.1,.1),hAt(x,z)+.05,z+rand(-.1,.1),rand(0,3)))}}const g=new THREE.Group();B.build(g,false);return g}const w=R.w/2;const P=[],U=[],Nn=[],I=[];let acc=0;
+function buildRoad(o){const R=ROADS[o.k]||ROADS.road;const pts=densePts(smoothPts(o.pts),.8);if(o.k==='step'){const B=new Batch(),m=mat('stone',0xc8c0b4);let acc=0;for(let i=1;i<pts.length;i++){const a=pts[i-1],b=pts[i];const L=Math.hypot(b.x-a.x,b.z-a.z);for(let s=0;s<L;s+=.9){const t2=s/L,x=a.x+(b.x-a.x)*t2,z=a.z+(b.z-a.z)*t2;B.add(new THREE.CylinderGeometry(.42,.45,.12,7),m,mxAt(x+rand(-.1,.1),hAt(x,z)+.05,z+rand(-.1,.1),rand(0,3)))}}const g=new THREE.Group();B.build(g,false);return g}const w=R.w/2;const P=[],U=[],Nn=[],I=[];let acc=0;
   for(let i=0;i<pts.length;i++){const a=pts[Math.max(0,i-1)],b=pts[Math.min(pts.length-1,i+1)];let dx=b.x-a.x,dz=b.z-a.z;const L=Math.hypot(dx,dz)||1;dx/=L;dz/=L;const nx=-dz,nz=dx;if(i>0)acc+=Math.hypot(pts[i].x-pts[i-1].x,pts[i].z-pts[i-1].z);
-    for(const s of [-1,1]){const x=pts[i].x+nx*w*s,z=pts[i].z+nz*w*s;P.push(x,Math.max(hAt(x,z),WATER_Y+.05)+.06+(o.k==='road'?.02:0),z);Nn.push(0,1,0);U.push(s<0?0:1,acc/R.w)}
+    for(const s of [-1,1]){const x=pts[i].x+nx*w*s,z=pts[i].z+nz*w*s;P.push(x,Math.max(hAt(x,z),hAt(pts[i].x,pts[i].z),WATER_Y+.05)+.09+(o.k==='road'?.02:0),z);Nn.push(0,1,0);U.push(s<0?0:1,acc/R.w)}
     if(i>0){const k=(i-1)*2;I.push(k,k+1,k+2,k+1,k+3,k+2)}}
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(P,3));g.setAttribute('normal',new THREE.Float32BufferAttribute(Nn,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(U,2));g.setIndex(I);
   const m=new THREE.Mesh(g,mat(R.t,R.c,{polygonOffset:true,polygonOffsetFactor:-2}));m.receiveShadow=true;const gr=new THREE.Group();gr.add(m);
@@ -560,7 +560,7 @@ function valueOf(o){let v=costOf(o)*1.45+(o.t==='house'&&typeof furValue==='func
   let wat=0;for(let a=0;a<8;a++){if(hAt(o.x+Math.cos(a)*12,o.z+Math.sin(a)*12)<WATER_Y){wat=.12;break}}
   let k=1+Math.min(.6,deco)+(road?.18:0)+(fence?.06:0)+wat;k*=STYLE_BONUS[o.wall]||1;
   // 附屬：同一個人買的圓塔、城牆一起算
-  return {v:Math.round(v*k),deco:Math.min(.6,deco),road,fence,wat,style:STYLE_BONUS[o.wall]||1}}
+  return {v:Math.round(v*k*(typeof PF==='function'?PF().sale:1)*(1-(o.dmg||0)/125)),deco:Math.min(.6,deco),road,fence,wat,style:STYLE_BONUS[o.wall]||1}}
 /* ---- 建築模板 ---- */
 const TPL=[
  {id:'cabin',n:'山中小木屋',em:'🛖',lv:1,o:[{t:'house',w:6,d:5,floors:1,wall:'wood',wallC:0xb07a48,roof:'gable',roofM:'slate',roofC:0x5a5a62,pitch:.9,trimC:0x5a3a22,win:'classic',shutters:0,chimney:1,porch:1}]},
@@ -647,7 +647,7 @@ let WILD=[];// 原始地圖上的野生花草樹木（固定的，用編號記�
 function wildGen(skip){let sd=12345;const r1=()=>{sd=(sd*16807)%2147483647;return sd/2147483647};const ks=['oak','oak','pine','pine','birch','bush','bush','rock','grass','daisy','maple','cypress','bigrock','azalea','willow','dead','redmaple','ginkgo','palm','sakura','fir'];WILD=[];
   for(let i=0;i<9000;i++){const x=-HALF+3+r1()*(SZ-6),z=-HALF+3+r1()*(SZ-6),a=r1(),b=r1(),c=r1(),sc=.75+r1()*.55,rr=r1()*6.28;const h=hAt(x,z);let k;
     if(h<WATER_Y+.2||skip&&Math.abs(x)<skip&&Math.abs(z)<skip){WILD.push(null);continue}
-    k=RK[idx(Math.round((x+HALF)/CELL),Math.round((z+HALF)/CELL))]>.6?(a<.5?'rock':b<.5?'bigrock':'pine'):ks[Math.floor(c*ks.length)];if(!NAT[k])k='oak';
+    k=RK[idx(Math.round((x+HALF)/CELL),Math.round((z+HALF)/CELL))]>.6?(a<.5?'rock':b<.5?'bigrock':'pine'):ks[Math.floor(c*ks.length)];if(!NAT[k])k='oak';k=natVar(k,x,z);
     if(Math.abs(x)<16&&Math.abs(z)<16&&k!=='grass'&&k!=='daisy'){WILD.push(null);continue}WILD.push({k,x,z,s:sc,r:rr})}}
 function wildApply(wdel,keep){const del=new Set(wdel||[]);for(let i=0;i<WILD.length;i++){const w=WILD[i];if(!w||del.has(i)||keep.has(i))continue;S.objs.push({t:'nat',k:w.k,x:w.x,z:w.z,s:w.s,r:w.r,id:10000000+i,wi:i,wild:1})}}
 function wildPlants(){wildApply([],new Set())}
@@ -760,8 +760,8 @@ function startTool(x,y){if(INT){intStart(x,y);return}const t=TOOL;
     end:()=>{ghost.visible=false;if(L<2||!c)return;if(!owned(c.x,c.z)){landHint();return}const o=Object.assign({t:'wall',x:c.x,z:c.z,r:ghost.rotation.y,len:Math.round(L*2)/2,h:4.5,wallC:0xd8d0c4},WALLK[TS.wallk][1]);snapUndo();if(!useMats(matsOf(o),'城牆'))return;addObj(o);startBuild(o);SFX.build();dirty();SEL=o.id;setTool('sel');editShow()},cancel:()=>ghost.visible=false};return}
   if(t==='road'||t==='fence'){const g0=groundAt(x,y);if(!g0)return;const pts=[{x:g0.x,z:g0.z}];const tmp={t,k:t==='road'?TS.road:TS.fence,pts,id:-1};let mesh=null;
     const redraw=()=>{if(mesh)scene.remove(mesh);mesh=t==='road'?buildRoad(tmp):buildFence(tmp);scene.add(mesh)};
-    G={move:(cx,cy)=>{const g=groundAt(cx,cy);if(!g)return;const l=pts[pts.length-1];if(Math.hypot(g.x-l.x,g.z-l.z)>1.4){pts.push({x:g.x,z:g.z});redraw();$('#hint').style.display='block';$('#hint').innerHTML=`${t==='road'?'🛣️':'🚧'} ${money(costOf(tmp))}`}},
-      end:()=>{if(mesh)scene.remove(mesh);if(pts.length<2)return;const ok=pts.filter(p=>owned(p.x,p.z));if(ok.length<pts.length){landHint();return}const o={t,k:tmp.k,pts:pts.map(p=>({x:Math.round(p.x*10)/10,z:Math.round(p.z*10)/10}))};snapUndo();if(!spend(costOf(o),t==='road'?'道路':'圍籬'))return;addObj(o);SFX.place();dirty()},cancel:()=>{if(mesh)scene.remove(mesh)}};return}
+    G={move:(cx,cy)=>{const g=groundAt(cx,cy);if(!g)return;const l=pts[pts.length-1];if(Math.hypot(g.x-l.x,g.z-l.z)>1.4){if(t==='road'&&roadBlock(l,g)){roadWarn();return}pts.push({x:g.x,z:g.z});redraw();$('#hint').style.display='block';$('#hint').innerHTML=`${t==='road'?'🛣️':'🚧'} ${money(costOf(tmp))}`}},
+      end:()=>{if(mesh)scene.remove(mesh);if(pts.length<2)return;const ok=pts.filter(p=>owned(p.x,p.z));if(ok.length<pts.length){landHint();return}const o={t,k:tmp.k,pts:pts.map(p=>({x:Math.round(p.x*10)/10,z:Math.round(p.z*10)/10}))};snapUndo();if(!spend(costOf(o),t==='road'?'道路':'圍籬'))return;addObj(o);if(t==='road')roadClear(o);SFX.place();dirty()},cancel:()=>{if(mesh)scene.remove(mesh)}};return}
   if(t==='tree'||t==='flower'){snapUndo();const k=t==='tree'?TS.tree:TS.flower;const wat=NAT[k].water;const gap=t==='tree'?2.2:.8;let last=null,n=0;
     const put=(cx,cy)=>{const g=groundAt(cx,cy);if(!g||!owned(g.x,g.z))return;if(wat?g.y>WATER_Y-.05:g.y<WATER_Y)return;if(last&&Math.hypot(g.x-last.x,g.z-last.z)<gap)return;if(blockedAt(g.x,g.z))return;const jx=g.x+(n?rand(-.4,.4):0),jz=g.z+(n?rand(-.4,.4):0);
       if(S.objs.some(o=>o.t==='nat'&&Math.hypot(o.x-jx,o.z-jz)<gap*.6))return;if(!spend(NAT[k].p))return;S.objs.push({t:'nat',k,x:jx,z:jz,s:wat?1:rand(.8,1.2),r:rand(0,6.28),id:CO.role?coopId():++S.nid});last=g;n++;natDirty=true;SFX.brush();dirty()};
@@ -829,7 +829,7 @@ function matsOf(o){if(o.t==='lm')return Object.fromEntries(Object.entries(LM[o.k
     if(c==='castle'){mAdd(m,'stone',P.w*P.h*Math.max(.6,P.d)/2);if(o.k==='cg'||o.k==='cdb'){mAdd(m,'wood',8);mAdd(m,'steel',4)}if(o.k==='cwin'||o.k==='ct')mAdd(m,'glass',2)}
     if(c==='trim'){mAdd(m,'wood',2);mAdd(m,'paint',1)}}
   return mFix(m)}
-const mCost=m=>Object.entries(m).reduce((a,[k,v])=>a+v*MATD[k].p,0);
+const mCost=m=>Object.entries(m).reduce((a,[k,v])=>a+v*MATD[k].p,0)*PF().mat;
 const mHave=m=>Object.entries(m).every(([k,v])=>(S.mat[k]||0)>=v);
 const mMiss=m=>{const r={};for(const [k,v] of Object.entries(m)){const d=v-(S.mat[k]||0);if(d>0)r[k]=d}return r};
 const mTxt=(m,showHave)=>Object.entries(m).map(([k,v])=>{const h=S.mat[k]||0;return `<span style="white-space:nowrap;${showHave&&h<v?'color:#c8302a;font-weight:bold':''}">${MATD[k].em}${MATD[k].n} ${v}${showHave?`<small style="color:#7a6a4a">（有 ${Math.floor(h)}）</small>`:''}</span>`}).join('　');
@@ -844,14 +844,14 @@ function matHud(){const t=$('#mats');if(t)t.dataset.h=''}
 /* ---- 建材行 ---- */
 let shopTab='buy';
 function shopPanel(){const tabs=`<div class="row2" style="margin:0 0 8px">${[['buy','🛒 買材料'],['list','📋 材料明細表'],['fac','🏭 生產工廠'],['crew','👷 工班與人才'],['veh','🚁 交通工具']].map(([k,n])=>`<button class="hb ${shopTab===k?'o':''}" data-tb="${k}">${n}</button>`).join('')}</div>`;let h='<h2>🧱 建材行</h2>'+tabs;
-  if(shopTab==='buy')h+=`<div style="font-size:14px;color:#7a6a4a">蓋房子、圓塔、城牆、建材零件都要用材料。可以在這裡買，也可以自己生產。</div>`+MK.map(k=>{const d=MATD[k];return `<div class="prow"><div class="em">${d.em}</div><div class="tx"><b>${d.n}</b>：倉庫有 <b>${Math.floor(S.mat[k]||0)}</b><small>一個 ${money(d.p)}</small><small style="color:#2a7ab8">怎麼拿到：${srcTxt(k)}</small></div><div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;max-width:180px">${[10,50,200].map(n=>`<button class="hb g" data-buy="${k}|${n}">＋${n}<br><small>${money(d.p*n)}</small></button>`).join('')}<button class="hb b" data-go="${k}">📍前往獲得</button>${k!=='clay'&&(S.mat[k]||0)>=10?`<button class="hb" data-sell="${k}">賣 10</button>`:''}</div></div>`}).join('');
+  if(shopTab==='buy')h+=`<div style="font-size:14px;color:#7a6a4a">蓋房子、圓塔、城牆、建材零件都要用材料。可以在這裡買，也可以自己生產。</div>`+MK.map(k=>{const d=MATD[k];return `<div class="prow"><div class="em">${d.em}</div><div class="tx"><b>${d.n}</b>：倉庫有 <b>${Math.floor(S.mat[k]||0)}</b><small>一個 ${money(d.p)}</small><small style="color:#2a7ab8">怎麼拿到：${srcTxt(k)}</small></div><div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;max-width:180px">${[10,50,200].map(n=>`<button class="hb g" data-buy="${k}|${n}">＋${n}<br><small>${money(Math.round(d.p*n*PF().mat))}</small></button>`).join('')}<button class="hb b" data-go="${k}">📍前往獲得</button>${k!=='clay'&&(S.mat[k]||0)>=10?`<button class="hb" data-sell="${k}">賣 10</button>`:''}</div></div>`}).join('');
   else if(shopTab==='list'){h+=`<div style="font-size:14px;color:#7a6a4a">每種樣式蓋一棟要的材料（紅色＝倉庫不夠）。按「一鍵買齊」可以補足。</div>`+TPL.map(t=>{const m={};t.o.forEach(q=>{if(q.t==='house'||q.t==='tower'||q.t==='wall')for(const [k,v] of Object.entries(matsOf(Object.assign({x:0,z:0},q))))mAdd(m,k,v)});const ok=mHave(m),miss=mMiss(m);
       return `<div class="prow ${t.lv>LV()?'lock':''}"><div class="em">${t.em}</div><div class="tx"><b>${t.n}</b>${t.lv>LV()?` 🔒等級 ${t.lv}`:ok?' <b style="color:#2fa04a">✅ 材料足夠，可以開工！</b>':''}<small style="line-height:1.8">${mTxt(m,true)}</small></div>${ok||t.lv>LV()?'':`<button class="hb g" data-lb="${t.id}">🛒 買齊<br><small>${money(mCost(miss))}</small></button>`}</div>`}).join('')}
   else if(shopTab==='fac')h+=`<div style="font-size:14px;color:#7a6a4a">把工廠蓋在自己的土地上，就會自動把原料加工成建材（遊戲開著的時候會一直生產，離開也會補算最多 6 小時）。</div>`+Object.entries(FAC).map(([k,f])=>{const n=S.objs.filter(o=>o.fac===k).length;return `<div class="prow"><div class="em">${f.em}</div><div class="tx"><b>${f.n}</b>（已經有 ${n} 座）<small>${f.d}</small></div><button class="hb g" data-fac="${k}">蓋一座<br><small>${money(f.p)}</small></button></div>`}).join('');
   else if(shopTab==='veh')h+=vehShopHtml();
   else h+=crewHtml();
   openPanel(h,()=>{vehBind();$('#panel').querySelectorAll('[data-tb]').forEach(b=>b.onclick=()=>{shopTab=b.dataset.tb;shopPanel()});
-    $('#panel').querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>{const [k,n]=b.dataset.buy.split('|');if(!spend(MATD[k].p*n,'買材料'))return;S.mat[k]=(S.mat[k]||0)+ +n;SFX.cash();matHud();shopPanel()});
+    $('#panel').querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>{const [k,n]=b.dataset.buy.split('|');if(!spend(Math.round(MATD[k].p*n*PF().mat),'買材料'))return;S.mat[k]=(S.mat[k]||0)+ +n;SFX.cash();matHud();shopPanel()});
     $('#panel').querySelectorAll('[data-sell]').forEach(b=>b.onclick=()=>{const k=b.dataset.sell;S.mat[k]-=10;earn(Math.round(MATD[k].p*10*.6));SFX.cash();shopPanel()});
     $('#panel').querySelectorAll('[data-lb]').forEach(b=>b.onclick=()=>{const t=TPL.find(x=>x.id===b.dataset.lb);const m={};t.o.forEach(q=>{if(q.t==='house'||q.t==='tower'||q.t==='wall')for(const [k,v] of Object.entries(matsOf(Object.assign({x:0,z:0},q))))mAdd(m,k,v)});const miss=mMiss(m);if(!spend(mCost(miss),'買材料'))return;mGive(miss);SFX.cash();shopPanel()});
     $('#panel').querySelectorAll('[data-fac]').forEach(b=>b.onclick=()=>{TS.fac=b.dataset.fac;closePanel();setTool('fac');toast(`${FAC[TS.fac].em} 點一下自己土地上的空地，蓋${FAC[TS.fac].n}`,3000)});
@@ -865,9 +865,9 @@ const FAC={cement:{n:'水泥廠',em:'🏭',p:2500,d:'2 石材 → 1 水泥（每
  steel:{n:'鋼鐵廠',em:'🔩',p:5000,d:'3 石材 → 1 鋼筋（每 8 秒）',in:{stone:3},out:{steel:1},t:8,h:{w:12,d:9,floors:2,wall:'siding',wallC:0x8a8a92,roof:'shed',roofM:'metal',roofC:0x4a4a52,pitch:.5,win:'wide',chimney:1,sign:'🔩 鋼鐵廠',signBg:'#3a3a42'}},
  paint:{n:'油漆工廠',em:'🎨',p:2500,d:'1 黏土 → 1 油漆（每 6 秒）',in:{clay:1},out:{paint:1},t:6,h:{w:8,d:7,floors:1,wall:'plaster',wallC:0xf0e0f8,roof:'flat',win:'tall',sign:'🎨 油漆工廠',signBg:'#8a3a8a'}}};
 function placeFac(k,x,z){const f=FAC[k];const o=Object.assign({t:'house',x,z,r:0,trimC:0xffffff,fac:k},JSON.parse(JSON.stringify(f.h)));if(!owned(x,z)){landHint();return}snapUndo();if(!spend(f.p,f.n))return;addObj(o);flattenUnder(o);place(o);startBuild(o);SEL=o.id;setTool('sel');editShow();dirty()}
-let facT=0;function facTick(dt){if(CO.role==='guest')return;facT+=dt;if(facT<1)return;const step=facT;facT=0;for(const o of S.objs){if(!o.fac||o.bt!=null&&o.bt<1)continue;const f=FAC[o.fac];o.ft=(o.ft||0)+step;while(o.ft>=f.t){o.ft-=f.t;if(!Object.entries(f.in).every(([k,v])=>(S.mat[k]||0)>=v)){o.idle=1;break}o.idle=0;for(const [k,v] of Object.entries(f.in))S.mat[k]-=v;const out=f.alt&&(o.flip=!o.flip)?f.alt:f.out;for(const [k,v] of Object.entries(out))S.mat[k]=(S.mat[k]||0)+v;
+let facT=0;function facTick(dt){if(CO.role==='guest')return;facT+=dt;if(facT<1)return;const step=facT*PF().prod*facBoost();facT=0;for(const o of S.objs){if(!o.fac||o.bt!=null&&o.bt<1)continue;const f=FAC[o.fac];o.ft=(o.ft||0)+step;while(o.ft>=f.t){o.ft-=f.t;if(!Object.entries(f.in).every(([k,v])=>(S.mat[k]||0)>=v)){o.idle=1;break}o.idle=0;for(const [k,v] of Object.entries(f.in))S.mat[k]-=v;const out=f.alt&&(o.flip=!o.flip)?f.alt:f.out;for(const [k,v] of Object.entries(out))S.mat[k]=(S.mat[k]||0)+v;
     const g=OBJM.get(o.id);if(g&&CAM.dist<200){const y=(g.userData.peak||6);floatTxt(V(o.x,baseY(o)+y+1,o.z),Object.entries(out).map(([k,v])=>`+${v}${MATD[k].em}`).join(' '))}}}matHud()}
-function facOffline(sec){sec=Math.min(sec,21600);for(const o of S.objs){if(!o.fac)continue;const f=FAC[o.fac];let n=Math.floor(sec/f.t);for(const [k,v] of Object.entries(f.in))n=Math.min(n,Math.floor((S.mat[k]||0)/v));if(n<=0)continue;for(const [k,v] of Object.entries(f.in))S.mat[k]-=v*n;for(const [k,v] of Object.entries(f.out))S.mat[k]=(S.mat[k]||0)+v*n}}
+function facOffline(sec){sec=Math.min(sec,PF().off)*PF().prod*facBoost();for(const o of S.objs){if(!o.fac)continue;const f=FAC[o.fac];let n=Math.floor(sec/f.t);for(const [k,v] of Object.entries(f.in))n=Math.min(n,Math.floor((S.mat[k]||0)/v));if(n<=0)continue;for(const [k,v] of Object.entries(f.in))S.mat[k]-=v*n;for(const [k,v] of Object.entries(f.out))S.mat[k]=(S.mat[k]||0)+v*n}}
 // 頭上飄的小字
 const FLT=[];function floatTxt(p,t){const e=document.createElement('div');e.className='tag';e.style.background='rgba(255,250,220,.95)';e.style.borderColor='#e8a020';e.style.fontWeight='bold';e.textContent=t;document.body.appendChild(e);FLT.push({e,p:p.clone(),t:0})}
 function fltTick(dt){for(let i=FLT.length-1;i>=0;i--){const f=FLT[i];f.t+=dt;f.p.y+=dt*1.2;_p.copy(f.p).project(camera);f.e.style.left=((_p.x+1)/2*W)+'px';f.e.style.top=((1-_p.y)/2*H)+'px';f.e.style.opacity=Math.max(0,1-f.t/1.6);f.e.style.display=_p.z>1?'none':'';if(f.t>1.6){f.e.remove();FLT.splice(i,1)}}}
@@ -882,7 +882,7 @@ function scafFor(o){let s=SCAF.get(o.id);if(s)return s;const g=new THREE.Group()
   const crew=[];for(let i=0;i<3;i++){const p=person(i%2?0xe8701a:0xf0c020,true);g.add(p);crew.push(p)}g.userData.crew=crew;g.userData.h=h;g.userData.w=w;g.userData.d=d;
   g.position.set(o.x,baseY(o),o.z);g.rotation.y=o.r||0;scene.add(g);s=g;SCAF.set(o.id,s);return s}
 function buildTick(dt){const ing=S.objs.filter(o=>o.bt!=null&&o.bt<1);const slots=S.crews||1;let k=0;
-  for(const o of ing){const g=OBJM.get(o.id);const s=scafFor(o);const act=k<slots;k++;if(act){o.bt=Math.min(1,o.bt+dt/buildTime(o)*(1+Math.min((S.crews||1)-1,40)*.08)*needMul());if(Math.random()<dt*6)SFX.hammer();if(Math.random()<dt*3)dust(o.x,baseY(o)+(g?g.userData.peak||4:4)*o.bt,o.z,1)}
+  for(const o of ing){const g=OBJM.get(o.id);const s=scafFor(o);const act=k<slots;k++;if(act){o.bt=Math.min(1,o.bt+dt/(buildTime(o)*PF().bt)*(1+Math.min((S.crews||1)-1,40)*.08)*needMul());if(Math.random()<dt*6)SFX.hammer();if(Math.random()<dt*3)dust(o.x,baseY(o)+(g?g.userData.peak||4:4)*o.bt,o.z,1)}
     if(g){g.scale.y=1;const pk=(g.userData.peak||6)+.5;g.position.y=baseY(o)-(1-o.bt)*pk}const u=s.userData;const yTop=Math.max(.5,u.h*o.bt);
     u.crew.forEach((p,i)=>{const a=performance.now()/1000+i*2.1;const side=i%4;const t=(Math.sin(a*.3+i)+1)/2;const x=(side<2?(t-.5)*u.w:(side===2?1:-1)*u.w/2+.6*(side===2?1:-1)*0),z=side<2?(side?1:-1)*(u.d/2+.6):(t-.5)*u.d;
       p.position.set(side<2?x:(side===2?1:-1)*(u.w/2+.6),Math.max(0,yTop-1.6*(i%2)),side<2?z:z);p.rotation.y=side===0?Math.PI:side===1?0:side===2?-Math.PI/2:Math.PI/2;pose(p,act?'hammer':'idle',a)});
@@ -1042,9 +1042,9 @@ Object.assign(FUR,{
  fridge2:{n:'飲料冰櫃',em:'🥤',cat:'shop',p:450,w:1,d:.7,b:(B,c)=>{B.add(boxG(1,2,.7),mat('',c||0xf4f4f0),mxAt(0,1,0));B.add(boxG(.85,1.7,.02),new THREE.MeshStandardMaterial({color:0xbfe4f4,transparent:true,opacity:.6,emissive:0x203040}),mxAt(0,1,.36));for(let q=0;q<12;q++)B.add(new THREE.CylinderGeometry(.04,.04,.18,6),mat('',[0xe84a2a,0x3a8ad8,0x5ab04a][q%3]),mxAt(-.3+(q%4)*.2,.4+Math.floor(q/4)*.5,.15))}}});
 
 /* ======================= 出租：每分鐘收房租 ======================= */
-const rentOf=o=>o.free?0:Math.max(5,Math.round(valueOf(o).v*.006));
+const rentOf=o=>o.free?0:Math.max(5,Math.round(valueOf(o).v*.006*PF().rent))*((o.dmg||0)>=50?0:1);
 let rentT=0;function rentTick(dt){if(CO.role==='guest')return;rentT+=dt;if(rentT<60)return;rentT=0;let sum=0;for(const o of S.objs)if(o.t==='house'&&o.rent&&!o.sold)sum+=rentOf(o);if(sum>0){earn(sum);SFX.cash();toast(`🔑 收到房租 ${money(sum)}`,1800)}}
-function rentOffline(sec){sec=Math.min(sec,21600);let sum=0;for(const o of S.objs)if(o.t==='house'&&o.rent&&!o.sold)sum+=rentOf(o);const n=Math.floor(sec/60);if(sum*n>0){S.money+=sum*n;S.earn=(S.earn||0)+sum*n;setTimeout(()=>toast(`🔑 你不在的時候收到房租 ${money(sum*n)}`,3000),2500)}}
+function rentOffline(sec){sec=Math.min(sec,PF().off);let sum=0;for(const o of S.objs)if(o.t==='house'&&o.rent&&!o.sold)sum+=rentOf(o);const n=Math.floor(sec/60);if(sum*n>0){S.money+=sum*n;S.earn=(S.earn||0)+sum*n;setTimeout(()=>toast(`🔑 你不在的時候收到房租 ${money(sum*n)}`,3000),2500)}}
 /* ======================= 小鎮的車子：沿著道路開來開去 ======================= */
 const CARS=[];const carColors=[0xc83a2a,0x2a5aa8,0xf0f0f0,0x2a2a2e,0xe8c020,0x3a8a4a,0x8a8a92];
 function carModel(c){const g=new THREE.Group();const B=new Batch();const m=mat('',c,{metalness:.4,roughness:.35}),k=mat('',0x1a1a1a);B.add(boxG(1.7,.55,3.8),m,mxAt(0,.55,0));B.add(boxG(1.5,.5,1.9),m,mxAt(0,1.05,-.2));B.add(boxG(1.52,.38,1.8),GLASS_M,mxAt(0,1.05,-.2));
@@ -1117,7 +1117,8 @@ function moneyPanel(){const lv=LV(),nx=LV_T[lv];const t=titleOf();const rent=S.o
   openPanel(`<h2>💵 錢和等級</h2><div style="line-height:2.1">💵 現在的錢：<b>${money(S.money)}</b><br>📈 累積賺到：${money(S.earn||0)}<br>⭐ 建設公司等級：<b>${lv}</b> / 100 ${S.mode==='free'?'（自由模式全部解鎖）':nx?`・升到下一級還要賺 ${money(nx-(S.earn||0))}`:'・已經滿級！'}<br>${t.em} 身分：<b>${t.t}</b>・小鎮：<b>${t.town}</b>${t.next?`<br>　下一個身分「${t.next[1]}」需要小鎮規模 ${t.next[0]} 分（現在 ${townSize()} 分）`:''}<br>🔑 每分鐘房租：${money(rent)}<br>👷 工班：${S.crews||1} 組・🏭 工廠：${S.objs.filter(o=>o.fac).length} 座・🚁 交通工具：${(S.veh||[]).length} 台<br>🎮 遊戲模式：<b>${S.mode==='free'?'🎨 自由創作模式':'💼 經營模式'}</b></div>${townSizeTxt()}<div class="row2"><button class="hb p" id="mMode">切換遊戲模式</button><button class="hb b" id="mDress">👕 換裝</button></div>`,()=>{$('#mMode').onclick=modePanel;$('#mDress').onclick=dressPanel})}
 function matsPanel(){openPanel(`<h2>🧱 材料明細</h2><div style="font-size:14px;color:#7a6a4a">蓋東西需要的材料。不夠可以到「🧱 建材行」買，或蓋工廠自己生產。</div>`+Object.entries(MATD).map(([k,m])=>`<div class="prow"><div class="em">${m.em}</div><div class="tx"><b>${m.n}</b>　現有 <b>${Math.floor(S.mat[k]||0).toLocaleString()}</b><small>建材行每個 ${money(m.p)}</small><small style="color:#2a7ab8">怎麼拿到：${srcTxt(k)}</small></div><button class="hb b" data-go="${k}">📍前往獲得</button></div>`).join('')+`<div class="row2"><button class="hb g" id="mShop">🧱 去建材行</button></div>`,()=>{$('#mShop').onclick=()=>{closePanel();shopPanel()};matGoBind()})}
 /* ======================= 經營模式／自由創作模式 ======================= */
-function modePanel(){openPanel(`<h2>🎮 選擇遊戲模式</h2>
+function modePanel(){return modeChoose(null)
+  openPanel(`<h2>🎮 選擇遊戲模式</h2>
   <div class="prow"><div class="em">💼</div><div class="tx"><b>經營模式</b><small>要花錢、要準備材料，蓋房子賣房子賺錢、出租收房租，慢慢升級晉升封號。</small></div><button class="hb ${S.mode!=='free'?'g':''}" data-m="biz">${S.mode!=='free'?'✅ 使用中':'選這個'}</button></div>
   <div class="prow"><div class="em">🎨</div><div class="tx"><b>自由創作模式</b><small>不用錢、不用材料，所有建築和物件全部解鎖，想蓋什麼就蓋什麼。（這個模式不會賺錢，蓋的東西也不能賣）</small></div><button class="hb ${S.mode==='free'?'g':''}" data-m="free">${S.mode==='free'?'✅ 使用中':'選這個'}</button></div>`,
   ()=>$('#panel').querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{S.mode=b.dataset.m;SFX.click();closePanel();subBuild();toast(S.mode==='free'?'🎨 自由創作模式：全部免費、全部解鎖！':'💼 經營模式：開始賺錢蓋小鎮！',2600);dirty()}))}
@@ -1134,7 +1135,8 @@ setInterval(()=>{if(S)save()},30000);document.addEventListener('visibilitychange
 /* ======================= 瞬間移動 ======================= */
 function tpGo(x,z){x=clamp(x,-HALF+2,HALF-2);z=clamp(z,-HALF+2,HALF-2);dust(CAM.tx,hAt(CAM.tx,CAM.tz)+1,CAM.tz,6);CAM.tx=x;CAM.tz=z;if(ME){ME.position.set(x,hAt(x,z),z);S.mePos={x,z}}SFX.build();setTimeout(()=>dust(x,hAt(x,z)+1,z,10),60);toast('🌀 咻～瞬間移動！',1300)}
 function tpAsk(x,z){const p=plotOf(x,z);ask(`🌀 確定要瞬間移動到這裡嗎？<br><small>${p>=0&&S.plots[p]?'✅ 你的土地':'別人的土地（可以看，不能蓋）'}</small>`,()=>tpGo(x,z))}
-function tpPanel(){openPanel(`<h2>🌀 瞬間移動</h2><div style="font-size:14px;color:#7a6a4a">點小地圖上任何一個地方就能馬上過去。也可以按「點畫面」，再直接點畫面上的地面。</div><canvas id="tpC" width="580" height="580" style="width:100%;max-width:520px;aspect-ratio:1;display:block;margin:10px auto;border-radius:12px;border:3px solid #d8ccb4"></canvas><div class="row2"><button class="hb p" id="tpS">👆 改成點畫面上的地面</button></div>`,
+function tpPanel(){return tpPanel2()
+  openPanel(`<h2>🌀 瞬間移動</h2><div style="font-size:14px;color:#7a6a4a">點小地圖上任何一個地方就能馬上過去。也可以按「點畫面」，再直接點畫面上的地面。</div><canvas id="tpC" width="580" height="580" style="width:100%;max-width:520px;aspect-ratio:1;display:block;margin:10px auto;border-radius:12px;border:3px solid #d8ccb4"></canvas><div class="row2"><button class="hb p" id="tpS">👆 改成點畫面上的地面</button></div>`,
   ()=>{const cv=$('#tpC');mmDraw(cv,'tp');cv.onclick=e=>{const w=mmPick(cv,e);tpAsk(w.x,w.z)};$('#tpS').onclick=()=>{closePanel();setTool('tp');toast('🌀 點一下畫面上想去的地方',2400)}})}
 /* ======================= 所有物件：高度、傾斜、角度、移動 ======================= */
 function xformAdd(o){if(o.t==='road'||o.t==='fence')return;const e=$('#edit');const d=document.createElement('details');d.className='xf';d.style.cssText='margin-top:8px;background:#fff8e8;border-radius:12px;padding:6px 10px';if(xformAdd.open)d.open=true;d.ontoggle=()=>xformAdd.open=d.open;
@@ -1153,7 +1155,7 @@ function xformAdd(o){if(o.t==='road'||o.t==='fence')return;const e=$('#edit');co
   d.querySelectorAll('[data-mv]').forEach(b=>b.onclick=()=>{snapUndo();const m=b.dataset.mv;if(m==='up')o.oy=(o.oy||0)+.5;else if(m==='dn')o.oy=(o.oy||0)-.5;else if(m==='reset'){o.oy=0;o.rx=0;o.rz=0;o.sc=1}else{const [a,c]=m.split(',').map(Number);const nx=o.x+a*.5,nz=o.z+c*.5;if(!owned(nx,nz)){SFX.err();toast('超出你的土地了');return}o.x=nx;o.z=nz}SFX.click();upd();editShow()})}
 
 // 手機版：比較少用的按鈕收進「☰ 更多」
-function morePanel(){const ids=['bDress','bPet','bTown','bSave','bTpl','bLand','bSell','bTime','bHelp','bSnd','bFS','bUiz'];openPanel(`<h2>☰ 更多功能</h2><div class="row2" style="flex-wrap:wrap">${ids.map(i=>{const b=document.getElementById(i);return `<button class="${b.className}" data-go="${i}" style="min-width:44%;font-size:17px;padding:12px">${b.innerHTML}</button>`}).join('')}</div>`,()=>$('#panel').querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{closePanel();setTimeout(()=>document.getElementById(b.dataset.go).click(),30)}))}
+function morePanel(){const ids=['bDress','bPet','bTown','bSave','bTpl','bLand','bSell','bTime','bHome','bDis','bHelp','bSnd','bFS','bUiz'];openPanel(`<h2>☰ 更多功能</h2><div class="row2" style="flex-wrap:wrap">${ids.map(i=>{const b=document.getElementById(i);return `<button class="${b.className}" data-go="${i}" style="min-width:44%;font-size:17px;padding:12px">${b.innerHTML}</button>`}).join('')}</div>`,()=>$('#panel').querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{closePanel();setTimeout(()=>document.getElementById(b.dataset.go).click(),30)}))}
 document.getElementById('bMore').onclick=()=>{SFX.click();morePanel()};
 /* ======================= 更多樹種 ======================= */
 Object.assign(NAT,{
@@ -1455,7 +1457,7 @@ function meTick(dt){if(!meInit){meInit=true;const p=S.mePos||{x:CAM.tx,z:CAM.tz}
   let ix=JOY.x,iy=JOY.y;if(!typing){if(keys.a||keys.arrowleft)ix-=1;if(keys.d||keys.arrowright)ix+=1;if(keys.w||keys.arrowup)iy-=1;if(keys.s||keys.arrowdown)iy+=1}
   const L=Math.hypot(ix,iy);if(L>1){ix/=L;iy/=L}
   if(L>.08&&!INT){// 畫面的前方、右方
-    const fx=-Math.sin(CAM.yaw),fz=-Math.cos(CAM.yaw),rx=-fz,rz=fx;const mx=rx*ix+fx*-iy,mz=rz*ix+fz*-iy;const run=keys.shift||L>.92;const sp=(run?11:6)*Math.min(1,L+.2)*(CAM.dist>200?3:1)*(S.need&&S.need.en<15?.6:1)*dt;
+    const fx=-Math.sin(CAM.yaw),fz=-Math.cos(CAM.yaw),rx=-fz,rz=fx;const mx=rx*ix+fx*-iy,mz=rz*ix+fz*-iy;const run=keys.shift||L>.92;const sp=meSpd(run,L)*(CAM.dist>200?3:1)*(S.need&&S.need.en<15?.6:1)*dt;
     const nx=clamp(ME.position.x+mx*sp,-HALF+1,HALF-1),nz=clamp(ME.position.z+mz*sp,-HALF+1,HALF-1);const ok=(x,z)=>!meHit(x,z)&&hAt(x,z)>WATER_Y-.7;
     if(ok(nx,nz)){ME.position.x=nx;ME.position.z=nz}else if(ok(nx,ME.position.z))ME.position.x=nx;else if(ok(ME.position.x,nz))ME.position.z=nz;else if(meHit(ME.position.x,ME.position.z)){ME.position.x=nx;ME.position.z=nz}
     const a=Math.atan2(mx,mz);let da=a-ME.rotation.y;while(da>Math.PI)da-=Math.PI*2;while(da<-Math.PI)da+=Math.PI*2;ME.rotation.y+=da*Math.min(1,dt*12);
@@ -1565,6 +1567,47 @@ const lmIncome=o=>o.free?0:Math.round(costOf(o)*.0022/10)*10;
 function lmPlace(gx_,gz_){const D=LM[TS.lm];if(!D)return;if((D.lv||1)>LV()){SFX.err();toast(`🔒 建設公司等級 ${D.lv} 才能蓋「${D.n}」`);return}const x=snap(gx_),z=snap(gz_),r=-CAM.yaw+Math.PI;
   const c=Math.cos(r),s=Math.sin(r);for(const [a,b] of [[-1,-1],[1,-1],[-1,1],[1,1],[0,0]]){const lx=a*D.w/2,lz=b*D.d/2;if(!owned(x+lx*c+lz*s,z-lx*s+lz*c)){landHint();toast(`「${D.n}」需要 ${D.w}×${D.d} 公尺的空地，有一部分超出你的土地了`,2600);return}}
   const o={t:'lm',k:TS.lm,x,z,r,w:D.w,d:D.d};snapUndo();if(!useMats(matsOf(o),D.n,()=>lmPlace(gx_,gz_)))return;addObj(o);flattenUnder(o);startBuild(o);place(o);SFX.place();toast(`${D.em} 「${D.n}」開工了！工人正在施工`,2400);dirty()}
+/* ======================= 2.18：更細緻、更多樣的樹（野外的樹也會隨機變成這些樣子） ======================= */
+{const Cm=(m,x,y,z,sx,sy,sz,rz,rx)=>({geo:CY,m,mx:new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx||0,0,rz||0)),new THREE.Vector3(sx,sy,sz))});
+ const C=(x,y,z,sx,sy,sz,rz,rx)=>Cm(trunkM,x,y,z,sx,sy,sz,rz,rx);
+ const g1=SM(0x3f7030),g2=SM(0x4f8238),g3=SM(0x5e9442),g4=SM(0x355f2a),dk=SM(0x2a2a26),pn1=SM(0x24502c),pn2=SM(0x2c5e34),pn3=SM(0x33693a),bw=SM(0xeeeae2);
+ Object.assign(NAT,{
+  oak2:{n:'大橡樹',em:'🌳',p:40,r:1.8,parts:[P(CY,trunkM,0,1.5,0,.62,3,.62),C(.7,3.2,.2,.22,1.8,.22,-.7),C(-.7,3.1,-.3,.22,1.7,.22,.75),C(.1,3.3,-.8,.2,1.6,.2,0,.7),
+    P(IG,g1,0,4.4,0,2.2,1.5,2.2),P(IG,g2,1.6,3.9,.6,1.4,1.1,1.4),P(IG,g4,-1.5,3.8,-.6,1.45,1.1,1.4),P(IG,g3,.4,3.9,-1.6,1.3,1,1.3),P(IG,g2,-.5,4.1,1.5,1.3,1,1.3),P(IG,g3,.2,5.5,.1,1.3,1,1.3),P(IG,g1,1.1,5,-.9,1,.8,1),P(IG,g4,-1,5.1,.8,1,.8,1)]},
+  oak3:{n:'圓冠樹',em:'🌳',p:30,r:1.4,parts:[P(CY,trunkM,0,1.7,0,.42,3.4,.42),P(IG,g2,0,4.6,0,1.9,1.9,1.9),P(IG,g3,.9,5.2,.5,1.1),P(IG,g1,-.9,4.3,-.4,1.15),P(IG,g3,.2,5.9,-.4,.95),P(IG,g4,-.3,4,1,1)]},
+  elm:{n:'榆樹',em:'🌳',p:35,r:1.7,parts:[P(CY,trunkM,0,1.1,0,.5,2.2,.5),C(.55,2.9,0,.26,2,.26,-.45),C(-.55,2.9,0,.26,2,.26,.45),C(0,2.9,.5,.22,1.8,.22,0,-.45),
+    P(IG,g3,1.3,4.4,0,1.6,1.1,1.6),P(IG,g2,-1.3,4.4,0,1.6,1.1,1.6),P(IG,g1,0,4.6,1.2,1.5,1,1.5),P(IG,g4,0,4.7,-1.1,1.5,1,1.5),P(IG,g3,0,5.4,0,1.5,.9,1.5)]},
+  pine2:{n:'雪松',em:'🌲',p:30,r:1.3,parts:[P(CY,trunkM,0,1,0,.38,2,.38),...[0,1,2,3,4,5].map(i=>P(CN,[pn1,pn2,pn3][i%3],0,2+i*1.05,0,2.3-i*.33,1.5)),P(CN,pn3,0,8.2,0,.35,1.2)]},
+  pine3:{n:'黑松',em:'🌲',p:45,r:1.5,parts:[C(0,1,0,.4,2,.4,.15),C(.35,2.6,0,.33,1.6,.33,-.35),C(.1,3.9,0,.28,1.4,.28,.4),C(.9,3.1,.2,.16,1.6,.16,-1.1),C(-.8,3.7,-.2,.15,1.5,.15,1.1),
+    P(IG0,pn2,1.7,3.6,.3,1.3,.45,1.1),P(IG0,pn1,-1.5,4.2,-.2,1.2,.42,1),P(IG0,pn3,-.1,4.9,0,1.5,.5,1.3),P(IG0,pn2,.6,4.2,-.9,.9,.35,.8)]},
+  birch2:{n:'細白樺',em:'🌳',p:30,r:1,parts:[Cm(bw,0,2.4,0,.26,4.8,.26),Cm(dk,0,1.2,0,.27,.12,.27),Cm(dk,0,2.3,0,.27,.1,.27),Cm(dk,0,3.4,0,.27,.12,.27),Cm(bw,.35,3.9,0,.1,1.2,.1,-.6),
+    P(IG,SM(0x9cc858),0,5.2,0,1,1.4,1),P(IG,SM(0xb0d060),.6,4.4,.3,.75,.9,.75),P(IG,SM(0x88b84a),-.5,4.6,-.3,.7,.9,.7),P(IG,SM(0xa8cc5a),.1,6,.1,.6,.8,.6)]},
+  poplar:{n:'白楊',em:'🌳',p:28,r:.9,parts:[P(CY,SM(0xd8d4c8),0,1.2,0,.3,2.4,.3),P(IG,SM(0x5a9040),0,4.3,0,1,3,1),P(IG,SM(0x6aa04a),.3,5.6,.2,.6,1.5,.6),P(IG,SM(0x4e8438),-.2,3.2,-.2,.8,1.4,.8)]},
+  maple2:{n:'雞爪槭',em:'🍁',p:40,r:1.4,parts:[P(CY,trunkM,0,.8,0,.3,1.6,.3),C(.4,1.9,0,.14,1.2,.14,-.7),C(-.4,1.9,.1,.14,1.2,.14,.7),
+    P(IG0,SM(0xd8402a),0,2.6,0,1.9,.55,1.9),P(IG0,SM(0xe8682a),.9,2.2,.4,1.2,.4,1.2),P(IG0,SM(0xc0301e),-.8,2.3,-.5,1.2,.4,1.2),P(IG0,SM(0xf0902a),0,3.2,0,1.3,.45,1.3)]},
+  cyp2:{n:'義大利柏',em:'🌲',p:30,r:.7,parts:[P(CY,trunkM,0,.5,0,.22,1,.22),P(IG,pn1,0,2.2,0,.85,1.6,.85),P(IG,pn2,0,4,0,.75,1.6,.75),P(IG,pn3,0,5.6,0,.55,1.3,.55),P(CN,pn3,0,6.8,0,.35,1)]},
+  linden:{n:'菩提樹',em:'🌳',p:38,r:1.6,parts:[P(CY,SM(0x7a5a3a),0,1.6,0,.55,3.2,.55),C(.5,3.4,.3,.2,1.4,.2,-.5),
+    P(IG,g2,0,4.3,0,2,1.6,2),P(IG,g3,1.3,4.6,.4,1.1),P(IG,g1,-1.2,4.8,-.3,1.1),P(IG,g3,.2,5.6,.6,1),P(IG,g4,-.4,3.7,1.2,1),P(IG,g2,.6,3.6,-1.2,1)]}})}
+const NATVAR={oak:['oak','oak2','oak3','elm','linden'],pine:['pine','pine2','pine3'],birch:['birch','birch2','poplar'],maple:['maple','maple2'],cypress:['cypress','cyp2']};
+function natVar(k,x,z){const L=NATVAR[k];if(!L)return k;const v=Math.sin(x*91.17+z*17.31)*43758.5453;return L[Math.floor((v-Math.floor(v))*L.length)]}
+/* ---- 原本的樹重新做：加上樹枝、更多層樹葉、顏色深淺 ---- */
+{const T=(m,x,y,z,sx,sy,sz,rz,rx)=>({geo:CY,m,mx:new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx||0,0,rz||0)),new THREE.Vector3(sx,sy,sz))});
+ const br=(m,x,y,z,len,rz,rx,th)=>T(m,x,y,z,th||.16,len,th||.16,rz,rx);
+ const L=(c,x,y,z,sx,sy,sz)=>P(IG,SM(c),x,y,z,sx,sy==null?sx:sy,sz==null?sx:sz);
+ const RE={
+  oak:[T(trunkM,0,1.4,0,.48,2.8,.48),br(trunkM,.55,3,.1,1.5,-.8),br(trunkM,-.5,3.1,-.2,1.4,.85),br(trunkM,0,3.2,.55,1.3,0,.8),L(0x4a7a36,0,4,0,1.9,1.4,1.9),L(0x5a8a3e,1.3,3.6,.4,1.25,1,1.2),L(0x427032,-1.25,3.7,-.4,1.3,1,1.25),L(0x4e8238,.2,3.5,1.3,1.15,.95,1.1),L(0x5a8a40,.1,5,-.2,1.25,1,1.2),L(0x467a34,-.6,4.6,.9,.95,.8,.9)],
+  maple:[T(trunkM,0,1.3,0,.4,2.6,.4),br(trunkM,.45,2.8,0,1.2,-.7),br(trunkM,-.4,2.9,.2,1.1,.75),L(0xc8502a,0,3.7,0,1.7,1.25,1.7),L(0xe0782a,1.1,3.3,.3,1.15,.95,1.1),L(0xb8402a,-1,3.4,-.4,1.15,.95,1.1),L(0xe89a3a,.1,4.6,0,1.05,.85,1),L(0xd0602a,-.3,3.6,1.1,.9,.8,.9)],
+  cherry:[T(SM(0x5a3a2a),0,1.1,0,.36,2.2,.36),br(SM(0x5a3a2a),.6,2.5,0,1.6,-1),br(SM(0x5a3a2a),-.55,2.6,.1,1.5,1),br(SM(0x5a3a2a),0,2.6,-.6,1.3,0,-.9),L(0xf4b8c8,0,3.4,0,1.6,1.1,1.6),L(0xf8c8d8,1.4,3.1,.2,1.1,.85,1.05),L(0xe8a0b8,-1.35,3.2,0,1.1,.85,1.05),L(0xfad8e4,.1,4.2,0,1,.8,1),L(0xf0b0c4,.2,3,-1.3,.95,.75,.9),L(0xf8d0dc,-.3,3.1,1.2,.9,.7,.9)],
+  pine:[T(trunkM,0,1.1,0,.34,2.2,.34),P(CN,SM(0x2a5530),0,2.5,0,2,1.8),P(CN,SM(0x2f5a32),0,3.5,0,1.7,1.7),P(CN,SM(0x356a38),0,4.5,0,1.35,1.6),P(CN,SM(0x3a7240),0,5.4,0,1,1.5),P(CN,SM(0x407a44),0,6.2,0,.62,1.3)],
+  birch:[T(birchM,0,2.1,0,.28,4.2,.28),T(SM(0x2a2a26),0,1.1,0,.29,.1,.29),T(SM(0x2a2a26),0,2.4,0,.29,.08,.29),T(SM(0x2a2a26),0,3.3,0,.29,.1,.29),br(birchM,.3,3.6,0,1,-.6,0,.09),br(birchM,-.3,3.9,.1,.9,.6,0,.09),L(0x8ab84a,0,4.6,0,1.15,1.5,1.15),L(0x9ac85a,.65,3.9,.2,.8,.95,.8),L(0x7aa83e,-.6,4.2,-.2,.75,.9,.75),L(0xa8d060,.1,5.5,.1,.7,.8,.7)],
+  bush:[L(0x4a7a3a,0,.5,0,.9,.65,.9),L(0x5a8a42,.55,.45,.3,.6,.5,.6),L(0x3e6e34,-.5,.42,-.25,.58,.48,.58),L(0x528a3c,.1,.45,-.55,.55,.45,.55),L(0x467a36,-.2,.85,.2,.5,.42,.5)],
+  cypress:[T(trunkM,0,.5,0,.25,1,.25),L(0x2a5530,0,2,0,.9,1.5,.9),L(0x2f5a32,0,3.3,0,.85,1.4,.85),L(0x356a38,0,4.5,0,.65,1.2,.65),P(CN,SM(0x3a7240),0,5.6,0,.4,1)],
+  ginkgo:[T(trunkM,0,1.6,0,.34,3.2,.34),br(trunkM,.4,3.2,0,1.1,-.6),br(trunkM,-.4,3.5,.1,1,.6),P(new THREE.ConeGeometry(1.8,4,10),SM(0xf0c030),0,4.3,0,1),L(0xe8b020,0,3.2,0,1.4,.85,1.4),L(0xf8d040,.8,4.6,.3,.75,.7,.75),L(0xe0a818,-.7,4.9,-.3,.7,.65,.7)],
+  willow:[T(trunkM,0,1.4,0,.48,2.8,.48),br(trunkM,.5,3,0,1.2,-.8),br(trunkM,-.5,3,.1,1.2,.8),L(0x7aa04a,0,3.7,0,2,1.1,2),...[0,1,2,3,4,5,6,7,8,9].map(k=>P(new THREE.ConeGeometry(.42,3.2,6),SM(k%2?0x8ab05a:0x6a9a40),Math.sin(k*.63)*1.75,2.6,Math.cos(k*.63)*1.75,1,1,1,0,Math.PI))],
+  dead:[T(SM(0x5a4a3a),0,1.6,0,.3,3.2,.3),br(SM(0x5a4a3a),.5,2.9,0,1.6,-.7,0,.12),br(SM(0x5a4a3a),-.45,2.5,.2,1.3,.8,0,.1),br(SM(0x5a4a3a),.1,3.3,-.4,1.1,0,-.7,.09),br(SM(0x5a4a3a),.9,3.6,0,.7,-1.3,0,.06)],
+  fir:[T(trunkM,0,.8,0,.3,1.6,.3),P(CN,SM(0x1f4a2a),0,2.2,0,2,2.2),P(CN,SM(0x24552e),0,3.4,0,1.65,2),P(CN,SM(0x2a5f34),0,4.5,0,1.3,1.8),P(CN,SM(0x306a3a),0,5.5,0,.95,1.6),P(CN,SM(0x36723e),0,6.4,0,.6,1.3)],
+  redmaple:[T(trunkM,0,1.3,0,.4,2.6,.4),br(trunkM,.45,2.8,0,1.2,-.7),br(trunkM,-.4,2.9,.2,1.1,.75),L(0xb82a1a,0,3.7,0,1.75,1.25,1.75),L(0xd8402a,1.1,3.3,.3,1.15,.95,1.1),L(0x9a1a12,-1,3.4,-.4,1.15,.95,1.1),L(0xe8582a,.1,4.6,0,1.05,.85,1),L(0xc8301e,-.3,3.6,1.1,.9,.8,.9)]};
+ for(const k in RE)if(NAT[k])NAT[k].parts=RE[k]}
 /* ======================= 四季和天氣 ======================= */
 const SEASONS=[{n:'春天',em:'🌸'},{n:'夏天',em:'☀️'},{n:'秋天',em:'🍁'},{n:'冬天',em:'❄️'}];
 const WX={sun:{n:'晴天',em:'☀️',sun:1,sky:0},cloud:{n:'多雲',em:'⛅',sun:.6,sky:.45},rain:{n:'下雨',em:'🌧️',sun:.38,sky:.75,fog:.55},storm:{n:'雷雨',em:'⛈️',sun:.25,sky:.9,fog:.45},snow:{n:'下雪',em:'🌨️',sun:.5,sky:.6,fog:.6},fog:{n:'起霧',em:'🌫️',sun:.55,sky:.5,fog:.15}};
@@ -1628,7 +1671,7 @@ if(!EMBED){BG7.el=new Audio();BG7.el.volume=.32;BG7.el.preload='none';const nx=(
 function slotInfo(n){try{return JSON.parse(localStorage.getItem(SLOTK(n))||'null')}catch(e){return null}}
 function doExit(){if(CO.role)coopEnd(true);save();if(EMBED){window.__farmHold=true;parent.postMessage({t:'exit'},'*')}else{location.reload()}}
 function newGame(){S=newState();genTerrain();wildGen(0);wildPlants();CAM.tx=0;CAM.tz=0;CAM.dist=60;S.mePos={x:0,z:4};rebuildWorld();S.first=0;save();toast('🆕 新的遊戲開始了！',2200)}
-function titleScreen(mode,first){const t=titleOf();const cur=`${t.em}${t.t}・${t.town}・💵${Math.floor(S.money).toLocaleString()}・🏠 ${S.objs.filter(o=>o.t==='house').length} 棟`;
+function titleScreen(mode,first){if(mode==='start'&&!MODEASKED&&!/host=|ljoin=/.test(location.search)){MODEASKED=1;return modeChoose(()=>titleScreen(mode,first),first)}const t=titleOf();const cur=`${t.em}${t.t}・${t.town}・💵${Math.floor(S.money).toLocaleString()}・🏠 ${S.objs.filter(o=>o.t==='house').length} 棟`;
   openPanel(`<h2 style="text-align:center;font-size:26px">🏗️ 建造與水泥</h2><div style="text-align:center;font-size:14px;color:#7a6a4a;margin-bottom:6px">${mode==='exit'?'要離開了嗎？可以先存檔，或讀取、刪除其他進度':first?'歡迎！第一次玩建議先跟著新手教學走一遍':'選擇要玩的進度'}</div>
   <div class="prow" style="background:#e8f8e0"><div class="em">▶️</div><div class="tx"><b>目前的進度（自動存檔）</b><small>${cur}</small></div><button class="hb g" id="tsGo">${mode==='exit'?'↩️ 回到遊戲':'▶ 繼續玩'}</button></div>
   <div class="row2"><button class="hb o" id="tsNew">🆕 開新遊戲</button><button class="hb p" id="tsTut">🎓 新手教學${first?'（推薦）':''}</button><button class="hb b" id="tsMode">🎮 遊戲模式</button><button class="hb g" id="tsCoop">👥 多人合作</button>${mode==='exit'?'<button class="hb r" id="tsExit">🚪 離開遊戲</button>':''}</div>
@@ -1654,8 +1697,8 @@ let ACT=null;
 const HOMEACT={sleep:{n:'睡覺',em:'🛏️',f:['bed2','bed','crib'],d:6,g:{en:100},txt:'💤 呼～呼～'},rest:{n:'看電視休息',em:'🛋️',f:['sofa','arm'],d:4.5,g:{en:30,fun:30},txt:'📺 好舒服～'},bath:{n:'洗澡',em:'🛁',f:['tub','shower'],d:5,g:{clean:100,fun:10},txt:'🫧 洗得香噴噴'},
   cook:{n:'煮飯吃飯',em:'🍳',f:['counter','oven','dtab'],d:5,g:{food:100},cost:60,txt:'🍳 開動囉！'},play:{n:'和寵物玩',em:'🐾',f:['rug','sofa'],d:4,g:{fun:45},txt:'🐶 好開心！'}};
 const myHome=()=>S.objs.find(o=>o.t==='house'&&o.home&&!(o.bt!=null&&o.bt<1));
-function homeSpot(o,keys_){const items=(o.furn||[]).filter(q=>q.f===0);let it=null;for(const k of keys_){it=items.find(q=>q.k===k);if(it)break}if(!it&&!items.length){const d=PEEK_DEF.find(q=>keys_.includes(q[0]));if(d)it={x:d[1]*o.w,z:d[2]*o.d,r:d[3]||0,k:d[0]}}if(!it)it={x:0,z:0,r:0};
-  const r=o.r||0,c=Math.cos(r),s=Math.sin(r);return {x:o.x+it.x*c+it.z*s,z:o.z-it.x*s+it.z*c,y:baseY(o)+.53,r:r+(it.r||0),k:it.k}}
+function homeSpot(o,keys_){const items=(o.furn||[]);let it=null;for(const k of keys_){it=items.find(q=>q.k===k);if(it)break}if(!it&&!items.length){const d=PEEK_DEF.find(q=>keys_.includes(q[0]));if(d)it={x:d[1]*o.w,z:d[2]*o.d,r:d[3]||0,k:d[0]}}if(!it)it={x:0,z:0,r:0};
+  const r=o.r||0,c=Math.cos(r),s=Math.sin(r);return {x:o.x+it.x*c+it.z*s,z:o.z-it.x*s+it.z*c,y:baseY(o)+.53+(it.f||0)*FH,f:it.f||0,r:r+(it.r||0),k:it.k}}
 function homePanel(){const o=myHome();const n=S.need||{};
   openPanel(`<h2>🏡 自宅生活</h2><div style="line-height:2">${NEEDS.map(([k,em,nm,c])=>`${em} ${nm}：<b>${Math.round(n[k]||0)}</b>${bar(Math.round(n[k]||0),c)}`).join('')}</div>${needHelpH()}`+
    (o?`<div class="lab">在「${o.name||'我的家'}」可以做的事</div><div class="row2" style="flex-wrap:wrap">${Object.entries(HOMEACT).map(([k,a])=>`<button class="hb ${k==='sleep'?'p':k==='bath'?'b':k==='cook'?'o':'g'}" data-act="${k}" style="min-width:30%">${a.em} ${a.n}${a.cost&&S.mode!=='free'?`<br><small>${money(a.cost)}</small>`:''}</button>`).join('')}<button class="hb y" id="hDress" style="min-width:30%">👕 換衣服</button><button class="hb" id="hPet" style="min-width:30%">🐾 我的寵物</button></div><div style="font-size:12px;color:#7a6a4a">要先在家裡擺好對應的家具才能做：睡覺要床、休息要沙發、洗澡要浴缸或淋浴間、煮飯要流理台、烤箱或餐桌。走進自己家裡，下面也會出現這些按鈕。</div>`
@@ -1669,8 +1712,8 @@ function actTick(dt){const a=ACT,u=ME.userData,t=performance.now()/1000;a.t+=dt;
   else if(a.k==='rest'||a.k==='play'){ME.position.y=sp.y+.1;u.legs[0].rotation.x=u.legs[1].rotation.x=-1.5;u.arms[0].rotation.x=u.arms[1].rotation.x=-.5+Math.sin(t*2)*.1;if(a.k==='play'&&Math.random()<dt*2)floatTxt(V(sp.x,sp.y+2,sp.z),'💕')}
   else if(a.k==='bath'){ME.position.y=sp.y-.25;u.legs[0].rotation.x=u.legs[1].rotation.x=-1.5;u.arms[0].rotation.x=-2+Math.sin(t*6)*.6;u.arms[1].rotation.x=-2+Math.cos(t*6)*.6;if(Math.random()<dt*6)dust(sp.x+rand(-.5,.5),sp.y+.6,sp.z+rand(-.5,.5),1)}
   else if(a.k==='cook'){u.legs[0].rotation.x=u.legs[1].rotation.x=0;u.arms[0].rotation.x=-1.2+Math.sin(t*9)*.3;u.arms[1].rotation.x=-1.1+Math.cos(t*8)*.3;if(Math.random()<dt*2)dust(sp.x,sp.y+1.3,sp.z,1)}
-  if(a.t>=a.d){const A=HOMEACT[a.k];for(const [k,v] of Object.entries(A.g))S.need[k]=Math.min(100,(S.need[k]||0)+v);if(a.k==='sleep'){sleepFx(false);S.time=7;toast('🌅 早安！睡飽了，體力全滿',2400)}else toast(`${A.txt} ${Object.keys(A.g).map(k=>NEEDS.find(q=>q[0]===k)[1]).join('')} 恢復了！`,2200);
-    const o=a.o,r=o.r||0,dz=o.d/2+1.6;ME.rotation.x=0;ME.position.set(o.x+Math.sin(r)*dz,0,o.z+Math.cos(r)*dz);S.mePos={x:ME.position.x,z:ME.position.z};ACT=null;if(a.k==='play')for(const p of S.pets||[])p.hap=Math.min(100,(p.hap||50)+30);dirty()}}
+  actGain(a,dt);if(a.t>=a.d){const A=HOMEACT[a.k];if(a.k==='sleep'){sleepFx(false);S.time=7;toast('🌅 早安！睡飽了，體力全滿',2400)}else toast(`${A.txt} ${Object.keys(A.g).map(k=>NEEDS.find(q=>q[0]===k)[1]).join('')} 恢復了！`,2200);
+    ME.rotation.x=0;actEnd(a);S.mePos={x:ME.position.x,z:ME.position.z};ACT=null;if(a.k==='play')for(const p of S.pets||[])p.hap=Math.min(100,(p.hap||50)+30);dirty()}}
 /* ======================= 寵物（會跟著你走） ======================= */
 const PETD={
  shiba:{n:'柴犬',em:'🐕',t:0,p:800,kind:'dog',c:0xd8883a,c2:0xf8f0e0,ear:'pt',tail:'curl'},
@@ -1989,7 +2032,7 @@ function furFxTick(dt){const t=performance.now()/1000;for(let i=FXL.length-1;i>=
 // 房主的小鎮就是大家的小鎮：任何人蓋房子、擺家具、種樹、挖地形…所有人都會即時看到。
 const CO={ws:null,role:null,code:'',uid:'',slot:0,hostUid:'',members:[],cnt:0,ready:false,want:null,own:null,lastErr:''};
 const coopId=()=>20000000+CO.slot*1000000+(++CO.cnt);
-const COPERS=['outfit','outfits','pets','need','mePos','tutDone','first','snd','uiz','gdone','gid'];// 每個人自己的東西，不共用
+const COPERS=['outfit','outfits','pets','need','mePos','tutDone','first','snd','uiz','gdone','gid','spd','gIntro'];// 每個人自己的東西，不共用
 const coopCan=()=>/^https?:$/.test(location.protocol)&&!/claude|anthropic|usercontent/.test(location.host);
 function coopUid(){let u='';try{u=localStorage.getItem('zzdh_build_uid')}catch(e){}if(!u){u='b'+Math.random().toString(36).slice(2,10);try{localStorage.setItem('zzdh_build_uid',u)}catch(e){}}return u}
 function coopLu(){try{return localStorage.getItem('zzdh_lobby_uid')||''}catch(e){return ''}}
@@ -2028,7 +2071,8 @@ function coopMsg(m){CO.rx=CO.rx||{};CO.rx[m.t]=(CO.rx[m.t]||0)+1;switch(m.t){
   case 'b7e':if(CO.ready)coopApplyEco(m);break;
   case 'b7m':if(CO.ready)coopApplyMisc(m);break;
   case 'b7p':if(CO.ready&&m._f!==CO.uid)peerUpd({uid:m._f,x:m.x,z:m.z,r:m.r,o:m.o,n:m.n,tt:m.tt});break;
-  case 'b7x':if(CO.ready&&m.s)toast(m.s,2400);break}}
+  case 'b7x':if(CO.ready&&m.s)toast(m.s,2400);break;
+  case 'b7n':if(CO.ready){const Z=ZONES.find(z=>z.k===m.z);const nd=Z&&Z.nodes&&Z.nodes[m.i];if(nd)nodeGone(nd,true)}break}}
 /* ---- 房主把整個小鎮傳給新加入的朋友 ---- */
 function coopFullData(){const d=saveData();for(const k of COPERS)delete d[k];return d}
 function coopEnterGuest(d){const mine={};for(const k of COPERS)if(S[k]!==undefined)mine[k]=S[k];if(!applyData(d)){coopFail('小鎮資料讀取失敗');return}Object.assign(S,mine);S.first=0;rebuildWorld();coopInit();CO.ready=true;coopWait(false);coopChip();
@@ -2036,7 +2080,7 @@ function coopEnterGuest(d){const mine={};for(const k of COPERS)if(S[k]!==undefin
 /* ---- 同步：記住已經送出去的狀態，只送有變的部分 ---- */
 const SENT=new Map();let WSENT=new Set(),EB=null,MISC='',syncT=0,coopDirty=false;
 const ojs=o=>JSON.stringify(o,(k,v)=>k==='bt'||k==='idle'||k==='spin'?undefined:v);
-const MISCK=['plots','crews','veh','tname','mode','tIdx','crewT','gath','liv'],HOSTK=['time','autoT','season','sAuto','wx','wxAuto','sT'];
+const MISCK=['plots','crews','veh','tname','mode','tIdx','crewT','gath','liv','zveh','bots','drones','gpaid'],HOSTK=['time','autoT','season','sAuto','wx','wxAuto','sT','prof','zsell','dis','disOn','disF','disNext','mud'];
 function ecoNow(){return {m:S.money,e:S.earn||0,mt:Object.assign({},S.mat)}}
 function miscNow(){const o={};for(const k of MISCK)o[k]=S[k];if(CO.role==='host')for(const k of HOSTK)o[k]=S[k];return JSON.stringify(o)}
 function coopInit(){SENT.clear();WSENT=new Set();for(const o of S.objs){if(o.wi!=null&&sameW(o)){WSENT.add(o.wi);continue}SENT.set(o.id,ojs(o))}EB=ecoNow();MISC=miscNow();TREG.length=0;CO.ready=CO.role==='host'?true:CO.ready;
@@ -2061,7 +2105,7 @@ function coopApplyObjs(m){let natD=false;for(const id of m.rm||[]){const o=byId(
 function coopApplyTerrain(m){for(const [a,b,c,d,vals] of m.r){let q=0;for(let j=b;j<=d;j++)for(let i=a;i<=c;i++){const k=idx(i,j);HT[k]=vals[q++]/100;RK[k]=vals[q++]/100;if(vals[q++]){S.dug=S.dug||{};S.dug[k]=1}}terrainUpdate(a,b,c,d);refreshNear(gx((a+c)/2),gx((b+d)/2),Math.max(c-a,d-b)*CELL/2+2)}MMT=0}
 function coopApplyEco(m){S.money+=m.m||0;S.earn=(S.earn||0)+(m.e||0);for(const k in m.mt||{})S.mat[k]=(S.mat[k]||0)+m.mt[k];if(EB){EB.m+=m.m||0;EB.e+=m.e||0;for(const k in m.mt||{})EB.mt[k]=(EB.mt[k]||0)+m.mt[k]}}
 function coopApplyMisc(m){const d=m.d||{};if(d.plots){const before=S.plots.slice();S.plots=S.plots.map((v,i)=>v||d.plots[i]?1:0);S.plots.forEach((v,i)=>{if(v&&!before[i])plotUpdate(i)})}
-  if(d.crews)S.crews=Math.max(S.crews||1,d.crews);if(d.veh)S.veh=d.veh;if(d.tname!==undefined)S.tname=d.tname;if(d.mode)S.mode=d.mode;if(d.tIdx!=null)S.tIdx=Math.max(S.tIdx||0,d.tIdx);for(const kk of ['crewT','gath'])if(d[kk]){S[kk]=S[kk]||{};for(const q in d[kk])S[kk][q]=Math.max(S[kk][q]||0,d[kk][q])}if(d.liv)S.liv=1;
+  if(d.crews)S.crews=Math.max(S.crews||1,d.crews);if(d.veh)S.veh=d.veh;if(d.tname!==undefined)S.tname=d.tname;if(d.mode)S.mode=d.mode;if(d.tIdx!=null)S.tIdx=Math.max(S.tIdx||0,d.tIdx);for(const kk of ['bots','drones'])if(d[kk])S[kk]=Math.max(S[kk]||0,d[kk]);for(const kk of ['crewT','gath','zveh','gpaid'])if(d[kk]){S[kk]=S[kk]||{};for(const q in d[kk])S[kk][q]=Math.max(S[kk][q]||0,d[kk][q])}if(d.liv)S.liv=1;
   if(CO.role==='guest')for(const k of HOSTK)if(d[k]!==undefined)S[k]=d[k];MISC=miscNow()}
 function coopPos(){if(CO.role&&CO.ready)coopSend({t:'b7p',x:ME.position.x,z:ME.position.z,r:ME.rotation.y,o:S.outfit||'work',n:coopName(),tt:titleOf().t});else if(EMBED&&!CO.role)try{parent.postMessage({t:'bpos',x:ME.position.x,z:ME.position.z,r:ME.rotation.y,o:S.outfit||'work',tt:titleOf().t},'*')}catch(e){}}
 /* ---- 畫面：隊伍狀態小標籤、多人合作面板 ---- */
@@ -2084,7 +2128,7 @@ setInterval(()=>{try{coopTick(.4)}catch(e){console.error(e)}},400);setInterval((
 /* ======================= 2.16：入住、室內視角、資源區、工班與人才、目標指引、介面大小 ======================= */
 /* ---- 有沒有人住 ---- */
 const decorated=o=>(o.furn||[]).length>=3;
-function lived(o){return o&&o.t==='house'&&!o.fac&&!(o.bt!=null&&o.bt<1)&&(o.sold||o.home||o.rent)&&!!o.livein}
+function lived(o){return o&&o.t==='house'&&!o.fac&&!(o.bt!=null&&o.bt<1)&&(o.sold||o.home||o.rent)&&!!o.livein&&(o.dmg||0)<80}
 function defFurn(o){return PEEK_DEF.filter(q=>FUR[q[0]]).map(([k,a,b,r])=>({k,f:0,x:a*o.w,z:b*o.d,r}))}
 function buyerMove(o){o.livein=1;if(!(o.furn||[]).length)o.furn=defFurn(o)}// 買家會自己帶家具搬進來
 function liveMigrate(){if(S.liv)return;for(const o of S.objs){if(o.t!=='house'||o.fac||o.livein!=null)continue;if(o.sold){o.livein=1;if(!(o.furn||[]).length)o.furn=defFurn(o)}else if(o.rent||((o.home)&&decorated(o)))o.livein=1;else o.livein=0}S.liv=1}
@@ -2103,8 +2147,9 @@ function afterDeco(o,force){if(!o||o.sold||o.fac||!S.objs.includes(o))return;if(
    <button class="hb b" id="lvRent" style="font-size:16px">🔑 出租給房客<br><small>每分鐘收房租 ${money(rentOf(o))}</small></button><button class="hb" id="lvNo">先不要</button></div>`,
    ()=>{$('#lvHome').onclick=()=>{o.home=1;o.livein=1;SFX.cash();closePanel();dirty();editShow();peekOff();ctxSig='';toast('🏡 家人搬進來了！',2200);GSTAT('live')};$('#lvRent').onclick=()=>{o.rent=1;o.livein=1;SFX.cash();closePanel();dirty();editShow();peekOff();ctxSig='';toast('🔑 房客搬進來了！每分鐘收房租',2200);GSTAT('live')};$('#lvNo').onclick=closePanel})}
 /* ---- 自宅的家具 ---- */
-const HNEED={sleep:'床',rest:'沙發或扶手椅',bath:'浴缸或淋浴間',cook:'流理台、烤箱或餐桌'};
-function homeHas(o,k){const A=HOMEACT[k];if(k==='play'||!A.f)return true;if((o.furn||[]).some(q=>A.f.includes(q.k)))return true;SFX.err();ask(`家裡還沒有${HNEED[k]}，不能${A.n}。<br><small>要現在進去擺家具嗎？</small>`,()=>intEnter(o));return false}
+const HREQ={sleep:[[['bed2','bed','crib'],'🛏️ 床（單人床、雙人床或嬰兒床）']],rest:[[['sofa','arm'],'🛋️ 沙發或單人椅'],[['tv'],'📺 電視櫃']],bath:[[['tub','shower'],'🛁 浴缸或淋浴間']],cook:[[['counter','oven'],'🍳 流理台或爐台烤箱'],[['dtab'],'🍽️ 餐桌']],play:[]};
+function homeMiss(o,k){return (HREQ[k]||[]).filter(([ks])=>!(o.furn||[]).some(q=>ks.includes(q.k))).map(r=>r[1])}
+function homeHas(o,k){const A=HOMEACT[k];const miss=homeMiss(o,k);if(!miss.length)return true;SFX.err();ask(`要「${A.em} ${A.n}」，家裡還缺：<br><b>${miss.join('<br>')}</b><br><small>要現在進去擺家具嗎？</small>`,()=>intEnter(o));return false}
 function needHelpH(){return `<div style="background:#f4f8ff;border-radius:12px;padding:8px 10px;margin:6px 0;font-size:13px;line-height:1.8"><b>怎麼讓狀態變高？</b><br>
  ⚡ <b>體力</b>：在家「🛏️ 睡覺」回滿，「🛋️ 看電視休息」＋30。走路、跑步會慢慢用掉，跑步用得比較快。<br>
  🍔 <b>飽足</b>：在家「🍳 煮飯吃飯」回滿（要花一點錢買菜）。時間一久就會餓。<br>
@@ -2116,12 +2161,21 @@ function popInfo(){let res=0,hs=0;for(const o of S.objs)if(lived(o)){hs++;res+=M
 function popTxt(){const p=popInfo();return `👨‍👩‍👧 人口：<b>${p.tot}</b> 人<small style="color:#7a6a4a">（居民 ${p.res} 人住在 ${p.hs} 棟房子・工班工人 ${p.crew} 人・採集工人和技師 ${p.gw} 人・${p.me>1?`玩家 ${p.me} 人`:'你自己 1 人'}）</small><br>`}
 /* ---- 走進房子：房子的牆可以穿過去（從門走進去） ---- */
 const canEnter=o=>o.t==='house'&&!o.fac&&!o.sold&&!(o.bt!=null&&o.bt<1);
-function meHit(x,z){if(!OBST)return false;const a=OBST.get(Math.floor(x/OC)*1000+Math.floor(z/OC));if(!a)return false;for(const b of a){if(b.o&&canEnter(b.o))continue;if(b.k==='circ'){if(Math.hypot(x-b.x,z-b.z)<b.rr)return true}else{const c=Math.cos(-b.r),s=Math.sin(-b.r);const dx=x-b.x,dz=z-b.z;if(Math.abs(dx*c+dz*s)<b.w&&Math.abs(-dx*s+dz*c)<b.d)return true}}return false}
+function meHit(x,z){if(!OBST)return false;const a=OBST.get(Math.floor(x/OC)*1000+Math.floor(z/OC));if(!a)return false;for(const b of a){if(b.o&&canEnter(b.o)){const o=b.o,r=o.r||0,c=Math.cos(r),s=Math.sin(r);const dx=x-o.x,dz=z-o.z;const lx=dx*c-dz*s,lz=dx*s+dz*c;const ax=Math.abs(lx),az=Math.abs(lz);
+    if(ax>=o.w/2+.35||az>=o.d/2+.35)continue;if(ax<o.w/2-.3&&az<o.d/2-.3)continue;if(lz>0&&ax<.85)continue;return true}
+  if(b.k==='circ'){if(Math.hypot(x-b.x,z-b.z)<b.rr)return true}else{const c=Math.cos(-b.r),s=Math.sin(-b.r);const dx=x-b.x,dz=z-b.z;if(Math.abs(dx*c+dz*s)<b.w&&Math.abs(-dx*s+dz*c)<b.d)return true}}return false}
 function houseAt(x,z){for(const o of S.objs){if(!canEnter(o))continue;const r=o.r||0,c=Math.cos(r),s=Math.sin(r);const dx=x-o.x,dz=z-o.z;const lx=dx*c-dz*s,lz=dx*s+dz*c;if(Math.abs(lx)<o.w/2-.15&&Math.abs(lz)<o.d/2-.15)return o}return null}
-const IN={o:null,t:0,save:null};
-function indoorTick(dt){if(!ME||INT){if(IN.o&&INT){IN.o=null}return}if(ACT)return;const o=houseAt(ME.position.x,ME.position.z);
-  if(o!==IN.o){if(o&&!IN.o)IN.save={dist:CAM.dist,pitch:CAM.pitch};if(o){IN.t=0;IN.done=0;toast(o.home?'🏡 回到家了！下面可以睡覺、洗澡、煮飯…':`🚪 走進「${o.name||'房子'}」裡面了`,1800)}else{IN.t=-1}IN.o=o;ctxT=0}
-  if(IN.o){IN.t+=dt;const want=clamp(Math.max(IN.o.w,IN.o.d)*.85+5,8,26);if(!IN.done&&(Math.abs(want-CAM.dist)>.4||Math.abs(1.02-CAM.pitch)>.02)&&IN.t<5){CAM.dist+=(want-CAM.dist)*Math.min(1,Math.max(dt,.03)*4);CAM.pitch+=(1.02-CAM.pitch)*Math.min(1,Math.max(dt,.03)*4)}else IN.done=1;ME.position.y=baseY(IN.o)+.53}
+const IN={o:null,t:0,save:null,f:0,wg:null};
+function inWalls(o){const G=new THREE.Group();G.position.set(o.x,baseY(o)+.45,o.z);G.rotation.y=o.r||0;const m=new THREE.MeshStandardMaterial({color:o.wallC||0xe8e0d0,transparent:true,opacity:.22,depthWrite:false,side:THREE.DoubleSide});const e=new THREE.LineBasicMaterial({color:0x6a5a40,transparent:true,opacity:.7});
+  const fl=Math.min(o.floors||1,6),w=o.w,d=o.d,h=FH-.08;for(let f=0;f<fl;f++){const B=new THREE.Group();B.position.y=f*FH;const wall=(ww,x,z,ry)=>{const q=new THREE.Mesh(boxG(ww,h,.12),m);q.position.set(x,h/2+.08,z);q.rotation.y=ry;B.add(q);const ed=new THREE.LineSegments(new THREE.EdgesGeometry(boxG(ww,h,.12)),e);ed.position.copy(q.position);ed.rotation.y=ry;B.add(ed)};
+    wall(w,0,-d/2,0);wall(d,-w/2,0,Math.PI/2);wall(d,w/2,0,Math.PI/2);if(f===0){const g=1.5,sw=(w-g)/2;wall(sw,-w/2+sw/2,d/2,0);wall(sw,w/2-sw/2,d/2,0)}else wall(w,0,d/2,0);G.add(B)}
+  scene.add(G);return G}
+function inHide(on,o){o=o||IN.o;if(!o)return;const g=OBJM.get(o.id);if(g)g.visible=!on;if(IN.wg){scene.remove(IN.wg);IN.wg=null}if(on)IN.wg=inWalls(o)}
+function inFloorVis(){if(!IN.o)return;if(typeof PEEK!=='undefined'&&PEEK&&PEEK.o===IN.o)PEEK.g.children.forEach((B,f)=>B.visible=f<=IN.f);if(IN.wg)IN.wg.children.forEach((B,f)=>B.visible=f<=IN.f)}
+function inFloor(f){if(!IN.o)return;IN.f=clamp(f,0,Math.min(IN.o.floors||1,6)-1);IN.done=0;IN.t=0;ctxSig='';SFX.click();toast(`🪜 到 ${IN.f+1} 樓`,1000)}
+function indoorTick(dt){if(!ME||INT){if(IN.o&&INT){inHide(false);IN.o=null}return}if(ACT){if(ACT.sp&&IN.o===ACT.o)IN.f=ACT.sp.f||0;inFloorVis();return}const o=houseAt(ME.position.x,ME.position.z);
+  if(o!==IN.o){if(IN.o)inHide(false);if(o&&!IN.o)IN.save={dist:CAM.dist,pitch:CAM.pitch};if(o){IN.t=0;IN.done=0;IN.f=0;IN.o=o;inHide(true,o);toast(o.home?'🏡 回到家了！可以看到整個屋子，下面可以選樓層、睡覺、洗澡、煮飯…':`🚪 走進「${o.name||'房子'}」裡面了`,2200)}else{IN.t=-1;IN.o=null}ctxT=0}
+  if(IN.o){if(!S.objs.includes(IN.o)||IN.o.sold){inHide(false);IN.o=null;return}IN.t+=dt;const want=clamp(Math.max(IN.o.w,IN.o.d)*1.15+6,10,34);if(!IN.done&&(Math.abs(want-CAM.dist)>.4||Math.abs(1.22-CAM.pitch)>.02)&&IN.t<5){const k=Math.min(1,Math.max(dt,.03)*4);CAM.dist+=(want-CAM.dist)*k;CAM.pitch+=(1.22-CAM.pitch)*k;CAM.tx+=(IN.o.x-CAM.tx)*k;CAM.tz+=(IN.o.z-CAM.tz)*k}else IN.done=1;ME.position.y=baseY(IN.o)+.53+IN.f*FH;inFloorVis()}
   else if(IN.t<0&&IN.save){IN.t-=dt;const k=Math.min(1,Math.max(dt,.03)*4);CAM.dist+=(IN.save.dist-CAM.dist)*k;CAM.pitch+=(IN.save.pitch-CAM.pitch)*k;if(IN.t<-5||Math.abs(IN.save.dist-CAM.dist)<.4){IN.save=null;IN.t=0}}}
 /* ---- 地圖上的大型材料區 ---- */
 const ZONES=[{k:'quarry',n:'採石場（岩石山）',em:'🪨',mat:'stone',dx:0,dz:-120,r:24,g:4,w:'⛏️ 敲石頭',wk:'採石工'},{k:'forest',n:'伐木林場',em:'🌲',mat:'wood',dx:-120,dz:0,r:26,g:3,w:'🪓 砍木頭',wk:'伐木工'},
@@ -2132,7 +2186,7 @@ const ghAt=(x,z)=>{const i=clamp(Math.round((x+HALF)/CELL),0,N-1),j=clamp(Math.r
 function zoneSpot(Z){// 找一塊乾的地（用原始地形，大家算出來都一樣）
   const dry=(x,z)=>{for(let a=0;a<8;a++){const xx=x+Math.cos(a*.785)*Z.r,zz=z+Math.sin(a*.785)*Z.r;if(ghAt(xx,zz)<WATER_Y+.4)return false}return ghAt(x,z)>WATER_Y+.4};
   for(let rr=0;rr<=150;rr+=12)for(let a=0;a<(rr?12:1);a++){const x=Z.dx+Math.cos(a*.5236)*rr,z=Z.dz+Math.sin(a*.5236)*rr;if(Math.abs(x)<45&&Math.abs(z)<45)continue;if(dry(x,z))return [x,z]}return [Z.dx,Z.dz]}
-function zonesBuild(){for(const c of ZG.children.slice())ZG.remove(c);
+function zonesBuild(){for(const c of ZG.children.slice())ZG.remove(c);for(const k in TRK)delete TRK[k];for(const k in ZVIS)delete ZVIS[k];
   const rockM=new THREE.MeshStandardMaterial({color:0x9a958c,roughness:1,flatShading:true}),rock2=new THREE.MeshStandardMaterial({color:0x7a7066,roughness:1,flatShading:true}),dark=new THREE.MeshStandardMaterial({color:0x5a4a3c,roughness:1,flatShading:true});
   const bark=new THREE.MeshStandardMaterial({color:0x6a4a2a,roughness:1}),leaf=new THREE.MeshStandardMaterial({color:0x2f6a32,roughness:1,flatShading:true}),leaf2=new THREE.MeshStandardMaterial({color:0x3f7a3a,roughness:1,flatShading:true});
   const clayM=new THREE.MeshStandardMaterial({color:0xa0663a,roughness:1}),woodM=new THREE.MeshStandardMaterial({color:0xb08050,roughness:1}),blk=new THREE.MeshStandardMaterial({color:0x111111,roughness:1}),ore=new THREE.MeshStandardMaterial({color:0xc87a3a,roughness:.5,metalness:.4});
@@ -2142,15 +2196,15 @@ function zonesBuild(){for(const c of ZG.children.slice())ZG.remove(c);
     if(Z.k==='quarry'||Z.k==='mine'){const M=Z.k==='quarry'?[rockM,rock2]:[dark,rock2];// 背面是一座岩石山，前面空出來讓人採
       for(let i=0;i<26;i++){const a=Math.PI*(1.05+R()*.9),d=Z.r*(.55+R()*.5);const xx=x+Math.cos(a)*d,zz=z+Math.sin(a)*d;const s=4+R()*7;add(ico,M[i%2],xx,h(xx,zz)+s*.35,zz,s,s*(.7+R()*.9),s,R()*6)}
       for(let i=0;i<5;i++){const a=Math.PI*(1.3+R()*.4),d=Z.r*(.8+R()*.3);const xx=x+Math.cos(a)*d,zz=z+Math.sin(a)*d;const s=9+R()*6;add(ico,M[0],xx,h(xx,zz)+s*.6,zz,s,s*1.4,s,R()*6)}
-      for(let i=0;i<14;i++){const a=R()*6.28,d=Z.r*(.2+R()*.5);const xx=x+Math.cos(a)*d,zz=z+Math.sin(a)*d;const s=.5+R()*1.2;add(ico,Z.k==='mine'&&i%2?ore:M[1],xx,h(xx,zz)+s*.3,zz,s,s*.7,s,R()*6)}
+      for(let i=0;i<6;i++){const a=R()*6.28,d=Z.r*(.75+R()*.2);const xx=x+Math.cos(a)*d,zz=z+Math.sin(a)*d;const s=.5+R()*1.2;add(ico,Z.k==='mine'&&i%2?ore:M[1],xx,h(xx,zz)+s*.3,zz,s,s*.7,s,R()*6)}
       if(Z.k==='mine'){const ex=x,ez=z-Z.r*.62,ey=h(ex,ez);const tun=add(cyl,blk,ex,ey+2,ez+.6,2.4,1.2,2.4);tun.rotation.x=Math.PI/2;for(const s of [-1,1])add(cyl,woodM,ex+s*2.5,ey+2,ez+1.4,.25,4,.25);add(cyl,woodM,ex,ey+4.1,ez+1.4,.25,5.6,.25).rotation.z=Math.PI/2;
         for(const s of [-1,1])add(cyl,rock2,ex+s*.6,ey+.05,ez+6,.06,10,.06).rotation.x=Math.PI/2;const cart=new THREE.Mesh(boxG(1.4,.9,1.8),new THREE.MeshStandardMaterial({color:0x6a6a70,metalness:.5,roughness:.5}));cart.position.set(ex,ey+.6,ez+5);ZG.add(cart);add(ico,ore,ex,ey+1.1,ez+5,.6,.4,.7)}}
-    else if(Z.k==='forest'){for(let i=0;i<60;i++){const a=R()*6.28,d=Z.r*(.3+R()*.75);const xx=x+Math.cos(a)*d,zz=z+Math.sin(a)*d;const y=h(xx,zz),s=.8+R()*.6;add(cyl,bark,xx,y+1.5*s,zz,.35*s,3*s,.35*s);add(cone,i%2?leaf:leaf2,xx,y+4.5*s,zz,2.2*s,4*s,2.2*s,R()*6);add(cone,i%2?leaf2:leaf,xx,y+7*s,zz,1.6*s,3*s,1.6*s,R()*6)}
+    else if(Z.k==='forest'){for(let i=0;i<46;i++){const a=R()*6.28,d=Z.r*(.72+R()*.4);const xx=x+Math.cos(a)*d,zz=z+Math.sin(a)*d;const y=h(xx,zz),s=.8+R()*.6;add(cyl,bark,xx,y+1.5*s,zz,.35*s,3*s,.35*s);add(cone,i%2?leaf:leaf2,xx,y+4.5*s,zz,2.2*s,4*s,2.2*s,R()*6);add(cone,i%2?leaf2:leaf,xx,y+7*s,zz,1.6*s,3*s,1.6*s,R()*6)}
       for(let i=0;i<4;i++){const xx=x+(i-1.5)*1.2,zz=z+4,y=h(xx,zz);for(let k=0;k<3;k++){const lg=add(cyl,woodM,xx,y+.35+k*.62,zz,.32,3.4,.32);lg.rotation.x=Math.PI/2}}}
     else if(Z.k==='claypit'){const n=18;const g=new THREE.PlaneGeometry(Z.r*1.7,Z.r*1.7,n,n);g.rotateX(-Math.PI/2);const p=g.attributes.position;for(let i=0;i<p.count;i++){const xx=x+p.getX(i),zz=z+p.getZ(i);const d=Math.hypot(p.getX(i),p.getZ(i))/(Z.r*.85);p.setY(i,h(xx,zz)+.12-Math.max(0,1-d)*.8)}g.computeVertexNormals();const pit=new THREE.Mesh(g,clayM);pit.position.set(x,0,z);pit.receiveShadow=true;ZG.add(pit);
       for(let i=0;i<8;i++){const a=R()*6.28,d=Z.r*(.75+R()*.25);const xx=x+Math.cos(a)*d,zz=z+Math.sin(a)*d;const s=1.5+R()*2;add(ico,clayM,xx,h(xx,zz)+s*.2,zz,s,s*.6,s,R()*6)}
       const kx=x+Z.r*.7,kz=z-Z.r*.5,ky=h(kx,kz);add(cyl,new THREE.MeshStandardMaterial({color:0xb04a2a,roughness:1}),kx,ky+1.6,kz,2,3.2,2);add(cone,new THREE.MeshStandardMaterial({color:0x8a3a20,roughness:1}),kx,ky+3.8,kz,2.2,1.4,2.2);add(cyl,new THREE.MeshStandardMaterial({color:0x5a5050}),kx+1,ky+4.8,kz,.35,2.4,.35)}
-    const post=add(cyl,woodM,x,h(x,z+Z.r*.5)+2,z+Z.r*.5,.18,4,.18);const L=zLabel(`${Z.em} ${Z.n}`,.8);L.position.set(x,h(x,z)+16,z);ZG.add(L);Z.lbl=L;Z.wks=[]}
+    nodesBuild(Z,{ico,cone,cyl,rockM,rock2,dark,bark,leaf,leaf2,clayM,ore});const post=add(cyl,woodM,x,h(x,z+Z.r*.5)+2,z+Z.r*.5,.18,4,.18);const L=zLabel(`${Z.em} ${Z.n}`,.8);L.position.set(x,h(x,z)+16,z);ZG.add(L);Z.lbl=L;Z.wks=[]}
   ZB=true}
 let ZB=false;
 const zoneAt=(x,z)=>ZONES.find(Z=>Z.x!=null&&Math.hypot(x-Z.x,z-Z.z)<Z.r+4);
@@ -2169,56 +2223,74 @@ function crewHtml(){const tot=S.crews||1;const ing=S.objs.filter(o=>o.bt!=null&&
   h+=CREWT.map(c=>{const [k,em,n,d]=c;const m=crewN(k)>=CREWMAX;return `<div class="prow"><div class="em">${em}</div><div class="tx"><b>${n}</b>：${crewN(k)}/${CREWMAX} 隊<small>${d}</small></div>${m?'<b style="color:#2fa04a">已滿</b>':`<button class="hb g" data-crew="${k}">雇一隊<br><small>${money(crewCost(c))}</small></button>`}</div>`}).join('');
   h+=`<div class="lab">⛏️ 採集材料的工人（在材料區工作，會自動把材料送進倉庫）</div>`+Object.entries(GATH).filter(([k,g])=>g.z).map(([k,g])=>gRow(k,g)).join('');
   h+=`<div class="lab">🧑‍🔧 加工的專業人才（不用蓋工廠，直接用原料做建材）</div>`+Object.entries(GATH).filter(([k,g])=>!g.z).map(([k,g])=>gRow(k,g)).join('');
+  h+=logiHtml();h+=`<div class="lab">🚜 採集場的工程車、運輸車（挖土機、碎石機、伐木機、砂石車、運木車…）</div>`+ZONES.map(Z=>`<div class="prow"><div class="em">${Z.em}</div><div class="tx"><b>${Z.n}</b><small>工程車 ${zvCount(Z.k)} 台・${ZV[Z.k].map(v=>v[1]+v[2]).join('、')}</small></div><button class="hb b" data-zpn="${Z.k}">管理</button></div>`).join('');
   return h+`<div style="font-size:12px;color:#7a6a4a">採集工人和技師在遊戲開著的時候會一直工作，離開遊戲也會補算最多 6 小時。原料不夠時技師會先休息。</div>`}
 function gRow(k,g){const m=gN(k)>=GMAX;const Z=g.z&&ZONES.find(z=>z.k===g.z);return `<div class="prow"><div class="em">${g.em}</div><div class="tx"><b>${g.n}</b>：${gN(k)}/${GMAX} 人<small>每人每分鐘 ${g.in?`用 ${Object.entries(g.in).map(([a,b])=>MATD[a].em+b).join('＋')} 做出`:'採到'} ${g.r} 個${MATD[k].em}${MATD[k].n}${Z?`・在「${Z.em} ${Z.n}」工作`:''}${gN(k)?`・現在每分鐘 ${gN(k)*g.r} 個`:''}</small></div>${m?'<b style="color:#2fa04a">已滿</b>':`<button class="hb g" data-gath="${k}">雇一位<br><small>${money(gCost(k))}</small></button>`}</div>`}
-function crewBind(){const P=$('#panel');P.querySelectorAll('[data-crew]').forEach(b=>b.onclick=()=>{const c=CREWT.find(x=>x[0]===b.dataset.crew);if(crewN(c[0])>=CREWMAX)return;if(!spend(crewCost(c),'雇工班'))return;S.crewT=S.crewT||{};S.crewT[c[0]]=crewN(c[0])+1;S.crews=(S.crews||1)+1;SFX.build();toast(`${c[1]} ${c[2]}加入了！現在共有 ${S.crews} 隊工班`,2000);dirty();shopPanel()});
+function crewBind(){const P=$('#panel');logiBind(()=>shopPanel());P.querySelectorAll('[data-zpn]').forEach(b=>b.onclick=()=>zonePanel(ZONES.find(z=>z.k===b.dataset.zpn)));P.querySelectorAll('[data-crew]').forEach(b=>b.onclick=()=>{const c=CREWT.find(x=>x[0]===b.dataset.crew);if(crewN(c[0])>=CREWMAX)return;if(!spend(crewCost(c),'雇工班'))return;S.crewT=S.crewT||{};S.crewT[c[0]]=crewN(c[0])+1;S.crews=(S.crews||1)+1;SFX.build();toast(`${c[1]} ${c[2]}加入了！現在共有 ${S.crews} 隊工班`,2000);dirty();shopPanel()});
   P.querySelectorAll('[data-gath]').forEach(b=>b.onclick=()=>{const k=b.dataset.gath;if(gN(k)>=GMAX)return;if(!spend(gCost(k),'雇工人'))return;S.gath=S.gath||{};S.gath[k]=gN(k)+1;SFX.build();toast(`${GATH[k].em} 雇到一位${GATH[k].n}！`,2000);dirty();shopPanel()})}
 let gathT=0;function gathTick(dt){if(typeof CO!=='undefined'&&CO.role==='guest')return;gathT+=dt;if(gathT<2)return;gathProd(gathT);gathT=0}
-function gathProd(sec){const g=S.gath||{};let any=false;for(const k in GATH){const n=g[k]||0;if(!n)continue;const G=GATH[k];let amt=n*G.r*sec/60;if(G.in){for(const [a,b] of Object.entries(G.in))amt=Math.min(amt,(S.mat[a]||0)/b);if(amt<=0)continue;for(const [a,b] of Object.entries(G.in))S.mat[a]-=b*amt}S.mat[k]=(S.mat[k]||0)+amt;any=true}if(any&&typeof matHud==='function')matHud()}
-function gathOffline(sec){sec=Math.min(sec,21600);if(sec>5)gathProd(sec)}
+function gathProd(sec){const g=S.gath||{};let any=false;sec*=PF().prod;for(const k in GATH){const n=g[k]||0;const G=GATH[k];let amt=n*G.r*sec/60;if(G.z){amt+=zvRate(G.z)*sec/60;if(amt>0){zoneOut(G.z,k,amt);any=true}continue}if(!n)continue;if(G.in){for(const [a,b] of Object.entries(G.in))amt=Math.min(amt,(S.mat[a]||0)/b);if(amt<=0)continue;for(const [a,b] of Object.entries(G.in))S.mat[a]-=b*amt}S.mat[k]=(S.mat[k]||0)+amt;any=true}if(any&&typeof matHud==='function')matHud()}
+function gathOffline(sec){sec=Math.min(sec,PF().off);if(sec>5){gathProd(sec);let sold=0;for(const Z of ZONES){const q=(S.zpile||{})[Z.k]||0;if(q<=0)continue;S.zpile[Z.k]=0;if((S.zsell||{})[Z.k])sold+=Math.round(q*MATD[Z.mat].p*.8*PF().sale);else S.mat[Z.mat]=(S.mat[Z.mat]||0)+q}if(sold){S.money+=sold;S.earn=(S.earn||0)+sold;setTimeout(()=>toast(`🚚 你不在的時候，運輸車賣材料賺了 ${money(sold)}`,3200),3500)}}}
 /* 材料區的工人模型 */
 function zoneWorkers(dt){const t=performance.now()/1000;for(const Z of ZONES){if(Z.x==null)continue;const n=Math.min(8,gN(Object.keys(GATH).find(k=>GATH[k].z===Z.k)));while(Z.wks.length<n){const p=person(0xe8a020,true);const i=Z.wks.length;const a=i/8*6.28+.4,d=Z.r*.38;const x=Z.x+Math.cos(a)*d,z=Z.z+Math.sin(a)*d;p.position.set(x,hAt(x,z),z);p.rotation.y=Math.atan2(Z.x-x,Z.z-z)+Math.PI;ZG.add(p);Z.wks.push(p)}
   while(Z.wks.length>n)ZG.remove(Z.wks.pop());if(CAM.dist>400)continue;Z.wks.forEach((p,i)=>{const u=p.userData;const s=Math.sin(t*5+i);if(u.arms){u.arms[0].rotation.x=-1.6+s*1.1;u.arms[1].rotation.x=-1.6+s*1.1}if(s>.97&&Math.random()<.3)dust(p.position.x+Math.sin(p.rotation.y)*.8,p.position.y+.2,p.position.z+Math.cos(p.rotation.y)*.8,1)})}}
 /* ---- 自己動手採集 ---- */
 let GA=0,GAT=0;
-function gather(Z){if(performance.now()<GAT)return;GAT=performance.now()+450;const n=S.need;if(n&&n.en<3){SFX.err();toast('⚡ 太累了，回家睡覺或休息一下吧');return}GA=.55;const amt=Z.g;S.mat[Z.mat]=(S.mat[Z.mat]||0)+amt;if(n)n.en=Math.max(0,n.en-1.2);S.gst=S.gst||{};S.gst[Z.mat]=(S.gst[Z.mat]||0)+amt;SFX.click();
-  floatTxt(V(ME.position.x,ME.position.y+2.4,ME.position.z),`+${amt} ${MATD[Z.mat].em}`);dust(ME.position.x+Math.sin(ME.rotation.y)*1.2,ME.position.y+.3,ME.position.z+Math.cos(ME.rotation.y)*1.2,3);if(typeof matHud==='function')matHud();dirty();if(GUIDE&&GUIDE.zn===Z)guideOff()}
+const NODEW={quarry:'顆石頭',forest:'棵樹',claypit:'堆黏土',mine:'塊鐵礦'};
+function nearNode(Z,r){let b=null,bd=r||1e9;for(const n of Z.nodes||[]){if(n.st!=='ok')continue;const d=Math.hypot(n.x-ME.position.x,n.z-ME.position.z);if(d<bd){bd=d;b=n}}return b}
+function gather(Z){if(performance.now()<GAT)return;const n=S.need;if(n&&n.en<3){SFX.err();toast('⚡ 太累了，回家睡覺或休息一下吧');return}
+  const nd=nearNode(Z,4.5);if(!nd){const far=nearNode(Z);if(far){guideTo(far.x,far.z,`走到那${NODEW[Z.k]}旁邊`,null,2.5);toast(`🚶 走近一${NODEW[Z.k]}才能採，跟著地上的箭頭走`,2000)}else toast(`⏳ 這裡的${NODEW[Z.k].slice(1)}都被採完了，等 10 秒會再長出來`,2200);return}
+  GAT=performance.now()+450;GA=.55;ME.rotation.y=Math.atan2(nd.x-ME.position.x,nd.z-ME.position.z);nd.hp--;nd.sh=.35;const amt=Z.g;S.mat[Z.mat]=(S.mat[Z.mat]||0)+amt;if(n)n.en=Math.max(0,n.en-1.2);S.gst=S.gst||{};S.gst[Z.mat]=(S.gst[Z.mat]||0)+amt;SFX.click();
+  floatTxt(V(nd.x,hAt(nd.x,nd.z)+2.4,nd.z),`+${amt} ${MATD[Z.mat].em}`);dust(nd.x,hAt(nd.x,nd.z)+.5,nd.z,3);if(nd.hp<=0)nodeGone(nd);if(typeof matHud==='function')matHud();ctxSig='';dirty();if(GUIDE&&(GUIDE.zn===Z||GUIDE.r<3))guideOff()}
+function nodeGone(nd,remote){if(nd.st!=='ok')return;if(!remote&&typeof CO!=='undefined'&&CO.role&&CO.ready)coopSend({t:'b7n',z:nd.zk,i:nd.i});nd.st='gone';nd.t=0;SFX.build&&SFX.build();if(nd.tree){nd.fall=0;nd.fa=Math.random()*6.28}}
+function nodeTick(dt){const t=performance.now()/1000;for(const Z of ZONES)for(const nd of Z.nodes||[]){const g=nd.g;
+  if(nd.st==='ok'){if(nd.sh>0){nd.sh-=dt;g.rotation.z=Math.sin(t*50)*.06*nd.sh/.35}else g.rotation.z=0}
+  else if(nd.st==='gone'){nd.t+=dt;if(nd.tree&&nd.t<.9){g.rotation.set(Math.min(1.5,nd.t*nd.t*2.2),nd.fa,0,'YXZ')}else{const k=Math.max(0,1-(nd.t-(nd.tree?.9:0))*3);g.scale.setScalar(nd.s*k);g.visible=k>0}if(nd.t>=10){nd.st='grow';nd.t=0;g.visible=true;g.rotation.set(0,nd.r0,0)}}
+  else if(nd.st==='grow'){nd.t+=dt;const k=Math.min(1,nd.t/1.6);g.scale.setScalar(nd.s*(.1+.9*k));if(k>=1){nd.st='ok';nd.hp=nd.hp0}}}}
 function gaTick(dt){if(GA<=0||!ME)return;GA-=dt;const u=ME.userData;const k=1-GA/.55;if(u.arms){u.arms[0].rotation.x=u.arms[1].rotation.x=-2.6+Math.sin(k*Math.PI)*2.2}}
 /* ---- 材料怎麼拿到、前往獲得 ---- */
 const MSRC={stone:'到「🪨 採石場」敲石頭、用地形工具挖岩石山、雇採石工',wood:'到「🌲 伐木林場」砍木頭、拆掉樹木、雇伐木工、鋸木廠',clay:'到「🟫 黏土坑」挖黏土、用地形工具挖土、雇挖土工',steel:'到「⛰️ 鐵礦坑」挖鐵礦、雇礦工、蓋鋼鐵廠',
  brick:'磚窯用黏土燒、雇磚窯師傅',tile:'磚窯燒屋瓦、雇製瓦師傅',cement:'水泥廠用石材做、雇水泥技師',glass:'玻璃工廠用石材做、雇吹玻璃師傅',paint:'油漆工廠生產、雇調漆師傅'};
 const srcTxt=k=>(MSRC[k]||'')+'，或在建材行直接買';
 function matGo(k){const Z=ZONES.find(z=>z.mat===k&&z.x!=null);closePanel();
-  if(Z){const a=Math.atan2(ME.position.x-Z.x,ME.position.z-Z.z);const d=Z.r*.25;tpGo(Z.x+Math.sin(a)*d,Z.z+Math.cos(a)*d);CAM.dist=Math.min(Math.max(CAM.dist,30),60);guideTo(Z.x,Z.z,`${Z.em} ${Z.n}：按下面的「${Z.w}」採${MATD[k].n}`,Z);setTimeout(()=>toast(`${Z.em} 到${Z.n}了！按下面的「${Z.w}」就能拿到${MATD[k].n}`,3600),400);return}
+  if(Z){guideTo(Z.x,Z.z,`${Z.em} ${Z.n}：走到樹、石頭旁邊按「${Z.w}」`,Z);toast(`👣 跟著地上的箭頭走到${Z.em} ${Z.n}`,2600);return}
   const fk=Object.keys(FAC).find(f=>FAC[f].out&&FAC[f].out[k]||FAC[f].alt&&FAC[f].alt[k]);const fo=fk&&S.objs.find(o=>o.fac===fk);
-  if(fo){CAM.tx=fo.x;CAM.tz=fo.z;guideTo(fo.x,fo.z,`${FAC[fk].em} 你的${FAC[fk].n}在這裡，會自動生產${MATD[k].n}`);toast(`${FAC[fk].em} 這是你的${FAC[fk].n}，原料夠的話會自動做出${MATD[k].n}`,3200);return}
+  if(fo){guideTo(fo.x,fo.z,`${FAC[fk].em} 你的${FAC[fk].n}在這裡，會自動生產${MATD[k].n}`);toast(`${FAC[fk].em} 這是你的${FAC[fk].n}，原料夠的話會自動做出${MATD[k].n}`,3200);return}
   openPanel(`<h2>${MATD[k].em} 怎麼拿到${MATD[k].n}？</h2><div style="font-size:15px;line-height:1.8">${srcTxt(k)}。</div><div class="row2" style="flex-direction:column">${fk?`<button class="hb g" id="mgF">${FAC[fk].em} 蓋一座${FAC[fk].n}（${money(FAC[fk].p)}）<br><small>${FAC[fk].d}</small></button>`:''}${GATH[k]?`<button class="hb b" id="mgG">${GATH[k].em} 雇一位${GATH[k].n}（${money(gCost(k))}）</button>`:''}<button class="hb o" id="mgB">🛒 去建材行買</button></div>`,
    ()=>{const f=$('#mgF');if(f)f.onclick=()=>{TS.fac=fk;closePanel();setTool('fac');toast(`${FAC[fk].em} 點一下自己土地上的空地，蓋${FAC[fk].n}`,3000)};const g=$('#mgG');if(g)g.onclick=()=>{shopTab='crew';shopPanel()};$('#mgB').onclick=()=>{shopTab='buy';shopPanel()}})}
 function matGoBind(){$('#panel').querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{SFX.click();matGo(b.dataset.go)})}
 /* ---- 指引箭頭（地圖上的跳動箭頭＋畫面邊緣的箭頭） ---- */
 let GUIDE=null;const GARR=new THREE.Mesh(new THREE.ConeGeometry(1.4,3,10),new THREE.MeshStandardMaterial({color:0xff3a6a,emissive:0xff3a6a,emissiveIntensity:.6}));GARR.rotation.x=Math.PI;GARR.visible=false;scene.add(GARR);
-function guideTo(x,z,txt,zone){GUIDE={x,z,txt,zn:zone||null};GARR.visible=true}
-function guideOff(){GUIDE=null;GARR.visible=false;const e=$('#gArrow');if(e)e.style.display='none'}
-function guideArrowTick(){if(!GUIDE){return}const t=performance.now()/1000;const sc=clamp(CAM.dist/40,1,12);GARR.scale.setScalar(sc);GARR.position.set(GUIDE.x,hAt(GUIDE.x,GUIDE.z)+14*sc*.6+Math.sin(t*4)*1.2*sc,GUIDE.z);GARR.rotation.y=t*2;
-  if(ME&&Math.hypot(ME.position.x-GUIDE.x,ME.position.z-GUIDE.z)<8&&!GUIDE.zn){guideOff();return}
-  const e=$('#gArrow');const p=V(GUIDE.x,hAt(GUIDE.x,GUIDE.z)+3,GUIDE.z).project(camera);const W=innerWidth,H=innerHeight;let sx=(p.x+1)/2*W,sy=(1-p.y)/2*H;const off=p.z>1||sx<20||sx>W-20||sy<60||sy>H-60;
-  if(!off){e.style.display='none';return}if(p.z>1){sx=W-sx;sy=H-sy}const cx=W/2,cy=H/2;let dx=sx-cx,dy=sy-cy;const k=Math.min((W/2-50)/Math.abs(dx||1e-6),(H/2-90)/Math.abs(dy||1e-6));dx*=k;dy*=k;
-  e.style.display='flex';e.style.left=(cx+dx-26)+'px';e.style.top=(cy+dy-26)+'px';e.firstChild.style.transform=`rotate(${Math.atan2(dy,dx)}rad)`;e.title=GUIDE.txt}
+const CHEV=[];{const sh=new THREE.Shape();sh.moveTo(0,1.1);sh.lineTo(.9,-.3);sh.lineTo(.45,-.3);sh.lineTo(0,.35);sh.lineTo(-.45,-.3);sh.lineTo(-.9,-.3);sh.closePath();const geo=new THREE.ShapeGeometry(sh);geo.rotateX(-Math.PI/2);geo.rotateY(Math.PI);
+  const m=new THREE.MeshBasicMaterial({color:0xff3a6a,transparent:true,opacity:.9,depthWrite:false});for(let i=0;i<34;i++){const c=new THREE.Mesh(geo,m);c.visible=false;c.renderOrder=4;scene.add(c);CHEV.push(c)}}
+function guideTo(x,z,txt,zone,r){GUIDE={x,z,txt,zn:zone||null,r:r||(zone?zone.r:6)};GARR.visible=true;guideBar()}
+function guideOff(){GUIDE=null;GARR.visible=false;const e=$('#gArrow');if(e)e.style.display='none';CHEV.forEach(c=>c.visible=false);const b=$('#gBar');if(b)b.style.display='none'}
+function guideBar(){const b=$('#gBar');if(!GUIDE){b.style.display='none';return}b.innerHTML=`<span id="gbT">📍 ${GUIDE.txt}</span><button class="hb p" id="gbTp">🌀 直接瞬移過去</button><button class="hb r" id="gbX">✖</button>`;b.style.display='flex';$('#gbTp').onclick=()=>{const G=GUIDE;const a=Math.atan2(ME.position.x-G.x,ME.position.z-G.z);const d=Math.min(G.r*.5,6);tpGo(G.x+Math.sin(a)*d,G.z+Math.cos(a)*d);guideOff()};$('#gbX').onclick=guideOff}
+function guideArrowTick(){if(!GUIDE){return}const t=performance.now()/1000;const sc=clamp(CAM.dist/40,1,12);GARR.scale.setScalar(sc*(GUIDE.r<3?.5:1));GARR.position.set(GUIDE.x,hAt(GUIDE.x,GUIDE.z)+(GUIDE.r<3?5:14*sc*.6)+Math.sin(t*4)*1.2*sc,GUIDE.z);GARR.rotation.y=t*2;
+  const dd=ME?Math.hypot(ME.position.x-GUIDE.x,ME.position.z-GUIDE.z):1e9;if(dd<GUIDE.r){const zn=GUIDE.zn;guideOff();SFX.cash&&SFX.click();toast(zn?`${zn.em} 到${zn.n}了！走到樹、石頭旁邊按下面的「${zn.w}」`:'📍 到了！',2600);return}
+  // 地上的箭頭，從人物一路排到目的地
+  const dx=GUIDE.x-ME.position.x,dz=GUIDE.z-ME.position.z,ang=Math.atan2(dx,dz),ux=dx/dd,uz=dz/dd;const gap=Math.max(3,Math.min(8,CAM.dist/14)),off=(t*3)%gap;const cs=Math.max(1,gap/3.2);
+  CHEV.forEach((c,i)=>{const s=2+off+i*gap;if(s>dd-1){c.visible=false;return}const x=ME.position.x+ux*s,z=ME.position.z+uz*s;c.position.set(x,Math.max(hAt(x,z),WATER_Y)+.3,z);c.rotation.y=ang;c.scale.setScalar(cs);c.visible=true});
+  const gt=$('#gbT');if(gt)gt.textContent=`📍 ${GUIDE.txt}・還有 ${Math.round(dd)} 公尺`;
+  const e=$('#gArrow');const p=V(GUIDE.x,hAt(GUIDE.x,GUIDE.z)+3,GUIDE.z).project(camera);const W=innerWidth,H=innerHeight;let sx=(p.x+1)/2*W,sy=(1-p.y)/2*H;const off2=p.z>1||sx<20||sx>W-20||sy<60||sy>H-60;
+  if(!off2){e.style.display='none';return}if(p.z>1){sx=W-sx;sy=H-sy}const cx=W/2,cy=H/2;let ex=sx-cx,ey=sy-cy;const k=Math.min((W/2-50)/Math.abs(ex||1e-6),(H/2-90)/Math.abs(ey||1e-6));ex*=k;ey*=k;
+  e.style.display='flex';e.style.left=(cx+ex-26)+'px';e.style.top=(cy+ey-26)+'px';e.firstChild.style.transform=`rotate(${Math.atan2(ey,ex)}rad)`;e.title=GUIDE.txt}
 /* ---- 下方的情境按鈕（在家、在材料區、站在可以買的土地上） ---- */
 let ctxT=0,ctxSig='',LANDB=null;
 function ctxTick(dt){ctxT-=dt;if(ctxT>0)return;ctxT=.25;const bar=$('#ctxBar');const busy=INT||ACT||$('#modal').classList.contains('on');let sig='',h='';
-  if(!busy&&ME){const o=IN.o;const Z=!o&&zoneAt(ME.position.x,ME.position.z);const p=plotOf(ME.position.x,ME.position.z);
-    if(o){if(o.home){sig='home'+o.id+decorated(o);h=`<div class="ct">🏡 ${o.name||'我的家'}</div>`+Object.entries(HOMEACT).map(([k,a])=>`<button class="hb ${k==='sleep'?'p':k==='bath'?'b':k==='cook'?'o':'g'}" data-ha="${k}">${a.em} ${a.n}</button>`).join('')+`<button class="hb y" data-hx="dress">👕 換衣服</button><button class="hb" data-hx="deco">🛋️ 裝潢</button><button class="hb" data-hx="need">❓ 狀態說明</button>`}
-      else{sig='in'+o.id+decorated(o)+o.livein;h=`<div class="ct">🚪 ${o.name||'房子'}${o.rent&&o.livein?'（出租中）':decorated(o)?'':'（裡面還空空的）'}</div><button class="hb o" data-hx="deco">🛋️ 進入裝潢</button>${decorated(o)&&!(o.livein&&(o.home||o.rent))?'<button class="hb g" data-hx="live">🙋 請人入住</button>':''}<button class="hb" data-hx="home">🏡 設為自宅</button>`}}
-    else if(Z){sig='z'+Z.k+gN(Object.keys(GATH).find(k=>GATH[k].z===Z.k));const gk=Object.keys(GATH).find(k=>GATH[k].z===Z.k);h=`<div class="ct">${Z.em} ${Z.n}・倉庫 ${MATD[Z.mat].em}<span id="ctxM">${Math.floor(S.mat[Z.mat]||0)}</span></div><button class="hb g" data-zg="${Z.k}" style="font-size:17px">${Z.w}（+${Z.g}）</button><button class="hb b" data-zh="${gk}">${GATH[gk].em} 雇${GATH[gk].n}（${gN(gk)} 人）</button>`}
+  const fh=!busy&&ME&&S.objs.find(q=>q.fire&&Math.hypot(q.x-ME.position.x,q.z-ME.position.z)<Math.max(q.w,q.d)/2+8);if(fh){sig='fire'+fh.id+Math.round(fh.fire/12);h=`<div class="ct" style="color:#c82a1a">🔥 「${fh.name||'房子'}」著火了！火勢 ${Math.round(fh.fire)}%</div><button class="hb r" data-fx="${fh.id}" style="font-size:18px">🧯 滅火（還要 ${Math.ceil(fh.fire/12)} 下）</button>`}
+  else if(!busy&&ME){const o=IN.o;const Z=!o&&zoneAt(ME.position.x,ME.position.z);const p=plotOf(ME.position.x,ME.position.z);
+    if(o){if(o.home){sig='home'+o.id+decorated(o);h=`<div class="ct">🏡 ${o.name||'我的家'}</div>`+Object.entries(HOMEACT).map(([k,a])=>`<button class="hb ${k==='sleep'?'p':k==='bath'?'b':k==='cook'?'o':'g'}" data-ha="${k}">${a.em} ${a.n}</button>`).join('')+`<button class="hb y" data-hx="dress">👕 換衣服</button><button class="hb" data-hx="deco">🛋️ 裝潢</button><button class="hb" data-hx="need">❓ 狀態說明</button>`+floorBtns(o);sig+=IN.f}
+      else{sig='in'+o.id+decorated(o)+o.livein;h=`<div class="ct">🚪 ${o.name||'房子'}${o.rent&&o.livein?'（出租中）':decorated(o)?'':'（裡面還空空的）'}</div><button class="hb o" data-hx="deco">🛋️ 進入裝潢</button>${decorated(o)&&!(o.livein&&(o.home||o.rent))?'<button class="hb g" data-hx="live">🙋 請人入住</button>':''}<button class="hb" data-hx="home">🏡 設為自宅</button>`+floorBtns(o);sig+=IN.f}}
+    else if(Z){const gk=Object.keys(GATH).find(k=>GATH[k].z===Z.k);const nd=nearNode(Z,4.5);sig='z'+Z.k+gN(gk)+(nd?nd.id+'_'+nd.hp:'-')+(S.zsell||{})[Z.k];h=`<div class="ct">${Z.em} ${Z.n}・倉庫 ${MATD[Z.mat].em}<span id="ctxM">${Math.floor(S.mat[Z.mat]||0)}</span></div>`+(nd?`<button class="hb g" data-zg="${Z.k}" style="font-size:17px">${Z.w}（+${Z.g}・還要 ${nd.hp} 下）</button>`:`<button class="hb o" data-zg="${Z.k}" style="font-size:15px">🚶 走近一${NODEW[Z.k]}才能採</button>`)+`<button class="hb b" data-zp="${Z.k}">👷 工人和工程車（${gN(gk)} 人）</button>`}
     else if(p>=0&&!S.plots[p]&&adjOwned(p)){sig='land'+p;h=`<div class="ct">🗺️ 這塊地還沒有主人</div><button class="hb g" data-buyp="${p}">🗺️ 買下這塊地<br><small>${money(landPrice())}</small></button>`}}
   landHL(sig.startsWith('land')?+sig.slice(4):-1);
   const sub=$('#sub');const sb=sub&&getComputedStyle(sub).display!=='none'?sub.offsetHeight+84:84;bar.style.bottom=`calc(${sb}px + env(safe-area-inset-bottom))`;
   if(sig===ctxSig){const m=$('#ctxM');if(m){const Z=zoneAt(ME.position.x,ME.position.z);if(Z)m.textContent=Math.floor(S.mat[Z.mat]||0)}return}ctxSig=sig;bar.innerHTML=h;bar.style.display=h?'flex':'none';
-  bar.querySelectorAll('[data-ha]').forEach(b=>b.onclick=()=>homeAct(b.dataset.ha));
+  bar.querySelectorAll('[data-ha]').forEach(b=>b.onclick=()=>homeAct(b.dataset.ha));bar.querySelectorAll('[data-fx]').forEach(b=>b.onclick=()=>{const o=byId(+b.dataset.fx);if(o&&o.fire)extinguish(o)});
   bar.querySelectorAll('[data-hx]').forEach(b=>b.onclick=()=>{const o=IN.o;const k=b.dataset.hx;SFX.click();if(k==='dress')dressPanel();else if(k==='need')openPanel(`<h2>❓ 自宅生活狀態</h2>${needHelpH()}`);else if(k==='deco'&&o)intEnter(o);else if(k==='live'&&o)afterDeco(o,true);else if(k==='home'&&o){houseHome(o);ctxSig=''}});
   bar.querySelectorAll('[data-zg]').forEach(b=>b.onclick=()=>gather(ZONES.find(z=>z.k===b.dataset.zg)));
-  bar.querySelectorAll('[data-zh]').forEach(b=>b.onclick=()=>{SFX.click();shopTab='crew';shopPanel()});
+  bar.querySelectorAll('[data-zp]').forEach(b=>b.onclick=()=>{SFX.click();zonePanel(ZONES.find(z=>z.k===b.dataset.zp))});bar.querySelectorAll('[data-fl]').forEach(b=>b.onclick=()=>inFloor(+b.dataset.fl));
   bar.querySelectorAll('[data-buyp]').forEach(b=>b.onclick=()=>{const p=+b.dataset.buyp;const pr=landPrice();ask(`買下這塊地？<br>${money(pr)}`,()=>{if(!spend(pr,'買土地'))return;S.plots[p]=1;plotUpdate(p);SFX.cash();toast('🗺️ 買下新的土地了！可以開始蓋房子');MMT=0;ctxSig='';dirty();chkTitle()})})}
 /* ---- 土地的虛線框 ---- */
 const LANDM=new THREE.LineDashedMaterial({color:0xffffff,dashSize:2.2,gapSize:1.6,transparent:true,opacity:.9,depthWrite:false}),LANDM2=new THREE.LineDashedMaterial({color:0xff9a20,dashSize:2.2,gapSize:1.4,depthWrite:false});
@@ -2237,10 +2309,10 @@ const GOALS=[
  {t:'到「🪨 採石場」敲石頭，收集 20 個石材',p:()=>[(S.gst||{}).stone||0,20],go:()=>matGo('stone'),r:500},
  {t:'到「🌲 伐木林場」砍木頭，收集 15 個木材',p:()=>[(S.gst||{}).wood||0,15],go:()=>matGo('wood'),r:500},
  {t:'打開「📐 建築模板」，在自己的土地上放一棟房子',p:()=>[cnt(o=>o.t==='house'&&!o.fac),1],go:()=>tplPanel(),r:800},
- {t:'等工班把房子蓋好（可以看鷹架一層一層蓋起來）',p:()=>[cnt(o=>o.t==='house'&&!o.fac&&!(o.bt!=null&&o.bt<1)),1],go:()=>{const o=S.objs.find(o=>o.t==='house'&&!o.fac);if(o){CAM.tx=o.x;CAM.tz=o.z;guideTo(o.x,o.z,'房子在這裡')}else tplPanel()},r:500},
+ {t:'等工班把房子蓋好（可以看鷹架一層一層蓋起來）',p:()=>[cnt(o=>o.t==='house'&&!o.fac&&!(o.bt!=null&&o.bt<1)),1],go:()=>{const o=S.objs.find(o=>o.t==='house'&&!o.fac);if(o){guideTo(o.x,o.z,'房子在這裡，看工人蓋房子',null,10)}else tplPanel()},r:500},
  {t:'走進房子或點房子按「🛋️ 進入室內裝潢」，擺 3 件家具',p:()=>[Math.max(0,...S.objs.filter(o=>o.t==='house').map(o=>(o.furn||[]).length)),3],go:()=>goHouse(),r:1000},
  {t:'請人入住：設為自宅或出租給房客',p:()=>[cnt(lived)-cnt(o=>o.sold),1],go:()=>goHouse(),r:1000},
- {t:'走進自己的家，試試「🛏️ 睡覺」或「🛋️ 看電視休息」',p:()=>[TUTF.act?1:0,1],go:()=>{const o=myHome();if(o){tpGo(o.x,o.z)}else goHouse()},r:300},
+ {t:'走進自己的家，試試「🛏️ 睡覺」或「🛋️ 看電視休息」',p:()=>[TUTF.act?1:0,1],go:()=>{const o=myHome();if(o){guideTo(o.x,o.z,'走進自己的家',null,Math.max(1.5,Math.min(o.w,o.d)/2-.5))}else goHouse()},r:300},
  {t:'用「🛣️ 道路」鋪一條路連到房子',p:()=>[cnt(o=>o.t==='road'),1],go:()=>setTool('road'),r:600},
  {t:'在建材行「👷 工班與人才」多雇一隊工班',p:()=>[S.crews||1,2],go:()=>{shopTab='crew';shopPanel()},r:800},
  {t:'雇一位採集工人（採石工、伐木工、挖土工、礦工）',p:()=>[['stone','wood','clay','steel'].reduce((a,k)=>a+gN(k),0),1],go:()=>{shopTab='crew';shopPanel()},r:800},
@@ -2254,13 +2326,13 @@ const GOALS=[
  {t:'蓋一座世界地標',p:()=>[cnt(o=>o.t==='lm'),1],go:()=>setTool('lm'),r:5000},
  {t:'小鎮人口達到 100 人',p:()=>[popInfo().tot,100],go:()=>tplPanel(),r:8000},
  {t:'小鎮人口達到 300 人',p:()=>[popInfo().tot,300],go:()=>tplPanel(),r:15000}];
-function goHouse(){const o=S.objs.find(o=>o.t==='house'&&!o.fac&&!o.sold&&!(o.bt!=null&&o.bt<1));if(!o){toast('先蓋好一棟房子');tplPanel();return}closePanel();tpGo(o.x+Math.sin(o.r||0)*(o.d/2+3),o.z+Math.cos(o.r||0)*(o.d/2+3));guideTo(o.x,o.z,'走進這棟房子');toast('🚪 往前走進房子裡，或點房子按「🛋️ 進入室內裝潢」',3200)}
+function goHouse(){const o=S.objs.find(o=>o.t==='house'&&!o.fac&&!o.sold&&!(o.bt!=null&&o.bt<1));if(!o){toast('先蓋好一棟房子');tplPanel();return}closePanel();guideTo(o.x,o.z,`走進「${o.name||'房子'}」裡面`,null,Math.max(1.5,Math.min(o.w,o.d)/2-.5));toast('👣 跟著地上的箭頭走進房子裡，或點房子按「🛋️ 進入室內裝潢」',3200)}
 const LVSUG=['','先到採石場和林場拿材料，用「📐 建築模板」蓋一棟小房子','把房子裝潢好、請人入住，出租就能每分鐘收房租','鋪道路連到房子，再多雇幾隊工班一起蓋','蓋水泥廠、磚窯，或雇技師，自己生產建材比較省錢','多買幾塊地，種樹、蓋公園，讓居民更開心','蓋大一點的房子賣掉，估價越高賺越多','蓋遊樂設施和世界地標，觀光客會帶來收入'];
 const GSTAT=()=>{};
 let goalT=0,goalSig='';
 function goalTick(dt){goalT-=dt;if(goalT>0)return;goalT=.6;const box=$('#goalBox');if(!S.gdone)S.gdone=0;
-  if(TUT||INT){box.style.display='none';goalSig='';return}box.style.display='block';
-  let i=S.gdone;while(i<GOALS.length){const [a,b]=GOALS[i].p();if(a>=b){const g=GOALS[i];earn(g.r);SFX.cash();toast(`🎯 目標完成：${g.t}<br>🎁 獎金 ${money(g.r)}`,3200);i++;S.gdone=i;dirty()}else break}
+  if(TUT||INT||S.mode==='free'){box.style.display='none';goalSig='';return}box.style.display='block';
+  let i=S.gdone;while(i<GOALS.length){const [a,b]=GOALS[i].p();if(a>=b){const g=GOALS[i];S.gpaid=S.gpaid||{};const paid=S.gpaid[i];if(!paid){S.gpaid[i]=1;earn(g.r)}SFX.cash();toast(`🎯 目標完成：${g.t}<br>${paid?'（隊友已經領過這個目標的獎金了）':'🎁 獎金 '+money(g.r)}`,3200);i++;S.gdone=i;dirty()}else break}
   const g=GOALS[i];const lv=LV();const nt=TPL.filter(t=>t.lv===lv).map(t=>t.em+t.n).slice(0,3).join('、');
   const sug=`⭐ 等級 ${lv} 建議：${LVSUG[Math.min(lv,LVSUG.length-1)]}${nt&&lv>1?`<br>🔓 新解鎖：${nt}`:''}`;
   const pr=g?g.p():[0,0];const sig=[i,pr[0],S.gmin,lv].join('|');if(sig===goalSig)return;goalSig=sig;
@@ -2280,7 +2352,7 @@ function moneyHow(){openPanel(`<h2>💰 怎麼賺錢？</h2><div style="line-hei
 let lastIn=performance.now(),tipLast=0,tipShown=false;['pointerdown','keydown','wheel','touchstart'].forEach(e=>addEventListener(e,()=>{lastIn=performance.now();if(tipShown)tipHide()},{passive:true}));
 function tipHide(){tipShown=false;const e=$('#idleTip');if(e)e.style.display='none'}
 function idleTick(){const now=performance.now();if(tipShown||TUT||INT||ACT||$('#modal').classList.contains('on'))return;if(now-lastIn<12000||now-tipLast<45000)return;tipLast=now;
-  const g=GOALS[S.gdone||0];const n=S.need||{};let txt,go;if(n.en<25){txt='⚡ 體力快沒了，回家睡覺或看電視休息吧';go=()=>{const o=myHome();o?tpGo(o.x,o.z):goHouse()}}else if(n.food<25){txt='🍔 肚子餓了，回家煮飯吃飯吧';go=()=>{const o=myHome();o?tpGo(o.x,o.z):goHouse()}}
+  const g=GOALS[S.gdone||0];const n=S.need||{};let txt,go;if(n.en<25){txt='⚡ 體力快沒了，回家睡覺或看電視休息吧';go=()=>goHome()}else if(n.food<25){txt='🍔 肚子餓了，回家煮飯吃飯吧';go=()=>goHome()}
   else if(g){txt=`💡 不知道要做什麼嗎？下一步：${g.t}`;go=g.go}else{txt='💡 可以蓋更大的房子賣掉，或蓋遊樂設施、世界地標，讓小鎮變得更熱鬧！';go=()=>tplPanel()}
   const e=$('#idleTip');e.innerHTML=`<div>${txt}</div><div class="row2" style="margin:6px 0 0"><button class="hb g" id="tipGo">📍 前往</button><button class="hb" id="tipX">✖ 知道了</button></div>`;e.style.display='block';tipShown=true;SFX.click();
   $('#tipGo').onclick=()=>{tipHide();go()};$('#tipX').onclick=tipHide;setTimeout(()=>{if(tipShown)tipHide()},12000)}
@@ -2292,11 +2364,11 @@ function introTick(){if(S.gIntro||TUT||!S.tutDone||$('#modal').classList.contain
   🗺️ 自己的土地有<b>白色虛線</b>框起來；走到旁邊<b style="color:#d88a00">可以買的地</b>會出現橘色虛線和「買下這塊地」按鈕。</div><div class="row2"><button class="hb g" id="inGo">📍 帶我去採石場</button><button class="hb y" id="inM">💰 怎麼賺錢</button></div>`,
    ()=>{$('#inGo').onclick=()=>matGo('stone');$('#inM').onclick=moneyHow})}
 /* ---- 介面大小（瀏覽器放大縮小時，按鈕和視窗保持一樣大） ---- */
-const UIZEL=['top','bar','sub','edit','rot','toast','modal','hint','needs','joyW','tut','coopChip','goalBox','ctxBar','idleTip','gArrow','credit','peerList'];
+const UIZEL=['top','bar','sub','edit','rot','toast','modal','hint','needs','joyW','tut','coopChip','goalBox','ctxBar','idleTip','gArrow','credit','peerList','gBar','actBar','wxChip'];
 const ZLV=[.25,.33,.5,.67,.75,.8,.9,1,1.1,1.25,1.5,1.75,2,2.5,3,4,5];const snapZ=r=>{let b=1,bd=1;for(const z of ZLV){const d=Math.abs(z-r)/z;if(d<bd){bd=d;b=z}}return bd<.04?b:1};
 let DPR0=null,uizLast='';
 function browserZoom(){if(matchMedia('(pointer:coarse)').matches)return 1;const dpr=devicePixelRatio||1;if(DPR0==null){let s=null;try{s=+localStorage.getItem('b7dpr0')}catch(e){}const est=window.outerWidth&&innerWidth?snapZ(outerWidth/innerWidth):1;DPR0=s&&ZLV.includes(snapZ(dpr/s))&&Math.abs(snapZ(dpr/s)-est)<.15?s:dpr/est;try{localStorage.setItem('b7dpr0',DPR0)}catch(e){}}return snapZ(dpr/DPR0)}
-function uizTick(){const bz=browserZoom();const z=(S.uiz||1)/bz;const k=z.toFixed(3);if(k===uizLast)return;uizLast=k;for(const id of UIZEL){const e=document.getElementById(id);if(e)e.style.zoom=Math.abs(z-1)<.01?'':z}}
+function uizTick(){const bz=browserZoom();const z=(S.uiz||1)/bz;const k=z.toFixed(3);if(k===uizLast)return;uizLast=k;document.documentElement.style.setProperty('--uiz',Math.abs(z-1)<.01?1:z);for(const id of UIZEL){const e=document.getElementById(id);if(e)e.style.zoom=Math.abs(z-1)<.01?'':z}}
 function uizPanel(){const v=S.uiz||1;openPanel(`<h2>🔍 介面大小</h2><div style="font-size:14px;color:#7a6a4a">瀏覽器放大或縮小的時候，按鈕和視窗會自動維持一樣的大小。也可以在這裡自己調整。</div><div class="row2" style="flex-wrap:wrap">${[.7,.8,.9,1,1.15,1.3,1.5].map(z=>`<button class="hb ${Math.abs(z-v)<.01?'g':''}" data-uz="${z}">${Math.round(z*100)}%</button>`).join('')}</div>`,
   ()=>$('#panel').querySelectorAll('[data-uz]').forEach(b=>b.onclick=()=>{S.uiz=+b.dataset.uz;uizLast='';uizTick();dirty();uizPanel()}))}
 /* ---- 畫面元件 ---- */
@@ -2314,9 +2386,429 @@ function uizPanel(){const v=S.uiz||1;openPanel(`<h2>🔍 介面大小</h2><div s
  for(const [id,h] of [['goalBox',''],['ctxBar',''],['idleTip',''],['gArrow','<b>➤</b>']]){const d=document.createElement('div');d.id=id;d.innerHTML=h;document.body.appendChild(d)}
  const tb=$('#tbtn');if(tb&&!$('#bUiz')){const b=document.createElement('button');b.className='hb';b.id='bUiz';b.dataset.mh='1';b.textContent='🔍 介面';b.onclick=()=>{SFX.click();uizPanel()};const ex=$('#bExit');tb.insertBefore(b,ex||null)}})();
 /* ---- 每一幀 ---- */
-function guideTick(dt){if(!ZB)zonesBuild();liveMigrate();indoorTick(dt);gaTick(dt);gathTick(dt);zoneWorkers(dt);landTick(dt);ctxTick(dt);guideArrowTick();goalTick(dt);idleTick();introTick();uizTick()}
+function guideTick(dt){if(!ZB)zonesBuild();liveMigrate();indoorTick(dt);gaTick(dt);nodeTick(dt);moreTick(dt);disTick(dt);dmgTagDraw();logiAll(dt);gathTick(dt);zoneWorkers(dt);landTick(dt);ctxTick(dt);guideArrowTick();goalTick(dt);idleTick();introTick();uizTick()}
 addEventListener('resize',()=>{uizLast=''});
 window.__mh=(x,z)=>meHit(x,z);window.__G=()=>({ZONES,GOALS,IN,popInfo,lived,matGo,gather,afterDeco,houseAt,decorated,S,ME,CAM,LANDL,LANDB,GUIDE,crewHtml,PETS,tpGo,intEnter,intExit,INT,homeAct,ctxSig,uizPanel,moneyHow,tplPanel,placeTpl,TPL,byId});
+/* ======================= 2.17：經營模式（4 種）＋自由創作分開存檔、工程車、更多工廠、瞬移地圖、道路、樹木、移動速度 ======================= */
+/* ---- 經營模式：跟第 1 系列一樣有 4 種 ---- */
+const PROF7={low:{n:'🌙 輕鬆經營',sub:'低收益',bt:2,prod:.6,rent:.8,sale:.85,mat:.9,off:86400,d:'適合平常上班、很久才上線一次：施工時間 2 倍、工廠和工人生產 0.6 倍；房租 8 折、賣房子 85 折，材料 9 折。離線最多補算 24 小時。'},
+ mid:{n:'☀️ 標準經營',sub:'中收益',bt:1,prod:1,rent:1,sale:1,mat:1,off:21600,d:'平日下班後、假日都適合：施工、生產、房租、房價、材料都是原本的速度和價錢。離線最多補算 6 小時。'},
+ high:{n:'🔥 衝刺經營',sub:'高收益',bt:.6,prod:1.5,rent:1.25,sale:1.25,mat:1.3,off:21600,d:'假日有空一直玩：施工快很多、工廠和工人生產 1.5 倍、房租和房價 ×1.25，但材料貴 1.3 倍。離線最多補算 6 小時。'},
+ ultra:{n:'⚡ 極速經營',sub:'超高收益',bt:.15,prod:6,rent:4,sale:1,mat:1,off:7200,d:'時間快很多：房子幾乎馬上蓋好、工廠和工人生產 6 倍、房租 4 倍。要一直盯著玩，賺最快，離線最多只補算 2 小時。'}};
+function PF(){return S&&S.mode!=='free'?(PROF7[S.prof]||PROF7.mid):PROF7.mid}
+let MODEASKED=0;
+function modeChoose(cb,first){const cur=S.mode==='free'?'free':(S.prof||'mid');
+  openPanel(`<h2>🎮 選擇遊戲模式</h2><div style="font-size:14px;color:#7a6a4a">${first?'第一次玩，先選一種玩法：':'選一種玩法：'}<b>經營模式</b>和<b>自由創作模式</b>的進度分開存，互不影響，可以隨時切換。</div>
+  <div class="lab">💼 經營模式（要花錢、要準備材料，蓋房子賣房子賺錢）</div>${Object.entries(PROF7).map(([k,p])=>`<div class="prow"><div class="em">${p.n.split(' ')[0]}</div><div class="tx"><b>${p.n.split(' ')[1]}</b>（${p.sub}）<small>${p.d}</small></div><button class="hb ${cur===k?'g':''}" data-pm="${k}">${cur===k?'✅ 使用中':'選這個'}</button></div>`).join('')}
+  <div class="lab">🎨 自由創作模式（另外一個存檔）</div><div class="prow"><div class="em">🎨</div><div class="tx"><b>自由創作</b><small>不用錢、不用材料，所有建築和物件全部解鎖，想蓋什麼就蓋什麼。蓋的東西不能賣、不會賺錢。進度和經營模式分開存。</small></div><button class="hb ${cur==='free'?'g':''}" data-pm="free">${cur==='free'?'✅ 使用中':'選這個'}</button></div>`,
+  ()=>$('#panel').querySelectorAll('[data-pm]').forEach(b=>b.onclick=()=>{const k=b.dataset.pm;if(typeof CO!=='undefined'&&CO.role){toast('👥 多人合作中由房主決定模式');return}SFX.click();
+    if(k==='free'){modeSwitch('free');toast('🎨 自由創作模式：全部免費、全部解鎖！（另外一個存檔）',2800)}else{const was=S.mode==='free';modeSwitch('biz');S.prof=k;save();toast(`💼 ${PROF7[k].n}${was?'（回到經營模式的存檔）':''}`,2600)}
+    closePanel();cb&&setTimeout(cb,250)}))}
+function modeSwitch(m){const want=m==='free'?KEY0+'_free':KEY0;try{localStorage.setItem(KEY0+'_lastmode',m)}catch(e){}
+  if(want!==KEY){save();KEY=want;if(IN.o)inHide(false);IN.o=null;guideOff();load();if(!S.mePos)S.mePos={x:0,z:4};rebuildWorld();ZB=false;TC=null;landSig='';ctxSig='';goalSig=''}
+  S.mode=m==='free'?'free':'biz';if(S.mode==='free'&&!S.tutDone)S.tutDone=1;subBuild();barBuild();if(typeof matHud==='function')matHud();save()}
+/* ---- 在家做事：慢慢恢復、有進度條；做完留在屋子裡 ---- */
+function actGain(a,dt){const A=HOMEACT[a.k];const n=S.need=S.need||{};for(const [k,v] of Object.entries(A.g))n[k]=Math.min(100,(n[k]||0)+v*Math.min(dt,a.d-a.t+dt)/a.d)}
+function actEnd(a){const o=a.o,sp=a.sp;let dx=o.x-sp.x,dz=o.z-sp.z;const L=Math.hypot(dx,dz);if(L<.4){dx=Math.sin(sp.r);dz=Math.cos(sp.r)}else{dx/=L;dz/=L}const d=Math.min(1.1,Math.max(.6,L));ME.position.set(sp.x+dx*d,sp.y,sp.z+dz*d);IN.f=sp.f||0;IN.done=0;IN.t=0}
+let actSig='';function actBarTick(){const b=$('#actBar');if(!ACT){if(b.style.display!=='none'){b.style.display='none';actSig=''}return}const A=HOMEACT[ACT.k],pc=Math.min(100,ACT.t/ACT.d*100);const n=S.need||{};
+  const h=`<div style="font-weight:bold">${A.em} ${A.n}中…　${Math.round(pc)}%</div><div class="ab"><i style="width:${pc}%"></i></div><div class="an">${Object.keys(A.g).map(k=>{const q=NEEDS.find(x=>x[0]===k);return `${q[1]} ${q[2]} <b>${Math.round(n[k]||0)}</b>`}).join('　')}</div><button class="hb r" id="actStop">⏹ 先停下來</button>`;
+  b.style.display='block';const sig=Math.round(pc)+'|'+Object.keys(A.g).map(k=>Math.round(n[k]||0)).join(',');if(sig===actSig)return;actSig=sig;b.innerHTML=h;$('#actStop').onclick=()=>{if(ACT)ACT.t=ACT.d}}
+/* ---- 移動速度：自動／走路／快走／跑步 ---- */
+const SPDM={auto:['🕹️','自動',0],walk:['🚶','走路',4],brisk:['🚶‍♂️','快走',7],run:['🏃','跑步',11]};
+function meSpd(run,L){const m=SPDM[S.spd||'auto'];if(!m[2])return (run?11:6)*Math.min(1,L+.2)*(isDis('blizzard')?.6:1);return (run&&m[2]<11?m[2]*1.5:m[2])*Math.min(1,L+.25)*(isDis('blizzard')?.6:1)}
+function spdBtn(){const b=$('#spdB');if(!b)return;const m=SPDM[S.spd||'auto'];b.innerHTML=`${m[0]} ${m[1]}`}
+/* ---- 一鍵回家（好幾間自宅可以選） ---- */
+const homesOf=()=>S.objs.filter(o=>o.t==='house'&&o.home&&!o.fac&&!o.sold&&!(o.bt!=null&&o.bt<1));
+function goHome(){const hs=homesOf();if(!hs.length){toast('🏠 你還沒有自宅：點一棟蓋好的房子，按「🏡 設為自宅」');goHouse();return}if(hs.length===1)return enterHome(hs[0]);
+  openPanel(`<h2>🏡 要回哪一個家？</h2>`+hs.map(o=>`<div class="prow"><div class="em">🏡</div><div class="tx"><b>${o.name||'我的家'}</b><small>${o.floors} 層・${o.w}×${o.d} 公尺・家具 ${(o.furn||[]).length} 件${o.livein?'・家人住在這裡':'・還沒裝潢好'}</small></div><button class="hb g" data-hm="${o.id}">🏡 回這個家</button></div>`).join(''),
+   ()=>$('#panel').querySelectorAll('[data-hm]').forEach(b=>b.onclick=()=>enterHome(byId(+b.dataset.hm))))}
+function enterHome(o){if(!o)return;closePanel();guideOff();tpGo(o.x,o.z);IN.f=0}
+/* ---- 瞬移地圖：可以放大縮小，標出材料區、自宅、隊友 ---- */
+const TPZ={z:1,cx:0,cz:0};
+function tpPanel2(){if(TPZ.z===1){TPZ.cx=0;TPZ.cz=0}openPanel(`<h2>🌀 瞬間移動</h2><div style="font-size:13px;color:#7a6a4a">點地圖上任何一個地方就能馬上過去。🔵 你自己、🏡 自宅、🪨🌲🟫⛰️ 材料區、🏭 工廠、👥 隊友。</div>
+  <div style="position:relative"><canvas id="tpC" width="600" height="600" style="width:100%;max-width:520px;aspect-ratio:1;display:block;margin:8px auto;border-radius:12px;border:3px solid #d8ccb4;touch-action:none"></canvas>
+  <div style="position:absolute;right:calc(50% - min(48%,260px) + 8px);top:14px;display:flex;flex-direction:column;gap:6px"><button class="hb g" id="tpZi" style="font-size:22px;padding:4px 12px">＋</button><button class="hb g" id="tpZo" style="font-size:22px;padding:4px 12px">－</button><button class="hb b" id="tpMe" style="font-size:18px;padding:4px 8px">🔵</button></div></div>
+  <div class="lab">快速前往</div><div class="row2" style="flex-wrap:wrap">${homesOf().map(o=>`<button class="hb g" data-tq="${o.x},${o.z}">🏡 ${o.name||'我的家'}</button>`).join('')}${ZONES.filter(z=>z.x!=null).map(z=>`<button class="hb o" data-tq="${z.x},${z.z+z.r*.3}">${z.em} ${z.n}</button>`).join('')}${[...PEERS.values()].map(p=>`<button class="hb b" data-tq="${p.g.position.x},${p.g.position.z}">👥 ${p.n||'隊友'}</button>`).join('')}</div>
+  <div class="row2"><button class="hb p" id="tpS">👆 改成點畫面上的地面</button></div>`,
+  ()=>{const cv=$('#tpC');const draw=()=>tpDraw(cv);draw();cv.onclick=e=>{const r=cv.getBoundingClientRect();const span=SZ/TPZ.z;const x=TPZ.cx-span/2+(e.clientX-r.left)/r.width*span,z=TPZ.cz-span/2+(e.clientY-r.top)/r.height*span;tpAsk(x,z)};
+   const zm=f=>{TPZ.z=clamp(TPZ.z*f,1,16);if(TPZ.z===1){TPZ.cx=0;TPZ.cz=0}else if(f>1&&TPZ.z===2&&!TPZ.cx&&!TPZ.cz){TPZ.cx=ME.position.x;TPZ.cz=ME.position.z}draw()};$('#tpZi').onclick=()=>zm(2);$('#tpZo').onclick=()=>zm(.5);$('#tpMe').onclick=()=>{TPZ.cx=ME.position.x;TPZ.cz=ME.position.z;if(TPZ.z<4)TPZ.z=4;draw()};
+   cv.onwheel=e=>{e.preventDefault();zm(e.deltaY<0?1.5:1/1.5)};let dr=null;cv.onpointerdown=e=>{dr={x:e.clientX,y:e.clientY,cx:TPZ.cx,cz:TPZ.cz,m:0}};cv.onpointermove=e=>{if(!dr||TPZ.z===1)return;const r=cv.getBoundingClientRect();const k=SZ/TPZ.z/r.width;const dx=e.clientX-dr.x,dy=e.clientY-dr.y;if(Math.abs(dx)+Math.abs(dy)>6)dr.m=1;TPZ.cx=dr.cx-dx*k;TPZ.cz=dr.cz-dy*k;draw()};cv.onpointerup=e=>{if(dr&&dr.m){e.preventDefault();setTimeout(()=>dr=null,0);cv.onclick&&(cv._skip=1)}else dr=null};
+   const oc=cv.onclick;cv.onclick=e=>{if(cv._skip){cv._skip=0;return}oc(e)};
+   $('#panel').querySelectorAll('[data-tq]').forEach(b=>b.onclick=()=>{const [x,z]=b.dataset.tq.split(',').map(Number);closePanel();tpGo(x,z)});$('#tpS').onclick=()=>{closePanel();setTool('tp');toast('🌀 點一下畫面上想去的地方',2400)}})}
+function tpDraw(cv){const R=cv.width,x=cv.getContext('2d');const span=SZ/TPZ.z;TPZ.cx=clamp(TPZ.cx,-HALF+span/2,HALF-span/2);TPZ.cz=clamp(TPZ.cz,-HALF+span/2,HALF-span/2);const base=mmBase(),BR=base.width;
+  const x0=TPZ.cx-span/2,z0=TPZ.cz-span/2;x.imageSmoothingEnabled=true;x.drawImage(base,(x0+HALF)/SZ*BR,(z0+HALF)/SZ*BR,span/SZ*BR,span/SZ*BR,0,0,R,R);
+  const P=(wx,wz)=>[(wx-x0)/span*R,(wz-z0)/span*R];const pl=PLOT/span*R;
+  for(let p=0;p<PN*PN;p++){const c=plotCenter(p);const [px,py]=P(c.x-PLOT/2,c.z-PLOT/2);if(px>R||py>R||px+pl<0||py+pl<0)continue;if(S.plots[p]){x.fillStyle='rgba(120,255,120,.16)';x.fillRect(px,py,pl,pl);x.setLineDash([6,4]);x.strokeStyle='#fff';x.lineWidth=1.5;x.strokeRect(px+.5,py+.5,pl-1,pl-1);x.setLineDash([])}else{x.fillStyle='rgba(0,0,0,.12)';x.fillRect(px,py,pl,pl)}}
+  if(TPZ.z>=4)for(const o of S.objs){if(o.t!=='house'&&o.t!=='lm')continue;const [px,py]=P(o.x,o.z);const w=Math.max(3,(o.w||6)/span*R),d=Math.max(3,(o.d||6)/span*R);x.fillStyle=o.fac?'#8a8a92':o.t==='lm'?'#ffd030':'#e8502a';x.fillRect(px-w/2,py-d/2,w,d)}
+  const fs=Math.round(R/26);x.font=`${fs}px sans-serif`;x.textAlign='center';x.textBaseline='middle';const lbl=(wx,wz,em,t,bg)=>{const [px,py]=P(wx,wz);if(px<-20||py<-20||px>R+20||py>R+20)return;x.font=`${fs}px sans-serif`;x.fillText(em,px,py);if(t){x.font=`bold ${Math.round(fs*.62)}px sans-serif`;const w=x.measureText(t).width+8;x.fillStyle=bg||'rgba(255,250,230,.9)';x.fillRect(px-w/2,py+fs*.6,w,fs*.8);x.fillStyle='#3a2a10';x.fillText(t,px,py+fs);x.fillStyle='#000'}};
+  for(const Z of ZONES)if(Z.x!=null){const [px,py]=P(Z.x,Z.z);x.strokeStyle='rgba(255,255,255,.8)';x.lineWidth=2;x.beginPath();x.arc(px,py,Math.max(6,Z.r/span*R),0,7);x.stroke();lbl(Z.x,Z.z,Z.em,Z.n.replace(/（.*）/,''))}
+  for(const o of S.objs)if(o.fac&&TPZ.z<4)lbl(o.x,o.z,'🏭','');
+  for(const o of homesOf())lbl(o.x,o.z,'🏡',o.name||'我的家');
+  for(const p of PEERS.values())lbl(p.g.position.x,p.g.position.z,'👥',p.n||'隊友','rgba(200,230,255,.95)');
+  if(GUIDE)lbl(GUIDE.x,GUIDE.z,'📍','');
+  const [mx,mz]=P(ME.position.x,ME.position.z);x.fillStyle='#3a8ad8';x.strokeStyle='#fff';x.lineWidth=3;x.beginPath();x.arc(mx,mz,8,0,7);x.fill();x.stroke();
+  x.fillStyle='rgba(0,0,0,.55)';x.fillRect(6,R-30,170,24);x.fillStyle='#fff';x.font='bold 15px sans-serif';x.textAlign='left';x.fillText(`🔍 放大 ${TPZ.z.toFixed(1).replace('.0','')} 倍・可以拖曳`,12,R-17)}
+/* ---- 道路：沿著地形補點、遇到建築物要繞路、路上的樹和石頭會清掉 ---- */
+function densePts(pts,st){if(pts.length<2)return pts;const out=[pts[0]];for(let i=1;i<pts.length;i++){const a=pts[i-1],b=pts[i];const L=Math.hypot(b.x-a.x,b.z-a.z);const n=Math.max(1,Math.ceil(L/st));for(let k=1;k<=n;k++)out.push({x:a.x+(b.x-a.x)*k/n,z:a.z+(b.z-a.z)*k/n})}return out}
+const BLK=o=>o.t==='house'||o.t==='tower'||o.t==='wall'||o.t==='lm';
+function inBld(x,z,pad){for(const o of S.objs){if(!BLK(o))continue;if(o.t==='tower'){if(Math.hypot(x-o.x,z-o.z)<(o.rad||2)+pad)return o;continue}const w=o.t==='wall'?o.len:o.w,d=o.t==='wall'?(o.thick||1.2):o.d;const r=o.r||0,c=Math.cos(r),s=Math.sin(r);const dx=x-o.x,dz=z-o.z;const lx=dx*c-dz*s,lz=dx*s+dz*c;if(Math.abs(lx)<w/2+pad&&Math.abs(lz)<d/2+pad)return o}return null}
+function roadBlock(a,b){const w=(ROADS[TS.road]||ROADS.road).w/2;const L=Math.hypot(b.x-a.x,b.z-a.z);const n=Math.max(1,Math.ceil(L/.7));const nx=-(b.z-a.z)/L,nz=(b.x-a.x)/L;for(let k=0;k<=n;k++){const x=a.x+(b.x-a.x)*k/n,z=a.z+(b.z-a.z)*k/n;for(const s of [-1,0,1])if(inBld(x+nx*w*s*.9,z+nz*w*s*.9,.2))return true}return false}
+let rwT=0;function roadWarn(){if(performance.now()-rwT<1500)return;rwT=performance.now();SFX.err();toast('🚧 前面有房子或建築物擋住，道路不能穿過去，請繞路',2200)}
+function roadClear(o){const R=ROADS[o.k]||ROADS.road;const pts=densePts(o.pts,1);let n=0;for(const q of S.objs.slice()){if(q.t!=='nat')continue;if(pts.some(p=>Math.hypot(p.x-q.x,p.z-q.z)<R.w/2+.5)){removeObj(q);if(typeof natLoot==='function')natLoot(q);n++}}if(n){natDirty=true;toast(`🪓 鋪路時清掉了 ${n} 棵擋路的樹木、石頭（材料放進倉庫）`,2400)}}
+/* ---- 樹木：每一棵的高矮、顏色都不太一樣 ---- */
+const hsh=(a,b)=>{const v=Math.sin(a*12.9898+b*78.233)*43758.5453;return v-Math.floor(v)};
+function natHV(o){const h1=hsh(o.x,o.z),h2=hsh(o.z+3.1,o.x-7.7);return [.88+h2*.24,.8+h1*.42]}
+const _TC=new THREE.Color();
+function natTint(im,k,pt,o,i){if(pt._role===undefined){const D=NAT[k];pt._role=typeof partRole==='function'?partRole(k,pt,D.parts.indexOf(pt)):'leaf'}const h1=hsh(o.x+1.7,o.z),h2=hsh(o.x,o.z+5.3),h3=hsh(o.x-9.1,o.z-2.2);
+  if(pt._role==='trunk'||pt._role==='branch'){const v=.82+h1*.3;_TC.setRGB(v,v*(.95+h2*.08),v*(.9+h3*.12))}else{_TC.setRGB(.78+h1*.38,.84+h2*.26,.74+h3*.36)}im.setColorAt(i,_TC)}
+/* ---- 畫面上直接顯示季節、時間、天氣 ---- */
+let wxT=0;function wxChipTick(dt){wxT-=dt;if(wxT>0)return;wxT=1;const c=$('#wxChip'),n=$('#needs');if(!c||!n||S.season==null)return;const se=SEASONS[S.season]||SEASONS[0],w=WX[S.wx]||WX.sun;const hh=Math.floor(S.time||0);const part=hh<5?'深夜':hh<8?'清晨':hh<11?'上午':hh<13?'中午':hh<17?'下午':hh<19?'傍晚':'晚上';
+  c.innerHTML=`${se.em} ${se.n}・${part} ${fmtT(S.time||0)}・${w.em} ${w.n}`;const r=n.getBoundingClientRect();if(r.width){const z=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--uiz'))||1;c.style.left=(r.right/z+6)+'px';c.style.top=(r.top/z)+'px'}}
+/* ---- 更多工廠（含自動化工廠和加速設施） ---- */
+Object.assign(FAC,{
+ quarryf:{n:'砂石場',em:'🪨',p:3000,d:'不用原料，每 6 秒挖出 2 石材',in:{},out:{stone:2},t:6,h:{w:12,d:10,floors:1,wall:'stone',wallC:0xb8b0a4,roof:'shed',roofM:'metal',roofC:0x7a7a7a,pitch:.4,win:'wide',sign:'🪨 砂石場',signBg:'#6a6a6a'}},
+ forestf:{n:'人工林場',em:'🌲',p:3500,d:'種樹又砍樹，每 8 秒做出 2 木材',in:{},out:{wood:2},t:8,h:{w:10,d:8,floors:1,wall:'wood',wallC:0x7a5a3a,roof:'gable',roofM:'thatch',roofC:0x8a7a4a,pitch:.9,win:'classic',sign:'🌲 人工林場',signBg:'#2a5a2a'}},
+ clayf:{n:'黏土採集場',em:'🟫',p:2200,d:'不用原料，每 6 秒挖出 3 黏土',in:{},out:{clay:3},t:6,h:{w:10,d:8,floors:1,wall:'plaster',wallC:0xb08060,roof:'flat',win:'wide',sign:'🟫 黏土場',signBg:'#6a4a2a'}},
+ mix:{n:'預拌混凝土廠',em:'🚛',p:6000,d:'3 石材 → 2 水泥（每 6 秒）',in:{stone:3},out:{cement:2},t:6,h:{w:12,d:10,floors:2,wall:'concrete',wallC:0x9a9aa4,roof:'flat',win:'wide',chimney:1,sign:'🚛 預拌廠',signBg:'#4a4a5a'}},
+ tilef:{n:'磁磚屋瓦廠',em:'🟥',p:4500,d:'2 黏土 → 2 屋瓦（每 6 秒）',in:{clay:2},out:{tile:2},t:6,h:{w:11,d:8,floors:1,wall:'brick',wallC:0xc86a4a,roof:'hip',roofM:'tile',roofC:0xa83a2a,pitch:.6,win:'arch',chimney:1,sign:'🟥 屋瓦廠',signBg:'#a83a2a'}},
+ tglass:{n:'強化玻璃廠',em:'💎',p:8000,d:'3 石材 → 2 玻璃（每 8 秒）',in:{stone:3},out:{glass:2},t:8,h:{w:12,d:9,floors:3,wall:'glass',wallC:0xd8f0ff,roof:'flat',win:'none',sign:'💎 強化玻璃',signBg:'#2a6aa8'}},
+ furnace:{n:'煉鐵高爐',em:'🔥',p:12000,d:'4 石材 → 2 鋼筋（每 10 秒）',in:{stone:4},out:{steel:2},t:10,h:{w:12,d:12,floors:3,wall:'siding',wallC:0x5a4a48,roof:'shed',roofM:'metal',roofC:0x3a2a2a,pitch:.7,win:'tall',chimney:1,sign:'🔥 煉鐵高爐',signBg:'#8a2a1a'}},
+ scrap:{n:'廢鐵回收廠',em:'♻️',p:6500,d:'回收廢鐵，每 12 秒做出 1 鋼筋',in:{},out:{steel:1},t:12,h:{w:12,d:9,floors:1,wall:'siding',wallC:0x9a6a4a,roof:'shed',roofM:'metal',roofC:0x6a5a4a,pitch:.4,win:'wide',sign:'♻️ 回收廠',signBg:'#4a6a2a'}},
+ chemf:{n:'化學塗料廠',em:'🧪',p:7000,d:'1 黏土 ＋ 1 石材 → 2 油漆（每 8 秒）',in:{clay:1,stone:1},out:{paint:2},t:8,h:{w:10,d:9,floors:2,wall:'plaster',wallC:0xf4f4ff,roof:'flat',win:'modern',chimney:1,sign:'🧪 塗料廠',signBg:'#6a2a8a'}},
+ recyc:{n:'再生建材廠',em:'🔁',p:5000,d:'把拆下來的廢料做成 1 紅磚 ＋ 1 石材（每 7 秒）',in:{},out:{brick:1,stone:1},t:7,h:{w:11,d:9,floors:1,wall:'concrete',wallC:0x8ab88a,roof:'flat',win:'wide',sign:'🔁 再生建材',signBg:'#2a7a4a'}},
+ autobrick:{n:'自動化磚廠（機器人）',em:'🤖',p:15000,d:'機器人自動生產：3 黏土 → 4 紅磚（每 5 秒）',in:{clay:3},out:{brick:4},t:5,h:{w:14,d:10,floors:2,wall:'glass',wallC:0xffe0d0,roof:'flat',win:'none',sign:'🤖 自動化磚廠',signBg:'#c84a2a'}},
+ autocem:{n:'自動化水泥廠（機器人）',em:'🦾',p:16000,d:'機器人自動生產：3 石材 → 3 水泥（每 5 秒）',in:{stone:3},out:{cement:3},t:5,h:{w:14,d:10,floors:3,wall:'concrete',wallC:0xd8d8e8,roof:'flat',win:'modern',chimney:1,sign:'🦾 自動化水泥',signBg:'#3a4a7a'}},
+ autosaw:{n:'自動化木材廠（機器人）',em:'🪵',p:14000,d:'機器人自動整理木材，每 6 秒做出 3 木材',in:{},out:{wood:3},t:6,h:{w:14,d:9,floors:2,wall:'timber',wallC:0xffffff,roof:'gable',roofM:'metal',roofC:0x3a5a3a,pitch:.5,win:'wide',sign:'🪵 自動化木材',signBg:'#5a3a1a'}},
+ solar:{n:'太陽能發電廠',em:'☀️',p:9000,d:'供電給全部工廠：生產速度 +10%',in:{},out:{},t:1e9,boost:.1,h:{w:12,d:10,floors:1,wall:'glass',wallC:0x2a4a8a,roof:'shed',roofM:'metal',roofC:0x1a2a5a,pitch:.6,win:'none',sign:'☀️ 太陽能',signBg:'#d89a10'}},
+ logi:{n:'物流倉儲中心',em:'📦',p:11000,d:'材料搬運更快：全部工廠生產速度 +10%',in:{},out:{},t:1e9,boost:.1,h:{w:16,d:12,floors:2,wall:'siding',wallC:0xe0d8c0,roof:'flat',win:'wide',sign:'📦 物流中心',signBg:'#7a5a2a'}},
+ robolab:{n:'機器人研發中心',em:'🧠',p:25000,d:'研發更聰明的機器人：全部工廠生產速度 +20%',in:{},out:{},t:1e9,boost:.2,h:{w:14,d:12,floors:4,wall:'glass',wallC:0xe8f4ff,roof:'dome',roofM:'metal',roofC:0xb8c8d8,win:'modern',sign:'🧠 機器人研發',signBg:'#2a2a5a'}}});
+function facBoost(){let b=0;for(const o of S.objs)if(o.fac&&FAC[o.fac]&&FAC[o.fac].boost&&!(o.bt!=null&&o.bt<1))b+=FAC[o.fac].boost;return (1+Math.min(1,b)+(typeof autoBoost==='function'?autoBoost():0))*(isDis('drought')?.85:1)}
+/* ---- 材料區可以採的樹、石頭（採完會消失，10 秒後長回來） ---- */
+let NODEID=0;
+function nodesBuild(Z,M){Z.nodes=[];let seed=Z.k.length*131+7;const R=()=>{seed=(seed*16807)%2147483647;return seed/2147483647};const n=Z.k==='forest'?14:Z.k==='quarry'?10:8;
+  for(let i=0;i<n;i++){let x,z,ok=false;for(let tr=0;tr<20&&!ok;tr++){const a=R()*6.28,d=Z.r*(.12+R()*.5);x=Z.x+Math.cos(a)*d;z=Z.z+Math.sin(a)*d;ok=Z.nodes.every(q=>Math.hypot(q.x-x,q.z-z)>3.2)}
+    const g=new THREE.Group();g.position.set(x,hAt(x,z),z);const r0=R()*6.28;g.rotation.y=r0;let s=1,tree=false,hp=3;
+    if(Z.k==='forest'){tree=true;const hh=3+R()*2;const tr2=new THREE.Mesh(M.cyl,M.bark);tr2.scale.set(.32,hh,.32);tr2.position.y=hh/2;tr2.castShadow=true;g.add(tr2);const lm=R()<.5?M.leaf:M.leaf2;for(let k=0;k<3;k++){const c=new THREE.Mesh(M.cone,lm);const cs=2.4-k*.55;c.scale.set(cs,2.6,cs);c.position.y=hh+.6+k*1.3;c.castShadow=true;g.add(c)}}
+    else if(Z.k==='quarry'){s=1.2+R()*.6;const m=new THREE.Mesh(M.ico,R()<.5?M.rockM:M.rock2);m.scale.set(1,.75,1.1);m.position.y=.5;m.castShadow=true;g.add(m)}
+    else if(Z.k==='claypit'){s=1.1+R()*.5;hp=2;const m=new THREE.Mesh(M.ico,M.clayM);m.scale.set(1.3,.55,1.2);m.position.y=.2;g.add(m)}
+    else{s=1+R()*.4;hp=4;const m=new THREE.Mesh(M.ico,M.dark);m.scale.set(1,.85,1);m.position.y=.5;m.castShadow=true;g.add(m);for(let k=0;k<4;k++){const q=new THREE.Mesh(M.ico,M.ore);q.scale.setScalar(.22);q.position.set((R()-.5)*1.4,.5+R()*.6,(R()-.5)*1.4);g.add(q)}}
+    g.scale.setScalar(s);ZG.add(g);Z.nodes.push({id:++NODEID,zk:Z.k,i,x,z,g,s,r0,hp,hp0:hp,st:'ok',tree,sh:0,t:0})}}
+let wkT=0;function workerHarvest(dt){if(typeof CO!=='undefined'&&CO.role==='guest')return;wkT-=dt;if(wkT>0)return;wkT=5;for(const Z of ZONES){if(!Z.nodes)continue;const gk=Object.keys(GATH).find(k=>GATH[k].z===Z.k);const w=gN(gk)+zvCount(Z.k);if(!w||Math.random()>Math.min(.9,w*.15))continue;const ok=Z.nodes.filter(n=>n.st==='ok'&&(!ME||Math.hypot(n.x-ME.position.x,n.z-ME.position.z)>6));if(ok.length>2){const n=ok[Math.floor(Math.random()*ok.length)];nodeGone(n)}}}
+/* ---- 樓層按鈕 ---- */
+function floorBtns(o){const fl=Math.min(o.floors||1,6);if(fl<2)return '';let h='<div style="width:100%;display:flex;gap:4px;justify-content:center;flex-wrap:wrap;margin-top:2px"><span style="font-size:13px;align-self:center">🪜 樓層：</span>';for(let f=0;f<fl;f++)h+=`<button class="hb ${IN.f===f?'g':''}" data-fl="${f}" style="padding:4px 10px">${f+1} 樓</button>`;return h+'</div>'}
+/* ---- 材料區的工程車、運輸車 ---- */
+const ZV={quarry:[['exc','🚜','挖土機','把岩石山挖開，每分鐘多挖 10 個石材',6000,10],['crush','🏗️','碎石機','把大石頭敲碎成石材，每分鐘多 15 個',9000,15],['dump','🚚','砂石車','把石材載走（賣掉或送回倉庫），每趟 40 個',5000,0,40]],
+ forest:[['harv','🌲','伐木機','自動砍樹、去枝、裁切，每分鐘多 8 個木材',7000,8],['skid','🚜','集材車','把砍好的木頭拖到集材場，每分鐘多 6 個',5000,6],['logt','🚛','運木車','把木材載走，每趟 30 個',5500,0,30]],
+ claypit:[['bhoe','🚜','怪手','挖黏土，每分鐘多挖 12 個黏土',5500,12],['dozer','🛞','推土機','把黏土推平、集中，每分鐘多 10 個',6000,10],['dump2','🚚','鉸接式砂石車','把黏土載走，每趟 50 個',5000,0,50]],
+ mine:[['drill','⛏️','鑽孔機','鑽礦脈，每分鐘多 3 個鋼筋',12000,3],['cart','🚃','礦車','把礦石從坑道推出來，每分鐘多 2 個',8000,2],['oret','🚚','礦石運輸卡車','把礦石載走，每趟 15 個',7000,0,15]]};
+const ZVMAX=5;const zvN=k=>(S.zveh||{})[k]||0;const zvCost=v=>Math.round(v[4]*(1+zvN(v[0])*.5)/100)*100;
+const zvCount=zk=>ZV[zk].reduce((a,v)=>a+zvN(v[0]),0);const zvRate=zk=>ZV[zk].reduce((a,v)=>a+zvN(v[0])*v[5],0);const zvTruck=zk=>ZV[zk].find(v=>v[6]);
+function zoneOut(zk,k,amt){const tv=zvTruck(zk);if(zvN(tv[0])>0){S.zpile=S.zpile||{};S.zpile[zk]=(S.zpile[zk]||0)+amt}else S.mat[k]=(S.mat[k]||0)+amt}
+function zonePanel(Z){const zk=Z.k,k=Z.mat,gk=Object.keys(GATH).find(q=>GATH[q].z===zk);const tv=zvTruck(zk);const nt=zvN(tv[0]);const sell=(S.zsell||{})[zk];const rate=gN(gk)*GATH[gk].r+zvRate(zk);
+  openPanel(`<h2>${Z.em} ${Z.n}</h2><div style="font-size:14px;line-height:1.8">現在每分鐘可以採到 <b>${Math.round(rate*PF().prod)}</b> 個${MATD[k].em}${MATD[k].n}${nt?`・堆在採集場等著載走：<b>${Math.floor((S.zpile||{})[zk]||0)}</b> 個`:''}<br>${nt?`🚚 運輸車載走的材料：<b>${sell?'💰 載去賣掉換錢':'📦 送回倉庫自己用'}</b>`:'還沒有運輸車：工人採到的材料會直接放進倉庫。'}</div>
+  ${nt?`<div class="row2"><button class="hb ${sell?'':'g'}" data-zs="0">📦 送回倉庫自己用</button><button class="hb ${sell?'g':''}" data-zs="1">💰 載去賣掉（每個 ${money(Math.round(MATD[k].p*.8*PF().sale))}）</button></div>`:''}
+  <div class="lab">👷 工人</div>${gRow(gk,GATH[gk])}<div class="lab">🚜 工程車、運輸車（每種最多 ${ZVMAX} 台，會在採集場工作）</div>`+ZV[zk].map(v=>`<div class="prow"><div class="em">${v[1]}</div><div class="tx"><b>${v[2]}</b>：${zvN(v[0])}/${ZVMAX} 台<small>${v[3]}</small></div>${zvN(v[0])>=ZVMAX?'<b style="color:#2fa04a">已滿</b>':`<button class="hb g" data-zv="${v[0]}">買一台<br><small>${money(zvCost(v))}</small></button>`}</div>`).join(''),
+  ()=>{const P=$('#panel');crewBind();P.querySelectorAll('[data-gath]').forEach(b=>{const o=b.onclick;b.onclick=()=>{o();setTimeout(()=>zonePanel(Z),50)}});
+   P.querySelectorAll('[data-zs]').forEach(b=>b.onclick=()=>{S.zsell=S.zsell||{};S.zsell[zk]=+b.dataset.zs;SFX.click();dirty();zonePanel(Z)});
+   P.querySelectorAll('[data-zv]').forEach(b=>b.onclick=()=>{const v=ZV[zk].find(x=>x[0]===b.dataset.zv);if(zvN(v[0])>=ZVMAX)return;if(!spend(zvCost(v),v[2]))return;S.zveh=S.zveh||{};S.zveh[v[0]]=zvN(v[0])+1;SFX.build();toast(`${v[1]} ${v[2]}開進${Z.n}了！`,2200);dirty();
+     if(v[6]&&(S.zsell||{})[zk]==null)zoneSellAsk(Z);else zonePanel(Z)})})}
+function zoneSellAsk(Z){openPanel(`<h2>🚚 運輸車要把${MATD[Z.mat].n}載去哪裡？</h2><div style="font-size:15px">工人和工程車採到的${MATD[Z.mat].em}${MATD[Z.mat].n}，運輸車會一趟一趟載走。之後也可以在採集場隨時更改。</div><div class="row2" style="flex-direction:column"><button class="hb g" id="zsK" style="font-size:16px">📦 送回倉庫，留著自己蓋房子用</button><button class="hb o" id="zsS" style="font-size:16px">💰 載去賣掉換錢（每個 ${money(Math.round(MATD[Z.mat].p*.8*PF().sale))}）</button></div>`,
+  ()=>{const set=v=>{S.zsell=S.zsell||{};S.zsell[Z.k]=v;dirty();zonePanel(Z)};$('#zsK').onclick=()=>set(0);$('#zsS').onclick=()=>set(1)})}
+/* 運輸車：在採集場和小鎮之間來回，一趟一趟載 */
+const TRK={};
+function truckTick(dt){const host=!(typeof CO!=='undefined'&&CO.role==='guest');for(const Z of ZONES){if(Z.x==null)continue;const tv=zvTruck(Z.k);const n=zvN(tv[0]);let L=TRK[Z.k]=TRK[Z.k]||[];
+  while(L.length<n)L.push({p:L.length*.5%2,load:0,g:null});while(L.length>n){const t=L.pop();if(t.g)ZG.remove(t.g)}if(!n)continue;
+  const D=Math.hypot(Z.x,Z.z),ux=-Z.x/D,uz=-Z.z/D;const hub=typeof hubOf==='function'?hubOf(Z.x,Z.z):null;const dep=hub?hubDoor(hub):{x:Z.x+ux*(D-38),z:Z.z+uz*(D-38)};const st0={x:Z.x+ux*Z.r*.55,z:Z.z+uz*Z.r*.55};const PC=pathGet('z'+Z.k+(hub?'h'+hub.id:''),st0,dep);const trip=Math.max(6,PC.L/14/Math.sqrt(PF().prod));
+  L.forEach((t,i)=>{const p0=t.p;t.p+=dt/trip;
+    if(p0<1&&t.p>=1&&host&&t.load>0){const k=Z.mat;if((S.zsell||{})[Z.k]){const v=Math.round(t.load*MATD[k].p*.8*PF().sale);earn(v);if(i<3)floatTxt(V(dep.x,hAt(dep.x,dep.z)+3,dep.z),`+${money(v)}`)}else{S.mat[k]=(S.mat[k]||0)+t.load;if(i<3)floatTxt(V(dep.x,hAt(dep.x,dep.z)+3,dep.z),`+${Math.round(t.load)} ${MATD[k].em}`)}t.load=0;if(typeof matHud==='function')matHud()}
+    if(t.p>=2){t.p-=2;if(host){S.zpile=S.zpile||{};const q=Math.min(S.zpile[Z.k]||0,tv[6]);S.zpile[Z.k]=(S.zpile[Z.k]||0)-q;t.load=q}}
+    if(i>=4){if(t.g){ZG.remove(t.g);t.g=null}return}if(!t.g){t.g=vehMesh(tv[0]);ZG.add(t.g)}
+    const f=t.p<1?t.p:2-t.p;const q=polyAt(PC.P,f*PC.L);const sd=t.p<1?1:-1;const x=q.x+Math.cos(q.a)*1.6*sd,z=q.z-Math.sin(q.a)*1.6*sd;t.g.position.set(x,Math.max(hAt(x,z),WATER_Y),z);t.g.rotation.y=q.a+(t.p<1?0:Math.PI);
+    const ld=t.g.userData.load;if(ld)ld.visible=t.p<1?t.load>0:false;if(t.g.userData.wh)t.g.userData.wh.forEach(w=>w.rotation.x+=dt*6)})}}
+/* 採集場裡工作的工程車 */
+const ZVIS={};
+function zvTick(dt){const t=performance.now()/1000;for(const Z of ZONES){if(Z.x==null)continue;const sig=ZV[Z.k].map(v=>Math.min(3,zvN(v[0]))).join(',');let V0=ZVIS[Z.k];if(!V0||V0.sig!==sig){if(V0)V0.list.forEach(g=>ZG.remove(g));V0=ZVIS[Z.k]={sig,list:[]};let slot=0;
+    ZV[Z.k].forEach(v=>{if(v[6])return;for(let i=0;i<Math.min(3,zvN(v[0]));i++){const g=vehMesh(v[0]);const a=1.9+slot*.62,d=Z.r*.42;const x=Z.x+Math.cos(a)*d,z=Z.z+Math.sin(a)*d;g.position.set(x,hAt(x,z),z);g.rotation.y=Math.atan2(Z.x-x,Z.z-z);g.userData.ph=slot;g.userData.home={x,z};ZG.add(g);V0.list.push(g);slot++}})}
+  if(CAM.dist>500)continue;for(const g of V0.list){const u=g.userData,ph=u.ph;if(u.arm)u.arm.rotation.x=-.3+Math.sin(t*1.4+ph)*.45;if(u.turret)u.turret.rotation.y=Math.sin(t*.5+ph)*.9;if(u.spin)u.spin.rotation.y+=dt*8;if(u.belt)u.belt.forEach((r,i)=>{const k=((t*.5+i/3)%1);r.position.set(0,.9+k*1.6,-1.2-k*2.6)});
+    if(u.roam){const k=Math.sin(t*.4+ph)*3;const yaw=g.rotation.y;g.position.x=u.home.x+Math.sin(yaw)*k;g.position.z=u.home.z+Math.cos(yaw)*k;g.position.y=hAt(g.position.x,g.position.z);if(u.wh)u.wh.forEach(w=>w.rotation.x=k)}
+    if(Math.random()<dt*.6&&u.dig)dust(g.position.x+Math.sin(g.rotation.y)*3,g.position.y+.4,g.position.z+Math.cos(g.rotation.y)*3,1)}}}
+/* 每一台車都長得不一樣 */
+const VM={};const vmat=c=>VM[c]||(VM[c]=new THREE.MeshStandardMaterial({color:c,roughness:.6,metalness:.15}));const GLS=new THREE.MeshStandardMaterial({color:0x8ac8e8,roughness:.1,metalness:.3,transparent:true,opacity:.75});
+function vb(G,w,h,d,c,x,y,z,ry,rx){const m=new THREE.Mesh(boxG(w,h,d),typeof c==='number'?vmat(c):c);m.position.set(x,y,z);if(ry)m.rotation.y=ry;if(rx)m.rotation.x=rx;m.castShadow=true;G.add(m);return m}
+function vc(G,r,h,c,x,y,z,rz,rx,seg){const m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,seg||12),typeof c==='number'?vmat(c):c);m.position.set(x,y,z);if(rz)m.rotation.z=rz;if(rx)m.rotation.x=rx;m.castShadow=true;G.add(m);return m}
+function wheels(G,pos,r,w){const L=[];for(const [x,z] of pos){const g=new THREE.Group();g.position.set(x,r,z);const t=vc(g,r,w,0x1a1a1a,0,0,0,Math.PI/2,0,14);vc(g,r*.55,w+.02,0x9a9aa0,0,0,0,Math.PI/2,0,10);G.add(g);L.push(g)}return L}
+function tracks(G,len,gap,c){for(const s of [-1,1]){vb(G,.75,.75,len,0x2a2a2a,s*gap,.38,0);vb(G,.8,.12,len-.4,c||0x4a4a4a,s*gap,.78,0)}}
+function vehMesh(k){const G=new THREE.Group();const u=G.userData;
+  if(k==='exc'){tracks(G,3.4,1.05);const T=new THREE.Group();T.position.y=.9;G.add(T);u.turret=T;vb(T,2.3,1.1,2.6,0xf0b020,0,.55,-.2);vb(T,1,1.15,1.1,GLS,.6,1.6,.5);vb(T,1.05,.12,1.15,0xf0b020,.6,2.2,.5);vb(T,2.2,.6,.6,0x3a3a3a,0,.6,-1.5);const A=new THREE.Group();A.position.set(-.3,1,1);T.add(A);u.arm=A;vb(A,.35,.35,3.2,0xf0b020,0,.9,1.4,0,-.6);const B=new THREE.Group();B.position.set(0,1.8,2.8);A.add(B);vb(B,.28,.28,2.2,0xe0a010,0,-.8,.4,0,.4);vb(B,.9,.6,.7,0x5a5a5a,0,-1.8,.8);u.dig=1}
+  else if(k==='crush'){vb(G,3,1.4,2.4,0x6a6a72,0,.9,0);const h=new THREE.Mesh(new THREE.CylinderGeometry(1.4,.7,1.3,6),vmat(0xe8701a));h.position.set(0,2.2,.4);G.add(h);vb(G,.7,.1,3.6,0x2a2a2a,0,1.7,-2.4,0,-.45);u.belt=[];for(let i=0;i<3;i++){const r=new THREE.Mesh(new THREE.IcosahedronGeometry(.18,0),vmat(0x9a958c));G.add(r);u.belt.push(r)}const pile=new THREE.Mesh(new THREE.ConeGeometry(1.4,1.2,8),vmat(0xa8a49c));pile.position.set(0,.6,-4.6);G.add(pile);wheels(G,[[-1.3,.8],[1.3,.8],[-1.3,-.8],[1.3,-.8]],.4,.3);u.dig=1}
+  else if(k==='dump'||k==='oret'){const big=k==='oret';const s=big?1.35:1;const cab=big?0xf0c020:0xd83a2a;vb(G,2*s,.5,5*s,0x3a3a3a,0,.9*s,0);vb(G,2*s,1.5*s,1.4*s,cab,0,1.8*s,1.9*s);vb(G,1.8*s,.6*s,.05,GLS,0,2.1*s,2.62*s);const bed=new THREE.Group();bed.position.set(0,1.4*s,-.7*s);G.add(bed);vb(bed,2.2*s,.15,3.2*s,0x8a8a92,0,0,0);for(const sx of [-1,1])vb(bed,.12,1*s,3.2*s,big?0xc8a010:0xb02a1a,sx*1.05*s,.5*s,0);vb(bed,2.2*s,1*s,.12,0x8a8a92,0,.5*s,-1.55*s);const ld=new THREE.Mesh(new THREE.ConeGeometry(1*s,.9*s,8),vmat(big?0x6a4a3a:0x9a958c));ld.position.y=.95*s;ld.scale.z=1.5;bed.add(ld);u.load=ld;u.wh=wheels(G,[[-1,1.8*s],[1,1.8*s],[-1,-.6*s],[1,-.6*s],[-1,-1.7*s],[1,-1.7*s]],.55*s,.45*s)}
+  else if(k==='dump2'){vb(G,2,1.4,1.6,0xe88a2a,0,1.6,2);vb(G,1.7,.6,.05,GLS,0,1.9,2.82);vc(G,.3,.6,0x3a3a3a,0,1.1,1,0,Math.PI/2);const bed=new THREE.Group();bed.position.set(0,1.5,-1.2);G.add(bed);vb(bed,2.3,.18,3.4,0xe88a2a,0,0,0);for(const sx of [-1,1])vb(bed,.12,1.1,3.4,0xc86a1a,sx*1.1,.55,0,0);vb(bed,2.3,1.1,.12,0xc86a1a,0,.55,1.65);const ld=new THREE.Mesh(new THREE.ConeGeometry(1.1,.9,8),vmat(0xa0663a));ld.position.y=1;ld.scale.z=1.5;bed.add(ld);u.load=ld;u.wh=wheels(G,[[-1.05,2],[1.05,2],[-1.05,-.6],[1.05,-.6],[-1.05,-2],[1.05,-2]],.62,.5)}
+  else if(k==='logt'){vb(G,2,.4,6,0x2a2a2a,0,.9,0);vb(G,2,1.5,1.5,0x2a5ab8,0,1.8,2.3);vb(G,1.8,.6,.05,GLS,0,2.1,3.06);for(const z of [-2.2,-.6,1])for(const sx of [-1,1])vb(G,.12,1.6,.12,0x6a6a6a,sx*.95,1.9,z);const ld=new THREE.Group();G.add(ld);u.load=ld;for(let i=0;i<6;i++){const l=vc(ld,.32,4.6,0x8a5a32,(i%3-1)*.62,1.45+Math.floor(i/3)*.6,-.6,0,Math.PI/2,10);}u.wh=wheels(G,[[-1,2.2],[1,2.2],[-1,-1.2],[1,-1.2],[-1,-2.4],[1,-2.4]],.5,.4)}
+  else if(k==='harv'){vb(G,2.2,1,4,0x3a8a3a,0,1.4,0);vb(G,1.4,1.3,1.3,GLS,0,2.5,.9);vb(G,1.5,.12,1.4,0x3a8a3a,0,3.2,.9);const A=new THREE.Group();A.position.set(.6,2.2,1.4);G.add(A);u.arm=A;vb(A,.25,.25,3.4,0x2a6a2a,0,.8,1.5,0,-.5);vb(A,.7,.9,.5,0xe8c020,0,1.6,3.2);u.wh=wheels(G,[[-1.2,1.3],[1.2,1.3],[-1.2,0],[1.2,0],[-1.2,-1.3],[1.2,-1.3]],.6,.45);u.dig=1}
+  else if(k==='skid'){vb(G,1.8,1.1,3.4,0xe86a1a,0,1.5,0);vb(G,1.3,1.2,1.2,GLS,0,2.6,.5);vb(G,1.4,.1,1.3,0xe86a1a,0,3.25,.5);vb(G,2.4,.8,.2,0x4a4a4a,0,.7,2);vb(G,.18,1.6,.18,0x3a3a3a,-.8,2.4,-1.6);vb(G,.18,1.6,.18,0x3a3a3a,.8,2.4,-1.6);vb(G,1.8,.18,.18,0x3a3a3a,0,3.2,-1.6);vc(G,.3,4,0x8a5a32,0,.5,-3.6,0,Math.PI/2+.15,10);u.wh=wheels(G,[[-1.1,1.1],[1.1,1.1],[-1.1,-1.1],[1.1,-1.1]],.75,.55);u.roam=1}
+  else if(k==='bhoe'){vb(G,2,1,3.6,0xf0a020,0,1.2,0);vb(G,1.4,1.3,1.3,GLS,0,2.3,-.4);vb(G,1.5,.12,1.4,0xf0a020,0,3,-.4);vb(G,2.4,.8,.7,0x5a5a5a,0,.8,2.3);const A=new THREE.Group();A.position.set(0,1.5,-1.8);G.add(A);u.arm=A;vb(A,.3,.3,2.6,0xf0a020,0,.8,-1,0,.6);vb(A,.7,.5,.5,0x5a5a5a,0,1.5,-2.2);u.wh=wheels(G,[[-1.05,1.2],[1.05,1.2],[-1.1,-1.1],[1.1,-1.1]],.6,.5);u.wh[2].scale.setScalar(1.4);u.wh[3].scale.setScalar(1.4);u.dig=1}
+  else if(k==='dozer'){tracks(G,3.2,1,0xe8c020);vb(G,1.8,1.1,2.6,0xe8c020,0,1.4,-.1);vb(G,1.3,1.1,1.1,GLS,0,2.5,-.6);vb(G,1.4,.12,1.2,0xe8c020,0,3.1,-.6);vb(G,3,1.2,.25,0x5a5a5a,0,.7,2.1);vc(G,.1,1,0x2a2a2a,.6,2.4,.6);u.roam=1;u.dig=1}
+  else if(k==='drill'){tracks(G,3,1);vb(G,2,1,2.4,0x2a6ab8,0,1.3,0);vb(G,1,1.1,1,GLS,.5,2.3,-.6);const M=new THREE.Group();M.position.set(-.3,1.8,1);G.add(M);vb(M,.5,6,.5,0xe8c020,0,3,0);for(let i=0;i<5;i++)vb(M,.6,.06,.6,0x3a3a3a,0,1+i*1.1,0);const rod=vc(M,.12,5,0x9a9aa0,0,1.2,.45);u.spin=rod;u.dig=1}
+  else if(k==='cart'){for(const s of [-.5,.5])vb(G,.08,.1,8,0x8a8a8a,s,.08,0);for(let i=0;i<10;i++)vb(G,1.4,.08,.2,0x5a3a22,0,.03,-3.6+i*.8);const C=new THREE.Group();G.add(C);const b=new THREE.Mesh(new THREE.CylinderGeometry(.9,.6,.8,4),vmat(0x6a6a70));b.rotation.y=Math.PI/4;b.position.y=.75;b.scale.z=1.3;C.add(b);const o=new THREE.Mesh(new THREE.IcosahedronGeometry(.6,0),vmat(0xc87a3a));o.position.y=1.15;o.scale.y=.5;C.add(o);u.wh=wheels(C,[[-.45,.5],[.45,.5],[-.45,-.5],[.45,-.5]],.22,.12);u.cartG=C;u.roam=0;u.cart=1}
+  if(k==='cart')u.belt=null;return G}
+let cartT=0;function cartTick(){const t=performance.now()/1000;for(const k in ZVIS)for(const g of ZVIS[k].list){const u=g.userData;if(u.cartG)u.cartG.position.z=Math.sin(t*.6+u.ph)*3}}
+/* ---- 每一幀 ---- */
+function moreTick(dt){if(!moreTick.b){moreTick.b=1;moreUI()}truckTick(dt);zvTick(dt);cartTick();workerHarvest(dt);actBarTick();wxChipTick(dt)}
+function moreUI(){const st=document.createElement('style');st.textContent=`#panel{max-height:calc(86vh / var(--uiz,1))!important}#edit{max-height:calc(100vh / var(--uiz,1) - 250px)!important}@media (max-width:700px){#edit{max-height:calc(42vh / var(--uiz,1))!important}}
+  .hb small{color:rgba(255,255,255,.95)!important;text-shadow:0 1px 1px rgba(0,0,0,.25)}
+  #gBar{position:fixed;left:50%;transform:translateX(-50%);top:calc(112px + env(safe-area-inset-top));z-index:7;display:none;gap:6px;align-items:center;background:rgba(255,240,245,.95);border:3px solid #ff3a6a;border-radius:16px;padding:5px 8px;font-size:14px;font-weight:bold;color:#7a1a3a;max-width:94vw;flex-wrap:wrap;justify-content:center}#gBar .hb{padding:4px 8px;font-size:13px}
+  #actBar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(150px + env(safe-area-inset-bottom));z-index:8;display:none;width:min(380px,86vw);background:rgba(255,251,236,.96);border:3px solid #6a8ad8;border-radius:16px;padding:8px 12px;text-align:center;font-size:15px}
+  #actBar .ab{height:14px;background:#e0e8f8;border-radius:8px;overflow:hidden;margin:6px 0}#actBar .ab i{display:block;height:100%;background:linear-gradient(90deg,#6ad07a,#2fa04a);transition:width .25s}#actBar .an{font-size:13px;color:#4a3a2a;margin-bottom:6px}
+  #wxChip{position:fixed;left:250px;top:calc(78px + env(safe-area-inset-top));z-index:5;font-size:12.5px;padding:4px 10px;background:rgba(255,251,236,.92);border:2px solid #d8c8a0;border-radius:14px;cursor:pointer;white-space:nowrap;color:#4a3010;font-weight:bold}
+  #spdB{font-size:13px;padding:5px 10px}
+  @media (max-width:700px){#wxChip{font-size:10.5px;padding:3px 7px}#gBar{top:calc(150px + env(safe-area-inset-top));font-size:12px}}`;document.head.appendChild(st);
+  for(const id of ['gBar','actBar','wxChip']){if(!document.getElementById(id)){const d=document.createElement('div');d.id=id;d.style.display=id==='wxChip'?'block':'none';document.body.appendChild(d)}}$('#wxChip').onclick=()=>{SFX.click();timePanel()};
+  const jw=$('#joyW');if(jw&&!$('#spdB')){const b=document.createElement('button');b.className='hb y';b.id='spdB';b.onclick=()=>{const ks=Object.keys(SPDM);S.spd=ks[(ks.indexOf(S.spd||'auto')+1)%ks.length];spdBtn();SFX.click();const m=SPDM[S.spd];toast(`${m[0]} 移動速度：${m[1]}${m[2]?'':'（搖桿推越多走越快）'}`,1600);dirty()};jw.appendChild(b);spdBtn()}
+  const tb=$('#tbtn');if(tb&&!$('#bHome')){const b=document.createElement('button');b.className='hb g';b.id='bHome';b.textContent='🏡 回家';b.onclick=()=>{SFX.click();goHome()};tb.insertBefore(b,tb.firstChild.nextSibling)}}
+window.__zp=zonePanel;window.__tp=tpPanel2;window.__rb=(a,b)=>roadBlock(a,b);
+window.__pf=(k,x,z)=>{TS.fac=k;placeFac(k,x,z)};
+/* ======================= 2.18：天災系統（颱風、水災、地震、火災、雷擊、龍捲風、土石流、乾旱熱浪、暴風雪） ======================= */
+const DIS={
+ typhoon:{n:'颱風',em:'🌀',dur:90,warn:40,seas:[1,2],w:3,d:'強風大雨，屋頂、窗戶會受損，樹會被吹倒，常常會帶來水災。',help:'🧱 防災補強（防颱）、🌊 抽水站、🏥 防災救援中心、📡 氣象預警站（提早預報）'},
+ flood:{n:'水災',em:'🌊',dur:80,warn:30,seas:[0,1,2],w:2,d:'大雨下太久，低窪的地方會淹水，蓋在低處的房子一樓會泡水受損。',help:'🌊 抽水站（水位降低很多）、把房子蓋在高一點的地方'},
+ quake:{n:'地震',em:'🫨',dur:15,warn:0,seas:[0,1,2,3],w:2,d:'地面搖晃，樓層越高、越不耐震的牆（木造、玻璃帷幕）越容易受損，之後可能有餘震。',help:'🧱 防災補強（抗震）、清水模和石牆比較耐震、📡 氣象預警站（地震前幾秒預警）'},
+ fire:{n:'火災',em:'🔥',dur:0,warn:0,seas:[0,1,2,3],w:3,d:'房子起火會越燒越大，還會燒到旁邊的房子和樹，燒到 100% 就全毀變焦黑。',help:'🚒 消防局（自動派消防車）、自己走到旁邊按「🧯 滅火」、下雨會幫忙滅火'},
+ lightning:{n:'雷擊',em:'⚡',dur:40,warn:10,seas:[0,1,2],w:2,d:'雷雨時閃電會打到高的房子和樹，可能引起火災。',help:'⚡ 避雷塔（附近的房子不會被雷打到起火）'},
+ tornado:{n:'龍捲風',em:'🌪️',dur:40,warn:20,seas:[0,1],w:1,d:'龍捲風會沿著一條路線移動，經過的房子嚴重受損、樹被捲走。',help:'🧱 防災補強、🏥 防災救援中心、📡 氣象預警站'},
+ slide:{n:'土石流',em:'⛰️',dur:20,warn:15,seas:[0,1,2],w:1,d:'大雨後山坡上的泥土石頭滑下來，蓋在山邊的房子會被土石壓到，要花錢清除。',help:'不要把房子蓋在陡坡旁邊、🧱 防災補強'},
+ drought:{n:'乾旱熱浪',em:'🥵',dur:180,warn:20,seas:[1],w:1,d:'天氣又熱又乾，很容易發生火災，工廠也會變慢，小建築師比較容易累。',help:'🚒 消防局、☀️ 太陽能發電廠'},
+ blizzard:{n:'暴風雪',em:'🌨️',dur:100,warn:30,seas:[3],w:2,d:'大雪和強風，走路變慢，積雪會壓壞木造和平頂的房子。',help:'🧱 防災補強、石牆和清水模比較不怕雪'}};
+/* 防災設施（蓋在建材行「生產工廠」裡） */
+Object.assign(FAC,{
+ firest:{n:'消防局',em:'🚒',p:8000,d:'防災設施：300 公尺內起火會自動派消防車去滅火，火也不會延燒',in:{},out:{},t:1e9,safe:'fire',h:{w:12,d:10,floors:2,wall:'brick',wallC:0xc83a2a,roof:'flat',win:'wide',sign:'🚒 消防局',signBg:'#c8201a'}},
+ pump:{n:'抽水站（防洪）',em:'🌊',p:9000,d:'防災設施：下大雨、颱風時把水抽走，淹水的高度少 60%',in:{},out:{},t:1e9,safe:'flood',h:{w:10,d:9,floors:1,wall:'concrete',wallC:0x7a9ab8,roof:'flat',win:'wide',chimney:1,sign:'🌊 抽水站',signBg:'#2a5a9a'}},
+ rod:{n:'避雷塔',em:'⚡',p:5000,d:'防災設施：250 公尺內的房子被閃電打到也不會起火',in:{},out:{},t:1e9,safe:'bolt',h:{w:5,d:5,floors:5,wall:'siding',wallC:0x8a8a92,roof:'spire',roofM:'metal',roofC:0xd8d8e0,pitch:2,win:'none',sign:'⚡ 避雷塔',signBg:'#5a5a2a'}},
+ rescue:{n:'防災救援中心',em:'🏥',p:15000,d:'防災設施：全部天災的損壞少 30%，受損的房子每分鐘自動修好 2%',in:{},out:{},t:1e9,safe:'rescue',h:{w:14,d:11,floors:3,wall:'concrete',wallC:0xf4f4f4,roof:'flat',win:'modern',sign:'🏥 防災救援',signBg:'#d82a3a'}},
+ warnst:{n:'氣象預警站',em:'📡',p:7000,d:'防災設施：天災預報時間加倍，地震前也會有預警，防災面板會顯示預報',in:{},out:{},t:1e9,safe:'warn',h:{w:7,d:7,floors:2,wall:'plaster',wallC:0xffffff,roof:'dome',roofM:'metal',roofC:0xe8e8f0,win:'classic',sign:'📡 預警站',signBg:'#2a6a8a'}}});
+const safeHas=(k,x,z,r)=>S.objs.some(o=>o.fac&&FAC[o.fac]&&FAC[o.fac].safe===k&&!(o.bt!=null&&o.bt<1)&&(r==null||Math.hypot(o.x-x,o.z-z)<r));
+const disHost=()=>!(typeof CO!=='undefined'&&CO.role==='guest');
+const isDis=k=>S.dis&&S.dis.ph==='on'&&(!k||S.dis.k===k);
+/* ---- 受損 ---- */
+const WALLRES={quake:{wood:1.3,glass:1.25,timber:1.2,siding:1.1,plaster:1,brick:1,stone:.8,concrete:.65},wind:{wood:1.2,timber:1.2,siding:1.15,glass:1.1,plaster:1,brick:.85,stone:.75,concrete:.7},snow:{wood:1.2,timber:1.1,siding:1.1,plaster:1,glass:1,brick:.9,stone:.8,concrete:.75}};
+function dmgHouse(o,amt,cause,kind){if(!o||o.t!=='house'||(o.bt!=null&&o.bt<1))return;let k=amt*(o.rein?.45:1)*(safeHas('rescue')?.7:1);if(kind&&WALLRES[kind])k*=WALLRES[kind][o.wall]||1;
+  const b=o.dmg||0;o.dmg=Math.min(100,b+k);o.dmgC=cause;if(b<50&&o.dmg>=50)toast(`⚠️ 「${o.name||'房子'}」受損超過一半，房客不付房租了，記得修理`,2600);if(b<80&&o.dmg>=80&&lived(Object.assign({},o,{dmg:0})))toast(`🏚️ 「${o.name||'房子'}」損壞太嚴重，住的人先搬出去避難了`,3000)}
+const BURN_M=new THREE.MeshStandardMaterial({color:0x2a2420,roughness:1});
+function repairCost(o){return Math.round(costOf(o)*(o.dmg||0)/100*.7*PF().mat*(o.ins?.2:1))}
+function repairOne(o,quiet){const c=repairCost(o);if(c>0&&!spend(c,'修理'))return false;o.dmg=0;o.dmgC='';o.fire=0;if(o.burnt){o.burnt=0;place(o)}dust(o.x,baseY(o)+2,o.z,8);if(!quiet){SFX.build();toast(`🔧 工班修好「${o.name||'房子'}」了${o.ins?'（保險付了 80%）':''}`,2200)}dirty();return true}
+/* ---- 天災排程 ---- */
+function disStart(k,now){const D=DIS[k];const ws=safeHas('warn')?2:1;const warn=now?0:(k==='quake'?(safeHas('warn')?8:0):D.warn*ws);S.dis={k,ph:warn>0?'warn':'on',t:0,warn,dur:D.dur||1,seed:Math.random()*1e9|0};
+  if(k==='quake')S.dis.m=+(4.6+Math.random()*2.6).toFixed(1);
+  if(k==='tornado'){const a=Math.random()*6.28;const cx=ME?ME.position.x:0,cz=ME?ME.position.z:0;S.dis.x0=cx+Math.cos(a)*220;S.dis.z0=cz+Math.sin(a)*220;S.dis.x1=cx-Math.cos(a)*220+rand(-40,40);S.dis.z1=cz-Math.sin(a)*220+rand(-40,40)}
+  if(k==='flood')S.dis.peak=(1+Math.random()*1.4)*(safeHas('flood')?.4:1);
+  if(k==='fire'){fireRandom();S.dis=null;return}
+  if(S.dis.ph==='on')disOn();else{SFX.err();toast(`📢 ${D.em} ${D.n}警報！大約 ${Math.round(warn)} 秒後${k==='quake'?'會有強烈地震':'來襲'}，快做好準備`,4200)}dirty()}
+function disOn(){const d=S.dis,D=DIS[d.k];S.dis.ph='on';S.dis.t=0;if(['typhoon','flood','lightning'].includes(d.k)){d.pw=S.wx;S.wx=d.k==='typhoon'||d.k==='lightning'?'storm':'rain';d.pa=S.wxAuto;S.wxAuto=0}if(d.k==='blizzard'){d.pw=S.wx;S.wx='snow';d.pa=S.wxAuto;S.wxAuto=0}
+  toast(`${D.em} ${D.n}${d.k==='quake'?`！規模 ${d.m}`:'來了！'}`,3000);if(d.k==='quake')noise(2.5,.5,120);d.st={h:0,tr:0};if(d.k==='slide')slideHit()}
+function disEnd(){const d=S.dis,D=DIS[d.k];if(d.pw){S.wx=d.pw;S.wxAuto=d.pa}const st=d.st||{};S.dis=null;OBJG.position.set(0,0,0);NATG.position.set(0,0,0);
+  const dmg=S.objs.filter(o=>o.t==='house'&&(o.dmg||0)>0).length;toast(`${D.em} ${D.n}過去了。${dmg?`有 ${dmg} 棟建築受損，按右上角「🌪️ 防災」修理`:'還好沒有建築受損！'}${st.tr?`，倒了 ${st.tr} 棵樹`:''}`,4200);
+  if(d.k==='quake'&&!d.after&&Math.random()<.45){S.disNext=rand(40,80);S.disAfter=1}else S.disNext=rand(300,620)/(S.disF||1);dirty()}
+function disPick(){const se=S.season||0;const L=Object.entries(DIS).filter(([k,D])=>D.seas.includes(se));let tot=L.reduce((a,[k,D])=>a+D.w,0);let r=Math.random()*tot;for(const [k,D] of L){r-=D.w;if(r<=0)return k}return 'fire'}
+/* ---- 每一幀 ---- */
+let disUiT=0;
+function disTick(dt){if(S.disOn==null)S.disOn=S.mode==='free'?0:1;if(S.disNext==null)S.disNext=rand(240,480);const host=disHost();
+  if(host){if(!S.dis){if(S.disOn&&!(typeof TUT!=='undefined'&&TUT)){S.disNext-=dt;if(S.disNext<=0){if(S.disAfter){S.disAfter=0;disStart('quake');if(S.dis){S.dis.m=+(S.dis.m*.75).toFixed(1);S.dis.after=1;S.dis.dur=8}}else disStart(disPick())}}}
+    else{const d=S.dis;d.t+=dt;if(d.ph==='warn'){if(d.t>=d.warn)disOn()}else{disLogic(d,dt);if(d.t>=d.dur)disEnd()}}
+    fireLogic(dt);repairAuto(dt);insTick(dt)}
+  disFx(dt);fireFx(dt);disUiT-=dt;if(disUiT<=0){disUiT=.5;disBar();dmgTags()}}
+function disLogic(d,dt){const st=d.st=d.st||{h:0,tr:0};const hs=S.objs.filter(o=>o.t==='house'&&!(o.bt!=null&&o.bt<1));st.acc=(st.acc||0)+dt;if(st.acc<1)return;const s=st.acc;st.acc=0;
+  if(d.k==='typhoon'){for(const o of hs)if(Math.random()<.35)dmgHouse(o,rand(0,4)*s*(1+(o.floors-1)*.12),'颱風','wind');treeFall(Math.random()<.6?2:1,st);if(d.t>d.dur*.4&&!st.fl&&Math.random()<.5){st.fl=1;st.flood=(1+Math.random())*(safeHas('flood')?.4:1)}}
+  else if(d.k==='quake'){const m=d.m;for(const o of hs)if(Math.random()<.6)dmgHouse(o,Math.max(0,m-4.4)*rand(.6,1.6)*(1+(o.floors-1)*.18)*s*1.4,'地震','quake')}
+  else if(d.k==='flood'){}
+  else if(d.k==='lightning'){if(Math.random()<.55)boltStrike(true)}
+  else if(d.k==='tornado'){const p=tornPos();for(const o of hs){const r=Math.hypot(o.x-p.x,o.z-p.z);if(r<16)dmgHouse(o,(16-r)*3.2*s,'龍捲風','wind')}for(const q of S.objs.slice()){if(q.t!=='nat')continue;if(Math.hypot(q.x-p.x,q.z-p.z)<10){removeObj(q);st.tr++;natDirty=true}}}
+  else if(d.k==='drought'){if(Math.random()<.04*s)fireRandom()}
+  else if(d.k==='blizzard'){for(const o of hs)if(Math.random()<.25)dmgHouse(o,rand(0,1.6)*s*(o.roof==='flat'?1.6:1),'暴風雪','snow')}
+  // 淹水：水災，或颱風帶來的大雨
+  const lv=floodLv();if(lv>0)for(const o of hs){const dep=WATER_Y+lv-baseY(o);if(dep>0)dmgHouse(o,Math.min(2,dep)*3*s,'淹水')}}
+function treeFall(n,st){const c=ME?ME.position:{x:0,z:0};const near=S.objs.filter(q=>q.t==='nat'&&NAT[q.k]&&NAT[q.k].r>=.9&&Math.hypot(q.x-c.x,q.z-c.z)<140);for(let i=0;i<n&&near.length;i++){const q=near.splice(Math.floor(Math.random()*near.length),1)[0];removeObj(q);dust(q.x,hAt(q.x,q.z)+1,q.z,6);st.tr++;natDirty=true}}
+function floodLv(){const d=S.dis;if(!d||d.ph!=='on')return 0;let pk=0,t=d.t,T=d.dur;if(d.k==='flood')pk=d.peak||1.5;else if(d.k==='typhoon'&&d.st&&d.st.flood){pk=d.st.flood;}else return 0;const k=t<T*.45?t/(T*.45):Math.max(0,1-(t-T*.45)/(T*.55));return pk*Math.sin(Math.min(1,k)*Math.PI/2)}
+function tornPos(){const d=S.dis;const k=clamp(d.t/d.dur,0,1);return {x:d.x0+(d.x1-d.x0)*k,z:d.z0+(d.z1-d.z0)*k}}
+/* ---- 火災 ---- */
+function fireRandom(){const hs=S.objs.filter(o=>o.t==='house'&&!(o.bt!=null&&o.bt<1)&&!o.fire&&(o.dmg||0)<100);if(!hs.length)return;const w=o=>(o.wall==='wood'||o.wall==='timber'||o.wall==='siding'?3:1)*(isDis('drought')?2:1);let tot=hs.reduce((a,o)=>a+w(o),0),r=Math.random()*tot;let o=hs[0];for(const q of hs){r-=w(q);if(r<=0){o=q;break}}igniteHouse(o)}
+function igniteHouse(o){o.fire=100;o.fireT=0;SFX.err();toast(`🔥 「${o.name||'房子'}」失火了！${safeHas('fire',o.x,o.z,300)?'消防車出動中…':'快走過去按「🧯 滅火」，或蓋一座 🚒 消防局'}`,3600);dirty()}
+function fireLogic(dt){for(const o of S.objs){if(!o.fire)continue;o.fireT=(o.fireT||0)+dt;const rain=['rain','storm'].includes(S.wx);if(rain)o.fire=Math.max(0,o.fire-dt*3);
+  if(safeHas('fire',o.x,o.z,300)&&o.fireT>6)o.fire=Math.max(0,o.fire-dt*14);dmgHouse(o,dt*2.6*(o.fire/100+.3),'火災');
+  if(!safeHas('fire',o.x,o.z,300)&&Math.random()<dt*.05){const nb=S.objs.find(q=>q!==o&&q.t==='house'&&!q.fire&&(q.dmg||0)<100&&!(q.bt!=null&&q.bt<1)&&Math.hypot(q.x-o.x,q.z-o.z)<Math.max(o.w,o.d)/2+Math.max(q.w,q.d)/2+5);if(nb){igniteHouse(nb);nb.fire=50}}
+  if(Math.random()<dt*.08){const tr=S.objs.find(q=>q.t==='nat'&&Math.hypot(q.x-o.x,q.z-o.z)<Math.max(o.w,o.d)/2+5);if(tr){removeObj(tr);natDirty=true}}
+  if((o.dmg||0)>=100){o.fire=0;o.burnt=1;toast(`🏚️ 「${o.name||'房子'}」燒毀了…可以花錢重建（修理）`,3200);dirty()}else if(o.fire<=0){o.fire=0;toast(`🧯 「${o.name||'房子'}」的火撲滅了！`,2400);dirty()}}}
+let fxT=0;function extinguish(o){if(performance.now()<fxT)return;fxT=performance.now()+300;o.fire=Math.max(0,o.fire-12);SFX.click();noise(.25,.15,2500);for(let i=0;i<4;i++)waterFx(o);if(o.fire<=0){o.fire=0;toast('🧯 火撲滅了！',2000)}ctxSig='';dirty()}
+/* ---- 雷擊 ---- */
+function boltStrike(dmg){const c=ME?ME.position:{x:0,z:0};let tgt=null;const hs=S.objs.filter(o=>o.t==='house'&&!(o.bt!=null&&o.bt<1)&&Math.hypot(o.x-c.x,o.z-c.z)<220);
+  if(hs.length&&Math.random()<.5){hs.sort((a,b)=>b.floors-a.floors);tgt=hs[Math.floor(Math.random()*Math.min(4,hs.length))]}
+  let x,z,y;if(tgt){x=tgt.x;z=tgt.z;y=baseY(tgt)+tgt.floors*FH+2}else{x=c.x+rand(-120,120);z=c.z+rand(-120,120);y=hAt(x,z)}boltFx(x,y,z);
+  if(!dmg||!disHost())return;if(tgt){if(safeHas('bolt',x,z,250)){floatTxt(V(x,y+2,z),'⚡ 避雷塔保護了房子！')}else{dmgHouse(tgt,8,'雷擊');if(Math.random()<.4)igniteHouse(tgt)}}else{const tr=S.objs.find(q=>q.t==='nat'&&Math.hypot(q.x-x,q.z-z)<6);if(tr){removeObj(tr);natDirty=true;dust(tr.x,hAt(tr.x,tr.z)+1,tr.z,8)}}}
+const BOLTM=new THREE.LineBasicMaterial({color:0xe8f0ff,transparent:true,opacity:1});let BOLTS=[];
+function boltFx(x,y,z){const pts=[];let px=x+rand(-15,15),pz=z+rand(-15,15);for(let i=0;i<=14;i++){const k=i/14;pts.push(new THREE.Vector3(px+(x-px)*k+(i&&i<14?rand(-3,3):0),y+140*(1-k),pz+(z-pz)*k+(i&&i<14?rand(-3,3):0)))}const L=new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),BOLTM.clone());scene.add(L);BOLTS.push({L,t:0});
+  const f=$('#disFlash');if(f){f.style.opacity='.75';setTimeout(()=>f.style.opacity='0',90)}setTimeout(()=>noise(1.4,.45,180),300+Math.random()*500)}
+/* ---- 土石流 ---- */
+function slideHit(){const hs=S.objs.filter(o=>o.t==='house'&&!(o.bt!=null&&o.bt<1));const sc=o=>{let m=0;for(let a=0;a<8;a++){const r=Math.max(o.w,o.d)/2+8;m=Math.max(m,hAt(o.x+Math.cos(a*.785)*r,o.z+Math.sin(a*.785)*r)-baseY(o))}return m};hs.sort((a,b)=>sc(b)-sc(a));
+  const hit=hs.filter(o=>sc(o)>1.2).slice(0,3);if(!hit.length&&hs.length&&Math.random()<.5)hit.push(hs[0]);S.mud=S.mud||[];for(const o of hit){let bx=0,bz=0,bm=-1e9;for(let a=0;a<8;a++){const r=Math.max(o.w,o.d)/2+3;const x=o.x+Math.cos(a*.785)*r,z=o.z+Math.sin(a*.785)*r;const h=hAt(x,z);if(h>bm){bm=h;bx=x;bz=z}}S.mud.push({x:bx,z:bz,id:Date.now()+Math.random()});dmgHouse(o,rand(25,45),'土石流')}
+  if(!hit.length)toast('⛰️ 土石流發生在沒有房子的山區，還好沒事',2600)}
+const MUDG=new THREE.Group();scene.add(MUDG);let mudSig='';
+function mudFx(){const sig=(S.mud||[]).map(m=>m.id).join(',');if(sig===mudSig)return;mudSig=sig;while(MUDG.children.length)MUDG.remove(MUDG.children[0]);const m=new THREE.MeshStandardMaterial({color:0x6a4a2a,roughness:1,flatShading:true});for(const q of S.mud||[]){const g=new THREE.Group();g.position.set(q.x,hAt(q.x,q.z),q.z);for(let i=0;i<6;i++){const s=new THREE.Mesh(new THREE.IcosahedronGeometry(rand(1,2.2),0),m);s.position.set(rand(-2.5,2.5),.3,rand(-2.5,2.5));s.scale.y=.45;g.add(s)}MUDG.add(g)}}
+/* ---- 自動修理、保險費 ---- */
+let repT=0,insT=0;
+function repairAuto(dt){repT+=dt;if(repT<30)return;repT=0;if(!safeHas('rescue'))return;for(const o of S.objs)if(o.t==='house'&&o.dmg>0&&!o.fire&&!o.burnt){o.dmg=Math.max(0,o.dmg-1);}}
+function insTick(dt){insT+=dt;if(insT<300)return;insT=0;if(S.mode==='free')return;let p=0;for(const o of S.objs)if(o.ins&&o.t==='house')p+=insPrem(o);if(p>0){if(S.money>=p){S.money-=p;floatTxt(V(CAM.tx,hAt(CAM.tx,CAM.tz)+5,CAM.tz),`🛡️ 保險費 -${money(p)}`)}else{for(const o of S.objs)o.ins=0;toast('🛡️ 錢不夠付保險費，保險取消了',3000)}dirty()}}
+const insPrem=o=>Math.max(10,Math.round(valueOf(o).v*.004));
+/* ---- 畫面效果 ---- */
+const FLOODM=new THREE.Mesh(new THREE.PlaneGeometry(SZ,SZ),new THREE.MeshStandardMaterial({color:0x6a7a5a,transparent:true,opacity:.62,roughness:.3,metalness:.1,depthWrite:false}));FLOODM.rotation.x=-Math.PI/2;FLOODM.visible=false;FLOODM.renderOrder=2;scene.add(FLOODM);
+let TORN=null;function tornMesh(){const g=new THREE.Group();const m=new THREE.MeshStandardMaterial({color:0x7a7a80,transparent:true,opacity:.55,depthWrite:false,side:THREE.DoubleSide});for(let i=0;i<9;i++){const c=new THREE.Mesh(new THREE.CylinderGeometry(2+i*1.6,1.4+i*1.5,7,14,1,true),m);c.position.y=3.5+i*6.5;g.add(c)}scene.add(g);return g}
+const DEBR=[];
+function disFx(dt){const d=S.dis,t=performance.now()/1000;
+  // 地震：畫面和房子一起搖
+  if(d&&d.ph==='on'&&d.k==='quake'){const a=Math.max(.05,(d.m-4)*.18)*Math.max(.15,1-d.t/d.dur);camera.position.x+=rand(-a,a);camera.position.y+=rand(-a,a)*.6;OBJG.position.set(rand(-a,a)*.35,0,rand(-a,a)*.35);NATG.position.copy(OBJG.position)}
+  else if(OBJG.position.x||OBJG.position.z){OBJG.position.set(0,0,0);NATG.position.set(0,0,0)}
+  const lv=floodLv();FLOODM.visible=lv>.02;if(FLOODM.visible)FLOODM.position.set(0,WATER_Y+lv,0);
+  if(d&&d.ph==='on'&&d.k==='tornado'){if(!TORN)TORN=tornMesh();const p=tornPos();TORN.position.set(p.x,hAt(p.x,p.z),p.z);TORN.rotation.y=t*4;TORN.children.forEach((c,i)=>c.position.x=Math.sin(t*2+i*.6)*i*.3);if(Math.random()<dt*20)DEBR.push({p:V(p.x+rand(-6,6),hAt(p.x,p.z)+rand(1,4),p.z+rand(-6,6)),v:V(rand(-6,6),rand(6,16),rand(-6,6)),t:0,m:null})}
+  else if(TORN){scene.remove(TORN);TORN=null}
+  if(d&&d.ph==='on'&&(d.k==='typhoon'||d.k==='lightning')&&Math.random()<dt*(d.k==='typhoon'?.12:.25))boltFx(CAM.tx+rand(-150,150),hAt(CAM.tx,CAM.tz),CAM.tz+rand(-150,150));
+  if(d&&d.ph==='on'&&d.k==='typhoon'&&ME&&Math.random()<dt*25)DEBR.push({p:V(ME.position.x+rand(-30,10),ME.position.y+rand(1,8),ME.position.z+rand(-30,30)),v:V(rand(14,24),rand(-1,2),rand(-3,3)),t:0,m:null,leaf:1});
+  for(let i=DEBR.length-1;i>=0;i--){const q=DEBR[i];if(!q.m){q.m=new THREE.Mesh(boxG(q.leaf?.25:.5,q.leaf?.05:.3,q.leaf?.15:.4),new THREE.MeshStandardMaterial({color:q.leaf?0x5a8a3a:0x8a6a4a}));scene.add(q.m)}q.t+=dt;q.v.y-=dt*(q.leaf?2:9);q.p.addScaledVector(q.v,dt);q.m.position.copy(q.p);q.m.rotation.x+=dt*6;q.m.rotation.y+=dt*4;if(q.t>(q.leaf?2.5:3)){scene.remove(q.m);DEBR.splice(i,1)}}
+  for(let i=BOLTS.length-1;i>=0;i--){const b=BOLTS[i];b.t+=dt;b.L.material.opacity=Math.max(0,1-b.t*4);if(b.t>.3){scene.remove(b.L);b.L.geometry.dispose();BOLTS.splice(i,1)}}
+  mudFx()}
+/* 火焰、濃煙、消防車 */
+const FTEX=(()=>{const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d');const g=x.createRadialGradient(32,32,2,32,32,30);g.addColorStop(0,'rgba(255,240,180,1)');g.addColorStop(.4,'rgba(255,140,30,.9)');g.addColorStop(1,'rgba(255,40,0,0)');x.fillStyle=g;x.fillRect(0,0,64,64);return new THREE.CanvasTexture(c)})();
+const SMK=(()=>{const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d');const g=x.createRadialGradient(32,32,2,32,32,30);g.addColorStop(0,'rgba(60,55,50,.8)');g.addColorStop(1,'rgba(60,55,50,0)');x.fillStyle=g;x.fillRect(0,0,64,64);return new THREE.CanvasTexture(c)})();
+const FIRES=new Map();const FPART=[];
+function fireFx(dt){const t=performance.now()/1000;for(const o of S.objs){if(!o.fire){continue}let F=FIRES.get(o.id);if(!F){F={g:new THREE.Group(),fl:[],truck:null};for(let i=0;i<16;i++){const s=new THREE.Sprite(new THREE.SpriteMaterial({map:FTEX,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true}));F.g.add(s);F.fl.push({s,x:rand(-o.w/2,o.w/2),z:rand(-o.d/2,o.d/2),y:rand(0,o.floors*FH+1),p:rand(0,6)})}scene.add(F.g);FIRES.set(o.id,F)}
+   F.g.position.set(o.x,baseY(o),o.z);const k=o.fire/100;F.fl.forEach(f=>{const sc=(1+Math.sin(t*9+f.p)*.35)*(.45+k*.8)*1.5;f.s.scale.set(sc,sc*1.6,1);f.s.position.set(f.x,f.y+Math.sin(t*5+f.p)*.3+sc*.4,f.z);f.s.material.opacity=.22+k*.33});
+   if(Math.random()<dt*10*k){const s=new THREE.Sprite(new THREE.SpriteMaterial({map:SMK,transparent:true,depthWrite:false}));s.position.set(o.x+rand(-o.w/3,o.w/3),baseY(o)+o.floors*FH+1,o.z+rand(-o.d/3,o.d/3));s.scale.setScalar(3);scene.add(s);FPART.push({s,t:0,v:V(rand(-.5,.5)+ (S.dis&&S.dis.k==='typhoon'?3:0),rand(2.5,4),rand(-.5,.5))})}
+   if(safeHas('fire',o.x,o.z,300)&&o.fireT>3&&!F.truck){F.truck=fireTruck();scene.add(F.truck);const r=o.r||0,L=o.d/2+5;F.truck.position.set(o.x+Math.sin(r)*L,hAt(o.x+Math.sin(r)*L,o.z+Math.cos(r)*L),o.z+Math.cos(r)*L);F.truck.rotation.y=r+Math.PI/2}
+   if(F.truck&&Math.random()<dt*12)waterFx(o,F.truck.position)}
+  for(const [id,F] of FIRES){const o=byId(id);if(!o||!o.fire){scene.remove(F.g);if(F.truck)scene.remove(F.truck);FIRES.delete(id)}}
+  for(let i=FPART.length-1;i>=0;i--){const q=FPART[i];q.t+=dt;q.s.position.addScaledVector(q.v,dt);q.s.scale.setScalar(3+q.t*3);q.s.material.opacity=Math.max(0,(q.w?.9:.7)-q.t*(q.w?1.2:.25));if(q.t>(q.w?.8:3)){scene.remove(q.s);FPART.splice(i,1)}}
+  // 燒毀的房子變焦黑
+  for(const o of S.objs)if(o.burnt){const g=OBJM.get(o.id);if(g&&!g.userData.burnt){g.traverse(m=>{if(m.isMesh)m.material=BURN_M});g.userData.burnt=1}}}
+const WTEX=(()=>{const c=document.createElement('canvas');c.width=c.height=32;const x=c.getContext('2d');const g=x.createRadialGradient(16,16,1,16,16,15);g.addColorStop(0,'rgba(220,240,255,1)');g.addColorStop(1,'rgba(150,200,255,0)');x.fillStyle=g;x.fillRect(0,0,32,32);return new THREE.CanvasTexture(c)})();
+function waterFx(o,from){const f=from||ME.position;const s=new THREE.Sprite(new THREE.SpriteMaterial({map:WTEX,transparent:true,depthWrite:false}));s.position.set(f.x,f.y+1.6,f.z);s.scale.setScalar(.8);scene.add(s);const tx=o.x+rand(-o.w/3,o.w/3),tz=o.z+rand(-o.d/3,o.d/3),ty=baseY(o)+rand(1,o.floors*FH);FPART.push({s,t:0,w:1,v:V((tx-f.x)/.8,(ty-f.y)/.8+2,(tz-f.z)/.8)})}
+function fireTruck(){const G=new THREE.Group();vb(G,2.2,1.6,6.5,0xd82a1a,0,1.5,0);vb(G,2.1,1.2,1.8,0xd82a1a,0,2.6,2.2);vb(G,1.9,.7,.05,GLS,0,2.8,3.12);vb(G,.4,.25,1.2,0x2a6ad8,0,3.3,2.2);vb(G,.3,.3,5,0xc8c8d0,0,2.6,-1,0,.12);wheels(G,[[-1.1,2.2],[1.1,2.2],[-1.1,-1.6],[1.1,-1.6],[-1.1,-2.7],[1.1,-2.7]],.55,.4);return G}
+/* ---- 受損標籤 ---- */
+const DTAG=new Map();
+function dmgTags(){for(const o of S.objs){if(o.t!=='house')continue;const want=(o.dmg||0)>=1||o.fire;let e=DTAG.get(o.id);if(!want){if(e){e.remove();DTAG.delete(o.id)}continue}if(!e){e=document.createElement('div');e.className='tag';e.style.cssText+=';background:#fff0e8;border-color:#d84a2a;font-weight:bold;color:#a82a1a';document.body.appendChild(e);DTAG.set(o.id,e)}
+  e.textContent=o.fire?`🔥 燃燒中 ${Math.round(o.dmg||0)}%`:o.burnt?'🏚️ 燒毀了':`🔧 受損 ${Math.round(o.dmg)}%`;e._o=o}for(const [id,e] of DTAG)if(!byId(id)){e.remove();DTAG.delete(id)}}
+function dmgTagDraw(){if(!DTAG.size)return;const W=innerWidth,H=innerHeight;for(const [id,e] of DTAG){const o=e._o;if(!o)continue;const p=V(o.x,baseY(o)+(o.floors||1)*FH+2.5,o.z).project(camera);if(p.z>1||Math.hypot(o.x-CAM.tx,o.z-CAM.tz)>CAM.dist*2.5+60){e.style.display='none';continue}e.style.display='block';e.style.left=((p.x+1)/2*W)+'px';e.style.top=((1-p.y)/2*H)+'px'}}
+/* ---- 上方的天災提示列 ---- */
+let dbSig='';function disBar(){const b=$('#disBar');if(!b)return;const d=S.dis;let h='';if(d){const D=DIS[d.k];if(d.ph==='warn')h=`📢 ${D.em} ${D.n}警報：還有 ${Math.max(0,Math.ceil(d.warn-d.t))} 秒`;else h=`${D.em} ${D.n}${d.k==='quake'?`（規模 ${d.m}）`:''}中…　還有 ${Math.max(0,Math.ceil(d.dur-d.t))} 秒${floodLv()>.05?`・🌊 淹水 ${floodLv().toFixed(1)} 公尺`:''}`}
+  const fires=S.objs.filter(o=>o.fire).length;if(fires)h+=(h?'　':'')+`🔥 ${fires} 棟房子著火了！`;if(h===dbSig)return;dbSig=h;b.innerHTML=h?`<span>${h}</span><button class="hb y" id="disOpen">🌪️ 防災</button>`:'';b.style.display=h?'flex':'none';const o=$('#disOpen');if(o)o.onclick=()=>{SFX.click();disPanel()}}
+/* ---- 房子面板：受損、修理、補強、保險 ---- */
+function disHouseH(o){if(o.bt!=null&&o.bt<1)return '';let h='<div style="background:#fff4ec;border-radius:12px;padding:6px 8px;margin:6px 0;font-size:13px">';
+  if(o.fire)h+=`<div style="color:#c82a1a;font-weight:bold">🔥 正在燃燒！火勢 ${Math.round(o.fire)}%</div>`;
+  if((o.dmg||0)>=1)h+=`<div>${o.burnt?'🏚️ 燒毀了':'⚠️ 受損'} <b>${Math.round(o.dmg)}%</b>（${o.dmgC||'天災'}）${o.dmg>=80?'・住的人先搬出去了':o.dmg>=50?'・房客不付房租':''}</div>${bar(Math.round(o.dmg),'#d84a2a')}<button class="hb o" data-dis="rep|${o.id}">🔧 修理${o.burnt?'（重建）':''} ${money(repairCost(o))}${o.ins?'（保險付 80%）':''}</button>`;
+  else h+='<div>✅ 沒有受損</div>';
+  h+=`<div class="row2" style="margin:4px 0 0">${o.rein?'<span>🧱 已經防災補強（抗震、防颱、防雪，損壞少 55%）</span>':`<button class="hb b" data-dis="rein|${o.id}">🧱 防災補強 ${money(Math.round(costOf(o)*.12*PF().mat))}</button>`}<button class="hb ${o.ins?'g':''}" data-dis="ins|${o.id}">🛡️ ${o.ins?'已投保（按一下取消）':`天災保險（每 5 分鐘 ${money(insPrem(o))}）`}</button></div></div>`;return h}
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-dis]');if(!b)return;const [k,id]=b.dataset.dis.split('|');const o=byId(+id);if(!o)return;SFX.click();
+  if(k==='rep'){if(repairOne(o))editShow()}else if(k==='rein'){if(spend(Math.round(costOf(o)*.12*PF().mat),'防災補強')){o.rein=1;SFX.build();toast('🧱 防災補強完成！地震、颱風、暴風雪的損壞少 55%',2600);dirty();editShow()}}else if(k==='ins'){o.ins=o.ins?0:1;toast(o.ins?'🛡️ 投保了！修理費保險付 80%':'🛡️ 取消保險',2000);dirty();editShow()}if($('#modal').classList.contains('on')&&$('#panel').dataset.dp)disPanel()});
+/* ---- 防災面板 ---- */
+function disPanel(){const d=S.dis;const dm=S.objs.filter(o=>o.t==='house'&&((o.dmg||0)>=1||o.fire));const tot=dm.reduce((a,o)=>a+repairCost(o),0);const se=S.season||0;
+  openPanel(`<h2>🌪️ 防災中心</h2><div style="font-size:14px;line-height:1.8">${d?`現在：<b>${DIS[d.k].em} ${DIS[d.k].n}${d.ph==='warn'?'警報':'中'}</b>`:'現在：😊 平安無事'}${safeHas('warn')&&!d&&S.disOn?`<br>📡 預報：大約 ${Math.max(1,Math.round(S.disNext/60))} 分鐘後可能有天災（${SEASONS[se].n}比較常見：${Object.values(DIS).filter(D=>D.seas.includes(se)&&D.w>1).map(D=>D.em+D.n).join('、')}）`:''}</div>
+  <div class="row2"><button class="hb ${S.disOn?'g':''}" id="dpOn">${S.disOn?'✅ 天災：開啟':'⛔ 天災：關閉'}</button>${[['少',.5],['普通',1],['多',2]].map(([n,v])=>`<button class="hb ${(S.disF||1)===v?'o':''}" data-df="${v}">頻率：${n}</button>`).join('')}</div>
+  <div class="lab">🏚️ 受損、著火的建築（${dm.length} 棟）</div>${dm.length?dm.map(o=>`<div class="prow"><div class="em">${o.fire?'🔥':o.burnt?'🏚️':'🔧'}</div><div class="tx"><b>${o.fac?FAC[o.fac].n:o.name||'房子'}</b>・受損 ${Math.round(o.dmg||0)}%${o.fire?`・火勢 ${Math.round(o.fire)}%`:''}<small>${o.dmgC||''}</small></div><div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end"><button class="hb b" data-dg="${o.id}">📍 前往</button>${o.fire?'':`<button class="hb o" data-dis="rep|${o.id}">🔧 ${money(repairCost(o))}</button>`}</div></div>`).join('')+`<div class="row2"><button class="hb g" id="dpAll">🔧 全部修理 ${money(tot)}</button></div>`:'<div style="font-size:14px;color:#2fa04a">沒有受損的建築 👍</div>'}
+  ${(S.mud||[]).length?`<div class="row2"><button class="hb o" id="dpMud">🧹 清除土石（${S.mud.length} 堆，${money(S.mud.length*300)}）</button></div>`:''}
+  <div class="lab">🏗️ 防災設施（在建材行「🏭 生產工廠」裡蓋）</div>${['firest','pump','rod','rescue','warnst'].map(k=>`<div class="prow"><div class="em">${FAC[k].em}</div><div class="tx"><b>${FAC[k].n}</b>（已經有 ${S.objs.filter(o=>o.fac===k).length} 座）<small>${FAC[k].d.replace('防災設施：','')}</small></div><button class="hb g" data-df2="${k}">蓋一座<br><small>${money(FAC[k].p)}</small></button></div>`).join('')}
+  <div class="lab">📖 各種天災（按「體驗」可以馬上發生）</div>${Object.entries(DIS).map(([k,D])=>`<div class="prow"><div class="em">${D.em}</div><div class="tx"><b>${D.n}</b><small>${D.d}<br>🛡️ 怎麼防：${D.help}<br>常發生在：${D.seas.map(i=>SEASONS[i].n).join('、')}</small></div><button class="hb r" data-dnow="${k}">🎬 體驗</button></div>`).join('')}`,
+  ()=>{const P=$('#panel');P.dataset.dp=1;$('#dpOn').onclick=()=>{S.disOn=S.disOn?0:1;dirty();disPanel()};P.querySelectorAll('[data-df]').forEach(b=>b.onclick=()=>{S.disF=+b.dataset.df;dirty();disPanel()});
+   P.querySelectorAll('[data-dg]').forEach(b=>b.onclick=()=>{const o=byId(+b.dataset.dg);closePanel();guideTo(o.x,o.z,`前往「${o.name||'房子'}」`,null,Math.max(o.w,o.d)/2+4)});
+   const a=$('#dpAll');if(a)a.onclick=()=>{if(!spend(tot,'修理'))return;for(const o of dm)if(!o.fire){S.money+=repairCost(o);repairOne(o,true)}SFX.build();toast('🔧 全部修好了！',2200);disPanel()};
+   const m=$('#dpMud');if(m)m.onclick=()=>{if(!spend(S.mud.length*300,'清除土石'))return;S.mud=[];SFX.build();dirty();disPanel()};
+   P.querySelectorAll('[data-df2]').forEach(b=>b.onclick=()=>{TS.fac=b.dataset.df2;closePanel();setTool('fac');toast(`${FAC[TS.fac].em} 點一下自己土地上的空地，蓋${FAC[TS.fac].n}`,3000)});
+   P.querySelectorAll('[data-dnow]').forEach(b=>b.onclick=()=>{if(!disHost()){toast('👥 多人時由房主決定天災');return}if(S.dis&&S.dis.ph==='on')disEnd();closePanel();disStart(b.dataset.dnow,true)})})}
+/* ---- 畫面元件 ---- */
+(()=>{const st=document.createElement('style');st.textContent=`#disBar{position:fixed;left:50%;transform:translateX(-50%);top:calc(156px + env(safe-area-inset-top));z-index:7;display:none;gap:8px;align-items:center;background:rgba(255,236,228,.96);border:3px solid #d83a2a;border-radius:16px;padding:5px 10px;font-size:15px;font-weight:bold;color:#8a1a0a;max-width:94vw;animation:disP 1.2s infinite}@keyframes disP{50%{box-shadow:0 0 0 6px rgba(216,58,42,.25)}}#disBar .hb{padding:4px 9px;font-size:13px}
+ #disFlash{position:fixed;inset:0;background:#eef4ff;opacity:0;pointer-events:none;z-index:19;transition:opacity .12s}@media (max-width:700px){#disBar{top:calc(200px + env(safe-area-inset-top));font-size:12px}}`;document.head.appendChild(st);
+ for(const id of ['disBar','disFlash']){const d=document.createElement('div');d.id=id;document.body.appendChild(d)}
+ setTimeout(()=>{const tb=$('#tbtn');if(tb&&!$('#bDis')){const b=document.createElement('button');b.className='hb r';b.id='bDis';b.textContent='🌪️ 防災';b.onclick=()=>{SFX.click();disPanel()};const h=$('#bHome');tb.insertBefore(b,h?h.nextSibling:tb.firstChild)}},1500)})();
+/* ======================= 2.18：自動化設備（放在工廠旁邊 30 公尺內，工廠就會變快） ======================= */
+DECO_CAT.auto='🤖 自動化設備';
+const AU=(w,d,c)=>o=>{const B=new Batch();B.add(boxG(w,.12,d),mat('concrete',c||0x8a8a90),mxAt(0,.06,0));return B};
+const AUTOD={
+ conv:{n:'輸送帶',em:'➖',p:2500,rad:1,b:.03,parts:AU(2.2,7),build(g){vb(g,1.4,.9,6.6,0x4a4a52,0,.45,0);vb(g,1.2,.08,6.6,0x1a1a1a,0,.94,0);for(const z of [-3.1,3.1])vc(g,.25,1.3,0x9a9aa0,0,.94,z,Math.PI/2);for(const s of [-1,1])vb(g,.08,.3,6.6,0xf0c020,s*.68,1.05,0);g.userData.box=[];for(let i=0;i<4;i++){const b=vb(g,.6,.45,.6,[0xc8945a,0xa8784a,0xd8a86a,0xb8885a][i],0,1.22,0);g.userData.box.push(b)}},
+  tick(g,t){g.userData.box.forEach((b,i)=>{b.position.z=((t*.8+i/4)%1)*6.2-3.1})}},
+ arm:{n:'工業機器手臂',em:'🦾',p:6000,rad:1.2,b:.05,parts:AU(2.4,2.4),build(g){vc(g,.8,.5,0xe86a1a,0,.35,0);const B=new THREE.Group();B.position.y=.6;g.add(B);vc(B,.55,.6,0xe86a1a,0,.3,0);const A1=new THREE.Group();A1.position.y=.7;B.add(A1);vb(A1,.35,2.2,.35,0xf08a2a,0,1.1,0);vc(A1,.28,.5,0x3a3a3a,0,0,0,Math.PI/2);const A2=new THREE.Group();A2.position.y=2.2;A1.add(A2);vc(A2,.24,.45,0x3a3a3a,0,0,0,Math.PI/2);vb(A2,.28,1.8,.28,0xf08a2a,0,.9,0);const H=new THREE.Group();H.position.y=1.85;A2.add(H);vb(H,.5,.2,.5,0x5a5a5a,0,0,0);for(const s of [-1,1])vb(H,.08,.4,.25,0xc8c8d0,s*.18,-.25,0);Object.assign(g.userData,{B,A1,A2})},
+  tick(g,t){const u=g.userData;u.B.rotation.y=Math.sin(t*.7)*1.6;u.A1.rotation.x=-.4+Math.sin(t*1.1)*.45;u.A2.rotation.x=.9+Math.sin(t*1.3+1)*.5}},
+ weld:{n:'焊接機器人',em:'🔥',p:7000,rad:1.2,b:.05,parts:AU(3,3,0x5a5a62),build(g){vb(g,1.6,.9,1,0x3a5ab8,0,.45,-.8);vb(g,2.2,.08,.08,0xe8c020,0,.95,.6);const B=new THREE.Group();B.position.set(0,.9,-.8);g.add(B);vc(B,.35,.5,0x2a4a98,0,.25,0);const A=new THREE.Group();A.position.y=.5;B.add(A);vb(A,.26,1.6,.26,0x3a6ad8,0,.8,0);const T=new THREE.Group();T.position.y=1.6;A.add(T);vb(T,.2,1.2,.2,0x3a6ad8,0,0,.5,0,Math.PI/2);vc(T,.06,.4,0x9a9a9a,0,-.2,1.1);
+   const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:FTEX,color:0xaad8ff,blending:THREE.AdditiveBlending,depthWrite:false}));sp.position.set(0,-.45,1.1);sp.scale.setScalar(.7);T.add(sp);vb(g,1.8,.5,1.2,0x7a7a82,0,.25,1.1);Object.assign(g.userData,{B,A,sp})},
+  tick(g,t){const u=g.userData;u.B.rotation.y=Math.sin(t*.9)*.5;u.A.rotation.x=.5+Math.sin(t*2)*.08;u.sp.visible=Math.sin(t*23)>-.2;u.sp.scale.setScalar(.5+Math.random()*.6)}},
+ agv:{n:'無人搬運車',em:'🛻',p:4500,rad:0,b:.04,parts:AU(2,10,0x6a7a6a),build(g){for(const s of [-.4,.4])vb(g,.08,.02,9.6,0xf0d020,s,.13,0);const C=new THREE.Group();g.add(C);vb(C,1.3,.4,1.8,0xf0f0f0,0,.35,0);vb(C,1.32,.1,1.82,0x3ab06a,0,.58,0);vb(C,.9,.6,.9,0xc8945a,0,.95,0);const L=vb(C,.2,.08,.2,0x3aff6a,.5,.6,.85);wheels(C,[[-.6,.6],[.6,.6],[-.6,-.6],[.6,-.6]],.15,.1);Object.assign(g.userData,{C,L})},
+  tick(g,t){const u=g.userData;const k=Math.sin(t*.5);u.C.position.z=k*4;u.C.rotation.y=Math.cos(t*.5)>0?0:Math.PI;u.L.material.emissive=u.L.material.emissive||new THREE.Color();u.L.visible=Math.sin(t*8)>0}},
+ drone:{n:'送貨無人機',em:'🛸',p:5500,rad:.8,b:.04,parts:AU(2.4,2.4,0x6a6a72),build(g){vc(g,1,.1,0xf0f0f0,0,.15,0,0,0,24);vb(g,.08,.02,1.4,0xf0c020,0,.21,0);vb(g,1.4,.02,.08,0xf0c020,0,.21,0);const D=new THREE.Group();g.add(D);vb(D,.7,.25,.7,0x2a2a32,0,0,0);g.userData.P=[];for(const [x,z] of [[.6,.6],[-.6,.6],[.6,-.6],[-.6,-.6]]){vb(D,.75,.06,.08,0x2a2a32,x/2,0,z/2,Math.atan2(x,z));const p=vb(D,.6,.02,.06,0xd8d8e0,x,.12,z);g.userData.P.push(p)}vb(D,.4,.35,.4,0xc8945a,0,-.35,0);g.userData.D=D},
+  tick(g,t,dt){const u=g.userData;const k=(t*.25)%1;const up=k<.5?Math.sin(k*2*Math.PI):0;u.D.position.set(Math.sin(t*.6)*4*up,1+up*8,Math.cos(t*.6)*4*up);u.D.rotation.y=t*.6;u.P.forEach(p=>p.rotation.y+=dt*40)}},
+ gantry:{n:'龍門吊車',em:'🏗️',p:12000,rad:0,b:.06,parts:AU(10,6,0x7a7a7a),build(g){for(const x of [-4.5,4.5])for(const z of [-2.5,2.5])vb(g,.4,7,.4,0xe8c020,x,3.5,z);for(const z of [-2.5,2.5])vb(g,9.4,.6,.5,0xe8c020,0,7.2,z);const T=new THREE.Group();T.position.y=7;g.add(T);vb(T,1.4,.8,5.6,0xd8a010,0,.5,0);const H=new THREE.Group();T.add(H);vc(H,.04,1,0x2a2a2a,0,-1,0);const box=vb(H,1.6,1,1.2,0x3a6ab8,0,-2.6,0);for(let i=0;i<4;i++)vb(g,1.6,1,1.2,[0x3a6ab8,0xc83a2a,0x3aa86a,0xe8a020][i],-3+i*2,.6,i%2?1.4:-1.4);Object.assign(g.userData,{T,H})},
+  tick(g,t){const u=g.userData;u.T.position.x=Math.sin(t*.3)*3.5;const k=Math.abs(Math.sin(t*.6));u.H.position.y=-k*3;u.H.children[0].scale.y=1+k*6;u.H.children[0].position.y=-1-k*3}},
+ sorter:{n:'自動分揀機',em:'🔀',p:8000,rad:1.5,b:.05,parts:AU(6,6,0x7a7a82),build(g){vb(g,1.2,.8,5.6,0x4a4a52,0,.4,0);vb(g,5.6,.8,1.2,0x4a4a52,0,.4,0);vc(g,1,1.2,0x2a8ad8,0,.7,0,0,0,16);const D=new THREE.Group();D.position.y=1.35;g.add(D);vb(D,2.2,.2,.18,0xf0c020,0,0,0);g.userData.D=D;g.userData.b=[0,1,2].map(i=>vb(g,.5,.4,.5,[0xc83a2a,0x3aa86a,0x3a6ab8][i],0,1,0));vb(g,.8,2.4,.8,0x6a6a72,2.2,1.2,2.2);const L=vb(g,.3,.3,.3,0x3aff6a,2.2,2.5,2.2);g.userData.L=L},
+  tick(g,t){const u=g.userData;u.D.rotation.y=Math.round(t/1.5)%3*Math.PI/2;u.b.forEach((b,i)=>{const k=((t*.5+i/3)%1);const dir=i;if(k<.5){b.position.set(0,1,-2.6+k*5.2)}else{const q=(k-.5)*5.2;b.position.set(dir===0?q:dir===1?-q:0,1,dir===2?q:0)}});u.L.visible=Math.sin(t*6)>0}},
+ pallet:{n:'碼垛機器人',em:'📦',p:7500,rad:1.2,b:.05,parts:AU(3.4,3.4,0x6a6a6a),build(g){vb(g,.8,3.2,.8,0x5a5a62,-1,1.6,-1);const S1=new THREE.Group();S1.position.set(-1,3.2,-1);g.add(S1);vb(S1,2.8,.3,.4,0xd84a2a,1.2,0,0);const H=new THREE.Group();H.position.x=2.4;S1.add(H);vb(H,.15,1.2,.15,0x9a9aa0,0,-.6,0);vb(H,.7,.15,.7,0x3a3a3a,0,-1.2,0);vb(g,1.6,.15,1.6,0x9a7a4a,.6,.2,.6);g.userData.st=[];for(let i=0;i<6;i++){const b=vb(g,.65,.45,.65,0xc8945a,.6+(i%2?.35:-.35),.5+Math.floor(i/2)*.47,.6);g.userData.st.push(b)}Object.assign(g.userData,{S1,H})},
+  tick(g,t){const u=g.userData;u.S1.rotation.y=Math.sin(t*.8)*.8-.4;const n=Math.floor(t/1.2)%7;u.st.forEach((b,i)=>b.visible=i<n)}},
+ fork:{n:'無人堆高機',em:'🚜',p:5000,rad:0,b:.04,parts:AU(3,9,0x7a7a72),build(g){const C=new THREE.Group();g.add(C);vb(C,1.3,1,1.8,0xf0a020,0,.75,0);vb(C,1.2,.12,1.2,0x2a2a2a,0,1.9,-.2);for(const s of [-1,1])vb(C,.08,1.4,.08,0x2a2a2a,s*.5,1.25,-.2);vb(C,.15,2.6,1,0x3a3a3a,0,1.4,1.05);const F=new THREE.Group();F.position.z=1.2;C.add(F);for(const s of [-1,1])vb(F,.12,.08,1.2,0x9a9aa0,s*.35,0,.6);vb(F,1,.6,1,0xc8945a,0,.34,.6);wheels(C,[[-.6,.6],[.6,.6],[-.6,-.6],[.6,-.6]],.28,.2);vb(C,.18,.18,.18,0xff3a3a,0,2.05,-.6);Object.assign(g.userData,{C,F})},
+  tick(g,t){const u=g.userData;const k=(t*.15)%1;u.C.position.z=Math.sin(k*Math.PI*2)*3;u.F.position.y=.3+Math.max(0,Math.sin(t*.9))*1.6}},
+ silo:{n:'材料筒倉',em:'🛢️',p:6000,rad:2.4,b:.04,parts:AU(6,6,0x8a8a8a),build(g){for(const [x,z] of [[-1.4,-1.2],[1.4,-1.2],[0,1.3]]){vc(g,1.1,6,0xd8d8e0,x,3.6,z,0,0,18);const c=new THREE.Mesh(new THREE.ConeGeometry(1.1,1,18),vmat(0xb8b8c0));c.position.set(x,7.1,z);g.add(c);const c2=new THREE.Mesh(new THREE.ConeGeometry(1.1,1,18),vmat(0xb8b8c0));c2.rotation.x=Math.PI;c2.position.set(x,.1+.5,z);g.add(c2);for(const s of [-1,1])vb(g,.12,1.2,.12,0x5a5a5a,x+s*.8,.6,z)}vb(g,3.4,.3,.3,0x9a9aa0,0,7.6,-1.2);vc(g,.18,3,0x9a9aa0,0,6.2,.1,0,.6);const L=vb(g,.25,.25,.25,0x3aff6a,0,7.9,-1.2);g.userData.L=L},tick(g,t){g.userData.L.visible=Math.sin(t*3)>0}},
+ mixer:{n:'自動攪拌塔',em:'🌀',p:9000,rad:2,b:.05,parts:AU(5,5,0x7a7a7a),build(g){for(const [x,z] of [[-1.5,-1.5],[1.5,-1.5],[-1.5,1.5],[1.5,1.5]])vb(g,.3,4,.3,0x3a6ab8,x,2,z);vb(g,3.6,.3,3.6,0x3a6ab8,0,4,0);const D=new THREE.Group();D.position.y=5.4;g.add(D);const dr=new THREE.Mesh(new THREE.CylinderGeometry(1.3,1.3,2.4,16),vmat(0xe8e8e8));D.add(dr);for(let i=0;i<4;i++)vb(D,.08,2.4,.3,0xe86a1a,Math.sin(i*1.57)*1.32,0,Math.cos(i*1.57)*1.32,i*1.57);const ch=new THREE.Mesh(new THREE.ConeGeometry(1,1.4,12),vmat(0xb8b8c0));ch.rotation.x=Math.PI;ch.position.y=3.5;g.add(ch);g.userData.D=D},tick(g,t,dt){g.userData.D.rotation.y+=dt*1.5}},
+ windt:{n:'風力發電機',em:'🌬️',p:10000,rad:1,b:.06,parts:AU(3,3,0x9a9a9a),build(g){const tw=new THREE.Mesh(new THREE.CylinderGeometry(.35,.7,18,12),vmat(0xf4f4f4));tw.position.y=9;g.add(tw);vb(g,1,1,2.2,0xf0f0f0,0,18.4,.3);const R=new THREE.Group();R.position.set(0,18.4,1.5);g.add(R);vc(R,.35,.6,0xe8e8e8,0,0,0,0,Math.PI/2);for(let i=0;i<3;i++){const b=vb(R,.6,7,.12,0xf8f8f8,0,0,0);b.geometry=b.geometry.clone();b.geometry.translate(0,3.6,0);b.rotation.z=i*2.094}g.userData.R=R},tick(g,t,dt){g.userData.R.rotation.z+=dt*(S.wx==='storm'?4:1.6)}},
+ solarp:{n:'太陽能板陣列',em:'🔆',p:7000,rad:0,b:.05,parts:AU(8,5,0x7a7a72),build(g){g.userData.P=[];const pm=new THREE.MeshStandardMaterial({color:0x1a2a5a,metalness:.6,roughness:.25,emissive:0x0a1a4a,emissiveIntensity:.3});for(let r=0;r<2;r++)for(let c=0;c<3;c++){const x=-2.6+c*2.6,z=-1.2+r*2.4;vb(g,.12,1.2,.12,0x9a9aa0,x,.6,z);const P=new THREE.Group();P.position.set(x,1.25,z);g.add(P);vb(P,2.3,.06,1.8,pm,0,0,0);for(let i=1;i<4;i++)vb(P,.02,.07,1.8,0xc8c8d0,-1.15+i*.575,0,0);g.userData.P.push(P)}},tick(g,t){const a=((S.time||12)-12)/6*.8;g.userData.P.forEach(P=>P.rotation.z=clamp(a,-.8,.8))}},
+ scanner:{n:'品管掃描門',em:'🔍',p:6500,rad:1,b:.04,parts:AU(3,4,0x6a6a72),build(g){for(const s of [-1,1])vb(g,.35,2.6,1,0x3a3a42,s*1.2,1.3,0);vb(g,2.75,.4,1,0x3a3a42,0,2.75,0);vb(g,1.6,.5,4,0x2a2a2a,0,.3,0);const L=vb(g,2.1,.06,.1,new THREE.MeshBasicMaterial({color:0xff2a3a,transparent:true,opacity:.85}),0,1.2,0);const b=vb(g,.6,.5,.6,0xc8945a,0,.8,0);const sc=vb(g,.8,.5,.06,0x2a8ad8,1.5,2.4,.52);Object.assign(g.userData,{L,b,sc})},tick(g,t){const u=g.userData;u.L.position.y=.6+Math.abs(Math.sin(t*2))*2;u.b.position.z=((t*.4)%1)*4-2;u.L.material.color.setHex(Math.abs(u.b.position.z)<.4?0x3aff6a:0xff2a3a)}},
+ cnc:{n:'數控加工機',em:'⚙️',p:8500,rad:1.5,b:.05,parts:AU(4,3,0x6a6a72),build(g){vb(g,3.4,1.6,2.4,0xd8dce0,0,.8,0);vb(g,3.4,.3,2.4,0x3a6ab8,0,1.75,0);vb(g,1.4,1.2,.06,GLS,-.6,1.2,1.21);const H=new THREE.Group();H.position.y=1.3;g.add(H);vb(H,.4,.5,.4,0x5a5a5a,0,.3,0);const sp=vc(H,.08,.5,0xc8c8d0,0,-.1,0);vb(g,.7,1.2,.4,0x2a2a2a,1.3,2.1,1);const scr=vb(g,.5,.35,.05,new THREE.MeshBasicMaterial({color:0x3ad8ff}),1.3,2.3,1.22);Object.assign(g.userData,{H,sp,scr})},tick(g,t,dt){const u=g.userData;u.H.position.x=Math.sin(t*1.3)*1;u.H.position.z=Math.cos(t*.9)*.6;u.sp.rotation.y+=dt*30;u.scr.material.color.setHSL((t*.1)%1,.8,.6)}},
+ ctower:{n:'自動化控制塔',em:'🗼',p:11000,rad:1.5,b:.08,parts:AU(4,4,0x7a7a82),build(g){const tw=new THREE.Mesh(new THREE.CylinderGeometry(.8,1.3,9,10),vmat(0xe8e8ec));tw.position.y=4.5;g.add(tw);vc(g,1.8,1.4,0x2a3a5a,0,9.7,0,0,0,12);vc(g,1.85,1,GLS,0,9.7,0,0,0,12);const R=new THREE.Group();R.position.y=11;g.add(R);vb(R,2.6,.5,.15,0xc8c8d0,0,.4,0);vc(R,.1,.6,0x9a9aa0,0,0,0);g.userData.R=R;g.userData.Ls=[0,1,2,3].map(i=>vb(g,.25,.25,.25,new THREE.MeshBasicMaterial({color:[0xff3a3a,0x3aff6a,0x3a8aff,0xffd03a][i]}),Math.sin(i*1.57)*1.3,8.6,Math.cos(i*1.57)*1.3))},tick(g,t){g.userData.R.rotation.y=t*1.2;g.userData.Ls.forEach((l,i)=>l.visible=Math.sin(t*4+i*1.6)>0)}}};
+for(const [k,a] of Object.entries(AUTOD))DEC[k]={n:a.n,em:a.em,p:a.p,cat:'auto',rad:a.rad,parts:a.parts,auto:a.b,anim:{build(g,o){a.build(g,o);reg(g,o)},tick:a.tick}};
+function autoBoost(){let b=0;const fs=S.objs.filter(o=>o.fac&&!FAC[o.fac].safe);if(!fs.length)return 0;for(const o of S.objs)if(o.t==='dec'&&DEC[o.k]&&DEC[o.k].auto&&fs.some(f=>Math.hypot(f.x-o.x,f.z-o.z)<30))b+=DEC[o.k].auto;return Math.min(1.5,b)}
+window.__D={disStart,disEnd,truckTick,gathProd,igniteHouse,extinguish,floodLv,autoBoost,facBoost,ZONES,TRK};
+/* ======================= 2.19：找路（車子走道路、繞開房子和湖）、只能從門進房子、自動化物流（倉庫＋搬運機器人＋無人機） ======================= */
+/* ---- 找路：格子 4 公尺，走道路比較快，房子、湖、太陡的地方不能走 ---- */
+const PCELL=4;
+function roadCells(){const set=new Set();for(const o of S.objs){if(o.t!=='road')continue;for(const p of densePts(o.pts,2))set.add(Math.round(p.x/PCELL)+','+Math.round(p.z/PCELL))}return set}
+function pathFind(a,b){const RC=roadCells();const x0=Math.min(a.x,b.x)-60,x1=Math.max(a.x,b.x)+60,z0=Math.min(a.z,b.z)-60,z1=Math.max(a.z,b.z)+60;const W=Math.ceil((x1-x0)/PCELL)+1,H=Math.ceil((z1-z0)/PCELL)+1;if(W*H>40000)return [a,b];
+  const cx=i=>x0+i*PCELL,cz=j=>z0+j*PCELL,id=(i,j)=>j*W+i;const blk=new Uint8Array(W*H),cost=new Float32Array(W*H);
+  for(let j=0;j<H;j++)for(let i=0;i<W;i++){const x=cx(i),z=cz(j);const k=id(i,j);if(hAt(x,z)<WATER_Y+.25||inBld(x,z,1.2)){blk[k]=1;continue}const sl=Math.abs(hAt(x+2,z)-hAt(x-2,z))+Math.abs(hAt(x,z+2)-hAt(x,z-2));cost[k]=(RC.has(Math.round(x/PCELL)+','+Math.round(z/PCELL))?.35:1)+Math.min(4,sl*.6)}
+  const si=clamp(Math.round((a.x-x0)/PCELL),0,W-1),sj=clamp(Math.round((a.z-z0)/PCELL),0,H-1),ti=clamp(Math.round((b.x-x0)/PCELL),0,W-1),tj=clamp(Math.round((b.z-z0)/PCELL),0,H-1);blk[id(si,sj)]=0;blk[id(ti,tj)]=0;
+  const g=new Float32Array(W*H).fill(1e9),from=new Int32Array(W*H).fill(-1),done=new Uint8Array(W*H);const open=[[0,id(si,sj)]];g[id(si,sj)]=0;const tk=id(ti,tj);const hz=(k)=>Math.hypot(k%W-ti,Math.floor(k/W)-tj)*.35;
+  const push=(f,k)=>{open.push([f,k]);let n=open.length-1;while(n>0){const p=(n-1)>>1;if(open[p][0]<=open[n][0])break;[open[p],open[n]]=[open[n],open[p]];n=p}};
+  const pop=()=>{const top=open[0],last=open.pop();if(open.length){open[0]=last;let n=0;for(;;){const l=2*n+1,r=l+1;let m=n;if(l<open.length&&open[l][0]<open[m][0])m=l;if(r<open.length&&open[r][0]<open[m][0])m=r;if(m===n)break;[open[m],open[n]]=[open[n],open[m]];n=m}}return top};
+  let it=0;while(open.length&&it++<60000){const [,k]=pop();if(done[k])continue;done[k]=1;if(k===tk)break;const i=k%W,j=Math.floor(k/W);
+    for(const [di,dj,dc] of [[1,0,1],[-1,0,1],[0,1,1],[0,-1,1],[1,1,1.414],[1,-1,1.414],[-1,1,1.414],[-1,-1,1.414]]){const ni=i+di,nj=j+dj;if(ni<0||nj<0||ni>=W||nj>=H)continue;const nk=id(ni,nj);if(blk[nk]||done[nk])continue;if(di&&dj&&(blk[id(i+di,j)]||blk[id(i,j+dj)]))continue;const ng=g[k]+dc*(cost[k]+cost[nk])/2;if(ng<g[nk]){g[nk]=ng;from[nk]=k;push(ng+hz(nk),nk)}}}
+  if(from[tk]<0&&tk!==id(si,sj))return [a,b];const pts=[];for(let k=tk;k>=0;k=from[k])pts.push({x:cx(k%W),z:cz(Math.floor(k/W))});pts.reverse();pts[0]={x:a.x,z:a.z};pts[pts.length-1]={x:b.x,z:b.z};
+  // 把直線上的點拿掉
+  const out=[pts[0]];for(let i=1;i<pts.length-1;i++){const p=out[out.length-1],q=pts[i],r=pts[i+1];if(Math.abs((q.x-p.x)*(r.z-q.z)-(q.z-p.z)*(r.x-q.x))>.01)out.push(q)}out.push(pts[pts.length-1]);return out}
+function polyLen(P){let L=0;for(let i=1;i<P.length;i++)L+=Math.hypot(P[i].x-P[i-1].x,P[i].z-P[i-1].z);return L}
+function polyAt(P,s){for(let i=1;i<P.length;i++){const a=P[i-1],b=P[i];const l=Math.hypot(b.x-a.x,b.z-a.z);if(s<=l||i===P.length-1){const k=l?clamp(s/l,0,1):0;return {x:a.x+(b.x-a.x)*k,z:a.z+(b.z-a.z)*k,a:Math.atan2(b.x-a.x,b.z-a.z)}}s-=l}return {x:P[0].x,z:P[0].z,a:0}}
+const PATHC=new Map();let pathSig='',pathSigT=0;
+function pathGet(key,a,b){if(performance.now()-pathSigT>3000){pathSigT=performance.now();const sig=S.objs.filter(o=>BLK(o)||o.t==='road').length+'|'+S.objs.length;if(sig!==pathSig){pathSig=sig;PATHC.clear()}}let c=PATHC.get(key);if(!c){const P=pathFind(a,b);c={P,L:polyLen(P)};PATHC.set(key,c)}return c}
+/* ---- 中央物流倉庫 ---- */
+Object.assign(FAC,{whub:{n:'中央物流倉庫',em:'🏬',p:12000,d:'自動化物流的中心：運輸車把材料送到這裡，搬運機器人、無人機從這裡把原料送去各工廠',in:{},out:{},t:1e9,safe:'hub',h:{w:18,d:14,floors:2,wall:'siding',wallC:0xd8d0b8,roof:'shed',roofM:'metal',roofC:0x4a6a8a,pitch:.3,win:'wide',sign:'🏬 物流倉庫',signBg:'#2a5a8a'}}});
+const hubOf=(x,z)=>{let b=null,bd=1e9;for(const o of S.objs)if(o.fac==='whub'&&!(o.bt!=null&&o.bt<1)){const d=Math.hypot(o.x-x,o.z-z);if(d<bd){bd=d;b=o}}return b};
+const hubDoor=h=>{const r=h.r||0,L=h.d/2+3;return {x:h.x+Math.sin(r)*L,z:h.z+Math.cos(r)*L}};
+const facDoor=o=>{const r=o.r||0,L=o.d/2+2.5;return {x:o.x+Math.sin(r)*L,z:o.z+Math.cos(r)*L}};
+/* ---- 搬運機器人、無人機 ---- */
+const BOTMAX=30,DRNMAX=20;const botCost=()=>Math.round(3000*(1+(S.bots||0)*.3)/100)*100,drnCost=()=>Math.round(5000*(1+(S.drones||0)*.3)/100)*100;
+const prodFacs=()=>S.objs.filter(o=>o.fac&&FAC[o.fac]&&!FAC[o.fac].safe&&Object.keys(FAC[o.fac].out||{}).length&&!(o.bt!=null&&o.bt<1));
+const LOGI={bots:[],drones:[]};const LOGIG=new THREE.Group();scene.add(LOGIG);
+const CRATEC={stone:0x9a958c,wood:0xa8784a,clay:0xa0663a,steel:0x8a8a96,brick:0xb8583a,tile:0xa83a2a,cement:0xc8c8c4,glass:0x9ad8f0,paint:0xd86ab8};
+function botMesh(){const G=new THREE.Group();vb(G,.9,.35,1.3,0xf0f0f0,0,.3,0);vb(G,.92,.08,1.32,0x2a8ad8,0,.5,0);const cr=vb(G,.7,.5,.7,0xc8945a,0,.8,0);vb(G,.14,.14,.14,new THREE.MeshBasicMaterial({color:0x3aff6a}),.3,.55,.6);G.userData.cr=cr;G.userData.wh=wheels(G,[[-.45,.45],[.45,.45],[-.45,-.45],[.45,-.45]],.13,.08);return G}
+function drnMesh(){const G=new THREE.Group();vb(G,.6,.2,.6,0x2a2a32,0,0,0);G.userData.P=[];for(const [x,z] of [[.5,.5],[-.5,.5],[.5,-.5],[-.5,-.5]]){vb(G,.6,.05,.07,0x2a2a32,x/2,0,z/2,Math.atan2(x,z));G.userData.P.push(vb(G,.55,.02,.05,0xe0e0e8,x,.1,z))}const cr=vb(G,.4,.35,.4,0xc8945a,0,-.35,0);G.userData.cr=cr;return G}
+function logiTick(dt){const host=!(typeof CO!=='undefined'&&CO.role==='guest');const nb=Math.min(S.bots||0,BOTMAX),nd=Math.min(S.drones||0,DRNMAX);const fs=prodFacs();const t=performance.now()/1000;
+  for(const [L,n,mk,fly] of [[LOGI.bots,nb,botMesh,0],[LOGI.drones,nd,drnMesh,1]]){while(L.length<n)L.push({p:Math.random()*2,fi:L.length,g:null,fly});while(L.length>n){const b=L.pop();if(b.g)LOGIG.remove(b.g)}
+    L.forEach((b,i)=>{const hub=fs.length&&ME?hubOf(ME.position.x,ME.position.z):null;if(!hub||!fs.length){if(b.g)b.g.visible=false;return}const f=fs[(b.fi+i)%fs.length];if(!S.objs.includes(f))return;
+      const hd=hubDoor(hub),fd=facDoor(f);let P,Ln;if(fly){P=[hd,fd];Ln=Math.hypot(fd.x-hd.x,fd.z-hd.z)}else{const c=pathGet('h'+hub.id+'f'+f.id,hd,fd);P=c.P;Ln=c.L}
+      const sp=fly?16:7;const p0=b.p;b.p+=dt*sp/Math.max(8,Ln);
+      if(host&&p0<1&&b.p>=1){const F=FAC[f.fac];if(F&&F.t<1e8){f.ft=(f.ft||0)+F.t*(fly?.45:.35)}}// 送到原料：工廠馬上多做一些
+      if(b.p>=2){b.p-=2;b.fi=Math.floor(Math.random()*1e6)}
+      if(i>=(fly?8:14)){if(b.g){LOGIG.remove(b.g);b.g=null}return}if(!b.g){b.g=mk();LOGIG.add(b.g)}b.g.visible=true;
+      const k=b.p<1?b.p:2-b.p;const q=polyAt(P,k*Ln);const y=Math.max(hAt(q.x,q.z),WATER_Y);b.g.position.set(q.x,fly?y+6+Math.sin(k*Math.PI)*8:y,q.z);b.g.rotation.y=q.a+(b.p<1?0:Math.PI);
+      const F=FAC[f.fac];const m=b.p<1?Object.keys(F.in||{})[0]:Object.keys(F.out||{})[0];const cr=b.g.userData.cr;cr.visible=!!m;if(m&&cr.material.color.getHex()!==(CRATEC[m]||0xc8945a))cr.material=vmat(CRATEC[m]||0xc8945a);
+      if(b.g.userData.wh)b.g.userData.wh.forEach(w=>w.rotation.x+=dt*10);if(b.g.userData.P)b.g.userData.P.forEach(p=>p.rotation.y+=dt*40)})}}
+function logiHtml(){const hub=S.objs.some(o=>o.fac==='whub');const fs=prodFacs().length;return `<div class="lab">🤖 自動化物流（中央物流倉庫＋搬運機器人＋無人機）</div><div style="font-size:13px;color:#7a6a4a">先蓋一座「🏬 中央物流倉庫」，機器人和無人機會沿著道路把原料從倉庫送去每一座工廠、再把成品載回來；每送到一趟，那座工廠就馬上多做一些。採集場的運輸車也會改把材料送到倉庫。${hub?'':'<b style="color:#c8501a">（你還沒有中央物流倉庫）</b>'}　工廠 ${fs} 座</div>
+  ${hub?'':`<div class="prow"><div class="em">🏬</div><div class="tx"><b>中央物流倉庫</b><small>${FAC.whub.d}</small></div><button class="hb g" id="lgHub">蓋一座<br><small>${money(FAC.whub.p)}</small></button></div>`}
+  <div class="prow"><div class="em">🛻</div><div class="tx"><b>搬運機器人</b>：${S.bots||0}/${BOTMAX} 台<small>沿著道路來回，避開房子和湖</small></div>${(S.bots||0)>=BOTMAX?'<b style="color:#2fa04a">已滿</b>':`<button class="hb g" id="lgBot">買一台<br><small>${money(botCost())}</small></button>`}</div>
+  <div class="prow"><div class="em">🛸</div><div class="tx"><b>送貨無人機</b>：${S.drones||0}/${DRNMAX} 台<small>直接飛過去，比機器人快，每趟送得比較多</small></div>${(S.drones||0)>=DRNMAX?'<b style="color:#2fa04a">已滿</b>':`<button class="hb g" id="lgDrn">買一台<br><small>${money(drnCost())}</small></button>`}</div>`}
+function logiBind(re){const h=$('#lgHub');if(h)h.onclick=()=>{TS.fac='whub';closePanel();setTool('fac');toast('🏬 點一下自己土地上的空地，蓋中央物流倉庫（旁邊要有路，機器人比較好走）',3200)};
+  const b=$('#lgBot');if(b)b.onclick=()=>{if(!spend(botCost(),'搬運機器人'))return;S.bots=(S.bots||0)+1;SFX.build();if(!S.objs.some(o=>o.fac==='whub'))toast('🛻 買到了！記得蓋「🏬 中央物流倉庫」，機器人才會開始搬',3000);dirty();re()};
+  const d=$('#lgDrn');if(d)d.onclick=()=>{if(!spend(drnCost(),'送貨無人機'))return;S.drones=(S.drones||0)+1;SFX.build();dirty();re()}}
+/* ---- 每一幀 ---- */
+function logiAll(dt){logiTick(dt)}
+window.__Q={obstBuild,pathFind,pathGet,meHit,houseAt,hubOf,LOGI,prodFacs,placeFac:(k,x,z)=>{TS.fac=k;placeFac(k,x,z)}};
 
 /* ======================= 編輯面板（選到東西時出現） ======================= */
 const chipsH=(key,opts,cur,lock)=>`<div class="chips">${Object.entries(opts).map(([k,n])=>`<button data-${key}="${k}" class="${String(cur)===k?'on':''}" ${lock&&lock(k)?'disabled style="opacity:.4"':''}>${n}</button>`).join('')}</div>`;

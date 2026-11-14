@@ -1051,7 +1051,7 @@ function resize(){W=innerWidth;H=innerHeight;renderer.setSize(W,H);camera.aspect
 const clock=new THREE.Clock();let taskT=0,RUN=false,HOLD=false;
 function frame(){requestAnimationFrame(frame);try{frameBody()}catch(e){console.error(e);if(typeof reportErr==='function')reportErr(e)}}
 function frameBody(){if(HOLD){clock.getDelta();return}const rdt=Math.min(.05,clock.getDelta());
-  if(!S.paused&&RUN){let gdt=rdt*(S.speed||1)*TS();while(gdt>0){const d=Math.min(gdt,TS()>1?5:2);step(d,false);gdt-=d}}
+  if(!S.paused&&RUN&&!(typeof NETGUEST==='function'&&NETGUEST())){let gdt=rdt*(S.speed||1)*TS();while(gdt>0){const d=Math.min(gdt,TS()>1?5:2);step(d,false);gdt-=d}}
   let [ix,iy]=S.paused||!RUN?[0,0]:input();let speed=0,mv=null;
   if(ix||iy){P.auto=null;mv=V(0,0,0).addScaledVector(SR,ix).addScaledVector(SD,iy)}
   else if(P.auto&&!S.paused){const tgt=P.auto.pts[0];const d=Math.hypot(tgt.x-P.pos.x,tgt.z-P.pos.z);if(d<.3||P.auto.stuck>.7){P.auto.stuck=0;if(P.auto.pts.length>1)P.auto.pts.shift();else{const th=P.auto.then;P.auto=null;if(th)th()}}else mv=V(tgt.x-P.pos.x,0,tgt.z-P.pos.z).normalize().multiplyScalar(Math.min(1,d*2))}
@@ -1073,7 +1073,7 @@ function frameBody(){if(HOLD){clock.getDelta();return}const rdt=Math.min(.05,clo
 addEventListener('beforeunload',()=>save());document.addEventListener('visibilitychange',()=>{if(document.hidden)save()});
 /* ======================= 接進「億萬大亨」主遊戲 ======================= */
 function holdGame(){HOLD=true;RUN=false;save();window.__farmHold=true}
-function resumeGame(){window.__farmHold=false;HOLD=false;const off=offlineSim();clock.getDelta();RUN=true;if(off&&off.away>=60)showBack(off)}
+function resumeGame(){window.__farmHold=false;HOLD=false;const off=typeof NETGUEST==='function'&&NETGUEST()?null:offlineSim();clock.getDelta();RUN=true;if(off&&off.away>=60)showBack(off)}
 function showBack(o){openPanel(`<h2>👋 歡迎回來！</h2><div class="big3">你離開了 ${fmtReal(o.away)}</div><div>這段時間林場賺了 ${money(Math.max(0,o.earn))}${o.earn<0?`（付了帳單 ${money(-o.earn)}）`:''}</div><div>🌲 員工砍了 ${o.cut} 棵樹・📜 完成 ${o.ord} 張訂單</div><div class="note">樹苗、鋸木廠、工作台都有繼續進行。看「📋 紀錄看板」和「📒 帳本 → 通知」了解詳細。</div>`)}
 if(EMBED){['#bSpeed','#bReset'].forEach(q=>{const e=$(q);if(e)e.remove()});S.speed=1;$('#credit').textContent='遊戲製作：Eric Hu';
   const fb=document.createElement('button');fb.className='hb y more';fb.id='bFun';fb.textContent='🎡 遊樂場';$('#btns').insertBefore(fb,$('#bFS'));
@@ -1083,8 +1083,82 @@ if(EMBED){['#bSpeed','#bReset'].forEach(q=>{const e=$(q);if(e)e.remove()});S.spe
 else if(!QS.has('dev')){['#bReset','#bSpeed','#bExit'].forEach(q=>{const e=$(q);if(e)e.remove()});S.speed=1}
 /* ---- 開始 ---- */
 if(S.inHome){S.inHome=0}
-{const off=offlineSim();for(let i=0;i<LOTS.length;i++)lotSync(i);backSync();vehSync();npcSync();fireSync();beastSync();EVQ.length=0;camT.copy(P.pos);RUN=true;frame();layoutHUD();setTimeout(()=>{dailyGift();if(off&&off.away>=60)showBack(off);else if(!S.profileSet)setTimeout(()=>{if(!panelOn())typeof tutStart==='function'?tutStart():profilePanel(1)},2500)},1200)}
+{const off=typeof NETGUEST==='function'&&NETGUEST()?null:offlineSim();for(let i=0;i<LOTS.length;i++)lotSync(i);backSync();vehSync();npcSync();fireSync();beastSync();EVQ.length=0;camT.copy(P.pos);RUN=true;frame();layoutHUD();setTimeout(()=>{dailyGift();if(off&&off.away>=60)showBack(off);else if(!S.profileSet)setTimeout(()=>{if(!panelOn())typeof tutStart==='function'?tutStart():profilePanel(1)},2500)},1200)}
 window.__G={goChop,treeNear,CH,AXE,route,segOK,onWalk,enterHome,exitHome,S,step,goTo,openShop,RINGS,P,offlineSim,earn,MARKET,SAWR,WORKR,SHOWR,lotPanel,sawPanel,workPanel,showPanel,officePanel,marketPanel,LOTV,NPCS,EVQ,buildTasks};
+/* ======================= 多人合作：大家一起經營同一個場（也可以單人玩） ======================= */
+// 房主負責時間、生產、天氣、事件；大家做的事（砍樹、買東西、賣東西、雇人…）都會同步給所有人。
+const NC={ws:null,role:null,code:'',uid:'',hostUid:'',members:[],ready:false,own:null,sent:{},base:{},pend:{},bm:0,be:0,peers:new Map()};
+const NSER=typeof SKIN!=='undefined'&&SKIN.id?SKIN.id:'fish';
+const NSERN={fish:'漁港',wood:'林場',mine:'礦場',chem:'能源廠'}[NSER]||'場';
+const NPERS=['carry','bag','inHome','paused','snd','speed','zoom','notes','giftDay','tutDone','profileSet','fdiff','fview','deep','find','flow','last','veh','unlockMsg'];
+function NETGUEST(){return !!(window.__NC&&window.__NC.role==='guest')}
+const NSIM=['t','beasts','ev','lastP','day','eco','ordDay','tide','whalefall','autoDay','res','bills'];// 房主在算的東西，隊友不回傳
+const ncCan=()=>/^https?:$/.test(location.protocol)&&!/claude|anthropic|usercontent/.test(location.host);
+function ncUid(){let u='';try{u=localStorage.getItem('zzdh_'+NSER+'_uid')}catch(e){}if(!u){u='i'+Math.random().toString(36).slice(2,10);try{localStorage.setItem('zzdh_'+NSER+'_uid',u)}catch(e){}}return u}
+const ncLu=()=>{try{return localStorage.getItem('zzdh_lobby_uid')||''}catch(e){return ''}};
+const ncName=()=>(PNAME||'玩家').slice(0,10);
+function ncSend(o){if(NC.ws&&NC.ws.readyState===1)NC.ws.send(JSON.stringify(o))}
+function ncConnect(onOpen){if(!ncCan()){ncFail('這個網址不能連線。多人合作要在你架設的「億萬大亨」網站（Render）上才能使用，試玩版只能單人玩。');return}
+  try{NC.ws&&NC.ws.close()}catch(e){}let ws;try{ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host+'/net')}catch(e){ncFail('連線失敗，請稍後再試');return}
+  NC.ws=ws;const to=setTimeout(()=>{if(ws.readyState!==1){ncFail('連不上伺服器（伺服器剛睡醒時要等約 30 秒，請再試一次）');try{ws.close()}catch(e){}}},15000);
+  ws.onopen=()=>{clearTimeout(to);onOpen()};ws.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch(_){return}try{ncMsg(m)}catch(err){console.error(err)}};
+  ws.onclose=()=>{if(NC.ws!==ws)return;NC.ws=null;if(NC.role){toast('📡 連線中斷了，正在重新連線…',2500);setTimeout(()=>{if(NC.role&&!NC.ws)ncConnect(()=>ncSend(NC.role==='host'?{t:'create',series:NSER,cap:4,uid:NC.uid,name:ncName(),lu:ncLu(),code:NC.code}:{t:'join',code:NC.code,uid:NC.uid,name:ncName(),lu:ncLu()}))},2500)}}}
+function ncFail(msg){ncWait(false);openPanel(`<h2>👥 多人合作</h2><div style="font-size:16px;line-height:1.8">😢 ${msg}</div><div class="row" style="margin-top:10px"><button class="hb g" id="ncOk">知道了</button></div>`,()=>$('#ncOk').onclick=closePanel);if(NC.role==='guest'&&!NC.ready)ncEnd(true);else if(!NC.ready)NC.role=null}
+function ncWait(on,txt){let d=$('#ncWait');if(!d){d=document.createElement('div');d.id='ncWait';d.style.cssText='position:fixed;inset:0;z-index:60;background:rgba(20,30,50,.75);display:none;align-items:center;justify-content:center;color:#fff;font-size:20px;text-align:center;line-height:1.8';document.body.appendChild(d)}d.innerHTML=txt||'📡 正在連線…';d.style.display=on?'flex':'none'}
+/* ---- 共用的資料 ---- */
+const ncKeys=()=>Object.keys(S).filter(k=>!NPERS.includes(k)&&k!=='money'&&k!=='earn');
+function ncShared(){const d={};for(const k of ncKeys())d[k]=S[k];d.money=S.money;d.earn=S.earn;return d}
+/* ---- 建立／加入／離開 ---- */
+function ncHost(){if(NC.role){ncPanel();return}NC.uid=ncUid();NC.role='host';ncWait(true,'📡 正在建立隊伍…');ncConnect(()=>ncSend({t:'create',series:NSER,cap:4,uid:NC.uid,name:ncName(),lu:ncLu(),code:S.myCode||''}))}
+function ncJoin(code){code=String(code||'').trim();if(!/^\d{4}$/.test(code)){toast('請輸入 4 位數房號');return}if(NC.role)ncEnd(true);save();NC.own=JSON.parse(JSON.stringify(S));NC.uid=ncUid();NC.role='guest';NC.code=code;NC.ready=false;window.__noSave=true;
+  ncWait(true,`📡 正在加入房號 <b>${code}</b> 的${NSERN}…`);ncConnect(()=>ncSend({t:'join',code,uid:NC.uid,name:ncName(),lu:ncLu()}))}
+function ncEnd(quiet){const was=NC.role;if(NC.ws){ncSend({t:'leave'});try{NC.ws.close()}catch(e){}}NC.ws=null;NC.role=null;NC.ready=false;NC.members=[];ncWait(false);for(const uid of [...NC.peers.keys()])ncPeerGone(uid);
+  if(was==='guest'){window.__noSave=false;if(NC.own){const own=NC.own;NC.own=null;for(const k of Object.keys(S))delete S[k];Object.assign(S,own)}save();if(!quiet)toast(`🏠 回到你自己的${NSERN}了`,2400)}else if(was==='host'&&!quiet)toast('👋 隊伍解散了，繼續單人玩',2400);ncChip()}
+/* ---- 收到伺服器訊息 ---- */
+function ncMsg(m){switch(m.t){
+  case 'created':NC.code=m.code;NC.uid=m.uid;NC.hostUid=m.uid;NC.members=m.members||[];NC.ready=true;S.myCode=m.code;ncWait(false);NC.sent={};ncChip();
+    openPanel(`<h2>👑 隊伍建立好了！</h2><div style="text-align:center;font-size:18px">房號</div><div style="text-align:center;font-size:52px;font-weight:bold;letter-spacing:8px;color:#d86a00">${m.code}</div><div style="font-size:15px;line-height:1.8">把房號告訴朋友，朋友在「👥 多人」輸入房號，或在主畫面的「多人合作」大廳加入，就會進到你的${NSERN}一起經營（最多 4 人）。<br>你的${NSERN}就是大家的${NSERN}，誰做了什麼，大家都會即時看到。</div><div class="row" style="margin-top:10px"><button class="hb g" id="ncGo">👍 開始一起玩</button></div>`,()=>$('#ncGo').onclick=closePanel);break;
+  case 'joined':NC.uid=m.uid;NC.members=m.members||[];{const h=NC.members.find(x=>x.slot===0);NC.hostUid=h?h.uid:''}if(m.role==='host'){NC.role='host';NC.ready=true;ncWait(false);NC.sent={};ncChip();toast(`👑 回到你的隊伍（房號 ${m.code}）`,2500);break}
+    ncWait(true,`📥 正在下載「${m.hostName||'房主'}」的${NSERN}…`);NC.hiT=0;ncSend({t:'i7hi',_to:NC.hostUid});ncChip();break;
+  case 'peer':{const x=NC.members.find(q=>q.uid===m.uid);if(x){x.on=true;x.name=m.name}else NC.members.push({uid:m.uid,name:m.name,slot:m.slot,on:true});if(m.uid!==NC.uid)toast(`👋 「${m.name||'朋友'}」加入了！`,2600);ncChip();break}
+  case 'gone':{const x=NC.members.find(q=>q.uid===m.uid);if(x)x.on=false;ncPeerGone(m.uid);if(m.host&&NC.role==='guest'){toast(`👑 房主離開了，回到你自己的${NSERN}`,3500);ncEnd(true)}else toast(`👋 「${m.name||'朋友'}」離開了`,2000);ncChip();break}
+  case 'err':ncFail(m.msg||'連線發生錯誤');break;
+  case 'i7hi':if(NC.role==='host')ncSend({t:'i7full',_to:m._f,d:ncShared()});break;
+  case 'i7full':if(NC.role==='guest'&&!NC.ready){const mine={};for(const k of NPERS)if(S[k]!==undefined)mine[k]=S[k];for(const k of Object.keys(S))if(!NPERS.includes(k))delete S[k];Object.assign(S,m.d,mine);S.carry=S.carry||[];NC.base={};for(const k of ncKeys())NC.base[k]=JSON.stringify(S[k]);NC.bm=S.money;NC.be=S.earn||0;NC.ready=true;ncWait(false);ncChip();toast(`🎉 進到「${(NC.members.find(x=>x.uid===NC.hostUid)||{}).name||'房主'}」的${NSERN}了！大家一起經營吧`,3200)}break;
+  case 'i7s':if(NC.role==='guest'&&NC.ready)ncApplyHost(m.d);break;
+  case 'i7g':if(NC.role==='host')ncApplyGuest(m);break;
+  case 'i7p':if(NC.ready&&m._f!==NC.uid)ncPeerUpd(m);break;
+  case 'i7x':if(NC.ready&&m.s)toast(m.s,2400);break}}
+function ncApplyHost(d){const now=performance.now();for(const k in d){if(k==='money'||k==='earn')continue;if(NC.pend[k]&&now-NC.pend[k]<1500)continue;S[k]=d[k];NC.base[k]=JSON.stringify(d[k])}if(d.money!=null){S.money=d.money;NC.bm=S.money}if(d.earn!=null){S.earn=d.earn;NC.be=S.earn}}
+function ncApplyGuest(m){for(const k in m.d||{}){if(NPERS.includes(k)||k==='money'||k==='earn')continue;S[k]=m.d[k];delete NC.sent[k]}if(m.dm){S.money+=m.dm}if(m.de){S.earn=(S.earn||0)+m.de}if(m.s)ncSend({t:'i7x',s:m.s})}
+/* ---- 每 0.4 秒互相傳送變化 ---- */
+setInterval(()=>{if(!NC.role||!NC.ready)return;
+  if(NC.role==='host'){const d={};let any=false;for(const k of ncKeys()){const j=JSON.stringify(S[k]);if(NC.sent[k]!==j){NC.sent[k]=j;d[k]=S[k];any=true}}const mm=Math.round(S.money*100)/100;if(NC.sent.money!==mm||NC.sent.earn!==S.earn){NC.sent.money=mm;NC.sent.earn=S.earn;d.money=S.money;d.earn=S.earn;any=true}if(any)ncSend({t:'i7s',d})}
+  else{const d={};let any=false;for(const k of ncKeys()){if(NSIM.includes(k))continue;const j=JSON.stringify(S[k]);if(NC.base[k]!==j){NC.base[k]=j;d[k]=S[k];NC.pend[k]=performance.now();any=true}}const dm=S.money-NC.bm,de=(S.earn||0)-NC.be;if(Math.abs(dm)>.001||Math.abs(de)>.001){NC.bm=S.money;NC.be=S.earn||0;any=true}if(any)ncSend({t:'i7g',d,dm,de})}},400);
+setInterval(()=>{if(NC.role&&NC.ready&&P&&P.pos)ncSend({t:'i7p',x:+P.pos.x.toFixed(2),z:+P.pos.z.toFixed(2),f:+(P.face||0).toFixed(2),h:S.inHome?1:0,n:ncName()});if(NC.role==='guest'&&!NC.ready&&NC.ws){NC.hiT=(NC.hiT||0)+1;if(NC.hiT%15===0)ncSend({t:'i7hi',_to:NC.hostUid})}},300);
+/* ---- 隊友的人物 ---- */
+function ncLabel(t){const c=document.createElement('canvas');c.width=256;c.height=64;const x=c.getContext('2d');x.fillStyle='rgba(40,90,200,.85)';x.beginPath();if(x.roundRect)x.roundRect(4,8,248,48,22);else x.rect(4,8,248,48);x.fill();x.fillStyle='#fff';x.font='bold 30px sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText('👥 '+t,128,33);const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),depthTest:false}));s.scale.set(2.4,.6,1);s.position.y=2.5;return s}
+function ncPeerUpd(m){let p=NC.peers.get(m._f);if(!p){const o=makeFarmer();scene.add(o);const lb=ncLabel(m.n||'隊友');o.add(lb);p={o,x:m.x,z:m.z,f:m.f,n:m.n,w:0};NC.peers.set(m._f,p);o.position.set(m.x,0,m.z)}p.x=m.x;p.z=m.z;p.f=m.f;p.h=m.h;p.n=m.n}
+function ncPeerGone(uid){const p=NC.peers.get(uid);if(p){scene.remove(p.o);NC.peers.delete(uid)}}
+let ncLT=performance.now();function ncPeerTick(){const now=performance.now(),dt=Math.min(.1,(now-ncLT)/1000);ncLT=now;for(const p of NC.peers.values()){const o=p.o;const dx=p.x-o.position.x,dz=p.z-o.position.z;const d=Math.hypot(dx,dz);o.visible=!!p.h===!!S.inHome;if(d>25){o.position.x=p.x;o.position.z=p.z}else{o.position.x+=dx*Math.min(1,dt*8);o.position.z+=dz*Math.min(1,dt*8)}
+  o.position.y=typeof groundH==='function'&&!S.inHome?groundH(o.position.x,o.position.z):0;o.rotation.y=p.f;const u=o.userData;const sp=d/Math.max(dt,.001);p.w+=dt*Math.min(sp,8)*2.3;const sw=d>.03?Math.sin(p.w):0;if(u.legs){u.legs[0].rotation.x=sw*.7;u.legs[1].rotation.x=-sw*.7}if(u.arms){u.arms[0].rotation.x=sw*.6;u.arms[1].rotation.x=-sw*.6}}requestAnimationFrame(ncPeerTick)}requestAnimationFrame(ncPeerTick);
+/* ---- 畫面：隊伍小標籤、多人面板 ---- */
+function ncChip(){let c=$('#ncChip');if(!c){c=document.createElement('div');c.id='ncChip';c.style.cssText='position:fixed;left:8px;top:calc(118px + env(safe-area-inset-top));z-index:30;background:rgba(40,90,200,.92);color:#fff;border-radius:14px;padding:5px 12px;font-size:14px;font-weight:bold;cursor:pointer;display:none;box-shadow:0 2px 6px rgba(0,0,0,.3)';c.onclick=ncPanel;document.body.appendChild(c)}
+  if(!NC.role){c.style.display='none';return}c.style.display='block';const on=NC.members.filter(x=>x.on!==false).length||1;c.textContent=`👥 房號 ${NC.code||'…'}・${on} 人${NC.role==='host'?'・👑':''}`}
+function ncPanel(){if(!NC.role){openPanel(`<h2>👥 多人合作</h2><div style="font-size:15px;line-height:1.8">和朋友用不同的手機、電腦，一起經營同一個${NSERN}（最多 4 人）。不按也可以一直單人玩。</div>
+   <div class="row" style="margin:10px 0;gap:8px;display:flex;flex-wrap:wrap"><button class="hb g" id="ncH" style="font-size:16px">👑 建立隊伍（用我的${NSERN}）</button></div>
+   <div style="margin-top:6px">或輸入朋友的房號加入：</div><div style="display:flex;gap:8px;margin-top:6px"><input id="ncC" maxlength="4" inputmode="numeric" placeholder="4 位數房號" style="flex:1;font-size:20px;padding:8px;border-radius:10px;border:2px solid #ccc;min-width:0"><button class="hb b" id="ncJ" style="font-size:16px">🚪 加入</button></div>
+   <div style="font-size:13px;color:#7a6a4a;margin-top:8px">加入朋友的${NSERN}時，你自己的進度會先存好，離開隊伍就會回到自己的${NSERN}。</div>`,()=>{$('#ncH').onclick=()=>{closePanel();ncHost()};$('#ncJ').onclick=()=>{const v=$('#ncC').value;closePanel();ncJoin(v)}});return}
+  openPanel(`<h2>👥 多人合作中</h2><div style="text-align:center;font-size:16px">房號 <b style="font-size:30px;letter-spacing:4px;color:#d86a00">${NC.code}</b></div><div style="margin:8px 0;line-height:2">${NC.members.map(x=>`${x.on===false?'⚪':'🟢'} ${x.name||'玩家'}${x.slot===0?' 👑房主':''}${x.uid===NC.uid?'（你）':''}`).join('<br>')}</div>
+   <div style="font-size:13px;color:#7a6a4a">時間、天氣、生產由房主計算；大家賺的錢、買的東西、砍的樹、蓋的設施都會一起同步。每個人背包裡拿的東西是自己的。</div>
+   <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">${[...NC.peers.entries()].map(([u,p])=>`<button class="hb b" data-ncg="${u}">🚶 到 ${p.n||'隊友'} 旁邊</button>`).join('')}<button class="hb r" id="ncL">🚪 ${NC.role==='host'?'解散隊伍':'離開隊伍'}</button></div>`,
+   ()=>{$('#ncL').onclick=()=>{closePanel();confirmAsk(NC.role==='host'?'確定要解散隊伍嗎？':`確定要離開，回到自己的${NSERN}嗎？`,()=>ncEnd())};document.querySelectorAll('[data-ncg]').forEach(b=>b.onclick=()=>{const p=NC.peers.get(b.dataset.ncg);if(p){P.pos.x=p.x+1;P.pos.z=p.z+1;closePanel()}})})}
+/* ---- 按鈕、從主畫面來的邀請 ---- */
+{const bs=$('#bSnd');if(bs&&!$('#bCoop')){const b=document.createElement('button');b.className='hb';b.id='bCoop';b.textContent='👥 多人';b.style.background='linear-gradient(#5a9ae8,#2a6ad0)';b.onclick=()=>{SFX.click();ncPanel()};bs.parentNode.insertBefore(b,bs)}
+ const q=new URLSearchParams(location.search);if(q.get('host'))setTimeout(ncHost,1500);else if(q.get('ljoin'))setTimeout(()=>ncJoin(q.get('ljoin')),1500);
+ addEventListener('message',e=>{const m=e.data;if(!m||e.source!==parent||m.t!=='coop')return;if(m.host)ncHost();else if(m.join)ncJoin(m.join)});}
+window.__NC=NC;
+window.__ST=()=>S;
 /* ======================= 第一次來：簡單的歡迎說明 ======================= */
 function tutStart(){openPanel(`<h2>🌲 歡迎來到「林業與木工」！</h2><div style="font-size:16px;line-height:1.8">
  你繼承了山上的一小塊林班（林班 A），從一把斧頭開始，把它經營成大林場和家具工廠吧！<br>
