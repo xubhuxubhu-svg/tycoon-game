@@ -315,7 +315,7 @@ body.ing #toast{top:138px}
     <button class="ib" data-p="credits"><div class="sq">📜</div><span>聲明</span></button>
   </div>
 </div>
-<div id="credit">遊戲製作：Eric Hu　版本 2.24.1</div>
+<div id="credit">遊戲製作：Eric Hu　版本 2.25.3</div>
 </div>
 <div id="game" class="hide">
   <div id="lbls"></div>
@@ -4259,7 +4259,9 @@ function inPlay(){return mode==='game'||mode==='farm'||mode==='fish'}
 // 在線時間：遊戲畫面開著、而且視窗在前面才算
 setInterval(()=>{if(document.visibilityState!=='visible'||!inPlay())return rwBtn();const r=rwSt();const before=rwCount();r.on.sec+=5;if(r.on.sec%60===0)mark();if(rwCount()>before)SFX.ding&&SFX.ding();rwBtn()},5000);
 function rwBtn(){let b=$('#rwBtn');if(!b){b=document.createElement('button');b.id='rwBtn';b.innerHTML='<span class="i">🎁</span><span class="t">領獎勵</span><i id="rwN"></i>';b.onclick=()=>{SFX.click();rwPanel()};document.body.appendChild(b)}
-  const n=rwCount();b.style.display=inPlay()&&n>0?'':'none';$('#rwN').textContent=n}
+  const n=rwCount();const bf=[...document.querySelectorAll('iframe')].find(f=>/build\.html/.test(f.src)&&f.offsetParent!==null);const mobB=bf&&matchMedia('(pointer:coarse)').matches;
+  b.style.display=inPlay()&&n>0&&!mobB?'':'none';$('#rwN').textContent=n;if(bf)try{bf.contentWindow.postMessage({t:'rw',n:inPlay()?n:0},'*')}catch(e){}}
+addEventListener('message',e=>{const m=e.data;if(m&&m.t==='rwOpen'){try{SFX.click()}catch(_){}rwPanel()}});
 setInterval(rwBtn,1500);
 (()=>{const st=document.createElement('style');st.textContent=`
 #rwBtn{position:fixed;left:10px;top:42%;z-index:9;border:none;border-radius:18px;padding:8px 12px 6px;background:linear-gradient(#ffe36a,#ffb21c);box-shadow:0 4px 0 #c27a00,0 0 0 3px #fff;color:#7a3a00;font-family:inherit;font-weight:900;display:flex;flex-direction:column;align-items:center;cursor:pointer;animation:rwPulse 1.1s ease-in-out infinite}
