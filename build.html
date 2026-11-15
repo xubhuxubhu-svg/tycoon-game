@@ -238,12 +238,13 @@ function buildHouse(o){const g=new THREE.Group();const B=new Batch();const {w,d}
     for(let f=1;f<o.floors;f++)for(const [fx,fz,ry,L] of faces)B.add(boxG(L+.1,.16,.12),trimM,mxAt(fx,base+f*FH,fz,ry));}
   if(glassy)for(let f=1;f<=o.floors;f++)for(const [fx,fz,ry,L] of faces)B.add(boxG(L+.04,.25,.08),mat('',0xd8dce0,{roughness:.4,metalness:.5}),mxAt(fx,base+f*FH-.12,fz,ry));
   // 窗戶
-  const ws=o.win||'classic';const lit=Math.random;
+  const ws=o.win||'classic';const lit=Math.random;const LITF=(o.furn&&o.furn.length)?new Set(o.furn.filter(q=>typeof FUR!=='undefined'&&FUR[q.k]&&FUR[q.k].glow).map(q=>q.f||0)):null;
+  if(glassy&&LITF)for(const f of LITF)for(const [fx,fz,ry,L] of faces)B.add(planeG(L-.3,FH-.5,1),GLASS_L,mxAt(fx+Math.sin(ry)*.03,base+f*FH+FH/2-.1,fz+Math.cos(ry)*.03,ry));
   if(ws!=='none'&&!glassy){const ww=ws==='wide'?1.9:ws==='modern'?1.5:ws==='tall'?.95:1.05,wh=ws==='wide'?2.3:ws==='tall'?1.95:ws==='modern'?1.5:1.35,wy=ws==='wide'?1.25:1.55;const sp=ws==='wide'?2.8:2.4;
     for(let fi=0;fi<4;fi++){const [fx,fz,ry,L]=faces[fi];const n=Math.max(1,Math.floor((L-.8)/sp));const st=L/n;
       for(let f=0;f<o.floors;f++)for(let k=0;k<n;k++){const lx=-L/2+st*(k+.5);if(f===0&&fi===0&&Math.abs(lx)<1.3)continue;if(f===0&&fi===0&&o.porch&&Math.abs(lx)<2.2)continue;
         const m=M4().compose(V(fx,base,fz),_q.setFromEuler(_e.set(0,ry,0)),V(1,1,1));const loc=(x,y,z)=>M4().multiplyMatrices(m,mxAt(x,y,z));const y0=f*FH+wy;
-        B.add(planeG(ww,wh,1),hn(lx*7+f*13+fi*3,(o.id||1)*1.7)<.55?GLASS_L:GLASS_M,loc(lx,y0+wh/2,.03));
+        B.add(planeG(ww,wh,1),(LITF?LITF.has(f):hn(lx*7+f*13+fi*3,(o.id||1)*1.7)<.55)?GLASS_L:GLASS_M,loc(lx,y0+wh/2,.03));
         const fw=ws==='modern'||ws==='wide'?.07:.1;B.add(boxG(ww+fw*2,fw,.12),trimM,loc(lx,y0+wh+fw/2,.05));B.add(boxG(fw,wh,.12),trimM,loc(lx-ww/2-fw/2,y0+wh/2,.05));B.add(boxG(fw,wh,.12),trimM,loc(lx+ww/2+fw/2,y0+wh/2,.05));
         if(ws==='classic'||ws==='tall'||ws==='arch'){B.add(boxG(.05,wh,.06),trimM,loc(lx,y0+wh/2,.06));B.add(boxG(ww,.05,.06),trimM,loc(lx,y0+wh*.6,.06))}
         B.add(boxG(ww+.3,.09,.26),ws==='modern'?darkM:sillM,loc(lx,y0-.05,.12));
@@ -986,11 +987,11 @@ function intLocal(cx,cy){rayAt(cx,cy);const h=ray.intersectObject(INT.g.userData
 function intPick(cx,cy){rayAt(cx,cy);const hs=ray.intersectObjects(INT.g.children,true);for(const h of hs){let x=h.object;while(x&&!x.userData.fid&&x!==INT.g)x=x.parent;if(x&&x.userData.fid)return x.userData.fid}return null}
 const snapQ=v=>Math.round(v*4)/4;
 function intStart(x,y){const o=INT.o;
-  if(INT.mode==='wall'){const a=intLocal(x,y);if(!a)return;const p0={x:Math.round(a.x*2)/2,z:Math.round(a.z*2)/2};let p1=null;G={move:(cx,cy)=>{const b=intLocal(cx,cy);if(!b)return;let bx=Math.round(b.x*2)/2,bz=Math.round(b.z*2)/2;if(Math.abs(bx-p0.x)>Math.abs(bz-p0.z))bz=p0.z;else bx=p0.x;p1={x:clamp(bx,-o.w/2,o.w/2),z:clamp(bz,-o.d/2,o.d/2)};ghost.visible=true;const L=Math.hypot(p1.x-p0.x,p1.z-p0.z);const wp=INT.g.localToWorld(V((p0.x+p1.x)/2,1.2,(p0.z+p1.z)/2));ghost.position.copy(wp);ghost.scale.set(.15,2.4,Math.max(.1,L));ghost.rotation.y=(o.r||0)+Math.atan2(p1.x-p0.x,p1.z-p0.z)},
-    end:()=>{ghost.visible=false;if(!p1||Math.hypot(p1.x-p0.x,p1.z-p0.z)<.5)return;snapUndo();if(!spend(40,'隔間牆'))return;o.iw.push({f:INT.f,x1:p0.x,z1:p0.z,x2:p1.x,z2:p1.z,door:INT.wdoor?1:0});SFX.place();intBuild();dirty()},cancel:()=>ghost.visible=false};return}
+  if(INT.mode==='wall'){const a=intLocal(x,y);if(!a)return;const p0={x:clamp(Math.round(a.x*2)/2,-o.w/2,o.w/2),z:clamp(Math.round(a.z*2)/2,-o.d/2,o.d/2)};let p1=null;G={move:(cx,cy)=>{const b=intLocal(cx,cy);if(!b)return;let bx=Math.round(b.x*2)/2,bz=Math.round(b.z*2)/2;if(Math.abs(bx-p0.x)>Math.abs(bz-p0.z))bz=p0.z;else bx=p0.x;p1={x:clamp(bx,-o.w/2,o.w/2),z:clamp(bz,-o.d/2,o.d/2)};ghost.visible=true;const L=Math.hypot(p1.x-p0.x,p1.z-p0.z);const wp=INT.g.localToWorld(V((p0.x+p1.x)/2,1.2,(p0.z+p1.z)/2));ghost.position.copy(wp);ghost.scale.set(.15,2.4,Math.max(.1,L));ghost.rotation.y=(o.r||0)+Math.atan2(p1.x-p0.x,p1.z-p0.z)},
+    end:(tap)=>{ghost.visible=false;if(tap||!p1||Math.hypot(p1.x-p0.x,p1.z-p0.z)<.5){const w=wallAt(a);if(w)wallMenu(w);else if(tap)toast('🧱 在地板上按住拖曳畫出隔間牆；點一下已經有的隔間牆可以拆掉或加門',2600);return}snapUndo();if(!spend(40,'隔間牆'))return;o.iw.push({f:INT.f,x1:p0.x,z1:p0.z,x2:p1.x,z2:p1.z,door:INT.wdoor?1:0});SFX.place();intBuild();dirty()},cancel:()=>ghost.visible=false};return}
   const it=intPick(x,y);
   if(it){const a0=intLocal(x,y);const ox=it.x,oz=it.z;let moved=false;G={move:(cx,cy,dx,dy,dist)=>{if(dist<8&&!moved)return;if(!moved){moved=true;snapUndo();INT.sel=it;intEdit()}const b=intLocal(cx,cy);if(!b||!a0)return;it.x=clamp(snapQ(ox+b.x-a0.x),-o.w/2+.2,o.w/2-.2);it.z=clamp(snapQ(oz+b.z-a0.z),-o.d/2+.2,o.d/2-.2);intBuild()},end:(tap)=>{if(tap){INT.sel=it;SFX.click();intBuild();intEdit()}else{SFX.place();dirty();furCheck(it,()=>{it.x=ox;it.z=oz;intBuild()})}}};return}
-  G={k:'tap',move:(cx,cy,dx,dy,dist)=>{if(dist>6)panBy(dx,dy)},end:(tap)=>{if(!tap)return;const p=intLocal(x,y);if(!p||!INT.arm){INT.sel=null;intEdit();intBuild();if(p&&!INT.arm)toast('👆 先在下面選一件家具，再點地板擺放；點家具可以選取、移動',2200);return}const D=FUR[INT.fk];snapUndo();if(!spend(D.p,D.n))return;const it={k:INT.fk,v:INT.fv||0,f:INT.f,x:clamp(snapQ(p.x),-o.w/2+.2,o.w/2-.2),z:clamp(snapQ(p.z),-o.d/2+.2,o.d/2-.2),r:INT.rot||0};o.furn.push(it);INT.sel=it;INT.arm=false;SFX.place();intBuild();intEdit();intBar();dirty();furCheck(it,()=>{})}}}
+  G={k:'tap',move:(cx,cy,dx,dy,dist)=>{if(dist>6)panBy(dx,dy)},end:(tap)=>{if(!tap)return;const p=intLocal(x,y);if(p&&!INT.arm){const w=wallAt(p);if(w){wallMenu(w);return}}if(!p||!INT.arm){INT.sel=null;intEdit();intBuild();if(p&&!INT.arm)toast('👆 先在下面選一件家具，再點地板擺放；點家具可以選取、移動',2200);return}const D=FUR[INT.fk];snapUndo();if(!spend(D.p,D.n))return;const it={k:INT.fk,v:INT.fv||0,f:INT.f,x:clamp(snapQ(p.x),-o.w/2+.2,o.w/2-.2),z:clamp(snapQ(p.z),-o.d/2+.2,o.d/2-.2),r:INT.rot||0};o.furn.push(it);INT.sel=it;INT.arm=false;SFX.place();intBuild();intEdit();intBar();dirty();furCheck(it,()=>{})}}}
 function intBar(){const o=INT.o;$('#bar').innerHTML=`<button class="tb" id="iX" style="background:#ffd8c8"><b>✅</b>裝潢完成</button>`+Array.from({length:o.floors},(_,f)=>`<button class="tb ${INT.f===f?'on':''}" data-fl="${f}"><b>${f+1}F</b>${f?f+1+' 樓':'1 樓'}</button>`).join('')+
   `<button class="tb ${INT.mode==='furn'?'on':''}" data-md="furn"><b>🛋️</b>擺家具</button><button class="tb ${INT.mode==='wall'?'on':''}" data-md="wall"><b>🧱</b>隔間牆</button><button class="tb" id="iFl"><b>🟫</b>地板牆面</button>`;
   $('#bar').querySelectorAll('[data-fl]').forEach(b=>b.onclick=()=>{INT.f=+b.dataset.fl;INT.sel=null;CAM.ty=baseY(o)+INT.f*FH;intBuild();intBar();intEdit()});
@@ -1480,6 +1481,7 @@ function peekBuild(o){const G=new THREE.Group();G.position.set(o.x,baseY(o)+.45,
   for(let f=0;f<fl;f++){const B=new THREE.Group();B.position.y=f*FH;G.add(B);const fm=FLOORM[(o.flm||{})[f]||'wood'];const sl=new THREE.Mesh(boxG(o.w-.3,.08,o.d-.3),mat(fm[1],fm[2]));sl.position.y=.04;B.add(sl);
     let items=(o.furn||[]).filter(q=>q.f===f);
     for(const it of items){const D=FUR[it.k];if(!D)continue;const fg=new THREE.Group();const b=new Batch();D.b(b,it.c,it.v||0);b.build(fg);if(D.fx)D.fx(fg,it.c,it.v||0);fg.scale.setScalar(it.s||1);fg.position.set(it.x,.08,it.z);fg.rotation.y=it.r||0;B.add(fg)}
+    peekWalls(o,f,B);
     {const lamp=new THREE.Mesh(new THREE.SphereGeometry(.22,10,8),LAMP_M);lamp.position.set(0,2.55,0);B.add(lamp);const gl=new THREE.Sprite(GLOW_M);gl.scale.set(2.4,2.4,1);gl.position.set(0,2.5,0);B.add(gl);const cord=new THREE.Mesh(new THREE.CylinderGeometry(.015,.015,.4,4),mat('',0x2a2a2a));cord.position.set(0,2.8,0);B.add(cord)}
     if(live&&f<3){const n=f===0?2:1;for(let q=0;q<n;q++){const p=person(CLOTH[(o.id+f*3+q)%8]);p.position.set(rand(-o.w/4,o.w/4),.08,rand(-o.d/4,o.d/4));B.add(p);ppl.push({g:p,o,act:'walk',tx:p.position.x,tz:p.position.z,t:rand(0,3),items})}}}
   scene.add(G);return {o,g:G,ppl}}
@@ -3028,7 +3030,7 @@ let mktT=0;function mktTick(dt){if(typeof CO!=='undefined'&&CO.role==='guest')re
   if(Math.random()<.25){const k=MK[Math.floor(Math.random()*MK.length)];S.mkt[k]=Math.min(1.6,mktOf(k)+.3);S.mktD[k]=1;toast(`📈 市場消息：${MATD[k].em}${MATD[k].n}缺貨，收購價大漲到每個 ${money(sellP(k))}！`,3600)}dirty()}
 function mktTop(){const ks=MK.slice().sort((a,b)=>mktOf(b)-mktOf(a));const have=MK.filter(k=>(S.mat[k]||0)>=1).sort((a,b)=>sellP(b)*(S.mat[b]||0)-sellP(a)*(S.mat[a]||0));const tot=MK.reduce((a,k)=>a+Math.floor(S.mat[k]||0)*sellP(k),0);
   return `<div class="prow" style="background:#fff6dc"><div class="em">📊</div><div class="tx"><b>今天的材料市場</b><small>📈 漲最多：${ks.slice(0,3).map(k=>`${MATD[k].em}${MATD[k].n} ${money(sellP(k))}`).join('、')}</small><small>📉 跌最多：${ks.slice(-3).reverse().map(k=>`${MATD[k].em}${MATD[k].n} ${money(sellP(k))}`).join('、')}</small>${have.length?`<small>💰 倉庫裡最值錢：${have.slice(0,3).map(k=>`${MATD[k].em}${MATD[k].n}（全部賣 ${money(Math.floor(S.mat[k])*sellP(k))}）`).join('、')}</small><small>倉庫全部材料估計可以賣 <b style="color:#c8701a">${money(tot)}</b></small>`:''}</div></div>`}
-function sellBtns(k){const h=Math.floor(S.mat[k]||0);if(h<1)return '';return `<div class="sellRow" style="display:flex;flex-basis:100%;width:100%;justify-content:space-between;align-items:center;gap:6px;margin-top:4px;padding-top:4px;border-top:1px dashed #d8c8a0"><button class="hb o" data-sell="${k}|all" style="margin-right:auto">全部賣 ${h}<br><small>${money(h*sellP(k))}</small></button><span style="display:flex;gap:6px">${[10,50].filter(n=>h>=n).map(n=>`<button class="hb" data-sell="${k}|${n}">賣 ${n}<br><small>${money(n*sellP(k))}</small></button>`).join('')}</span></div>`}
+function sellBtns(k){const h=Math.floor(S.mat[k]||0);if(h<1)return '';return `<div class="sellRow" style="display:flex;flex-basis:100%;width:100%;justify-content:space-between;align-items:center;gap:6px;margin-top:4px;padding-top:4px;border-top:1px dashed #d8c8a0"><button class="hb o" data-sell="${k}|all" style="margin-right:auto">全部賣 ${h}<br><small>${money(h*sellP(k))}</small></button><span style="display:flex;gap:6px">${[10,50,100].filter(n=>h>=n).map(n=>`<button class="hb" data-sell="${k}|${n}">賣 ${n}<br><small>${money(n*sellP(k))}</small></button>`).join('')}</span></div>`}
 
 /* ---- 自動採集 ---- */
 const AG={nd:null,cd:0,hold:0,dir:null,ban:new Map(),lp:null,ct:0,warn:0,ui:0};
@@ -3088,7 +3090,7 @@ function ruinMesh(o){const g=new THREE.Group();let sd=(o.id*9301+49297)%233280||
   for(let k=0;k<14+Math.round(W*D/8);k++){const s=.15+R()*.45;add(RUIN_G.ico,RUIN_M[R()<.5?2:R()<.6?0:3],(R()-.5)*W*.9,.45+s*.4,(R()-.5)*D*.9,s,s*.6,s,R()*3,R()*3,R()*3)}
   if(o.chimney){const h=2+R()*2;add(RUIN_G.box,RUIN_M[3],W*.25,.4+h/2,-D*.2,.7,h,.7)}
   g.userData.peak=3;g.userData.burnt=1;return g}
-const _place0=place;place=function(o){if(o.t==='house'&&o.burnt){const old=OBJM.get(o.id);if(old){OBJG.remove(old)}const g=ruinMesh(o);g.userData.id=o.id;g.position.set(o.x,baseY(o),o.z);g.rotation.y=o.r||0;OBJG.add(g);OBJM.set(o.id,g);return}_place0(o);if(IN.o&&IN.o.id===o.id){const g=OBJM.get(o.id);if(g)g.visible=false}};
+const _place0=place;place=function(o){if(o.t==='house'&&o.burnt){const old=OBJM.get(o.id);if(old){OBJG.remove(old)}const g=ruinMesh(o);g.userData.id=o.id;g.position.set(o.x,baseY(o),o.z);g.rotation.y=o.r||0;OBJG.add(g);OBJM.set(o.id,g);return}_place0(o);if(typeof PEEK!=='undefined'&&PEEK&&PEEK.o&&PEEK.o.id===o.id&&!INT){peekOff();peekT=0}if(IN.o&&IN.o.id===o.id){const g=OBJM.get(o.id);if(g)g.visible=false}};
 // 燒毀的房子冒一點點煙
 let rsT=0;function ruinSmoke(dt){rsT-=dt;if(rsT>0)return;rsT=.8;for(const o of S.objs)if(o.burnt&&Math.hypot(o.x-CAM.tx,o.z-CAM.tz)<CAM.dist*2+40&&Math.random()<.5)dust(o.x+(Math.random()-.5)*o.w*.6,baseY(o)+1,o.z+(Math.random()-.5)*o.d*.6,1)}
 
@@ -3272,6 +3274,28 @@ const _mvV=new THREE.Vector3();function mvTick(){const id=window.__mv;if(id==nul
   const o=byId(id);const h=o&&o.t==='house'?(o.floors||1)*FH+2:o&&o.t==='tower'?(o.h||8):3;_mvV.set(g.position.x,g.position.y+h,g.position.z).project(camera);const b=$('#mvBub');b.style.display='flex';
   b.style.left=clamp((_mvV.x+1)/2*innerWidth,100,innerWidth-100)+'px';b.style.top=clamp((1-_mvV.y)/2*innerHeight-8,110,innerHeight-160)+'px'}
 
+/* ---- 隔間牆：可以點選（拆掉、加門）；離開裝潢後在屋裡也看得到 ---- */
+function wallAt(p){if(!INT||!p)return null;let b=null,bd=.45;for(const w of INT.o.iw||[]){if(w.f!==INT.f)continue;const vx=w.x2-w.x1,vz=w.z2-w.z1,L2=vx*vx+vz*vz||1;const t=clamp(((p.x-w.x1)*vx+(p.z-w.z1)*vz)/L2,0,1);const d=Math.hypot(p.x-(w.x1+vx*t),p.z-(w.z1+vz*t));if(d<bd){bd=d;b=w}}return b}
+function wallMenu(w){const o=INT.o;SFX.click();const L=Math.hypot(w.x2-w.x1,w.z2-w.z1);openPanel(`<h2>🧱 隔間牆（長 ${L.toFixed(1)} 公尺）</h2><div class="row2" style="flex-wrap:wrap"><button class="hb b" id="wmD">${w.door?'🚪 把門拿掉':'🚪 加一個門'}</button><button class="hb r" id="wmX">🗑️ 拆掉這面牆（退 ${money(40)}）</button><button class="hb" id="wmC">取消</button></div>${L<=1.6&&!w.door?'<div style="font-size:13px;color:#7a6a4a">這面牆太短（要超過 1.6 公尺），加了門也看不出來。</div>':''}`,()=>{
+  $('#wmD').onclick=()=>{snapUndo();w.door=w.door?0:1;closePanel();intBuild();dirty()};$('#wmX').onclick=()=>{snapUndo();const i=o.iw.indexOf(w);if(i>=0)o.iw.splice(i,1);S.money+=40;SFX.cash();closePanel();intBuild();dirty()};$('#wmC').onclick=()=>closePanel()})}
+function peekWalls(o,f,B){const ch=2.4;const wm=mat('plaster',(o.iwc||{})[f]||0xf4ead2);for(const w of (o.iw||[]).filter(q=>q.f===f)){const L=Math.hypot(w.x2-w.x1,w.z2-w.z1);if(L<.2)continue;const a=Math.atan2(w.x2-w.x1,w.z2-w.z1);const mx=(w.x1+w.x2)/2,mz=(w.z1+w.z2)/2,dx=Math.sin(a),dz=Math.cos(a);
+  const add=(len,h,x,y,z)=>{const m=new THREE.Mesh(boxG(.12,h,len),wm);m.position.set(x,y,z);m.rotation.y=a;B.add(m)};
+  if(w.door&&L>1.6){const seg=(L-1)/2;for(const s of [-1,1])add(seg,ch,mx+dx*s*(seg/2+.5),ch/2+.08,mz+dz*s*(seg/2+.5));add(1,ch-2.1,mx,2.1+(ch-2.1)/2+.08,mz)}else add(L,ch,mx,ch/2+.08,mz)}}
+
+// 房子縮小之後，把超出去的隔間牆和家具收回屋內
+function fitInside(o){if(!o||o.t!=='house')return;const hw=o.w/2,hd=o.d/2;if(o.iw){for(const w of o.iw){w.x1=clamp(w.x1,-hw,hw);w.x2=clamp(w.x2,-hw,hw);w.z1=clamp(w.z1,-hd,hd);w.z2=clamp(w.z2,-hd,hd)}o.iw=o.iw.filter(w=>Math.hypot(w.x2-w.x1,w.z2-w.z1)>=.5)}
+  for(const it of o.furn||[]){it.x=clamp(it.x,-hw+.2,hw-.2);it.z=clamp(it.z,-hd+.2,hd-.2)}}
+const _intEnter0=intEnter;intEnter=function(o){fitInside(o);return _intEnter0(o)};
+const _peekBuild0=peekBuild;peekBuild=function(o){fitInside(o);return _peekBuild0(o)};
+const _intExit0=intExit;intExit=function(){const _o=INT&&INT.o;const r=_intExit0.apply(this,arguments);if(_o){place(_o);if(IN.o===_o){const g=OBJM.get(_o.id);if(g)g.visible=false}}peekT=0;try{peekTick(.01)}catch(_){}return r};
+
+/* ---- 建材行：按住買、賣按鈕會連續觸發 ---- */
+(function holdBtn(){let tm=null,iv=null,sel=null;const stop=()=>{clearTimeout(tm);clearInterval(iv);tm=iv=null;sel=null};
+  document.addEventListener('pointerdown',e=>{const b=e.target.closest&&e.target.closest('#panel [data-buy],#panel [data-sell]');stop();if(!b)return;const k=b.dataset.buy?'buy':'sell',v=b.dataset[k];if(/\|all$/.test(v))return;sel=`#panel [data-${k}="${v}"]`;
+    tm=setTimeout(()=>{iv=setInterval(()=>{const q=sel&&document.querySelector(sel);if(!q||!$('#modal').classList.contains('on')){stop();return}q.click()},130)},450)},true);
+  for(const ev of ['pointerup','pointercancel'])addEventListener(ev,stop,true);addEventListener('blur',e=>{if(e.target===window)stop()});document.addEventListener('contextmenu',e=>{if(sel)e.preventDefault()})})();
+const _shopPanel0=shopPanel;shopPanel=function(){const p=$('#panel');const on=$('#modal').classList.contains('on');const st=on&&p?p.scrollTop:0;const r=_shopPanel0.apply(this,arguments);if(on&&p&&st)p.scrollTop=st;return r};
+
 /* ======================= 編輯面板（選到東西時出現） ======================= */
 const chipsH=(key,opts,cur,lock)=>`<div class="chips">${Object.entries(opts).map(([k,n])=>`<button data-${key}="${k}" class="${String(cur)===k?'on':''}" ${lock&&lock(k)?'disabled style="opacity:.4"':''}>${n}</button>`).join('')}</div>`;
 const swH=(key,cols,cur)=>`<div class="chips">${cols.map(c=>`<button class="sw ${cur===c?'on':''}" data-${key}="${c}" style="background:${hex(c)}"></button>`).join('')}</div>`;
@@ -3430,7 +3454,7 @@ function frame(){requestAnimationFrame(frame);if(window.__farmHold||window.__pz)
   if(natDirty)natRebuild();camApply();lightTick();weatherTick(dt);riseTick(dt);
   for(const g of OBJG.children)if(g.userData.spin)g.userData.spin.rotation.z+=dt*1.2;
   waterTex.offset.x+=dt*.01;waterTex.offset.y+=dt*.006;
-  tagT-=dt;if(tagT<=0){tagT=.5;for(const t of TAGS.values())t.seen=0;for(const o of S.objs){if(o.t!=='house'&&o.t!=='tower'&&o.t!=='wall')continue;const g=OBJM.get(o.id);const p=V(o.x,baseY(o)+(g?g.userData.peak||6:6)+.8,o.z);if(o.bt!=null&&o.bt<1)tag('s'+o.id,`🚧 施工中 ${Math.floor(o.bt*100)}%`,'land',p);else if(o.fac)tag('s'+o.id,`${FAC[o.fac].em} ${FAC[o.fac].n}${o.idle?'（缺原料）':''}`,o.idle?'land':'sold',p);else if(o.sold)tag('s'+o.id,`✅ ${o.name||'已售出'}`,'sold',p);else if(o.home)tag('s'+o.id,`🏡 ${o.name||'我的家'}`,'sold',p);else if(o.rent)tag('s'+o.id,`🔑 出租中 ${money(rentOf(o))}/分`,'land',p)}
+  tagT-=dt;if(tagT<=0){tagT=.5;for(const t of TAGS.values())t.seen=0;for(const o of S.objs){if(o.t!=='house'&&o.t!=='tower'&&o.t!=='wall')continue;const g=OBJM.get(o.id);const p=V(o.x,baseY(o)+(g?g.userData.peak||6:6)+.8,o.z);const near=!ME||Math.hypot(o.x-ME.position.x,o.z-ME.position.z)-Math.max(o.w||o.len||4,o.d||4)/2<14;if(o.bt!=null&&o.bt<1)tag('s'+o.id,`🚧 施工中 ${Math.floor(o.bt*100)}%`,'land',p);else if(!near){}else if(o.fac)tag('s'+o.id,`${FAC[o.fac].em} ${FAC[o.fac].n}${o.idle?'（缺原料）':''}`,o.idle?'land':'sold',p);else if(o.sold)tag('s'+o.id,`✅ ${o.name||'已售出'}`,'sold',p);else if(o.home)tag('s'+o.id,`🏡 ${o.name||'我的家'}`,'sold',p);else if(o.rent)tag('s'+o.id,`🔑 出租中 ${money(rentOf(o))}/分`,'land',p)}
     const pr=landPrice();S.plots.forEach((ow,p)=>{if(!ow&&adjOwned(p)&&CAM.dist<260){const c=plotCenter(p);tag('p'+p,`🗺️ 可以買 ${money(pr)}`,'land',V(c.x,hAt(c.x,c.z)+3,c.z))}});tagsSweep();hud()}
   buildTick(dt);peopleTick(dt);titleTick(dt);vehTick(dt);meTick(dt);animTick(dt);lifeTick(dt);rentTick(dt);carTick(dt);petTick(dt);facTick(dt);guideTick(dt);fltTick(dt);tagsDraw();if(saveT>0){saveT-=dt;if(saveT<=0)save()}renderer.render(scene,camera)}
 function resize(){W=innerWidth;H=innerHeight;renderer.setSize(W,H);camera.aspect=W/H;camera.updateProjectionMatrix()}addEventListener('resize',resize);
