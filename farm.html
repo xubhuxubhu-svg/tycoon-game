@@ -865,7 +865,7 @@ function animalModel(a){const adult=a.age>=1,k=a.k;let m;if(ANIM[k]&&ANIM[k].wil
   else if(k==='beef')m=quadModel({body:0x8a4a2a,head:0x8a4a2a,snout:0xf0c0a8,len:1,thick:1.1,hs:1.1,horn:'cow'});
   else if(k==='buffalo')m=quadModel({body:0x4a4a52,len:1.05,thick:1.15,hs:1.15,horn:'buffalo',snout:0x5a5a62});
   else m=birdModel(k,adult);
-  if(!adult&&!['cow','pig','bee','queenbee','ostrich','quail','turkey','chick','duck','goose','silkie','guinea','goldhen','pigeon','muscovy','peacock','emu'].includes(k))m.scale.multiplyScalar(.6);
+  if(!adult&&!['cow','pig','bee','queenbee','ostrich','quail','turkey','chick','duck','goose','silkie','guinea','goldhen','pigeon','muscovy','peacock','emu'].includes(k))m.scale.multiplyScalar(k==='rabbit'||k==='angora'?.95:.6);
   if(k==='turkey'&&!adult)m.scale.setScalar(.7);return m}
 // 收購站店員
 function makeClerk(){const g=new THREE.Group();const body=mesh(new THREE.CylinderGeometry(.28,.36,.7,14),M(0x5cb85c));body.position.y=.65;g.add(body);const ap=mesh(G.box,M(0xffffff));ap.scale.set(.42,.45,.06);ap.position.set(0,.6,.3);g.add(ap);
@@ -1848,7 +1848,7 @@ function frameBody(){if(EMBED&&HOLD){clock.getDelta();return}const rdt=Math.min(
     if(moving){v.o.position.x+=dx/d*Math.min(d,sp*rdt);v.o.position.z+=dz/d*Math.min(d,sp*rdt);v.o.rotation.y=lerpA(v.o.rotation.y,Math.atan2(dx,dz)-Math.PI/2,rdt*5)}animAnim(v.o,wTime,moving);
     if(shelter&&d<.35&&!v.hid){v.hid=1;v.o.visible=false}
     const d2=ANIM[a.k];const hungry=a.food<=0&&d2.eat;const nearP=Math.hypot(P.pos.x-v.o.position.x,P.pos.z-v.o.position.z)<9;let h='';
-    if(v.hid)h='';else if(hungry)h='😣 肚子餓';else if(nearP){if(a.age<1)h=`${d2.bem} 長大中 ${Math.floor(a.age*100)}%`;else if(d2.prod)h=`${ITEMS[d2.prod].em} ${Math.floor((a.prog||0)*100)}%`;else h='✅ 長大了，可以賣'}
+    if(v.hid)h='';else if(hungry)h='😣 肚子餓';else if(nearP){if(a.age<1)h='';else if(d2.prod)h=(a.prog||0)>=1?`${ITEMS[d2.prod].em} 可以收了`:'';else h='✅ 長大了，可以賣'}
     v.L.pos=v.o.position.clone().setY((['cow','beef','buffalo','ostrich','alpaca'].includes(a.k)?2:a.k==='pig'?1.3:1.1)*(a.age>=1?1:.7));v.L.near=h?14:0;setL(v.L,h?`<div class="pl ${hungry?'warn':''}">${h}</div>`:'')}
   for(const k in PENS){const p=PENS[k];p.trough.scale.z=.05+.4*(S.trough[k]/10);p.trough.visible=S.trough[k]>0;const hidden=shelter&&S.animals.some(a=>ANIM[a.k].pen===k&&ANIM[a.k].pen!=='apiary');const pn=Math.hypot(P.pos.x-p.x,P.pos.z-p.z)<Math.max(p.w,p.d)*.75;p.L.el.classList.toggle('act',pn&&!S.inHome);const tl=troughLeft(k);setL(p.L,`<div class="shop" style="border-color:#ffb36b;color:#8a4a10">${PEN_T[k].em} ${PEN_T[k].n}<br><small>⏱️ 每 ${fmtDur(penDur(k))} 生產（跟著經營模式）${tl!=null?`　🥣 還能吃 ${fmtDur(Math.max(0,tl))}`:''}</small>${hidden?'<br><small>🏠 動物躲進小屋避難中</small>':''}${staffOn('rancher',k)?`<div class="bt">${Object.keys(ANIM).some(a=>ANIM[a].pen===k&&ANIM[a].sell)?`<button class="${aSell(k)?'h':''}" data-asell="${k}">🤠 自動賣長大的：${aSell(k)?'開':'關'}</button>`:''}<button class="${aRebuy(k)?'h':''}" data-arebuy="${k}">🐣 自動補滿動物：${aRebuy(k)?'開':'關'}</button></div>`:''}</div>`)}
   // 倉庫（飼料桶、乾草堆）
