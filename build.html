@@ -46,6 +46,7 @@ input[type=range]{width:100%;accent-color:#e8901a}
 .tag.sold{background:#e8ffe0;border-color:#7ac06a}.tag.land{background:#fff4d8;border-color:#e8a020;font-size:13px}
 #auc .bid{font-size:30px;font-weight:bold;color:#c8701a;text-align:center;margin:8px 0}#auc .who{min-height:120px}
 #bMore{display:none}
+@media (min-width:701px){#sub{left:150px;right:8px;justify-content:flex-start}}
 @media (max-width:700px){#tbtn [data-mh]{display:none}#bMore{display:inline-block}#sub{max-height:132px;overflow-y:auto;pointer-events:auto;align-content:flex-start;-webkit-overflow-scrolling:touch}#rot{left:auto;right:6px;top:calc(178px + env(safe-area-inset-top));bottom:auto}#rot button{width:46px;height:40px;font-size:18px}#hint{top:calc(150px + env(safe-area-inset-top));font-size:13px}#edit{left:8px;right:8px;width:auto;top:auto;bottom:calc(120px + env(safe-area-inset-bottom));max-height:42vh}#tbtn{max-width:56%}.hb{padding:6px 8px;font-size:13px}#mats{display:none}}
 </style></head><body>
 <div id="top"><div id="money" class="box"></div><div id="mats" class="box"></div><div id="tbtn">
@@ -2297,7 +2298,7 @@ function ctxTick(dt){ctxT-=dt;if(ctxT>0)return;ctxT=.25;const bar=$('#ctxBar');c
     else if(Z){const gk=Object.keys(GATH).find(k=>GATH[k].z===Z.k);const nd=nearNode(Z,4.5);const ag=S.ag===Z.k;sig='z'+Z.k+gN(gk)+(ag?'A':(nd?nd.id+'_'+nd.hp:'-'))+(S.zsell||{})[Z.k]+sellP(Z.mat);h=`<div class="ct">${Z.em} ${Z.n}・倉庫 ${MATD[Z.mat].em}<span id="ctxM">${Math.floor(S.mat[Z.mat]||0)}</span>・💰 收購價每個 ${money(sellP(Z.mat))} ${mktArrow(Z.mat)}</div>`+(ag?`<button class="hb r" data-ag="${Z.k}" style="font-size:17px">⏹️ 停止自動採集</button>`:`<button class="hb p" data-ag="${Z.k}" style="font-size:16px">🤖 自動採集</button>`)+(ag?'':nd?`<button class="hb g" data-zg="${Z.k}" style="font-size:17px">${Z.w}（+${Z.g}・還要 ${nd.hp} 下）</button>`:Z.free?`<button class="hb g" data-zg="${Z.k}" style="font-size:17px">${Z.w}（+${Z.g}）</button>`:`<button class="hb o" data-zg="${Z.k}" style="font-size:15px">🚶 走近一${NODEW[Z.k]||'個採集點'}才能採</button>`)+`<button class="hb b" data-zp="${Z.k}">👷 工人和工程車（${gN(gk)} 人）</button>`}
     else if((DH0=dmgNear())){sig='dh'+DH0.id+Math.round(DH0.dmg)+DH0.burnt;h=`<div class="ct">${DH0.burnt?'🏚️':'🔧'} 「${DH0.fac?FAC[DH0.fac].n:DH0.name||'房子'}」${DH0.burnt?'燒毀了':'受損 '+Math.round(DH0.dmg)+'%'}</div><button class="hb r" data-dis="rep|${DH0.id}" style="font-size:17px">🔧 ${DH0.burnt?'重建':'修理'} ${money(repairCost(DH0))}</button><button class="hb b" data-dhs="${DH0.id}">📋 房子資料</button>`}
     else if((W0=wildNear())){const rk=W0.k==='rock'||W0.k==='bigrock';sig='wn'+W0.id+(WN.get(W0.id)||3);h=`<div class="ct">${rk?'🪨 野外的石頭':'🌳 野外的'+(NAT[W0.k].n||'樹')}</div><button class="hb g" data-wn="${W0.id}" style="font-size:17px">${rk?'⛏️ 敲石頭':'🪓 砍樹'}（+${rk?(W0.k==='bigrock'?4:2):3}・還要 ${WN.get(W0.id)||3} 下）</button>`}
-    else if(p>=0&&!S.plots[p]&&adjOwned(p)){sig='land'+p;h=`<div class="ct">🗺️ 這塊地還沒有主人</div><button class="hb g" data-buyp="${p}">🗺️ 買下這塊地<br><small>${money(landPrice())}</small></button>`}}
+    else if(p>=0&&!S.plots[p]&&adjOwned(p)){sig='land'+p;h=`<div class="ct">🗺️ 這塊地還沒有主人</div>${buyZChip(p)}<button class="hb g" data-buyp="${p}">🗺️ 買下這塊地<br><small>${money(landPrice())}</small></button>`}}
   landHL(sig.startsWith('land')?+sig.slice(4):-1);
   const sub=$('#sub');const sb=sub&&getComputedStyle(sub).display!=='none'?sub.offsetHeight+84:84;bar.style.bottom=`calc(${sb}px + env(safe-area-inset-bottom))`;
   if(sig===ctxSig){const m=$('#ctxM');if(m){const Z=zoneAt(ME.position.x,ME.position.z);if(Z)m.textContent=Math.floor(S.mat[Z.mat]||0)}return}ctxSig=sig;bar.innerHTML=h;bar.style.display=h?'flex':'none';
@@ -2305,7 +2306,7 @@ function ctxTick(dt){ctxT-=dt;if(ctxT>0)return;ctxT=.25;const bar=$('#ctxBar');c
   bar.querySelectorAll('[data-hx]').forEach(b=>b.onclick=()=>{const o=IN.o;const k=b.dataset.hx;SFX.click();if(k==='dress')dressPanel();else if(k==='need')openPanel(`<h2>❓ 自宅生活狀態</h2>${needHelpH()}`);else if(k==='deco'&&o)intEnter(o);else if(k==='live'&&o)afterDeco(o,true);else if(k==='home'&&o){houseHome(o);ctxSig=''}});
   bar.querySelectorAll('[data-ag]').forEach(b=>b.onclick=()=>agToggle(b.dataset.ag));bar.querySelectorAll('[data-dhs]').forEach(b=>b.onclick=()=>{SFX.click();SEL=+b.dataset.dhs;editShow()});bar.querySelectorAll('[data-zg]').forEach(b=>b.onclick=()=>gather(ZONES.find(z=>z.k===b.dataset.zg)));
   bar.querySelectorAll('[data-zp]').forEach(b=>b.onclick=()=>{SFX.click();zonePanel(ZONES.find(z=>z.k===b.dataset.zp))});bar.querySelectorAll('[data-fl]').forEach(b=>b.onclick=()=>inFloor(+b.dataset.fl));
-  bar.querySelectorAll('[data-buyp]').forEach(b=>b.onclick=()=>{const p=+b.dataset.buyp;const pr=landPrice();ask(`買下這塊地？<br>${money(pr)}`,()=>{if(!spend(pr,'買土地'))return;S.plots[p]=1;plotUpdate(p);SFX.cash();toast('🗺️ 買下新的土地了！可以開始蓋房子');MMT=0;ctxSig='';dirty();chkTitle()})})}
+  bar.querySelectorAll('[data-buyz]').forEach(b=>b.onclick=()=>{SFX.click();buyZPick()});bar.querySelectorAll('[data-buyp]').forEach(b=>b.onclick=()=>{const p=+b.dataset.buyp;if(S.buyZ===undefined&&!(S.zone||{})[p]){SFX.click();buyZPick(()=>b.onclick());return}const pr=landPrice();ask(`買下這塊地？<br>${money(pr)}`,()=>{if(!spend(pr,'買土地'))return;S.plots[p]=1;buyZApply(p);plotUpdate(p);SFX.cash();toast('🗺️ 買下新的土地了！可以開始蓋房子');MMT=0;ctxSig='';dirty();chkTitle()})})}
 /* ---- 土地的虛線框 ---- */
 const LANDM=new THREE.LineDashedMaterial({color:0xffffff,dashSize:2.2,gapSize:1.6,transparent:true,opacity:.9,depthWrite:false}),LANDM2=new THREE.LineDashedMaterial({color:0xff9a20,dashSize:2.2,gapSize:1.4,depthWrite:false});
 let LANDL=null,landSig='',landT=0;
@@ -3198,7 +3199,7 @@ function lampTick(dt){lampT-=dt;if(lampT>0)return;lampT=.3;const L=[];
     for(const o of hs){if(L.length>=6)break;const n=lampItems(o).length;L.push([V(o.x,baseY(o)+1.8,o.z),NIGHT*Math.min(40,10+n*6),Math.max(o.w,o.d)*.9+9])}}
   LAMPL.forEach((l,i)=>{const q=L[i];if(!q){l.intensity=0;return}l.position.copy(q[0]);l.intensity=q[1];l.distance=q[2]})}
 
-function bal2Tick(dt){airFarTick(dt);trainLifeTick(dt);skyWalkTick(dt);commTick(dt);rail2Tick(dt);sky2Tick(dt);air2Tick(dt);lmOutline();faceTick(dt);mvTick();mobCam();mobTick(dt);dashTick();layoutTick(dt);extTick(dt);repTick(dt);dmgFxTick(dt);mgrTick(dt);lampTick(dt)}
+function bal2Tick(dt){grdTick(dt);airFarTick(dt);trainLifeTick(dt);skyWalkTick(dt);commTick(dt);rail2Tick(dt);sky2Tick(dt);air2Tick(dt);lmOutline();faceTick(dt);mvTick();mobCam();mobTick(dt);dashTick();layoutTick(dt);extTick(dt);repTick(dt);dmgFxTick(dt);mgrTick(dt);lampTick(dt)}
 
 /* ---- 畫面排版：左上角的小視窗由上往下排，不會互相蓋住（手機特別重要） ---- */
 let layT=0;function layoutTick(dt){layT-=dt;if(layT>0)return;layT=.4;const mob=MOB.on;const vis=e=>e&&getComputedStyle(e).display!=='none'&&e.offsetHeight>0;
@@ -3296,7 +3297,7 @@ const _intExit0=intExit;intExit=function(){const _o=INT&&INT.o;const r=_intExit0
 
 /* ---- 建材行：按住買、賣按鈕會連續觸發 ---- */
 (function holdBtn(){let tm=null,iv=null,sel=null;const stop=()=>{clearTimeout(tm);clearInterval(iv);tm=iv=null;sel=null};
-  document.addEventListener('pointerdown',e=>{const b=e.target.closest&&e.target.closest('#panel [data-buy],#panel [data-sell]');stop();if(!b)return;const k=b.dataset.buy?'buy':'sell',v=b.dataset[k];if(/\|(all|1000)$/.test(v))return;sel=`#panel [data-${k}="${v}"]`;
+  document.addEventListener('pointerdown',e=>{const b=e.target.closest&&e.target.closest('#panel [data-buy],#panel [data-sell]');stop();if(!b)return;const k=b.dataset.buy?'buy':'sell',v=b.dataset[k];if(/\|all$/.test(v))return;sel=`#panel [data-${k}="${v}"]`;
     tm=setTimeout(()=>{iv=setInterval(()=>{const q=sel&&document.querySelector(sel);if(!q||!$('#modal').classList.contains('on')){stop();return}q.click()},130)},450)},true);
   for(const ev of ['pointerup','pointercancel'])addEventListener(ev,stop,true);addEventListener('blur',e=>{if(e.target===window)stop()});document.addEventListener('contextmenu',e=>{if(sel)e.preventDefault()})})();
 const _shopPanel0=shopPanel;shopPanel=function(){const p=$('#panel');const on=$('#modal').classList.contains('on');const st=on&&p?p.scrollTop:0;const r=_shopPanel0.apply(this,arguments);if(on&&p&&st)p.scrollTop=st;return r};
@@ -3428,7 +3429,7 @@ landPanel=function(){const pr=landPrice();S.zone=S.zone||{};const cnt={};for(con
    cv.onclick=e=>{const w=mmPick(cv,e);const p=plotOf(w.x,w.z);if(p<0)return;
      if(zb){if(ZNUI.erase||S.zone[p]===ZNUI.k)delete S.zone[p];else{const have=Object.values(S.zone).filter(k=>k===ZNUI.k).length-(S.zone[p]===ZNUI.k?1:0);if(have>=ZNUI.n){SFX.err();toast(`這種用途已經劃滿 ${ZNUI.n} 塊了，要再多劃請按「＋」`,2400);return}S.zone[p]=ZNUI.k;SFX.place()}dirty();keep();return}
      if(ZNUI.look||S.plots[p]){CAM.tx=w.x;CAM.tz=w.z;closePanel();return}
-     ask(`買下這塊地？${znTxt(p)?'<br>規劃用途：'+znTxt(p):''}<br>${money(pr)}`,()=>{if(!spend(pr,'買土地'))return;S.plots[p]=1;plotUpdate(p);SFX.cash();const c=plotCenter(p);CAM.tx=c.x;CAM.tz=c.z;toast('🗺️ 買下新的土地了！可以開始蓋房子');MMT=0;dirty();chkTitle()})}})};
+     ask(`買下這塊地？${znTxt(p)?'<br>規劃用途：'+znTxt(p):''}<br>${money(pr)}`,()=>{if(!spend(pr,'買土地'))return;S.plots[p]=1;buyZApply(p);plotUpdate(p);SFX.cash();const c=plotCenter(p);CAM.tx=c.x;CAM.tz=c.z;toast('🗺️ 買下新的土地了！可以開始蓋房子');MMT=0;dirty();chkTitle()})}})};
 HOSTK.push('zone','znOff');
 // 現在站的這塊地是什麼用途
 let znT=0;function znChip(dt){znT-=dt;if(znT>0||!ME)return;znT=1;const t=znTxt(plotOf(ME.position.x,ME.position.z));let c=$('#znChip');if(!t){if(c)c.style.display='none';return}if(!c){c=document.createElement('div');c.id='znChip';c.style.cssText='position:fixed;right:10px;bottom:calc(96px + env(safe-area-inset-bottom));z-index:5;background:rgba(255,251,236,.92);border:2px solid #d8c8a0;border-radius:14px;padding:3px 10px;font-size:13px;font-weight:bold;color:#4a3010;pointer-events:none';document.body.appendChild(c)}c.style.display=(MOB.on&&MOBX.some(q=>MOB[q]))||INT?'none':'block';c.textContent='📍 這塊地：'+t}
@@ -3650,7 +3651,7 @@ function rset(){if(!S.rset)S.rset={steam:{n:1,f:0,dw:4},emu:{n:2,f:1,dw:4},hsr:{
 const isBusStop=o=>(o.t==='dec'&&o.k==='bus')||(o.t==='house'&&o.sign&&/公車/.test(o.sign)&&!(o.bt!=null&&o.bt<1)&&!o.burnt);
 const stnPred=k=>k==='bus'?isBusStop:isStn;const KEM={steam:'🚂',emu:'🚆',hsr:'🚄',bus:'🚌'};
 const TRN=[];let RNET=[];const SWM=[];
-const isStn=h=>h.t==='house'&&h.sign&&/車站|高鐵站/.test(h.sign)&&!(h.bt!=null&&h.bt<1)&&!h.burnt;
+const isStn=h=>h.t==='house'&&h.sign&&/車站|高鐵站/.test(h.sign)&&!/貨運/.test(h.sign)&&!(h.bt!=null&&h.bt<1)&&!h.burnt;
 function railExtraSig(){return JSON.stringify(rset())+'|'+S.objs.filter(o=>isStn(o)||isBusStop(o)).map(h=>h.id+','+Math.round(h.x)+','+Math.round(h.z)).join(',')}
 // 貨運車廂：平板車加貨櫃
 function freightCar(i){const g=new THREE.Group();const B=new Batch();const dk=mat('',0x1c1c20);B.add(boxG(2.3,.35,8.6),dk,mxAt(0,.95,0));for(const z of [-2.8,2.8])for(const s of [-1,1])B.add(new THREE.CylinderGeometry(.42,.42,.2,10),dk,mxAt(s*.85,.45,z,0,1,1,1,0,Math.PI/2));
@@ -3669,20 +3670,23 @@ document.addEventListener('click',e=>{const t=e.target.closest&&e.target.closest
 function railNet(rs){for(const g of SWM)scene.remove(g);SWM.length=0;for(const v of TRN)for(const g of v.gs)scene.remove(g);TRN.length=0;RNET=[];const RS=rset();
   for(const kind of ['steam','emu','hsr','bus']){const L=rs.filter(o=>kind==='bus'?ROADS[o.k].bus&&!ROADS[o.k].train:ROADS[o.k].train===kind).map(o=>{const P=railPath(o);return {o,P,cut:new Set([0,P.pts.length-1])}}).filter(q=>q.P.pts.length>1&&q.P.L>2);if(!L.length)continue;
     for(const A of L)for(const ei of [0,A.P.pts.length-1]){const p=A.P.pts[ei];for(const B of L){if(B===A)continue;let bj=-1,bd=5;for(let j=0;j<B.P.pts.length;j++){const d=Math.hypot(B.P.pts[j].x-p.x,B.P.pts[j].z-p.z);if(d<bd){bd=d;bj=j}}if(bj<0)continue;if(B.P.d[bj]<5)bj=0;else if(B.P.L-B.P.d[bj]<5)bj=B.P.pts.length-1;B.cut.add(bj)}}
+    if(kind==='bus')roadCross(L);
     const N=[];const nodeAt=(x,z)=>{for(const n of N)if(Math.hypot(n.x-x,n.z-z)<5)return n;const n={x,z,adj:[],sw:0};N.push(n);return n};const E=[];
     for(const A of L){const cs=[...A.cut].sort((a,b)=>a-b);for(let i=1;i<cs.length;i++){const a=cs[i-1],b=cs[i];if(b-a<1)continue;const pts=A.P.pts.slice(a,b+1),y=A.P.y.slice(a,b+1);const d=[0];let l=0;for(let k=1;k<pts.length;k++){l+=Math.hypot(pts[k].x-pts[k-1].x,pts[k].z-pts[k-1].z);d.push(l)}if(l<.5)continue;
-      const e={P:{pts,y,d,L:l},a:nodeAt(pts[0].x,pts[0].z),b:nodeAt(pts[pts.length-1].x,pts[pts.length-1].z),st:[],fst:[]};if(e.a===e.b&&l<20)continue;e.a.adj.push(e);if(e.b!==e.a)e.b.adj.push(e);E.push(e)}}
+      const e={P:{pts,y,d,L:l},a:nodeAt(pts[0].x,pts[0].z),b:nodeAt(pts[pts.length-1].x,pts[pts.length-1].z),st:[],fst:[],fdp:[]};if(e.a===e.b&&l<20)continue;e.a.adj.push(e);if(e.b!==e.a)e.b.adj.push(e);E.push(e)}}
     // 連在一起的軌道算同一個路網
-    const seen=new Set();for(const e0 of E){if(seen.has(e0))continue;const C={kind,E:[],L:0,stn:[],fst:[],N:new Set()};const q=[e0];seen.add(e0);while(q.length){const e=q.pop();C.E.push(e);C.L+=e.P.L;for(const n of [e.a,e.b]){C.N.add(n);for(const x of n.adj)if(!seen.has(x)){seen.add(x);q.push(x)}}}
+    const seen=new Set();for(const e0 of E){if(seen.has(e0))continue;const C={kind,E:[],L:0,stn:[],fst:[],fdp:[],N:new Set()};const q=[e0];seen.add(e0);while(q.length){const e=q.pop();C.E.push(e);C.L+=e.P.L;for(const n of [e.a,e.b]){C.N.add(n);for(const x of n.adj)if(!seen.has(x)){seen.add(x);q.push(x)}}}
       const near=(x,z,r)=>{let b=null,bd=r;for(const e of C.E)for(let i=0;i<e.P.pts.length;i++){const p=e.P.pts[i];const d=Math.hypot(p.x-x,p.z-z);if(d<bd){bd=d;b={e,s:e.P.d[i],x:p.x,y:e.P.y[i],z:p.z}}}return b};
       let bsi=0;for(const h of S.objs){if(!stnPred(kind)(h))continue;const b=near(h.x,h.z,(kind==='bus'?14:30)+Math.max(h.w||0,h.d||0)/2);if(!b)continue;const st=Object.assign(b,{id:h.id,n:h.sign||h.name||(kind==='bus'?'🚏 公車站 '+String.fromCharCode(65+(bsi++%26)):'車站')});b.e.st.push(st);C.stn.push(st)}
-      for(const Z of ZONES){if(Z.x==null||kind==='bus')continue;const b=near(Z.x,Z.z,Z.r+30);if(!b)continue;const st=Object.assign(b,{zk:Z.k,n:Z.em+' '+Z.n});b.e.fst.push(st);C.fst.push(st)}
+      for(const Z of ZONES){if(Z.x==null)continue;const b=near(Z.x,Z.z,Z.r+30);if(!b)continue;const st=Object.assign(b,{zk:Z.k,n:Z.em+' '+Z.n});b.e.fst.push(st);C.fst.push(st)}
+      for(const h of S.objs){if(!isFstn(h))continue;const b=near(h.x,h.z,30+Math.max(h.w||0,h.d||0)/2);if(!b)continue;const st=Object.assign(b,{id:h.id,dep:1,n:h.sign});b.e.fdp.push(st);C.fdp.push(st)}
+      for(const e of C.E)e.fall=e.fst.concat(e.fdp);
       RNET.push(C);
       // 道岔號誌：三條以上的軌道接在一起
-      for(const n of C.N){let c=0;for(const e of n.adj)c+=(e.a===n?1:0)+(e.b===n?1:0);if(c<3)continue;const g=new THREE.Group();const B=new Batch();B.add(boxG(.25,1.6,.25),mat('',0x2a2a2e),mxAt(0,.8,0));B.add(boxG(1.1,.5,.18),mat('',0xf8d020),mxAt(0,1.75,0));for(const x of [-.36,0,.36])B.add(boxG(.16,.52,.2),mat('',0x1c1c20),mxAt(x,1.75,0));B.add(new THREE.SphereGeometry(.2,8,6),LAMP_M,mxAt(0,2.2,0));B.build(g);g.position.set(n.x+3.2,Math.max(hAt(n.x+3.2,n.z),WATER_Y),n.z);scene.add(g);SWM.push(g);n.mk=g}
+      for(const n of C.N){let c=0;for(const e of n.adj)c+=(e.a===n?1:0)+(e.b===n?1:0);if(c<3)continue;if(kind==='bus'){tlMake(n);n.tl.userData.n=n;continue}const g=new THREE.Group();const B=new Batch();B.add(boxG(.25,1.6,.25),mat('',0x2a2a2e),mxAt(0,.8,0));B.add(boxG(1.1,.5,.18),mat('',0xf8d020),mxAt(0,1.75,0));for(const x of [-.36,0,.36])B.add(boxG(.16,.52,.2),mat('',0x1c1c20),mxAt(x,1.75,0));B.add(new THREE.SphereGeometry(.2,8,6),LAMP_M,mxAt(0,2.2,0));B.build(g);g.position.set(n.x+3.2,Math.max(hAt(n.x+3.2,n.z),WATER_Y),n.z);scene.add(g);SWM.push(g);n.mk=g}
       // 依班次放列車
-      const T=TRAINT[kind];const es=C.E.slice().sort((a,b)=>b.P.L-a.P.L);const maxN=Math.max(1,Math.floor(C.L/70));const want=[];for(let i=0;i<Math.min(RS[kind].n,maxN);i++)want.push(0);if(C.fst.length)for(let i=0;i<Math.min(RS[kind].f,maxN);i++)want.push(1);
-      want.forEach((fr,i)=>{const nn=kind==='bus'?1:fr?Math.max(2,Math.min(6,Math.floor(C.L/40))):Math.max(2,Math.min(T.cars,Math.floor(C.L/40)));const gs=[];for(let c=0;c<nn;c++){const g=kind==='bus'?VEHD.bus.mk():fr&&c>0?freightCar(c):trainCar(kind,fr?0:c,fr?2:nn);if(c===0)g.userData.loco=1;scene.add(g);gs.push(g)}
+      const T=TRAINT[kind];const es=C.E.slice().sort((a,b)=>b.P.L-a.P.L);const maxN=Math.max(1,Math.floor(C.L/70));const want=[];for(let i=0;i<Math.min(RS[kind].n,maxN);i++)want.push(0);if(C.fst.length&&C.fdp.length)for(let i=0;i<Math.min(RS[kind].f,maxN);i++)want.push(1);
+      want.forEach((fr,i)=>{const nn=kind==='bus'?1:fr?Math.max(2,Math.min(6,Math.floor(C.L/40))):Math.max(2,Math.min(T.cars,Math.floor(C.L/40)));const gs=[];for(let c=0;c<nn;c++){const g=kind==='bus'?(fr?truckModel(i):VEHD.bus.mk()):fr&&c>0?freightCar(c):trainCar(kind,fr?0:c,fr?2:nn);if(c===0)g.userData.loco=1;scene.add(g);gs.push(g)}
         const e=es[i%es.length];const len=nn*9.6;const v={kind,T,gs,len,fr,C,seq:[{e,dir:i%2?-1:1}],p:Math.min(e.P.L,len+2+Math.floor(i/es.length)*(len+20)),v:0,wait:1+i*2,flip:false};trBackfill(v);TRN.push(v)})}}}
 function trPt(t,q,out){const e=t.e;pathAt(e.P,t.dir>0?q:e.P.L-q,out);if(t.dir<0){out.a+=Math.PI;out.p=-out.p}return out}
 function trainAt(v,back,out){let k=v.seq.length-1,q=v.p-back;while(q<0&&k>0){k--;q+=v.seq[k].e.P.L}return trPt(v.seq[k],Math.max(0,q),out)}
@@ -3692,32 +3696,33 @@ function trNext(v){const t=v.seq[v.seq.length-1];const n=t.dir>0?t.e.b:t.e.a;con
 // 開頭列車後面的車廂需要有軌道可以放：往回接上前一段
 function trBackfill(v){let tot=v.p;for(let g=0;g<6&&tot<v.len+2;g++){const f=v.seq[0];const n=f.dir>0?f.e.a:f.e.b;const C=trCands(f.e,-f.dir,n);if(!C.length)break;const c=C[0];const t={e:c.e,dir:-c.dir};v.seq.unshift(t);tot+=t.e.P.L}if(tot<v.len){const e=v.seq[v.seq.length-1].e;v.p=Math.min(e.P.L,v.p+(v.len-tot))}}
 function trRev(v){let k=v.seq.length-1,q=v.p-v.len;while(q<0&&k>0){k--;q+=v.seq[k].e.P.L}q=Math.max(0,q);const ns=v.seq.slice(k).reverse().map(t=>({e:t.e,dir:-t.dir}));v.seq=ns;v.p=ns[ns.length-1].e.P.L-q;v.next=undefined;v.gs.reverse();v.flip=!v.flip;if(v.lastSt){const m=trainAt(v,v.len/2,{});if(Math.hypot(m.x-v.lastSt.x,m.z-v.lastSt.z)<v.len/2+8){v.doneT=ns[ns.length-1];v.doneSt=v.lastSt}}}
-function trStops(v,t){return v.fr?t.e.fst:t.e.st}
+function trStops(v,t){return v.fr?(t.e.fall||t.e.fst):t.e.st}
+const cargoN=v=>Object.values(v.cargo||{}).reduce((a,b)=>a+b,0);
 function trainTick(v,dt){
   if(v.wait>0){v.wait-=dt;v.v=0;if(v.wait<=0){v.at=null;if(v.rev){v.rev=0;trRev(v)}}}
   else{const t=v.seq[v.seq.length-1],L=t.e.P.L;if(v.next===undefined)v.next=trNext(v);const half=v.len/2;let rem=Infinity,stop=null,stT=null;
-    const look=(tt,off)=>{for(const st of trStops(v,tt)){if(v.doneT===tt&&v.doneSt===st)continue;const q=tt.dir>0?st.s:tt.e.P.L-st.s;const hq=Math.min(tt.e.P.L,q+half);const r=off+hq;if(r>-.2&&r<rem){rem=Math.max(0,r);stop=st;stT=tt}}};
+    const look=(tt,off)=>{for(const st of trStops(v,tt)){if(v.doneT===tt&&v.doneSt===st)continue;if(v.fr){if(st.dep){if(cargoN(v)<1)continue}else if(((S.zpile||{})[st.zk]||0)<1||cargoN(v)>={steam:250,emu:400,hsr:600,bus:120}[v.kind])continue}const q=tt.dir>0?st.s:tt.e.P.L-st.s;const hq=Math.min(tt.e.P.L,q+half);const r=off+hq;if(r>-.2&&r<rem){rem=Math.max(0,r);stop=st;stT=tt}}};
     look(t,-v.p);let dead=false;if(stop==null){if(v.next)look(v.next,L-v.p);else{rem=Math.max(0,L-v.p-.3);dead=true}}
-    const vmax=Math.min(v.T.v*(v.fr?.75:1),Math.sqrt(2*v.T.acc*1.6*Math.max(0,rem))+.5);v.v=Math.min(vmax,v.v+v.T.acc*dt);const step=Math.min(v.v*dt,rem);v.p+=step;
+    const lim=trLimit(v,t,L),bind=rem<=lim,R2=Math.min(rem,lim);const vmax=Math.min(v.T.v*(v.fr?.75:1),Math.sqrt(2*v.T.acc*1.6*Math.max(0,R2))+.5);v.v=Math.min(vmax,v.v+v.T.acc*dt);const step=Math.min(v.v*dt,R2);v.p+=step;
     while(v.p>L-.001&&v.next&&v.seq[v.seq.length-1]===t){const ov=v.p-L;v.seq.push(v.next);v.p=ov;v.next=undefined;break}
     {let tot=v.p;for(let k=v.seq.length-2;k>=0;k--){if(tot>v.len+10){v.seq.splice(0,k+1);break}tot+=v.seq[k].e.P.L}}
-    if(rem-step<=.4&&(stop||dead)){v.v=0;if(stop){v.doneT=stT;v.doneSt=stop;v.at=stop;v.lastSt=stop;v.wait=v.fr?8:rset()[v.kind].dw;trArrive(v,stop)}else{v.wait=5;v.rev=1}}}
+    if(bind&&rem-step<=.4&&(stop||dead)){v.v=0;if(stop){v.doneT=stT;v.doneSt=stop;v.at=stop;v.lastSt=stop;v.wait=v.fr?8:rset()[v.kind].dw;trArrive(v,stop)}else{v.wait=5;v.rev=1}}}
   for(let i=0;i<v.gs.length;i++){trainAt(v,4.8+i*9.6,_tq);const g=v.gs[i];if(v.kind==='bus'){const a=_tq.a;g.position.set(_tq.x-Math.cos(a)*1.4,_tq.y,_tq.z+Math.sin(a)*1.4)}else g.position.set(_tq.x,_tq.y,_tq.z);g.rotation.set(0,_tq.a+(v.flip?Math.PI:0),0);g.rotateX(v.flip?_tq.p:-_tq.p)}
   if(v.kind==='steam'&&TSMK.length<60&&Math.random()<dt*(v.v>1?14:3)){const lo=v.gs.find(g=>g.userData.loco)||v.gs[0];const sm=dustM.clone();sm.color.set(0x1a1a1a);sm.opacity=.8;const s=new THREE.Sprite(sm);const a=lo.rotation.y;s.position.set(lo.position.x+Math.sin(a)*3,lo.position.y+4.2,lo.position.z+Math.cos(a)*3);s.scale.setScalar(1.2);scene.add(s);TSMK.push({s,t:0})}}
-function trArrive(v,st){if(v.fr){const Z=ZONES.find(z=>z.k===st.zk);if(!Z||(typeof CO!=='undefined'&&CO.role==='guest'))return;const q=Math.floor((S.zpile||{})[Z.k]||0);const cap={steam:250,emu:400,hsr:600}[v.kind];const n=Math.min(q,cap);if(n<1)return;S.zpile[Z.k]-=n;let txt;if((S.zsell||{})[Z.k]){const m=n*sellP(Z.mat);earn(m);txt=`🚂 貨運列車載走 ${n}${MATD[Z.mat].em} 賣了 ${money(m)}`}else{S.mat[Z.mat]=(S.mat[Z.mat]||0)+n;txt=`📦 貨運列車裝貨 +${n}${MATD[Z.mat].em}`}if(CAM.dist<260)floatTxt(V(st.x,st.y+5,st.z),txt);matHud();return}
+function trArrive(v,st){if(v.fr){if(st.dep)fdUnload(v,st);else fdLoad(v,st);return}
   if(PAX.length<24)paxSpawn(v,st)}
-function trainsTick(dt){for(const v of TRN)trainTick(v,dt);for(const g of SWM){const u=g.userData;if(u.fl>0){u.fl-=dt;g.rotation.y=Math.sin(u.fl*20)*.08}}}
+function trainsTick(dt){for(const v of TRN)trainTick(v,dt);tlTick();for(const g of SWM){const u=g.userData;if(u.fl>0){u.fl-=dt;g.rotation.y=Math.sin(u.fl*20)*.08}}}
 function trainMid(v){return trainAt(v,v.len/2,_tp)}
 function paxSpawn(v,st){const h=byId(st.id);if(!h)return;let dx=h.x-st.x,dz=h.z-st.z;const l=Math.hypot(dx,dz)||1;dx/=l;dz/=l;const n=(isMob()?2:4)+Math.floor(Math.random()*3);const far=Math.min(l-1,14);
   for(let i=0;i<n;i++){const p=person([0x3a6ad8,0xd84a3a,0x3aa85a,0xe8b020,0x8a4ad8,0xf0f0f0][Math.floor(Math.random()*6)]);const out=i%2===0;const off=(i-n/2)*1.6;const ax=st.x+dx*2.2-dz*off,az=st.z+dz*2.2+dx*off,bx=st.x+dx*far-dz*off*.4,bz=st.z+dz*far+dx*off*.4;p.rotation.y=Math.atan2(out?dx:-dx,out?dz:-dz);scene.add(p);PAX.push({p,ax:out?ax:bx,az:out?az:bz,bx:out?bx:ax,bz:out?bz:az,t:-Math.random()*.8,d:3})}
   const fare=n*TKT[v.kind];if(S.mode!=='free'){earn(fare);if(CAM.dist<260)floatTxt(V(st.x,st.y+5,st.z),`🎫 車票收入 +${fare}`)}}
-function railPanel(){const R=rset();const row=k=>{const T=TRAINT[k],r=R[k];const cs=RNET.filter(c=>c.kind===k);const Lt=cs.reduce((a,c)=>Math.max(a,c.L),0);const ns=cs.reduce((a,c)=>Math.max(a,c.stn.length),0);const fz=cs.reduce((a,c)=>Math.max(a,c.fst.length),0);const sw=cs.reduce((a,c)=>a+[...c.N].filter(n=>n.mk).length,0);
+function railPanel(){const R=rset();const row=k=>{const T=TRAINT[k],r=R[k];const cs=RNET.filter(c=>c.kind===k);const Lt=cs.reduce((a,c)=>Math.max(a,c.L),0);const ns=cs.reduce((a,c)=>Math.max(a,c.stn.length),0);const fz=cs.reduce((a,c)=>Math.max(a,c.fst.length),0);const fd=cs.reduce((a,c)=>Math.max(a,c.fdp.length),0);const sw=cs.reduce((a,c)=>a+[...c.N].filter(n=>n.mk||n.tl).length,0);
     const cyc=Lt?2*Lt/(T.v*.75)+ns*2*r.dw:0;const per=cyc&&ns?Math.max(1,Math.round(Math.min(r.n,Math.max(1,Math.floor(Lt/70)))*720/cyc)):0;
-    return `<div class="prow" style="flex-wrap:wrap;align-items:flex-start"><div class="em">${KEM[k]}</div><div class="tx"><b>${T.n}</b><small>${Lt?`路線 ${Math.round(Lt)} 公尺・${ns} 個${k==='bus'?'公車站':'車站'}${k==='bus'?'':`・${fz} 個採集場貨運點`}・${sw} 個${k==='bus'?'路口':'道岔'}${per?`<br>每個車站每天大約停靠 ${per} 班`:''}`:(k==='bus'?'還沒有可以開公車的道路（柏油馬路、石板路、泥土小路、高速公路、橋）':'還沒有鋪這種軌道')}</small>
+    return `<div class="prow" style="flex-wrap:wrap;align-items:flex-start"><div class="em">${KEM[k]}</div><div class="tx"><b>${T.n}</b><small>${Lt?`路線 ${Math.round(Lt)} 公尺・${ns} 個${k==='bus'?'公車站':'車站'}・${fz} 個採集場貨運點・${fd} 個貨運車站${fz&&!fd?'<br><b style="color:#c83a2a">⚠️ 要在路線旁邊蓋「貨運車站」（建築模板），貨運才會開</b>':''}・${sw} 個${k==='bus'?'紅綠燈路口':'道岔'}${per?`<br>每個車站每天大約停靠 ${per} 班`:''}`:(k==='bus'?'還沒有可以開公車的道路（柏油馬路、石板路、泥土小路、高速公路、橋）':'還沒有鋪這種軌道')}</small>
     <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px">🧑‍🤝‍🧑 ${k==='bus'?'公車':'客運列車'} <button class="hb" data-rs="${k}:n:-1">－</button><b>${r.n} 班</b><button class="hb" data-rs="${k}:n:1">＋</button></div>
-    ${k==='bus'?'':`<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px">📦 貨運列車 <button class="hb" data-rs="${k}:f:-1">－</button><b>${r.f} 班</b><button class="hb" data-rs="${k}:f:1">＋</button></div>`}
+    ${`<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px">${k==='bus'?'🚚 貨運卡車':'📦 貨運列車'} <button class="hb" data-rs="${k}:f:-1">－</button><b>${r.f} 班</b><button class="hb" data-rs="${k}:f:1">＋</button></div>`}
     <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px">⏱️ 每站停 ${[4,8,15,30].map(s=>`<button class="hb ${r.dw===s?'g':''}" data-rs="${k}:dw:${s}">${s} 秒</button>`).join('')}</div></div></div>`};
-  openPanel(`<h2>🚆 火車和公車班次</h2><div style="font-size:14px;color:#7a6a4a;line-height:1.7">「班」是同時在軌道上跑的列車數，班數越多，車站等車的時間越短（軌道太短時會自動少開幾班）。<br>🧑‍🤝‍🧑 客運列車停靠「火車站」「高鐵站」，旅客上下車收車票錢。<br>📦 貨運列車停靠採集場旁邊的軌道，把堆著的材料載回倉庫（或直接賣掉）。<br>🔀 軌道的起點或終點接到另一條軌道的中間，會自動變成分岔，旁邊有黃色道岔號誌，列車會輪流開往不同方向。<br>🚌 公車沿著柏油馬路、石板路、泥土小路、高速公路和橋開，停靠「🚏 公車亭」（擺設 → 街道）和公車總站。</div>${['bus','steam','emu','hsr'].map(row).join('')}`,
+  openPanel(`<h2>🚆 火車和公車班次</h2><div style="font-size:14px;color:#7a6a4a;line-height:1.7">「班」是同時在軌道上跑的列車數，班數越多，車站等車的時間越短（軌道太短時會自動少開幾班）。<br>🧑‍🤝‍🧑 客運列車停靠「火車站」「高鐵站」，旅客上下車收車票錢。<br>📦 貨運列車在採集場旁邊的軌道裝貨，載到「貨運車站」卸貨進倉庫（設定成賣掉的就直接賣錢）。路線上要有貨運車站，貨運才會開。客運和貨運共用同一條鐵軌。<br>🔀 軌道的起點或終點接到另一條軌道的中間，會自動變成分岔，旁邊有黃色道岔號誌，列車會輪流開往不同方向。<br>🚌 公車沿著柏油馬路、石板路、泥土小路、高速公路和橋開，停靠「🚏 公車亭」（擺設 → 街道）和公車總站；🚚 貨運卡車在路邊的採集場裝貨，載到路邊的貨運車站卸貨。馬路交叉或接在一起的地方會變成路口，裝紅綠燈，車子會停紅燈、保持車距。</div>${['bus','steam','emu','hsr'].map(row).join('')}`,
     ()=>$('#panel').querySelectorAll('[data-rs]').forEach(b=>b.onclick=()=>{const [k,f,v]=b.dataset.rs.split(':');const r=rset()[k];if(f==='dw')r.dw=+v;else r[f]=clamp(r[f]+(+v),0,8);railSig='';SFX.click();dirty();railSync();railPanel()}))}
 function rideAsk(h){const cs=RNET.filter(c=>c.stn.some(q=>q.id===h.id));if(!cs.length)return;const opt=[];let html='';
   for(const C of cs){const from=C.stn.find(q=>q.id===h.id);const has=TRN.some(v=>v.C===C&&!v.fr);html+=`<div class="lab">${KEM[C.kind]} ${TRAINT[C.kind].n}${has?'':'（沒有開班，請到「⚙️ 班次」加開）'}</div>`;if(!has)continue;
@@ -3774,7 +3779,9 @@ function extraEdit(){if(INT)return;const o=SEL&&byId(SEL);const e=$('#edit');if(
   else if(o.t==='road'&&ROADS[o.k]&&ROADS[o.k].bus||(o.t==='dec'&&o.k==='bus')){const n=TRN.filter(v=>v.kind==='bus').length;h=`<div style="font-size:13px;color:#7a6a4a;margin:4px 0">🚌 現在有 ${n} 台公車在跑${o.t==='dec'?'・公車亭要放在路邊 14 公尺內才會停靠':''}</div><button class="hb b" data-xe="rail" style="width:100%">⚙️ 公車班次設定</button>`}
   else if(o.t==='house'&&(isStn(o)||isBusStop(o)))h=`<button class="hb b" data-xe="rail" style="width:100%;margin:4px 0">⚙️ 火車班次和停站設定</button>`;
   else if(o.t==='dec'&&o.k==='runway')h=airPanelH(o);
-  if(!h)return;const d=document.createElement('div');d.className='xEd';d.innerHTML=h;hd.after(d);
+  if(o.t==='house'&&isSec(o))h+=`<button class="hb g" data-gp="1" style="width:100%;margin:4px 0">🛡️ 保全派遣（已雇 ${grdTot()} / ${grdCap()} 人）</button>`;
+  const GL=grdLocs().find(l=>l.key==='o:'+o.id);if(GL&&!isSec(o))h+=`<button class="hb" data-g1="1" style="width:100%;margin:4px 0">🛡️ 這裡的保全 ${(S.grd||{})[GL.key]||0} 人・派遣保全</button>`;
+  if(!h)return;const d=document.createElement('div');d.className='xEd';d.innerHTML=h;hd.after(d);d.querySelectorAll('[data-gp]').forEach(b=>b.onclick=()=>{SFX.click();grdPanel()});d.querySelectorAll('[data-g1]').forEach(b=>b.onclick=()=>{SFX.click();grdOne(GL)});
   d.querySelectorAll('[data-xe="rail"]').forEach(b=>b.onclick=()=>{SFX.click();railPanel()});
   d.querySelectorAll('[data-fpd]').forEach(b=>b.onclick=()=>{o.fpd=+b.dataset.fpd;SFX.click();dirty();toast(`✈️ 改成每天 ${o.fpd} 班，大約每 ${Math.round(720/o.fpd)} 秒一班`,2200);editShow()})}
 {const e0=editShow;editShow=function(){const r=e0.apply(this,arguments);try{extraEdit()}catch(err){console.warn(err)}return r}}
@@ -3789,6 +3796,89 @@ function skyWalkStep(dt){const w=SKYW;if(!w)return;w.t+=dt;const k=Math.min(1,w.
 {const h0=meHit;meHit=function(x,z){if(SKYW)return false;return h0(x,z)};const g0=meGroundY;meGroundY=function(x,z){if(SKYW)return SKYW.y;return g0(x,z)}}
 function airFarTick(dt){const now=performance.now();for(const o of S.objs){if(o.t!=='dec'||o.k!=='runway')continue;const g=OBJM.get(o.id);if(!g||!g.userData.fl)continue;if(now-(g.userData.lt||0)>250)airTick(g,dt,1)}}
 {const a0=addObj;addObj=function(o){const r=a0.apply(this,arguments);if(o&&o.t==='dec'&&o.k==='runway'){const sc=o.s||1;flattenUnder({t:'house',x:o.x,z:o.z,r:o.r||0,w:36*sc,d:136*sc});refreshNear(o.x,o.z,80)}return r}}
+
+/* ======================= 2.35：馬路交叉變路口、紅綠燈、車子保持車距、貨運卡車 ======================= */
+function segX(a,b,c,d){const r1x=b.x-a.x,r1z=b.z-a.z,r2x=d.x-c.x,r2z=d.z-c.z;const den=r1x*r2z-r1z*r2x;if(Math.abs(den)<1e-6)return null;const t=((c.x-a.x)*r2z-(c.z-a.z)*r2x)/den,u=((c.x-a.x)*r1z-(c.z-a.z)*r1x)/den;return t>=0&&t<=1&&u>=0&&u<=1?{t,u}:null}
+function roadCross(L){const bb=L.map(A=>{let x0=1e9,x1=-1e9,z0=1e9,z1=-1e9;for(const p of A.P.pts){x0=Math.min(x0,p.x);x1=Math.max(x1,p.x);z0=Math.min(z0,p.z);z1=Math.max(z1,p.z)}return [x0,x1,z0,z1]});
+  for(let ai=0;ai<L.length;ai++)for(let bi=ai+1;bi<L.length;bi++){const p=bb[ai],q=bb[bi];if(p[1]<q[0]||q[1]<p[0]||p[3]<q[2]||q[3]<p[2])continue;const A=L[ai],B=L[bi],pa=A.P.pts,pb=B.P.pts;
+    for(let i=1;i<pa.length;i++){const a=pa[i-1],b=pa[i];if(Math.max(a.x,b.x)<q[0]||Math.min(a.x,b.x)>q[1]||Math.max(a.z,b.z)<q[2]||Math.min(a.z,b.z)>q[3])continue;
+      for(let j=1;j<pb.length;j++){const c=pb[j-1],d=pb[j];if(Math.max(c.x,d.x)<Math.min(a.x,b.x)||Math.min(c.x,d.x)>Math.max(a.x,b.x)||Math.max(c.z,d.z)<Math.min(a.z,b.z)||Math.min(c.z,d.z)>Math.max(a.z,b.z))continue;const r=segX(a,b,c,d);if(!r)continue;
+        const ia=r.t<.5?i-1:i,jb=r.u<.5?j-1:j;if(A.P.d[ia]>5&&A.P.L-A.P.d[ia]>5)A.cut.add(ia);if(B.P.d[jb]>5&&B.P.L-B.P.d[jb]>5)B.cut.add(jb)}}}}
+// 紅綠燈：東西向、南北向輪流（綠 9 秒、黃 1 秒）
+const TLM={r:0xff2a2a,y:0xffc020,g:0x2aff5a};
+function tlMake(n){const g=new THREE.Group();const B=new Batch();const dk=mat('',0x2a2a2e);B.add(cyl(.12,.14,4.6,8),dk,mxAt(0,2.3,0));B.add(boxG(.12,.12,2.2),dk,mxAt(0,4.5,1.1));B.add(boxG(2.2,.12,.12),dk,mxAt(1.1,4.5,0));B.build(g);const heads=[];
+  for(const [hx,hz,ry,grp] of [[0,2.2,0,'z'],[2.2,0,Math.PI/2,'x']]){const h=new THREE.Group();h.position.set(hx,4.1,hz);h.rotation.y=ry;h.add(new THREE.Mesh(boxG(.5,1.4,.4),dk));const L={};['r','y','g'].forEach((c,i)=>{const m=new THREE.MeshStandardMaterial({color:0x222222,emissive:TLM[c],emissiveIntensity:.05});const s=new THREE.Mesh(new THREE.SphereGeometry(.16,8,6),m);s.position.set(0,.42-i*.42,.21);h.add(s);L[c]=m});heads.push({grp,L});g.add(h)}
+  g.position.set(n.x+4,Math.max(hAt(n.x+4,n.z+4),WATER_Y),n.z+4);g.userData.heads=heads;scene.add(g);SWM.push(g);n.tl=g;n.off=Math.random()*20}
+function tlState(n,grp){const c=(performance.now()/1000+n.off)%20;if(grp==='x')return c<9?'g':c<10?'y':'r';return c>=10&&c<19?'g':c>=19?'y':'r'}
+function trGrp(t){if(!t.grp){const a=trPt(t,t.e.P.L,{}),b=trPt(t,Math.max(0,t.e.P.L-6),{});t.grp=Math.abs(a.x-b.x)>Math.abs(a.z-b.z)?'x':'z'}return t.grp}
+function tailOn(w,e,dir){let k=w.seq.length-1,q=w.p-w.len;while(q<0&&k>0){k--;q+=w.seq[k].e.P.L}const t=w.seq[k];return t.e===e&&t.dir===dir?q:null}
+function trLimit(v,t,L){let lim=Infinity;const n=t.dir>0?t.e.b:t.e.a;if(n.tl&&v.p<L-5.5&&tlState(n,trGrp(t))!=='g')lim=Math.max(0,L-v.p-6);
+  for(const w of TRN){if(w===v||w.C!==v.C)continue;const tq=tailOn(w,t.e,t.dir);if(tq!=null){if(tq>v.p-.5)lim=Math.min(lim,Math.max(0,tq-v.p-6))}else if(v.next){const q2=tailOn(w,v.next.e,v.next.dir);if(q2!=null)lim=Math.min(lim,Math.max(0,L-v.p+q2-6))}}return lim}
+function tlTick(){for(const g of SWM){const H=g.userData.heads;if(!H)continue;const n=g.userData.n;for(const h of H){const s=tlState(n,h.grp);for(const c of ['r','y','g'])h.L[c].emissiveIntensity=c===s?2.2:.05}}}
+function truckModel(i){const g=new THREE.Group();const B=new Batch();const cc=[0xd8502a,0x2a6ad8,0x3a9a4a,0xe8b020][i%4];const dk=mat('',0x1c1c20);B.add(boxG(2.4,2.2,2.6),mat('',cc,{metalness:.3}),mxAt(0,1.7,3.4));B.add(boxG(2.3,.8,.05),GLASS_M,mxAt(0,2.2,4.71));B.add(boxG(2.5,2.8,6.6),mat('metal',0xe8e8ec,{metalness:.2}),mxAt(0,2.1,-1.1));B.add(boxG(2.4,.4,9.2),mat('',0x2a2a2e),mxAt(0,.75,0));
+  for(const z of [3.4,-.5,-3.2])for(const s of [-1,1])B.add(new THREE.CylinderGeometry(.5,.5,.4,12),dk,mxAt(s*1.1,.5,z,0,1,1,1,0,Math.PI/2));B.add(boxG(2.52,.5,4),mat('',cc),mxAt(0,2.4,-1.1));B.build(g);return g}
+
+/* ======================= 2.36：買地時選用途、貨運車站、保全公司和保全人員、小偷 ======================= */
+// 範本放置時，用範本裡房子的招牌決定是哪一種建築（鐵路用地可以放火車站）
+{const z1=zkNow;zkNow=function(){if(!ZKF&&!INT&&TOOL==='tpl'&&TPLSEL){if(TPLSEL.id==='airport')return 't';const h=TPLSEL.o.find(q=>q.t==='house');return h?(h.fac?'f':signKind(h.sign)):'h'}return z1()}}
+// ---- 買地用途 ----
+function buyZName(){const k=S.buyZ;if(!k||k==='none')return '🚫 不規劃';const z=ZN[k];return z?`${z[1]} ${z[0]}`:'🚫 不規劃'}
+function buyZApply(p){const k=S.buyZ;if(!k||k==='none'||!ZN[k])return;S.zone=S.zone||{};if(!S.zone[p])S.zone[p]=k}
+function buyZChip(p){const pre=(S.zone||{})[p];return pre?`<div style="font-size:13px">🧭 已規劃：${znTxt(p)}</div>`:`<button class="hb" data-buyz="1" style="font-size:13px;padding:4px 10px">🧭 買地用途：${S.buyZ===undefined?'還沒選':buyZName()} ✏️</button>`}
+function buyZPick(cb){let h='';for(const [k,v] of Object.entries(ZN)){if(!Array.isArray(v)){h+=`<div class="lab">${v}</div>`;continue}h+=`<button class="hb ${S.buyZ===k?'g':''}" data-bz="${k}" style="font-size:14px;padding:6px 10px;margin:3px;border-left:8px solid ${v[2]}">${v[1]} ${v[0]}</button>`}
+  openPanel(`<h2>🧭 買地用途</h2><div style="font-size:14px;color:#7a6a4a;line-height:1.7">買下的土地會自動規劃成這個用途（例如選「鐵路用地」，就只能蓋車站和鋪軌道）。<br>選好之後，接下來買的地都會用同一個用途，要換再按「🧭 買地用途」。已經在大地圖先規劃好的土地，會照原本的規劃。</div><button class="hb ${S.buyZ==='none'?'g':''}" data-bz="none" style="width:100%;margin:6px 0">🚫 不規劃（什麼都可以蓋）</button><div style="display:flex;flex-wrap:wrap">${h}</div>`,
+    ()=>$('#panel').querySelectorAll('[data-bz]').forEach(b=>b.onclick=()=>{S.buyZ=b.dataset.bz;SFX.click();dirty();closePanel();ctxSig='';toast(`🧭 之後買的地都會規劃成「${buyZName()}」`,2400);cb&&cb()}))}
+// ---- 貨運車站 ----
+const isFstn=h=>h.t==='house'&&h.sign&&/貨運/.test(h.sign)&&!(h.bt!=null&&h.bt<1)&&!h.burnt;
+function fdUnload(v,st){const c=v.cargo||{};let tot=0,txt=[];if(typeof CO!=='undefined'&&CO.role==='guest'){v.cargo={};return}
+  for(const [zk,n] of Object.entries(c)){if(n<1)continue;const Z=ZONES.find(z=>z.k===zk);if(!Z)continue;tot+=n;if((S.zsell||{})[zk]){const m=n*sellP(Z.mat);earn(m);txt.push(`${MATD[Z.mat].em}${n} 賣了 ${money(m)}`)}else{S.mat[Z.mat]=(S.mat[Z.mat]||0)+n;txt.push(`+${n}${MATD[Z.mat].em}`)}}
+  v.cargo={};if(tot&&CAM.dist<300)floatTxt(V(st.x,st.y+6,st.z),`🏗️ 貨運車站卸貨 ${txt.join('、')}`);if(tot)matHud()}
+function fdLoad(v,st){const Z=ZONES.find(z=>z.k===st.zk);if(!Z||(typeof CO!=='undefined'&&CO.role==='guest'))return;v.cargo=v.cargo||{};const cap={steam:250,emu:400,hsr:600,bus:120}[v.kind];const have=Object.values(v.cargo).reduce((a,b)=>a+b,0);const q=Math.floor((S.zpile||{})[Z.k]||0);const n=Math.min(q,cap-have);if(n<1)return;S.zpile[Z.k]-=n;v.cargo[Z.k]=(v.cargo[Z.k]||0)+n;if(CAM.dist<300)floatTxt(V(st.x,st.y+5,st.z),`${v.kind==='bus'?'🚚':'🚂'} 裝貨 ${MATD[Z.mat].em}${n}（滿載 ${have+n}/${cap}）`)}
+// ---- 保全 ----
+const GRD={v:new Map(),th:null,nt:180,st:0};
+function grdLocs(){const L=[];for(const Z of ZONES)if(Z.x!=null)L.push({key:'z:'+Z.k,n:`${Z.em} ${Z.n}`,x:Z.x,z:Z.z,r:Math.min(Z.r,26),Z});
+  for(const o of S.objs){if(o.burnt||(o.bt!=null&&o.bt<1))continue;if(o.t==='house'&&(o.fac||o.sign))L.push({key:'o:'+o.id,n:o.fac?`${FAC[o.fac].em||'🏭'} ${FAC[o.fac].n}`:o.sign,x:o.x,z:o.z,r:Math.max(o.w,o.d)/2+4,o});else if(o.t==='lm')L.push({key:'o:'+o.id,n:LM[o.k]?`${LM[o.k].em||'🗽'} ${LM[o.k].n}`:'🗽 世界地標',x:o.x,z:o.z,r:Math.max(o.w||10,o.d||10)/2+4,o});else if(o.t==='dec'&&o.k==='runway')L.push({key:'o:'+o.id,n:'✈️ 機場跑道',x:o.x,z:o.z,r:30,o})}return L}
+const isSec=o=>o.t==='house'&&o.sign&&/保全/.test(o.sign)&&!(o.bt!=null&&o.bt<1)&&!o.burnt;
+function grdCap(){let n=0;for(const o of S.objs)if(isSec(o))n+=(o.floors||1)*50;return Math.min(500,n)}
+function grdTot(){let n=0;for(const v of Object.values(S.grd||{}))n+=v;return n}
+const GCOST=3000,GWAGE=100;
+function grdSet(key,n){S.grd=S.grd||{};const cur=S.grd[key]||0;n=clamp(Math.round(n),0,50);let d=n-cur;if(d>0){const room=grdCap()-grdTot();if(room<=0){SFX.err();toast(grdCap()?`🛡️ 保全公司最多只能雇 ${grdCap()} 人，加蓋保全公司的樓層可以多雇（每層 50 人，最多 500 人）`:'🛡️ 要先蓋「保全公司」（建築模板）才能雇保全',3600);return false}d=Math.min(d,room);if(!spend(d*GCOST,'雇用保全'))return false;n=cur+d}if(n)S.grd[key]=n;else delete S.grd[key];GRD.st=0;dirty();SFX.cash();return true}
+function grdRow(L){const n=(S.grd||{})[L.key]||0;return `<div class="prow"><div class="tx"><b>${L.n}</b><small>🛡️ 保全 ${n} / 50 人</small></div><div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end">${[-10,-1,1,10].map(d=>`<button class="hb ${d>0?'g':''}" data-gs="${L.key}|${d}" style="padding:5px 9px">${d>0?'+':'－'}${Math.abs(d)}</button>`).join('')}</div></div>`}
+function grdBind(re){$('#panel').querySelectorAll('[data-gs]').forEach(b=>b.onclick=()=>{const [k,d]=b.dataset.gs.split('|');const cur=(S.grd||{})[k]||0;if(grdSet(k,cur+(+d)))re()});const pk=$('#panel').querySelector('[data-gpick]');if(pk)pk.onclick=()=>{closePanel();window.__gpick=1;SFX.click();toast('📍 點一下地圖上要派保全的採集場或建築',3000)};const al=$('#panel').querySelector('[data-gall]');if(al)al.onclick=()=>{SFX.click();grdPanel()}}
+function grdHead(){const cap=grdCap(),t=grdTot();return `<div style="background:#eef4ff;border-radius:10px;padding:8px 10px;font-size:14px;line-height:1.7">🛡️ 已雇用 <b>${t}</b> / ${cap} 人（保全公司每層樓可以雇 50 人，最多 500 人）<br>💰 雇一個 ${money(GCOST)}・每天薪水每人 ${money(GWAGE)}（今天共 ${money(t*GWAGE)}）<br>⚡ 保全手拿電擊棒在地點附近巡邏，有小偷來會衝過去電暈他（人越多越容易抓到）；沒有保全的地方，小偷會偷走材料或錢。每個地點最多 50 人。</div>`}
+function grdPanel(){const L=grdLocs();const g=S.grd||{};L.sort((a,b)=>(g[b.key]||0)-(g[a.key]||0));openPanel(`<h2>🛡️ 保全派遣</h2>${grdHead()}<button class="hb b" data-gpick="1" style="width:100%;margin:8px 0">📍 點地圖選地點</button>${L.length?L.map(grdRow).join(''):'<div style="padding:10px">還沒有採集場或重要設施</div>'}`,()=>grdBind(grdPanel))}
+function grdOne(L){openPanel(`<h2>🛡️ 派保全到「${L.n}」</h2>${grdHead()}${grdRow(L)}<div class="row2"><button class="hb b" data-gpick="1">📍 換一個地點</button><button class="hb" data-gall="1">📋 所有地點</button></div>`,()=>grdBind(()=>grdOne(L)))}
+addEventListener('pointerdown',e=>{if(window.__gpick&&e.target===renderer.domElement){e.stopPropagation();e.preventDefault()}},true);
+addEventListener('pointerup',e=>{if(!window.__gpick||e.target!==renderer.domElement)return;e.stopPropagation();window.__gpick=0;const g=groundAt(e.clientX,e.clientY);if(!g)return;let b=null,bd=1e9;for(const L of grdLocs()){const d=Math.hypot(L.x-g.x,L.z-g.z)-L.r;if(d<bd){bd=d;b=L}}if(!b||bd>15){SFX.err();toast('這裡附近沒有採集場或重要設施，再試一次',2400);window.__gpick=1;return}grdOne(b)},true);
+function guardModel(){const p=person(0x1a2a4a);const cap=new THREE.Mesh(new THREE.CylinderGeometry(.2,.21,.12,10),mat('',0x101828));cap.position.y=1.7;p.add(cap);const vz=new THREE.Mesh(boxG(.3,.04,.14),mat('',0x101828));vz.position.set(0,1.66,.18);p.add(vz);
+  const bt=new THREE.Group();const st=new THREE.Mesh(new THREE.CylinderGeometry(.035,.035,.62,6),mat('',0x1c1c20));st.position.y=.31;bt.add(st);const tip=new THREE.Mesh(new THREE.SphereGeometry(.06,8,6),new THREE.MeshStandardMaterial({color:0x60c8ff,emissive:0x40a8ff,emissiveIntensity:2}));tip.position.y=.64;bt.add(tip);bt.position.set(.3,.85,.08);bt.rotation.x=.5;p.add(bt);p.userData.bt=bt;
+  const bd=new THREE.Mesh(boxG(.12,.1,.02),mat('',0xf8d020));bd.position.set(-.1,1.15,.22);p.add(bd);return p}
+function thiefModel(){const p=person(0x1a1a1a);const m=new THREE.Mesh(new THREE.SphereGeometry(.185,10,8,0,Math.PI*2,0,Math.PI*.62),mat('',0x101010));m.position.y=1.55;p.add(m);const bag=new THREE.Mesh(new THREE.SphereGeometry(.28,8,6),mat('',0xc8a868));bag.position.set(0,1.1,-.3);p.add(bag);return p}
+function zapFx(x,y,z){for(let i=0;i<6;i++){const sm=dustM.clone();sm.color.set(0x60c8ff);sm.opacity=1;sm.blending=THREE.AdditiveBlending;const s=new THREE.Sprite(sm);s.position.set(x+rand(-.5,.5),y+rand(.6,1.8),z+rand(-.5,.5));s.scale.setScalar(rand(.4,.9));scene.add(s);TSMK.push({s,t:.6})}}
+function grdTick(dt){GRD.st-=dt;const g=S.grd||{};
+  if(GRD.st<=0){GRD.st=1;const L=grdLocs();const want=new Map();for(const l of L){const n=g[l.key]||0;if(n>0)want.set(l.key,{l,n:Math.min(n,isMob()?3:8)})}for(const k of Object.keys(g))if(!L.some(l=>l.key===k))delete g[k];
+    for(const [k,e] of GRD.v){const w=want.get(k);if(!w){for(const q of e.gs)scene.remove(q.m);GRD.v.delete(k)}}
+    for(const [k,w] of want){let e=GRD.v.get(k);if(!e){e={gs:[]};GRD.v.set(k,e)}e.l=w.l;while(e.gs.length<w.n){const m=guardModel();scene.add(m);e.gs.push({m,a:Math.random()*6.28,sp:rand(.15,.3)*(Math.random()<.5?-1:1)})}while(e.gs.length>w.n)scene.remove(e.gs.pop().m)}}
+  const T=GRD.th;
+  for(const [k,e] of GRD.v){const l=e.l;for(const q of e.gs){if(q.chase&&T){const dx=T.p.position.x-q.m.position.x,dz=T.p.position.z-q.m.position.z,d=Math.hypot(dx,dz);if(d>1.2){const s=Math.min(d,7*dt);q.m.position.x+=dx/d*s;q.m.position.z+=dz/d*s}q.m.rotation.y=Math.atan2(dx,dz);q.m.position.y=hAt(q.m.position.x,q.m.position.z)+Math.abs(Math.sin(performance.now()/90))*.1;continue}
+      q.a+=q.sp*dt*(12/Math.max(6,l.r));const x=l.x+Math.cos(q.a)*l.r,z=l.z+Math.sin(q.a)*l.r;q.m.position.set(x,hAt(x,z)+Math.abs(Math.sin(performance.now()/180+q.a*5))*.05,z);q.m.rotation.y=Math.atan2(-Math.sin(q.a)*Math.sign(q.sp),Math.cos(q.a)*Math.sign(q.sp))}}
+  // 小偷
+  if(S.mode==='free'||(typeof CO!=='undefined'&&CO.role==='guest'))return;
+  if(!T){GRD.nt-=dt;if(GRD.nt>0)return;GRD.nt=rand(150,300);const L=grdLocs().filter(l=>!l.Z||((S.zpile||{})[l.Z.k]||0)+(S.mat[l.Z.mat]||0)>20);if(!L.length)return;const l=L[Math.floor(Math.random()*L.length)];const a=Math.random()*6.28,R=l.r+35;const p=thiefModel();scene.add(p);GRD.th={l,p,sx:l.x+Math.cos(a)*R,sz:l.z+Math.sin(a)*R,t:0,d:11,st:'come'};return}
+  T.t+=dt;const l=T.l;const P=T.p.position;
+  if(T.st==='come'){const k=Math.min(1,T.t/T.d);const ex=l.x+(T.sx-l.x)*(l.r*.9/(l.r+35)),ez=l.z+(T.sz-l.z)*(l.r*.9/(l.r+35));P.set(T.sx+(ex-T.sx)*k,0,T.sz+(ez-T.sz)*k);P.y=hAt(P.x,P.z)+Math.abs(Math.sin(T.t*12))*.08;T.p.rotation.y=Math.atan2(ex-T.sx,ez-T.sz);
+    const e=GRD.v.get(l.key);if(e&&!T.ch&&k>.45){T.ch=1;const n=(S.grd||{})[l.key]||0;T.catch=Math.random()<Math.min(.97,.35+n*.07);const qs=e.gs.slice().sort((a,b)=>a.m.position.distanceTo(P)-b.m.position.distanceTo(P)).slice(0,T.catch?3:1);for(const q of qs)q.chase=1}
+    if(k>=1){if(T.catch&&e){T.st='zap';T.t=0;zapFx(P.x,P.y,P.z);SFX.err&&SFX.err()}else{T.st='steal';T.t=0}}}
+  else if(T.st==='zap'){T.p.rotation.x=Math.min(Math.PI/2,T.t*4);if(T.t<1.2&&Math.random()<dt*8)zapFx(P.x,P.y,P.z);if(T.t>2.2){const rw=500;earn(rw);floatTxt(V(P.x,P.y+3,P.z),`⚡ 保全電暈小偷！獎金 +${rw}`);toast(`🛡️ 「${l.n}」的保全抓到一個小偷，獎金 ${money(rw)}`,2600);grdEnd()}}
+  else if(T.st==='steal'){if(!T.done){T.done=1;let msg;if(l.Z){const Z=l.Z;const pile=(S.zpile||{})[Z.k]||0;const n=Math.max(1,Math.floor(Math.min(300,pile>20?pile*.15:(S.mat[Z.mat]||0)*.02)));if(pile>20)S.zpile[Z.k]-=n;else S.mat[Z.mat]=Math.max(0,(S.mat[Z.mat]||0)-n);msg=`🦹 小偷從「${l.n}」偷走了 ${MATD[Z.mat].em}${n}`}else{const m=Math.min(5000,Math.floor(S.money*.003));S.money=Math.max(0,S.money-m);msg=`🦹 小偷闖進「${l.n}」偷走了 ${money(m)}`}floatTxt(V(P.x,P.y+3,P.z),msg);toast(msg+'。派保全過去就能防小偷（保全公司）',3600);matHud()}
+    const dx=P.x-l.x,dz=P.z-l.z,d=Math.hypot(dx,dz)||1;P.x+=dx/d*6*dt;P.z+=dz/d*6*dt;P.y=hAt(P.x,P.z)+Math.abs(Math.sin(T.t*14))*.08;T.p.rotation.y=Math.atan2(dx,dz);if(T.t>6)grdEnd()}}
+function grdEnd(){const T=GRD.th;if(!T)return;scene.remove(T.p);const e=GRD.v.get(T.l.key);if(e)for(const q of e.gs)q.chase=0;GRD.th=null}
+{const d0=dayPass;dayPass=function(){const r=d0.apply(this,arguments);try{const t=grdTot();if(t&&S.mode!=='free'&&!(typeof CO!=='undefined'&&CO.role==='guest')){const c=t*GWAGE;S.money=Math.max(0,S.money-c);setTimeout(()=>toast(`🛡️ 付保全薪水 ${t} 人 ${money(c)}`,2000),1700)}}catch(e){}return r}}
+{const z0=zonePanel;zonePanel=function(Z){const r=z0.apply(this,arguments);try{const L=grdLocs().find(l=>l.key==='z:'+Z.k);if(L){const d=document.createElement('div');d.innerHTML=`<div class="lab">🛡️ 保全</div><button class="hb b" data-g1="1" style="width:100%">🛡️ 保全 ${(S.grd||{})[L.key]||0} 人・派遣保全</button>`;$('#panel').appendChild(d);d.querySelector('[data-g1]').onclick=()=>{SFX.click();grdOne(L)}}}catch(e){}return r}}
+// 新的建築模板：貨運車站、保全公司
+{const S_=(n,bg,fg)=>({sign:n,signBg:bg,signFg:fg||'#ffffff'});
+TPL.push({id:'fstn',n:'貨運車站（火車、卡車卸貨）',em:'📦',lv:8,o:[H_(Object.assign({w:26,d:12,floors:1,wall:'brick',wallC:0x8a7a6a,roof:'shed',roofM:'metal',roofC:0x5a6a7a,pitch:.2,win:'none',porch:1},S_('📦 貨運車站','#5a4a3a','#ffd860')))]},
+ {id:'secco',n:'保全公司',em:'🛡️',lv:6,o:[H_(Object.assign({w:14,d:10,floors:3,wall:'brick',wallC:0x3a4a6a,roof:'flat',win:'grid'},S_('🛡️ 保全公司','#1a2a4a','#ffd860')))]})}
 
 /* ======================= 編輯面板（選到東西時出現） ======================= */
 const chipsH=(key,opts,cur,lock)=>`<div class="chips">${Object.entries(opts).map(([k,n])=>`<button data-${key}="${k}" class="${String(cur)===k?'on':''}" ${lock&&lock(k)?'disabled style="opacity:.4"':''}>${n}</button>`).join('')}</div>`;
@@ -3882,7 +3972,7 @@ function landPanel(){const pr=landPrice();openPanel(`<h2>🗺️ 買土地</h2><
   <div class="row2"><button class="hb b" id="lGo">📍 只看那塊地（不買）</button></div>`,
   ()=>{const cv=$('#mmC');mmDraw(cv,'land');let look=false;$('#lGo').onclick=()=>{look=!look;$('#lGo').textContent=look?'✅ 點地圖就會飛過去':'📍 只看那塊地（不買）'};
    cv.onclick=e=>{const w=mmPick(cv,e);const p=plotOf(w.x,w.z);if(p<0)return;if(look||S.plots[p]){CAM.tx=w.x;CAM.tz=w.z;closePanel();return}if(!adjOwned(p)){SFX.err();toast('要跟你已經有的土地相連才能買（橘色的格子）');return}
-    ask(`買下這塊地？<br>${money(pr)}`,()=>{if(!spend(pr,'買土地'))return;S.plots[p]=1;plotUpdate(p);SFX.cash();const c=plotCenter(p);CAM.tx=c.x;CAM.tz=c.z;toast('🗺️ 買下新的土地了！可以開始蓋房子');MMT=0;dirty();chkTitle()})}})}
+    ask(`買下這塊地？<br>${money(pr)}`,()=>{if(!spend(pr,'買土地'))return;S.plots[p]=1;buyZApply(p);plotUpdate(p);SFX.cash();const c=plotCenter(p);CAM.tx=c.x;CAM.tz=c.z;toast('🗺️ 買下新的土地了！可以開始蓋房子');MMT=0;dirty();chkTitle()})}})}
 /* ======================= 建築模板 ======================= */
 function tplPanel(){const lv=LV();openPanel(`<h2>📐 建築模板</h2><div style="font-size:14px;color:#7a6a4a">選一個模板，再點地面放下去。放好之後每一棟都可以再改：樓層、大小、外牆、屋頂、窗戶、顏色…</div>`+TPL.map(t=>{const lk=t.lv>lv;const m=tplMats(t);const ok=mHave(m);return `<div class="prow ${lk?'lock':''}"><div class="em">${t.em}</div><div class="tx"><b>${t.n}</b>${!lk&&ok?' <b style="color:#2fa04a;font-size:13px">✅ 材料足夠</b>':''}<small>${lk?`建設公司等級 ${t.lv} 解鎖`:mTxt(m,true)}</small></div>${lk?'🔒':`<button class="hb g" data-t="${t.id}">選這個</button>`}</div>`}).join(''),
   ()=>$('#panel').querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{TPLSEL=TPL.find(t=>t.id===b.dataset.t);closePanel();setTool('tpl');TPLSEL=TPL.find(t=>t.id===b.dataset.t);subBuild();toast(`${TPLSEL.em} 點一下自己土地上的空地，放下「${TPLSEL.n}」`,3000)}))}
