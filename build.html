@@ -1476,7 +1476,7 @@ function meTick(dt){if(!meInit){meInit=true;const p=S.mePos||{x:CAM.tx,z:CAM.tz}
   else{u.legs[0].rotation.x=u.legs[1].rotation.x=0;u.arms[0].rotation.x=-.3+Math.sin(t*1.5)*.08;u.arms[1].rotation.x=Math.sin(t*1.5)*.08;u.body.position.y=Math.sin(t*2)*.02}
   ME.position.y=typeof meGroundY==='function'?meGroundY(ME.position.x,ME.position.z):Math.max(hAt(ME.position.x,ME.position.z),WATER_Y);u.ring.material.opacity=.45+Math.sin(t*4)*.25;
   // 正常大小；拉很遠的時候才稍微放大，不然找不到
-  ME.scale.setScalar(clamp(CAM.dist/170,1,6)*.8);peekTick(dt)}
+  ME.scale.setScalar(S.view&&typeof viewOK==='function'&&viewOK()?1:clamp(CAM.dist/170,1,6)*.8);peekTick(dt)}
 /* ======================= 靠近房子：房子變半透明，看得到裡面 ======================= */
 let PEEK=null,peekT=0;const TCL=new Map();const PEEKL=new THREE.PointLight(0xffd8a0,0,22,1.6);scene.add(PEEKL);
 function tMat(m){let c=TCL.get(m);if(!c){c=m.clone();c.transparent=true;c.opacity=.2;c.depthWrite=false;TCL.set(m,c)}return c}
@@ -3199,7 +3199,7 @@ function lampTick(dt){lampT-=dt;if(lampT>0)return;lampT=.3;const L=[];
     for(const o of hs){if(L.length>=6)break;const n=lampItems(o).length;L.push([V(o.x,baseY(o)+1.8,o.z),NIGHT*Math.min(40,10+n*6),Math.max(o.w,o.d)*.9+9])}}
   LAMPL.forEach((l,i)=>{const q=L[i];if(!q){l.intensity=0;return}l.position.copy(q[0]);l.intensity=q[1];l.distance=q[2]})}
 
-function bal2Tick(dt){thrTick();ztTick(dt);rhTick(dt);stnTick(dt);grdTick(dt);airFarTick(dt);trainLifeTick(dt);skyWalkTick(dt);commTick(dt);rail2Tick(dt);sky2Tick(dt);air2Tick(dt);lmOutline();faceTick(dt);mvTick();mobCam();mobTick(dt);dashTick();layoutTick(dt);extTick(dt);repTick(dt);dmgFxTick(dt);mgrTick(dt);lampTick(dt)}
+function bal2Tick(dt){hdlTick();thrTick();ztTick(dt);rhTick(dt);stnTick(dt);grdTick(dt);airFarTick(dt);trainLifeTick(dt);skyWalkTick(dt);commTick(dt);rail2Tick(dt);sky2Tick(dt);air2Tick(dt);lmOutline();faceTick(dt);mvTick();mobCam();mobTick(dt);dashTick();layoutTick(dt);extTick(dt);repTick(dt);dmgFxTick(dt);mgrTick(dt);lampTick(dt)}
 
 /* ---- 畫面排版：左上角的小視窗由上往下排，不會互相蓋住（手機特別重要） ---- */
 let layT=0;function layoutTick(dt){layT-=dt;if(layT>0)return;layT=.4;const mob=MOB.on;const vis=e=>e&&getComputedStyle(e).display!=='none'&&e.offsetHeight>0;
@@ -3658,7 +3658,8 @@ function freightCar(i){const g=new THREE.Group();const B=new Batch();const dk=ma
   const cc=[0xd8502a,0x2a6ad8,0x3a9a4a,0xe8b020,0x8a4ad8][i%5];B.add(boxG(2.4,2.4,7.8),mat('metal',cc,{metalness:.3,roughness:.6}),mxAt(0,2.35,0));for(let k=-3;k<=3;k++)B.add(boxG(2.46,2.2,.08),mat('',0x2a2a2e),mxAt(0,2.35,k*1.1));B.build(g);return g}
 // 畫軌道：直線、弧線、手畫；起點終點靠近別條軌道會自動接上（接在中間就變成分岔）
 window.__rmode=window.__rmode||'line';
-function railShape(pts,k){const R=ROADS[k];if(!R||!R.train||!pts||pts.length<2)return null;const mode=window.__rmode||'line';
+function railShape(pts,k){const r0=railShape0(pts,k);return r0?alignShape(r0,null):r0}
+function railShape0(pts,k){const R=ROADS[k];if(!R||!R.train||!pts||pts.length<2)return null;const mode=window.__rmode||'line';
   const snap=p=>{const th=throatSnap(p);if(th)return {x:th.x,z:th.z};let b=null,bd=7;for(const o of S.objs){if(o.t!=='road'||!ROADS[o.k]||!ROADS[o.k].train||o.stnOf!=null)continue;for(const q of o.pts){const d=Math.hypot(q.x-p.x,q.z-p.z);if(d<bd){bd=d;b=q}}}return b?{x:b.x,z:b.z}:{x:p.x,z:p.z}};
   const A=snap(pts[0]),B=snap(pts[pts.length-1]);if(Math.hypot(B.x-A.x,B.z-A.z)<3)return null;
   if(mode==='free'){const out=pts.map(p=>({x:p.x,z:p.z}));out[0]=A;out[out.length-1]=B;return out}
@@ -3949,8 +3950,8 @@ function viewSet(m){S.view=S.view===m?'':m;VY=null;SFX.click();viewUI();toast(S.
 function viewUI(){const jw=$('#joyW');if(!jw)return;let r=$('#viewR');if(!r){r=document.createElement('div');r.id='viewR';r.style.cssText='display:flex;gap:4px';r.innerHTML='<button class="hb" data-vw="fp" style="font-size:13px;padding:5px 8px">👁️ 第一人稱</button><button class="hb" data-vw="back" style="font-size:13px;padding:5px 8px">🎥 後方視角</button>';jw.insertBefore(r,$('#joy').nextSibling);r.querySelectorAll('[data-vw]').forEach(b=>b.onclick=e=>{e.stopPropagation();viewSet(b.dataset.vw)})}
   r.querySelectorAll('[data-vw]').forEach(b=>{b.classList.toggle('g',S.view===b.dataset.vw)})}
 setTimeout(viewUI,500);
-{const c0=camApply;camApply=function(){c0();const m=S&&S.view;if(!m||!viewOK())return;const dt=1/60;const h=ME.rotation.y;if(VY==null)VY=h;let d=h-VY;while(d>Math.PI)d-=Math.PI*2;while(d<-Math.PI)d+=Math.PI*2;VY+=d*Math.min(1,dt*(m==='fp'?1.6:1.2));ME.scale.setScalar(.8);
-  const fx=Math.sin(VY),fz=Math.cos(VY);const sc=.8;const px=ME.position.x,py=ME.position.y,pz=ME.position.z;CAM.yaw=VY+Math.PI;CAM.tx=px;CAM.tz=pz;
+{const c0=camApply;camApply=function(){c0();const m=S&&S.view;if(!m||!viewOK())return;const dt=1/60;const h=ME.rotation.y;if(VY==null)VY=h;let d=h-VY;while(d>Math.PI)d-=Math.PI*2;while(d<-Math.PI)d+=Math.PI*2;VY+=d*Math.min(1,dt*(m==='fp'?1.6:1.2));ME.scale.setScalar(1);
+  const fx=Math.sin(VY),fz=Math.cos(VY);const sc=1;const px=ME.position.x,py=ME.position.y,pz=ME.position.z;CAM.yaw=VY+Math.PI;CAM.tx=px;CAM.tz=pz;
   if(m==='fp'){const ey=py+1.62*sc;camera.position.set(px+fx*.45*sc,ey,pz+fz*.45*sc);camera.lookAt(px+fx*20,ey-1.2,pz+fz*20);ME.visible=false}
   else{const D=clamp(CAM.dist/8,5,14),H=D*.3+1.5*sc;let cx=px-fx*D,cz=pz-fz*D,cy=py+H;cy=Math.max(cy,hAt(cx,cz)+1);camera.position.set(cx,cy,cz);camera.lookAt(px+fx*8*sc,py+1.5*sc,pz+fz*8*sc)}}}
 // ---- 貨運車站的設備 ----
@@ -3991,8 +3992,8 @@ function fyTick(g,dt){const u=g.userData;const o=u.o;if(!u.cr||!o)return;const a
   for(const f of u.fk){if(act)f.t+=dt;const T=(f.t%10)/10;const m=f.m;if(f.i===0){const k=Math.sin(T*Math.PI*2);const z=k*L*.32;m.position.set(u.xe+1.2,u.ph,z);m.rotation.y=Math.cos(T*Math.PI*2)>0?0:Math.PI;m.userData.pl.visible=Math.cos(T*Math.PI*2)>0}
     else{const k=(1-Math.cos(T*Math.PI*2))/2;const x0=u.wx+8.6,x1=u.xe-1.2;m.position.set(x0+(x1-x0)*k,0,L*.08);m.rotation.y=Math.sin(T*Math.PI*2)>0?Math.PI/2:-Math.PI/2;m.userData.pl.visible=Math.sin(T*Math.PI*2)>0}}
   for(const w of u.wk){if(act)w.t+=dt;const k=Math.sin(w.t*.6);w.m.position.set(w.x,u.ph+(act?Math.abs(Math.sin(w.t*8))*.05:0),w.z0+k*6);w.m.rotation.y=Math.cos(w.t*.6)>0?0:Math.PI}
-  {const w=u.wt;w.t+=dt;const T=w.t%32;const xin=u.wx-1,xout=u.wx-30;let x;if(T<7){const k=T/7;x=xout+(xin-xout)*(1-(1-k)*(1-k))}else if(T<20)x=xin;else if(T<27){const k=(T-20)/7;x=xin+(xout-xin)*k*k}else x=xout;w.tk.position.set(x,0,0);w.tk.visible=T<27;
-   const fk=w.f3;const ax=u.wx-1.5,az=-2.8,bx=u.wx+2.2,bz=-Math.min(u.L*.75,54)/2+5;if(T>=7&&T<20){const k=((T-7)%4.33)/4.33;const a=(1-Math.cos(k*Math.PI*2))/2;fk.position.set(ax+(bx-ax)*a,0,az+(bz-az)*a);const go=k<.5;fk.rotation.y=Math.atan2((bx-ax)*(go?1:-1),(bz-az)*(go?1:-1));fk.userData.pl.visible=go}else{fk.position.set(bx,0,bz+2);fk.rotation.y=0;fk.userData.pl.visible=false}}
+  {const w=u.wt;w.t+=dt;const T=w.t%32;const xin=u.wx-1,xout=u.wx-30;let x;if(T<7){const k=T/7;x=xout+(xin-xout)*(1-(1-k)*(1-k))}else if(T<20)x=xin;else if(T<27){const k=(T-20)/7;x=xin+(xout-xin)*k*k}else x=xout;w.tk.visible=false;let busy=false;for(const [zk,e] of ZTV){if(((S.zt||{})[zk]||{}).to===o.id&&e.ts.some(t=>t.st==='unload'))busy=true}
+   const fk=w.f3;const ax=u.wx-1.5,az=-2.8,bx=u.wx+2.2,bz=-Math.min(u.L*.75,54)/2+5;if(busy){const k=(w.t%4.33)/4.33;const a=(1-Math.cos(k*Math.PI*2))/2;fk.position.set(ax+(bx-ax)*a,0,az+(bz-az)*a);const go=k<.5;fk.rotation.y=Math.atan2((bx-ax)*(go?1:-1),(bz-az)*(go?1:-1));fk.userData.pl.visible=go}else{fk.position.set(bx,0,bz+2);fk.rotation.y=0;fk.userData.pl.visible=false}}
   const s=u.sh;s.t+=dt*(act?1:.35);const k=(1-Math.cos(s.t*.25))/2;s.m.position.z=s.z0+(s.z1-s.z0)*k}
 DEC.fyard.anim={build(g,o){stnBuild(g,o)},tick(g,t,dt){fyTick(g,dt)}};
 // ---- 採集場旁邊的裝料倉（漏斗），貨運列車停在下面直接灌滿車廂 ----
@@ -4093,7 +4094,7 @@ function roadRoute(a,b){const C0=RNET.filter(c=>c.kind==='bus');let best=null;fo
       const f=chain[0].first;pts=f&&f.dir<0?se.P.pts.slice(0,s.i+1).reverse():se.P.pts.slice(s.i);for(const c of chain.slice(1))pts=pts.concat(c.pts);pts=pts.concat(endN===te.a?te.P.pts.slice(0,t.i+1):te.P.pts.slice(t.i).reverse())}
     const all=[a].concat(pts.map(p=>({x:p.x,z:p.z})),[b]);if(!best||all.length)best=all}
   return best||densePts([a,b],4)}
-function ztPathMake(Z,y){const door=yardDoor(y);const dx=door.x-Z.x,dz=door.z-Z.z,l=Math.hypot(dx,dz)||1;const a={x:Z.x+dx/l*Z.r*.6,z:Z.z+dz/l*Z.r*.6};const pts=roadRoute(a,door);const d=[0];let L=0;for(let i=1;i<pts.length;i++){L+=Math.hypot(pts[i].x-pts[i-1].x,pts[i].z-pts[i-1].z);d.push(L)}return {pts,d,L}}
+function ztPathMake(Z,y){const door=yardDoor(y);const W=(y.ln||1)*STSP+8;const inside=stnL2W(y,-(W/2+.6)-7.5-1,0);const dx=door.x-Z.x,dz=door.z-Z.z,l=Math.hypot(dx,dz)||1;const a={x:Z.x+dx/l*Z.r*.6,z:Z.z+dz/l*Z.r*.6};const pts=roadRoute(a,door).concat([inside]);const d=[0];let L=0;for(let i=1;i<pts.length;i++){L+=Math.hypot(pts[i].x-pts[i-1].x,pts[i].z-pts[i-1].z);d.push(L)}return {pts,d,L}}
 function ztAt(P,s){s=clamp(s,0,P.L);let i=1;while(i<P.d.length-1&&P.d[i]<s)i++;const a=P.pts[i-1],b=P.pts[i];const k=(s-P.d[i-1])/((P.d[i]-P.d[i-1])||1);return {x:a.x+(b.x-a.x)*k,z:a.z+(b.z-a.z)*k,a:Math.atan2(b.x-a.x,b.z-a.z)}}
 function ztTick(dt){ztT-=dt;const zt=S.zt||{};if(ztT<=0){ztT=1.5;for(const [zk,e] of ZTV){const c=zt[zk];if(!c||!byId(c.to)){for(const t of e.ts)scene.remove(t.m);ZTV.delete(zk)}}
     for(const [zk,c] of Object.entries(zt)){const Z=ZONES.find(z=>z.k===zk),y=byId(c.to);if(!Z||Z.x==null||!y)continue;let e=ZTV.get(zk);const sig=[y.x,y.z,y.r,y.ln,S.objs.filter(o=>o.t==='road').length].join(',');if(!e){e={ts:[],sig:''};ZTV.set(zk,e)}if(e.sig!==sig){e.sig=sig;e.P=ztPathMake(Z,y)}
@@ -4113,6 +4114,61 @@ function ztBind(Z,box){box.querySelectorAll('[data-zy]').forEach(b=>b.onclick=()
 {const d0=dayPass;dayPass=function(){const r=d0.apply(this,arguments);try{let n=0;for(const c of Object.values(S.zt||{}))n+=c.n||0;if(n&&S.mode!=='free'&&!(typeof CO!=='undefined'&&CO.role==='guest')){S.money=Math.max(0,S.money-n*60)}}catch(e){}return r}}
 // ---- 裝料倉旁邊搬貨的工人 ----
 function hopCarriers(g,side){const cs=[];for(let i=0;i<2;i++){const p=person(0xf08020,true);const sk=new THREE.Mesh(new THREE.SphereGeometry(.32,8,6),mat('',0xc8a868));sk.position.set(0,1.75,0);sk.scale.y=.7;p.add(sk);p.userData.sk=sk;p.position.set(side*10,0,(i-.5)*3);g.add(p);cs.push({p,i})}g.userData.cs=cs;g.userData.side=side}
+
+/* ======================= 2.43：貨車自動繞過障礙物、鐵軌接頭自動對齊、鐵軌拉伸點、人物不能穿過東西 ======================= */
+// ---- 曲線 ----
+function crSpline(P,step){const out=[];for(let i=0;i<P.length-1;i++){const p0=P[Math.max(0,i-1)],p1=P[i],p2=P[i+1],p3=P[Math.min(P.length-1,i+2)];const L=Math.hypot(p2.x-p1.x,p2.z-p1.z);const n=Math.max(2,Math.ceil(L/step));
+  for(let k=0;k<n;k++){const t=k/n,t2=t*t,t3=t2*t;const f=(a,b,c,d)=>.5*(2*b+(-a+c)*t+(2*a-5*b+4*c-d)*t2+(-a+3*b-3*c+d)*t3);out.push({x:f(p0.x,p1.x,p2.x,p3.x),z:f(p0.z,p1.z,p2.z,p3.z)})}}out.push({x:P[P.length-1].x,z:P[P.length-1].z});return out}
+function resample(pts,n){const d=[0];for(let i=1;i<pts.length;i++)d.push(d[i-1]+Math.hypot(pts[i].x-pts[i-1].x,pts[i].z-pts[i-1].z));const L=d[d.length-1];const out=[];let j=1;for(let k=1;k<=n;k++){const s=L*k/(n+1);while(j<d.length-1&&d[j]<s)j++;const t=(s-d[j-1])/((d[j]-d[j-1])||1);out.push({x:pts[j-1].x+(pts[j].x-pts[j-1].x)*t,z:pts[j-1].z+(pts[j].z-pts[j-1].z)*t})}return {cp:out,L}}
+const cpN=L=>clamp(Math.round(L/25),5,10);
+// 接頭的方向：接到車站頭、別條鐵軌的尾端或中間時，新鐵軌要順著原本的方向出去
+function endTan(p,self,toward){for(const o of S.objs){if(o.t!=='dec'||!STNK[o.k])continue;const th=stnThroats(o);const ax={x:Math.sin(o.r||0),z:Math.cos(o.r||0)};for(let i=0;i<2;i++)if(Math.hypot(th[i].x-p.x,th[i].z-p.z)<5)return i===0?{x:-ax.x,z:-ax.z}:ax}
+  for(const o of S.objs){if(o.t!=='road'||o===self||!ROADS[o.k]||!ROADS[o.k].train||o.pts.length<2)continue;const P=o.pts,n=P.length;for(const [e,q] of [[0,1],[n-1,n-2]]){if(Math.hypot(P[e].x-p.x,P[e].z-p.z)<5){let k=q;while(k>0&&k<n-1&&Math.hypot(P[k].x-P[e].x,P[k].z-P[e].z)<4)k+=e===0?1:-1;const dx=P[e].x-P[k].x,dz=P[e].z-P[k].z,l=Math.hypot(dx,dz)||1;return {x:dx/l,z:dz/l}}}
+    for(let i=1;i<n-1;i++)if(Math.hypot(P[i].x-p.x,P[i].z-p.z)<4){const dx=P[i+1].x-P[i-1].x,dz=P[i+1].z-P[i-1].z,l=Math.hypot(dx,dz)||1;let t={x:dx/l,z:dz/l};if(toward&&t.x*(toward.x-p.x)+t.z*(toward.z-p.z)<0)t={x:-t.x,z:-t.z};return t}}return null}
+function alignShape(pts,self){if(pts.length<2)return pts;const A=pts[0],B=pts[pts.length-1];const r=resample(pts,cpN(Math.hypot(B.x-A.x,B.z-A.z)+1));const cp=r.cp;const tA=endTan(A,self,cp[0]),tB=endTan(B,self,cp[cp.length-1]);if(!tA&&!tB)return pts;
+  if(tA){const d=Math.max(6,Math.hypot(cp[0].x-A.x,cp[0].z-A.z));cp[0]={x:A.x+tA.x*d,z:A.z+tA.z*d}}if(tB){const q=cp[cp.length-1];const d=Math.max(6,Math.hypot(q.x-B.x,q.z-B.z));cp[cp.length-1]={x:B.x+tB.x*d,z:B.z+tB.z*d}}return crSpline([A].concat(cp,[B]),2)}
+function railCP(o){if(!o.cp||!o.cp.length){const r=resample(o.pts,cpN(o.pts.length>1?Math.hypot(o.pts[o.pts.length-1].x-o.pts[0].x,o.pts[o.pts.length-1].z-o.pts[0].z):25));o.cp=r.cp}return o.cp}
+function railFromCP(o){const A=o.pts[0],B=o.pts[o.pts.length-1];return crSpline([{x:A.x,z:A.z}].concat(o.cp,[{x:B.x,z:B.z}]),2)}
+// ---- 拉伸點（黃色圓點） ----
+const HDL=new THREE.Group();scene.add(HDL);let hdlSig='',DRAG=null;
+function hdlSel(){const o=SEL!=null&&TOOL==='sel'&&!INT?byId(SEL):null;return o&&o.t==='road'&&ROADS[o.k]&&ROADS[o.k].train&&o.stnOf==null?o:null}
+function hdlTick(){const o=hdlSel();const sz=clamp(CAM.dist/70,1,6);const sig=o?o.id+':'+JSON.stringify(o.cp||[])+':'+o.pts.length+':'+Math.round(sz*4):'';if(sig===hdlSig&&!DRAG)return;if(DRAG&&o){HDL.children.forEach((m,i)=>{const p=o.cp[i];if(p)m.position.set(p.x,hAt(p.x,p.z)+1.4*sz,p.z)});return}hdlSig=sig;
+  while(HDL.children.length)HDL.remove(HDL.children[0]);if(!o)return;railCP(o);const mY=new THREE.MeshBasicMaterial({color:0xffc020,depthTest:false,transparent:true,opacity:.95});o.cp.forEach((p,i)=>{const m=new THREE.Mesh(new THREE.SphereGeometry(1.3,14,10),mY);m.scale.setScalar(sz);m.renderOrder=9;m.position.set(p.x,hAt(p.x,p.z)+1.4*sz,p.z);m.userData.i=i;HDL.add(m)})}
+let dragT=0;
+addEventListener('pointerdown',e=>{if(e.target!==renderer.domElement||!HDL.children.length)return;const o=hdlSel();if(!o)return;rayAt(e.clientX,e.clientY);const h=ray.intersectObjects(HDL.children,false)[0];if(!h)return;e.stopPropagation();e.preventDefault();DRAG={o,i:h.object.userData.i,old:JSON.parse(JSON.stringify(o.cp)),oldP:o.pts.slice(),id:e.pointerId};SFX.click()},true);
+addEventListener('pointermove',e=>{if(!DRAG||e.pointerId!==DRAG.id)return;e.stopPropagation();const g=groundAt(e.clientX,e.clientY);if(!g)return;const o=DRAG.o;o.cp[DRAG.i]={x:g.x,z:g.z};const now=performance.now();if(now-dragT>90){dragT=now;o.pts=railFromCP(o);place(o)}hdlTick()},true);
+addEventListener('pointerup',e=>{if(!DRAG||e.pointerId!==DRAG.id)return;e.stopPropagation();const o=DRAG.o;o.pts=railFromCP(o);const ob=railObst(o.pts);if(ob){o.cp=DRAG.old;o.pts=DRAG.oldP;SFX.err();toast(`🚧 這樣拉會穿過「${ob}」，已經退回去了`,2600)}place(o);railSig='';dirty();DRAG=null;hdlSig='';editShow()},true);
+railEditH=function(o){railCP(o);const ob=railObst(o.pts);return `<div style="background:#fff6d8;border-radius:10px;padding:6px 9px;font-size:13px;line-height:1.6">〰️ 拖曳鐵軌上的<b style="color:#d89a00">黃色圓點</b>，就能把鐵軌自由拉彎（這段有 ${o.cp.length} 個拉伸點）。兩頭接到車站或別條鐵軌的地方會自動順著原本的方向接出去。</div>
+  <div class="row2"><button class="hb" data-cpx="str">📏 拉直</button><button class="hb" data-cpx="fix">🔧 對齊接頭</button><button class="hb" data-cpx="-1">➖ 少一點</button><button class="hb" data-cpx="1">➕ 多一點</button></div>${ob?`<div style="color:#c83a2a;font-size:13px;margin:4px 0">⚠️ 這段鐵軌穿過了「${ob}」，請拖曳圓點繞過去</div>`:''}`};
+railEditBind=function(d,o){d.querySelectorAll('[data-cpx]').forEach(b=>b.onclick=()=>{SFX.click();const k=b.dataset.cpx;const old=JSON.parse(JSON.stringify(o.cp||[])),oldP=o.pts.slice();const A=o.pts[0],B=o.pts[o.pts.length-1];
+    if(k==='str'){o.cp=resample([A,B],o.cp.length).cp}else if(k==='fix'){o.pts=alignShape(o.pts,o);o.cp=resample(o.pts,o.cp.length).cp;const tA=endTan(A,o,o.cp[0]),tB=endTan(B,o,o.cp[o.cp.length-1]);if(tA){const q=o.cp[0],dd=Math.max(6,Math.hypot(q.x-A.x,q.z-A.z));o.cp[0]={x:A.x+tA.x*dd,z:A.z+tA.z*dd}}if(tB){const q=o.cp[o.cp.length-1],dd=Math.max(6,Math.hypot(q.x-B.x,q.z-B.z));o.cp[o.cp.length-1]={x:B.x+tB.x*dd,z:B.z+tB.z*dd}}}
+    else{const n=clamp(o.cp.length+(+k),3,20);o.cp=resample(o.pts,n).cp}
+    o.pts=railFromCP(o);const ob=railObst(o.pts);if(ob&&k!=='-1'&&k!=='1'){o.cp=old;o.pts=oldP;SFX.err();toast(`🚧 這樣會穿過「${ob}」`,2400)}place(o);railSig='';hdlSig='';dirty();editShow()})};
+// ---- 貨車自動繞過障礙物（格子尋路，優先走馬路） ----
+function stnBlockAt(x,z){for(const o of S.objs){if(o.t!=='dec'||!STNK[o.k])continue;const c=Math.cos(-(o.r||0)),s=Math.sin(-(o.r||0));const dx=x-o.x,dz=z-o.z;const lx=dx*c+dz*s,lz=-dx*s+dz*c;const W=stnW(o)/2,Lh=(o.len||60)/2+1;const wx=o.k==='fyard'?-(W+.6)-15:-W-1;if(lz>-Lh&&lz<Lh&&lx>wx&&lx<W+1)return true}return false}
+function gridPath(a,b){const C=5,pad=100;const x0=Math.min(a.x,b.x)-pad,z0=Math.min(a.z,b.z)-pad;const nx=Math.ceil((Math.max(a.x,b.x)+pad-x0)/C),nz=Math.ceil((Math.max(a.z,b.z)+pad-z0)/C);if(nx*nz>160000)return null;
+  const N=nx*nz,blk=new Uint8Array(N),rd=new Uint8Array(N);const X=i=>x0+(i+.5)*C,Zc=j=>z0+(j+.5)*C;
+  for(let j=0;j<nz;j++)for(let i=0;i<nx;i++){const x=X(i),z=Zc(j);if(Math.abs(x)>HALF-4||Math.abs(z)>HALF-4||hAt(x,z)<WATER_Y-.1||inBld(x,z,1.8)||rockAt(x,z)||stnBlockAt(x,z))blk[j*nx+i]=1}
+  for(const o of S.objs)if(o.t==='road'&&ROADS[o.k]&&!ROADS[o.k].train&&ROADS[o.k].br!=='sky'){const P=densePts(o.pts,2);for(const p of P){const i=Math.floor((p.x-x0)/C),j=Math.floor((p.z-z0)/C);if(i>=0&&j>=0&&i<nx&&j<nz){rd[j*nx+i]=1;blk[j*nx+i]=0}}}
+  const cell=p=>{let i=clamp(Math.floor((p.x-x0)/C),0,nx-1),j=clamp(Math.floor((p.z-z0)/C),0,nz-1);if(!blk[j*nx+i])return j*nx+i;for(let r=1;r<20;r++)for(let dj=-r;dj<=r;dj++)for(let di=-r;di<=r;di++){if(Math.max(Math.abs(di),Math.abs(dj))!==r)continue;const ii=i+di,jj=j+dj;if(ii>=0&&jj>=0&&ii<nx&&jj<nz&&!blk[jj*nx+ii])return jj*nx+ii}return -1};
+  const s=cell(a),t=cell(b);if(s<0||t<0)return null;const g=new Float32Array(N).fill(1e9),pr=new Int32Array(N).fill(-1),cl=new Uint8Array(N);const H=[];const hp=(f,k)=>{H.push([f,k]);let i=H.length-1;while(i>0){const p=(i-1)>>1;if(H[p][0]<=H[i][0])break;[H[p],H[i]]=[H[i],H[p]];i=p}};const pop=()=>{const r=H[0];const l=H.pop();if(H.length){H[0]=l;let i=0;for(;;){const a2=i*2+1,b2=a2+1;let m=i;if(a2<H.length&&H[a2][0]<H[m][0])m=a2;if(b2<H.length&&H[b2][0]<H[m][0])m=b2;if(m===i)break;[H[m],H[i]]=[H[i],H[m]];i=m}}return r};
+  const ti=t%nx,tj=(t/nx)|0;const hh=k=>Math.hypot(k%nx-ti,((k/nx)|0)-tj);g[s]=0;hp(hh(s),s);let it=0;
+  while(H.length&&it++<200000){const [,k]=pop();if(cl[k])continue;cl[k]=1;if(k===t)break;const ki=k%nx,kj=(k/nx)|0;for(let dj=-1;dj<=1;dj++)for(let di=-1;di<=1;di++){if(!di&&!dj)continue;const ii=ki+di,jj=kj+dj;if(ii<0||jj<0||ii>=nx||jj>=nz)continue;const q=jj*nx+ii;if(blk[q]||cl[q])continue;if(di&&dj&&(blk[kj*nx+ii]||blk[jj*nx+ki]))continue;const c=(di&&dj?1.414:1)*(rd[q]?1:2.2);if(g[k]+c<g[q]){g[q]=g[k]+c;pr[q]=k;hp(g[q]+hh(q),q)}}}
+  if(pr[t]<0&&s!==t)return null;const path=[];for(let k=t;k>=0;k=pr[k]){path.unshift({x:X(k%nx),z:Zc((k/nx)|0)});if(k===s)break}
+  const free=(p,q)=>{const L=Math.hypot(q.x-p.x,q.z-p.z),n=Math.ceil(L/1.5);for(let m=0;m<=n;m++){const x=p.x+(q.x-p.x)*m/n,z=p.z+(q.z-p.z)*m/n;const i=Math.floor((x-x0)/C),j=Math.floor((z-z0)/C);if(i<0||j<0||i>=nx||j>=nz||blk[j*nx+i])return false;if(rd[j*nx+i]!==rd[Math.floor((p.z-z0)/C)*nx+Math.floor((p.x-x0)/C)])return false}return true};
+  const sm=[path[0]];let i=0;while(i<path.length-1){let j=path.length-1;while(j>i+1&&!free(path[i],path[j]))j--;sm.push(path[j]);i=j}return [a].concat(sm,[b])}
+ztPathMake=function(Z,y){const door=yardDoor(y);const W=(y.ln||1)*STSP+8;const inside=stnL2W(y,-(W/2+.6)-7.5-1,0);const dx=door.x-Z.x,dz=door.z-Z.z,l=Math.hypot(dx,dz)||1;
+  let a={x:Z.x+dx/l*Z.r*.45,z:Z.z+dz/l*Z.r*.45};if(rockAt(a.x,a.z)||inBld(a.x,a.z,1.8)){for(let k=0;k<16;k++){const an=k/16*6.283;const q={x:Z.x+Math.cos(an)*Z.r*.45,z:Z.z+Math.sin(an)*Z.r*.45};if(!rockAt(q.x,q.z)&&!inBld(q.x,q.z,1.8)){a=q;break}}}
+  const gp=gridPath(a,door);const pts=(gp?crSpline(gp,2):roadRoute(a,door)).concat([inside]);const d=[0];let L=0;for(let i=1;i<pts.length;i++){L+=Math.hypot(pts[i].x-pts[i-1].x,pts[i].z-pts[i-1].z);d.push(L)}return {pts,d,L}};
+// ---- 人物不能穿過車站、倉庫牆、火車、貨車、採集場大石頭 ----
+{const ob0=obstBuild;obstBuild=function(){ob0.apply(this,arguments);try{const put=(x,z,r,it)=>{const i0=Math.floor((x-r)/OC),i1=Math.floor((x+r)/OC),j0=Math.floor((z-r)/OC),j1=Math.floor((z+r)/OC);for(let i=i0;i<=i1;i++)for(let j=j0;j<=j1;j++){const k=i*1000+j;let a=OBST.get(k);if(!a){a=[];OBST.set(k,a)}a.push(it)}};
+  for(const o of S.objs){if(o.t!=='dec'||!STNK[o.k])continue;const L=o.len||60,N=o.ln||1,W=N*STSP+(o.k==='fyard'?8:4);const rect=(lx,lz,hw,hd)=>{const p=stnL2W(o,lx,lz);put(p.x,p.z,Math.hypot(hw,hd)+.5,{o:null,k:'rect',w:hw,d:hd,r:o.r||0,x:p.x,z:p.z})};
+    rect(0,0,W/2+.4,L/2+.4);if(o.k==='fyard'){const wx=-(W/2+.6)-7.5,wl=Math.min(L*.75,54),dw=2.75;const sz=(wl/2-dw)/2;for(const sd of [-1,1]){rect(wx-6.5,sd*(dw+sz),.3,sz);rect(wx+sd*(dw+(6.5-dw)/2),-wl/2,(6.5-dw)/2,.3);rect(wx+sd*(dw+(6.5-dw)/2),wl/2,(6.5-dw)/2,.3)}rect(wx+6.5,0,.3,wl/2);rect(wx+4.6,-(wl/2-6),1.4,4);rect(wx+4.6,(wl/2-6),1.4,4)}}}catch(e){console.warn(e)}}}
+{const h1=meHit;meHit=function(x,z){if(h1(x,z))return true;if(RIDE&&RIDE.st==='on')return false;const box=(g,hw,hd)=>{const c=Math.cos(-g.rotation.y),s=Math.sin(-g.rotation.y);const dx=x-g.position.x,dz=z-g.position.z;return Math.abs(dx*c+dz*s)<hw&&Math.abs(-dx*s+dz*c)<hd};
+  for(const v of TRN)for(const g of v.gs){if(Math.abs(g.position.x-x)>8||Math.abs(g.position.z-z)>8)continue;if(box(g,1.7,v.kind==='bus'?5.6:5))return true}
+  for(const e of ZTV.values())for(const t of e.ts){const g=t.m;if(!g.visible||Math.abs(g.position.x-x)>7||Math.abs(g.position.z-z)>7)continue;if(box(g,1.7,5.2))return true}
+  for(const v of RAILV){if(!v.car)continue;for(const g of v.gs){if(Math.abs(g.position.x-x)>5||Math.abs(g.position.z-z)>5)continue;if(box(g,1.3,2.6))return true}}
+  const Z=rockAt(x,z);if(Z&&!(Z.nodes||[]).some(n=>n.st==='ok'&&Math.hypot(n.x-x,n.z-z)<3))return true;return false}}
 
 /* ======================= 編輯面板（選到東西時出現） ======================= */
 const chipsH=(key,opts,cur,lock)=>`<div class="chips">${Object.entries(opts).map(([k,n])=>`<button data-${key}="${k}" class="${String(cur)===k?'on':''}" ${lock&&lock(k)?'disabled style="opacity:.4"':''}>${n}</button>`).join('')}</div>`;
