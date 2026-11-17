@@ -3199,7 +3199,7 @@ function lampTick(dt){lampT-=dt;if(lampT>0)return;lampT=.3;const L=[];
     for(const o of hs){if(L.length>=6)break;const n=lampItems(o).length;L.push([V(o.x,baseY(o)+1.8,o.z),NIGHT*Math.min(40,10+n*6),Math.max(o.w,o.d)*.9+9])}}
   LAMPL.forEach((l,i)=>{const q=L[i];if(!q){l.intensity=0;return}l.position.copy(q[0]);l.intensity=q[1];l.distance=q[2]})}
 
-function bal2Tick(dt){stnTick(dt);grdTick(dt);airFarTick(dt);trainLifeTick(dt);skyWalkTick(dt);commTick(dt);rail2Tick(dt);sky2Tick(dt);air2Tick(dt);lmOutline();faceTick(dt);mvTick();mobCam();mobTick(dt);dashTick();layoutTick(dt);extTick(dt);repTick(dt);dmgFxTick(dt);mgrTick(dt);lampTick(dt)}
+function bal2Tick(dt){rhTick(dt);stnTick(dt);grdTick(dt);airFarTick(dt);trainLifeTick(dt);skyWalkTick(dt);commTick(dt);rail2Tick(dt);sky2Tick(dt);air2Tick(dt);lmOutline();faceTick(dt);mvTick();mobCam();mobTick(dt);dashTick();layoutTick(dt);extTick(dt);repTick(dt);dmgFxTick(dt);mgrTick(dt);lampTick(dt)}
 
 /* ---- 畫面排版：左上角的小視窗由上往下排，不會互相蓋住（手機特別重要） ---- */
 let layT=0;function layoutTick(dt){layT-=dt;if(layT>0)return;layT=.4;const mob=MOB.on;const vis=e=>e&&getComputedStyle(e).display!=='none'&&e.offsetHeight>0;
@@ -3550,7 +3550,7 @@ function trainCar(kind,i,nn){const g=new THREE.Group();const B=new Batch();const
     else if(i===1){B.add(boxG(2.2,1.8,8),dk,mxAt(0,1.5,0));B.add(boxG(1.9,.5,7.4),mat('',0x15151a),mxAt(0,2.55,0));for(const z of [-2.6,2.6])wh(z)}
     else{B.add(boxG(2.3,2.3,8.6),mat('',[0x6a3a2a,0x3a5a3a,0x5a4a2a][i%3]),mxAt(0,1.9,0));B.add(boxG(2.34,.8,7.4),GLASS_L,mxAt(0,2.2,0));B.add(boxG(2.5,.2,8.8),dk,mxAt(0,3.15,0));for(const z of [-2.8,2.8])wh(z)}}
   else{const hs=kind==='hsr';const body=mat('',hs?0xf8f8f8:0xe8e8ec,{metalness:.3,roughness:.3}),st=mat('',hs?0xe8702a:0x2a6ad8);const end=i===0||i===nn-1;const L=hs?9:8.6;B.add(boxG(2.5,2.4,end?L-2.4:L),body,mxAt(0,1.95,end?(i===0?-1.2:1.2):0));B.add(boxG(2.54,.35,L-(end?2.6:.2)),st,mxAt(0,1.35,end?(i===0?-1.2:1.2):0));B.add(boxG(2.56,.7,L-(end?3.4:1.2)),GLASS_L,mxAt(0,2.35,end?(i===0?-1.2:1.2):0));
-    if(end){const sg=i===0?1:-1;if(hs){for(let k=0;k<5;k++)B.add(boxG(2.5-k*.42,2.4-k*.42,.75),body,mxAt(0,1.95-k*.2,sg*(L/2-2.1+k*.7)))}else{B.add(boxG(2.5,2.4,2.2),body,mxAt(0,1.95,sg*(L/2-1.2)));B.add(boxG(2.2,.9,.1),GLASS_M,mxAt(0,2.4,sg*(L/2-.05)))}for(const s of [-1,1])B.add(boxG(.3,.18,.1),LAMP_M,mxAt(s*.7,1.2,sg*(L/2+(hs?.9:0))))}
+    if(end){const sg=i===0?1:-1;if(hs){const nz=sg*(L/2-2.4);B.add(new THREE.SphereGeometry(1,28,18),mat('',0xfafafa,{roughness:.4}),mxAt(0,1.95,nz,0,1.25,1.2,4.2));B.add(new THREE.SphereGeometry(1,24,14),st,mxAt(0,1.35,nz,0,1.27,.16,4.12));B.add(new THREE.SphereGeometry(1,22,14),GLASS_M,mxAt(0,2.62,nz+sg*1.25,0,.82,.42,1.7));B.add(new THREE.SphereGeometry(1,16,10),mat('',0xd8d8dc),mxAt(0,.95,nz,0,1.2,.25,3.9))}else{B.add(boxG(2.5,2.4,2.2),body,mxAt(0,1.95,sg*(L/2-1.2)));B.add(boxG(2.2,.9,.1),GLASS_M,mxAt(0,2.4,sg*(L/2-.05)))}for(const s of [-1,1])B.add(hs?new THREE.SphereGeometry(.14,10,8):boxG(.3,.18,.1),LAMP_M,hs?mxAt(s*.72,1.55,sg*(L/2+.9),0,1,.7,1.6):mxAt(s*.7,1.2,sg*(L/2)))}
     if(!hs&&i===Math.floor(nn/2)){B.add(boxG(.1,.9,.1),dk,mxAt(0,3.6,0));B.add(boxG(1.4,.06,.1),dk,mxAt(0,4.05,0))}for(const z of [-2.8,2.8])wh(z)}
   B.build(g);return g}
 const RAILV=[];let railSig='';const TSMK=[];const smkM=new THREE.SpriteMaterial({color:0x1c1c1c,transparent:true,opacity:.8,depthWrite:false});
@@ -3671,6 +3671,7 @@ function railNet(rs){for(const g of SWM)scene.remove(g);SWM.length=0;for(const v
   for(const kind of ['steam','emu','hsr','bus']){const L=rs.filter(o=>kind==='bus'?ROADS[o.k].bus&&!ROADS[o.k].train:ROADS[o.k].train===kind).map(o=>{const P=railPath(o);return {o,P,cut:new Set([0,P.pts.length-1])}}).filter(q=>q.P.pts.length>1&&q.P.L>2);if(!L.length)continue;
     for(const A of L)for(const ei of [0,A.P.pts.length-1]){const p=A.P.pts[ei];for(const B of L){if(B===A)continue;let bj=-1,bd=5;for(let j=0;j<B.P.pts.length;j++){const d=Math.hypot(B.P.pts[j].x-p.x,B.P.pts[j].z-p.z);if(d<bd){bd=d;bj=j}}if(bj<0)continue;if(B.P.d[bj]<5)bj=0;else if(B.P.L-B.P.d[bj]<5)bj=B.P.pts.length-1;B.cut.add(bj)}}
     if(kind==='bus')roadCross(L);
+    if(kind!=='bus')for(const A of L){let nx=200;for(let i=1;i<A.P.pts.length-1;i++)if(A.P.d[i]>=nx){if(A.P.L-A.P.d[i]>60)A.cut.add(i);nx+=200}}
     const N=[];const nodeAt=(x,z)=>{for(const n of N)if(Math.hypot(n.x-x,n.z-z)<5)return n;const n={x,z,adj:[],sw:0};N.push(n);return n};const E=[];
     for(const A of L){const cs=[...A.cut].sort((a,b)=>a-b);for(let i=1;i<cs.length;i++){const a=cs[i-1],b=cs[i];if(b-a<1)continue;const pts=A.P.pts.slice(a,b+1),y=A.P.y.slice(a,b+1);const d=[0];let l=0;for(let k=1;k<pts.length;k++){l+=Math.hypot(pts[k].x-pts[k-1].x,pts[k].z-pts[k-1].z);d.push(l)}if(l<.5)continue;
       const e={P:{pts,y,d,L:l},a:nodeAt(pts[0].x,pts[0].z),b:nodeAt(pts[pts.length-1].x,pts[pts.length-1].z),st:[],fst:[],fdp:[],sid:A.o.stnOf};if(e.a===e.b&&l<20)continue;e.a.adj.push(e);if(e.b!==e.a)e.b.adj.push(e);E.push(e)}}
@@ -3682,13 +3683,13 @@ function railNet(rs){for(const g of SWM)scene.remove(g);SWM.length=0;for(const v
       for(const Z of ZONES){if(Z.x==null)continue;const b=near(Z.x,Z.z,Z.r+30);if(!b)continue;const st=Object.assign(b,{zk:Z.k,n:Z.em+' '+Z.n});b.e.fst.push(st);C.fst.push(st)}
       for(const h of S.objs){if(!isFstn(h)||(h.t==='dec'&&kind!=='bus'))continue;const b=near(h.x,h.z,30+Math.max(h.w||0,h.d||0)/2);if(!b)continue;const st=Object.assign(b,{id:h.id,dep:1,n:h.sign});b.e.fdp.push(st);C.fdp.push(st)}
       for(const e of C.E)e.fall=e.fst.concat(e.fdp);
-      if(kind!=='bus')for(const st of C.fst){const g=hopperModel();const q={};pathAt(st.e.P,st.s,q);g.position.set(st.x,st.y,st.z);g.rotation.y=q.a;g.userData.hop=st;scene.add(g);SWM.push(g)}
+      if(kind!=='bus')for(const st of C.fst){const g=hopperModel();const q={};pathAt(st.e.P,st.s,q);g.position.set(st.x,st.y,st.z);g.rotation.y=q.a;g.userData.hop=st;hopWorkers(g);scene.add(g);SWM.push(g)}
       RNET.push(C);
       // 道岔號誌：三條以上的軌道接在一起
       for(const n of C.N){let c=0;for(const e of n.adj)c+=(e.a===n?1:0)+(e.b===n?1:0);if(c<3)continue;if(kind==='bus'){tlMake(n);n.tl.userData.n=n;continue}const g=new THREE.Group();const B=new Batch();B.add(boxG(.25,1.6,.25),mat('',0x2a2a2e),mxAt(0,.8,0));B.add(boxG(1.1,.5,.18),mat('',0xf8d020),mxAt(0,1.75,0));for(const x of [-.36,0,.36])B.add(boxG(.16,.52,.2),mat('',0x1c1c20),mxAt(x,1.75,0));B.add(new THREE.SphereGeometry(.2,8,6),LAMP_M,mxAt(0,2.2,0));B.build(g);g.position.set(n.x+3.2,Math.max(hAt(n.x+3.2,n.z),WATER_Y),n.z);scene.add(g);SWM.push(g);n.mk=g}
       // 依班次放列車
-      const T=TRAINT[kind];const es=C.E.slice().sort((a,b)=>b.P.L-a.P.L);const maxN=Math.max(1,Math.floor(C.L/70));const want=[];for(let i=0;i<Math.min(RS[kind].n,maxN);i++)want.push(0);if(C.fst.length&&C.fdp.length)for(let i=0;i<Math.min(RS[kind].f,maxN);i++)want.push(1);
-      want.forEach((fr,i)=>{const nn=kind==='bus'?1:Math.max(2,Math.min(carsOf(kind,fr),Math.floor((C.L-10)/9.6)));const gs=[];for(let c=0;c<nn;c++){const g=kind==='bus'?(fr?truckModel(i):VEHD.bus.mk()):fr&&c>0?freightCar(c):trainCar(kind,fr?0:c,fr?2:nn);if(kind!=="bus")couple(g,kind,fr?-1:c,nn);if(c===0)g.userData.loco=1;scene.add(g);gs.push(g)}
+      const T=TRAINT[kind];const es=C.E.slice().sort((a,b)=>b.P.L-a.P.L);const maxN=Math.max(1,Math.min(Math.floor(C.L/70),kind==='bus'?99:C.E.length));const want=[];for(let i=0;i<Math.min(RS[kind].n,maxN);i++)want.push(0);if(C.fst.length&&C.fdp.length)for(let i=0;i<Math.min(RS[kind].f,maxN);i++)want.push(1);
+      want.forEach((fr,i)=>{const nn=kind==='bus'?1:Math.max(2,Math.min(carsOf(kind,fr),Math.floor((C.L-10)/9.6)));const gs=[];for(let c=0;c<nn;c++){const g=kind==='bus'?(fr?truckModel(i):VEHD.bus.mk()):fr&&c>0?gondola(c):trainCar(kind,fr?0:c,fr?2:nn);if(kind!=="bus")couple(g,kind,fr?-1:c,nn);if(c===0)g.userData.loco=1;scene.add(g);gs.push(g)}
         const e=es[i%es.length];const len=nn*9.6;const v={kind,T,gs,len,fr,C,seq:[{e,dir:i%2?-1:1}],p:Math.min(e.P.L,len+2+Math.floor(i/es.length)*(len+20)),v:0,wait:1+i*2,flip:false};trBackfill(v);TRN.push(v)})}}}
 function trPt(t,q,out){const e=t.e;pathAt(e.P,t.dir>0?q:e.P.L-q,out);if(t.dir<0){out.a+=Math.PI;out.p=-out.p}return out}
 function trainAt(v,back,out){let k=v.seq.length-1,q=v.p-back;while(q<0&&k>0){k--;q+=v.seq[k].e.P.L}return trPt(v.seq[k],Math.max(0,q),out)}
@@ -3703,13 +3704,13 @@ const cargoN=v=>Object.values(v.cargo||{}).reduce((a,b)=>a+b,0);
 function trainTick(v,dt){
   if(v.wait>0){v.wait-=dt;v.v=0;if(v.wait<=0){v.at=null;if(v.rev){v.rev=0;trRev(v)}}}
   else{const t=v.seq[v.seq.length-1],L=t.e.P.L;if(v.next===undefined)v.next=trNext(v);const half=v.len/2;let rem=Infinity,stop=null,stT=null;
-    const look=(tt,off)=>{for(const st of trStops(v,tt)){if(v.doneT===tt&&v.doneSt===st)continue;if(v.fr){if(st.dep){if(cargoN(v)<1)continue}else if(((S.zpile||{})[st.zk]||0)<1||cargoN(v)>=fCap(v))continue}const q=tt.dir>0?st.s:tt.e.P.L-st.s;const hq=Math.min(tt.e.P.L,q+half);const r=off+hq;if(r>-.2&&r<rem){rem=Math.max(0,r);stop=st;stT=tt}}};
+    const look=(tt,off)=>{for(const st of trStops(v,tt)){if(v.doneT===tt&&v.doneSt===st)continue;if(v.fr){if(st.dep){}else if(((S.zpile||{})[st.zk]||0)<1||cargoN(v)>=fCap(v))continue}const q=tt.dir>0?st.s:tt.e.P.L-st.s;const hq=Math.min(tt.e.P.L,q+half);const r=off+hq;if(r>-.2&&r<rem){rem=Math.max(0,r);stop=st;stT=tt}}};
     look(t,-v.p);let dead=false;if(stop==null){if(v.next)look(v.next,L-v.p);else{rem=Math.max(0,L-v.p-.3);dead=true}}
-    const lim=trLimit(v,t,L),bind=rem<=lim,R2=Math.min(rem,lim);const vmax=Math.min(v.T.v*(v.fr?.75:1),Math.sqrt(2*v.T.acc*1.6*Math.max(0,R2))+.5);v.v=Math.min(vmax,v.v+v.T.acc*dt);const step=Math.min(v.v*dt,R2);v.p+=step;
-    while(v.p>L-.001&&v.next&&v.seq[v.seq.length-1]===t){const ov=v.p-L;v.seq.push(v.next);v.p=ov;v.next=undefined;break}
+    const lim=trLimit(v,t,L,dt),bind=rem<=lim,R2=Math.min(rem,lim);const vmax=Math.min(v.T.v*(v.fr?.75:1),Math.sqrt(2*v.T.acc*1.6*Math.max(0,R2))+.5);v.v=Math.min(vmax,v.v+v.T.acc*dt);const step=Math.min(v.v*dt,R2);v.p+=step;
+    while(v.p>L-.001&&v.next&&v.seq[v.seq.length-1]===t){const ov=v.p-L;v.seq.push(v.next);v.p=ov;v.next=undefined;v.cl=null;break}
     {let tot=v.p;for(let k=v.seq.length-2;k>=0;k--){if(tot>v.len+10){v.seq.splice(0,k+1);break}tot+=v.seq[k].e.P.L}}
     if(bind&&rem-step<=.4&&(stop||dead)){v.v=0;if(stop){v.doneT=stT;v.doneSt=stop;v.at=stop;v.lastSt=stop;v.wait=v.fr?(stop.dep&&stop.dec?12:8):rset()[v.kind].dw;trArrive(v,stop)}else{v.wait=5;v.rev=1}}}
-  for(let i=0;i<v.gs.length;i++){trainAt(v,4.8+i*9.6,_tq);const g=v.gs[i];if(v.kind==='bus'){const a=_tq.a;g.position.set(_tq.x-Math.cos(a)*1.4,_tq.y,_tq.z+Math.sin(a)*1.4)}else g.position.set(_tq.x,_tq.y,_tq.z);g.rotation.set(0,_tq.a+(v.flip?Math.PI:0),0);g.rotateX(v.flip?_tq.p:-_tq.p)}
+  heapTick(v,dt);for(let i=0;i<v.gs.length;i++){trainAt(v,4.8+i*9.6,_tq);const g=v.gs[i];if(v.kind==='bus'){const a=_tq.a;g.position.set(_tq.x-Math.cos(a)*1.4,_tq.y,_tq.z+Math.sin(a)*1.4)}else g.position.set(_tq.x,_tq.y,_tq.z);g.rotation.set(0,_tq.a+(v.flip?Math.PI:0),0);g.rotateX(v.flip?_tq.p:-_tq.p)}
   if(v.kind==='steam'&&TSMK.length<60&&Math.random()<dt*(v.v>1?14:3)){const lo=v.gs.find(g=>g.userData.loco)||v.gs[0];const sm=dustM.clone();sm.color.set(0x1a1a1a);sm.opacity=.8;const s=new THREE.Sprite(sm);const a=lo.rotation.y;s.position.set(lo.position.x+Math.sin(a)*3,lo.position.y+4.2,lo.position.z+Math.cos(a)*3);s.scale.setScalar(1.2);scene.add(s);TSMK.push({s,t:0})}}
 function trArrive(v,st){if(v.fr){if(st.dep)fdUnload(v,st);else fdLoad(v,st);return}
   if(PAX.length<24)paxSpawn(v,st)}
@@ -3784,8 +3785,8 @@ function extraEdit(){if(INT)return;const o=SEL&&byId(SEL);const e=$('#edit');if(
   else if(o.t==='dec'&&STNK[o.k])h=stnEditH(o);
   if(o.t==='house'&&isSec(o))h+=`<button class="hb g" data-gp="1" style="width:100%;margin:4px 0">🛡️ 保全派遣（已雇 ${grdTot()} / ${grdCap()} 人）</button>`;
   const GL=grdLocs().find(l=>l.key==='o:'+o.id);if(GL&&!isSec(o))h+=`<button class="hb" data-g1="1" style="width:100%;margin:4px 0">🛡️ 這裡的保全 ${(S.grd||{})[GL.key]||0} 人・派遣保全</button>`;
-  if(!h)return;const d=document.createElement('div');d.className='xEd';d.innerHTML=h;hd.after(d);if(o.t==='dec'&&STNK[o.k])stnEditBind(d,o);d.querySelectorAll('[data-gp]').forEach(b=>b.onclick=()=>{SFX.click();grdPanel()});d.querySelectorAll('[data-g1]').forEach(b=>b.onclick=()=>{SFX.click();grdOne(GL)});
-  d.querySelectorAll('[data-xe="rail"]').forEach(b=>b.onclick=()=>{SFX.click();railPanel()});
+  if(!h)return;const d=document.createElement('div');d.className='xEd';d.innerHTML=h;hd.after(d);if(o.t==='dec'&&STNK[o.k]){stnEditBind(d,o);if((o.s||1)!==1){o.s=1;place(o)}const rg=e.querySelector('[data-rg="s"]');if(rg){const lb=rg.previousElementSibling;if(lb&&lb.classList.contains('lab'))lb.remove();rg.remove()}const rb=e.querySelector('[data-rot]');if(rb){const row=rb.closest('.row2');const lb=row&&row.previousElementSibling;if(lb&&lb.classList.contains('lab'))lb.remove();if(row)row.remove()}}d.querySelectorAll('[data-gp]').forEach(b=>b.onclick=()=>{SFX.click();grdPanel()});d.querySelectorAll('[data-g1]').forEach(b=>b.onclick=()=>{SFX.click();grdOne(GL)});
+  d.querySelectorAll('[data-xe="rail"]').forEach(b=>b.onclick=()=>{SFX.click();railPanel()});d.querySelectorAll('[data-xe="help"]').forEach(b=>b.onclick=()=>{SFX.click();railHelp(o)});
   d.querySelectorAll('[data-fpd]').forEach(b=>b.onclick=()=>{o.fpd=+b.dataset.fpd;SFX.click();dirty();toast(`✈️ 改成每天 ${o.fpd} 班，大約每 ${Math.round(720/o.fpd)} 秒一班`,2200);editShow()})}
 {const e0=editShow;editShow=function(){const r=e0.apply(this,arguments);try{extraEdit()}catch(err){console.warn(err)}return r}}
 
@@ -3815,7 +3816,9 @@ function tlMake(n){const g=new THREE.Group();const B=new Batch();const dk=mat(''
 function tlState(n,grp){const c=(performance.now()/1000+n.off)%20;if(grp==='x')return c<9?'g':c<10?'y':'r';return c>=10&&c<19?'g':c>=19?'y':'r'}
 function trGrp(t){if(!t.grp){const a=trPt(t,t.e.P.L,{}),b=trPt(t,Math.max(0,t.e.P.L-6),{});t.grp=Math.abs(a.x-b.x)>Math.abs(a.z-b.z)?'x':'z'}return t.grp}
 function tailOn(w,e,dir){let k=w.seq.length-1,q=w.p-w.len;while(q<0&&k>0){k--;q+=w.seq[k].e.P.L}const t=w.seq[k];return t.e===e&&t.dir===dir?q:null}
-function trLimit(v,t,L){let lim=Infinity;const n=t.dir>0?t.e.b:t.e.a;if(n.tl&&v.p<L-5.5&&tlState(n,trGrp(t))!=='g')lim=Math.max(0,L-v.p-6);
+function trOpp(v,e,dir){for(const w of TRN){if(w===v||w.C!==v.C)continue;if(w.cl&&w.cl.e===e)return true;for(const q of w.seq)if(q.e===e)return true}return false}
+function trLimit(v,t,L,dt){dt=dt||1/60;let lim=Infinity;if(v.kind!=='bus'&&v.next){if(trOpp(v,v.next.e,v.next.dir)){const n=t.dir>0?t.e.b:t.e.a;const alt=trCands(t.e,t.dir,n).filter(c=>!trOpp(v,c.e,c.dir));if(alt.length)v.next=alt[Math.floor(Math.random()*alt.length)];else{lim=Math.max(0,L-v.p-8);v.blk=(v.blk||0)+dt;if(v.blk>18&&!(v.wait>0)&&!t.e.st.length&&!t.e.fdp.length){v.blk=0;v.wait=2;v.rev=1}}}if(lim===Infinity){v.blk=0;if(L-v.p<80)v.cl=v.next}}
+  if(v.kind!=='bus'&&trOpp(v,t.e,t.dir)&&v.p<L-2){/* 已經在同一段軌道上對向相遇：停下來等 */}const n=t.dir>0?t.e.b:t.e.a;if(n.tl&&v.p<L-5.5&&tlState(n,trGrp(t))!=='g')lim=Math.max(0,L-v.p-6);
   for(const w of TRN){if(w===v||w.C!==v.C)continue;const tq=tailOn(w,t.e,t.dir);if(tq!=null){if(tq>v.p-.5)lim=Math.min(lim,Math.max(0,tq-v.p-6))}else if(v.next){const q2=tailOn(w,v.next.e,v.next.dir);if(q2!=null)lim=Math.min(lim,Math.max(0,L-v.p+q2-6))}}return lim}
 function tlTick(){for(const g of SWM){const H=g.userData.heads;if(!H)continue;const n=g.userData.n;for(const h of H){const s=tlState(n,h.grp);for(const c of ['r','y','g'])h.L[c].emissiveIntensity=c===s?2.2:.05}}}
 function truckModel(i){const g=new THREE.Group();const B=new Batch();const cc=[0xd8502a,0x2a6ad8,0x3a9a4a,0xe8b020][i%4];const dk=mat('',0x1c1c20);B.add(boxG(2.4,2.2,2.6),mat('',cc,{metalness:.3}),mxAt(0,1.7,3.4));B.add(boxG(2.3,.8,.05),GLASS_M,mxAt(0,2.2,4.71));B.add(boxG(2.5,2.8,6.6),mat('metal',0xe8e8ec,{metalness:.2}),mxAt(0,2.1,-1.1));B.add(boxG(2.4,.4,9.2),mat('',0x2a2a2e),mxAt(0,.75,0));
@@ -3914,7 +3917,7 @@ function stnTracks(o){for(const r of S.objs.slice())if(r.t==='road'&&r.stnOf===o
     const pts=densePts(loc.map(([a,b])=>stnL2W(o,a,b)),2);const r=addObj({t:'road',k,pts,stnOf:o.id});r.free=o.free}
   o.w=stnW(o);o.d=L;railSig=''}
 let stnT=0;function stnTick(dt){stnT-=dt;if(stnT>0)return;stnT=1;if(typeof CO!=='undefined'&&CO.role==='guest')return;
-  for(const o of S.objs){if(o.t!=='dec'||!STNK[o.k])continue;if(!o.sign){const n=S.objs.filter(q=>q.t==='dec'&&q.k===o.k&&q.sign).length+1;o.sign=o.k==='fyard'?`📦 貨運站 ${n}`:`🚉 車站 ${n}`;place(o)}const sig=[o.x,o.z,o.r,o.ln||1,o.len||60,o.rk||'rail'].join(',');if(o._ts===sig)continue;o._ts=sig;stnTracks(o);dirty()}
+  for(const o of S.objs){if(o.t!=='dec'||!STNK[o.k])continue;if(!o.sign){const n=S.objs.filter(q=>q.t==='dec'&&q.k===o.k&&q.sign).length+1;o.sign=o.k==='fyard'?`📦 貨運站 ${n}`:`🚉 車站 ${n}`;const nr=stnNearKinds(o);const rk0=Object.keys(nr).sort((a,b)=>nr[a]-nr[b])[0];if(rk0&&!o.rkSet)o.rk=rk0;place(o);if(!o.free||1)setTimeout(()=>stnAsk(o),500)}const sig=[o.x,o.z,o.r,o.ln||1,o.len||60,o.rk||'rail'].join(',');if(o._ts===sig)continue;o._ts=sig;stnTracks(o);dirty()}
   for(const r of S.objs.slice())if(r.t==='road'&&r.stnOf!=null&&!byId(r.stnOf))removeObj(r)}
 {const a0=addObj;addObj=function(o){const r=a0.apply(this,arguments);if(o&&o.t==='dec'&&STNK[o.k]){const L=o.len||60;flattenUnder({t:'house',x:o.x,z:o.z,r:o.r||0,w:stnW(o)+(o.k==='fyard'?36:2),d:L+44});refreshNear(o.x,o.z,60);stnT=0}return r}}
 {const z2=zkNow;zkNow=function(){if(!ZKF&&!INT){if(TOOL==='deco'&&DEC[TS.deco]&&DEC[TS.deco].cat==='stn')return 't';if(TOOL==='sel'&&SEL!=null){const o=byId(SEL);if(o&&o.t==='dec'&&STNK[o.k])return 't'}if(TOOL==='tpl'&&TPLSEL&&TPLSEL.o.some(q=>q.t==='dec'&&STNK[q.k]))return 't'}return z2()}}
@@ -3925,8 +3928,8 @@ function stnEditH(o){const N=o.ln||1,L=o.len||60,k=o.rk||'rail';return `<div sty
   <div class="lab">站名</div><div style="display:flex;gap:6px"><input id="stnNm" value="${(o.sign||'').replace(/"/g,'&quot;')}" style="flex:1;font-size:15px;padding:6px;border-radius:8px;border:2px solid #d8c8a8"><button class="hb g" data-sx="nm">改名</button></div>
   <div class="lab">鐵軌幾條（每多一條，車站寬 ${STSP} 公尺）</div><div class="chips">${[1,2,3,4,5,6].map(n=>`<button data-sx="ln|${n}" class="${N===n?'on':''}">${n} 條</button>`).join('')}</div>
   <div class="lab">月台長度（列車越長要越長）</div><div class="chips">${[40,60,90,120,150].map(n=>`<button data-sx="len|${n}" class="${L===n?'on':''}">${n} 公尺</button>`).join('')}</div>
-  <div class="lab">鐵軌種類</div><div class="chips">${[['railS','🚂 蒸汽火車'],['rail','🚆 一般火車'],['hsr','🚄 高鐵']].map(([q,n])=>`<button data-sx="rk|${q}" class="${k===q?'on':''}">${n}</button>`).join('')}</div>
-  <div class="lab">轉向</div><div class="chips">${[[-90,'⟲ 90°'],[-15,'⟲ 15°'],[15,'⟳ 15°'],[90,'⟳ 90°']].map(([d,n])=>`<button data-sx="rot|${d}">${n}</button>`).join('')}</div><button class="hb b" data-xe="rail" style="width:100%;margin-top:6px">⚙️ 火車班次和車廂數</button>`}
+  <div class="lab">鐵軌種類（${o.k==='fyard'?'貨運':'客運'}列車就是這一種：現在是 ${RKN[k]}）</div><div class="chips">${[['railS','🚂 蒸汽火車'],['rail','🚆 一般火車'],['hsr','🚄 高鐵']].map(([q,n])=>`<button data-sx="rk|${q}" class="${k===q?'on':''}">${n}</button>`).join('')}</div>
+  <div class="lab">轉向</div><div class="chips">${[[-90,'⟲ 90°'],[-15,'⟲ 15°'],[15,'⟳ 15°'],[90,'⟳ 90°']].map(([d,n])=>`<button data-sx="rot|${d}">${n}</button>`).join('')}</div><button class="hb b" data-xe="rail" style="width:100%;margin-top:6px">⚙️ 火車班次和車廂數</button><button class="hb o" data-xe="help" style="width:100%;margin-top:6px">🤖 小助手：還缺什麼？</button>`}
 function stnEditBind(d,o){d.querySelectorAll('[data-sx]').forEach(b=>b.onclick=()=>{const [k,v]=b.dataset.sx.split('|');SFX.click();if(k==='nm'){const t=($('#stnNm').value||'').trim().slice(0,16);if(t){o.sign=t;place(o);railSig=''}}else if(k==='rot'){o.r=(o.r||0)+(+v)*Math.PI/180;place(o)}else{o[k]=k==='rk'?v:+v;place(o)}
   if(k==='ln'||k==='len'){const L=o.len||60;flattenUnder({t:'house',x:o.x,z:o.z,r:o.r||0,w:stnW(o)+(o.k==='fyard'?36:2),d:L+44});refreshNear(o.x,o.z,60)}stnT=0;stnTick(0);dirty();editShow()})}
 // 車廂數量
@@ -3945,10 +3948,10 @@ function viewSet(m){S.view=S.view===m?'':m;VY=null;SFX.click();viewUI();toast(S.
 function viewUI(){const jw=$('#joyW');if(!jw)return;let r=$('#viewR');if(!r){r=document.createElement('div');r.id='viewR';r.style.cssText='display:flex;gap:4px';r.innerHTML='<button class="hb" data-vw="fp" style="font-size:13px;padding:5px 8px">👁️ 第一人稱</button><button class="hb" data-vw="back" style="font-size:13px;padding:5px 8px">🎥 後方視角</button>';jw.insertBefore(r,$('#joy').nextSibling);r.querySelectorAll('[data-vw]').forEach(b=>b.onclick=e=>{e.stopPropagation();viewSet(b.dataset.vw)})}
   r.querySelectorAll('[data-vw]').forEach(b=>{b.classList.toggle('g',S.view===b.dataset.vw)})}
 setTimeout(viewUI,500);
-{const c0=camApply;camApply=function(){c0();const m=S&&S.view;if(!m||!viewOK())return;const dt=1/60;const h=ME.rotation.y;if(VY==null)VY=h;let d=h-VY;while(d>Math.PI)d-=Math.PI*2;while(d<-Math.PI)d+=Math.PI*2;VY+=d*Math.min(1,dt*(m==='fp'?5:3));
-  const fx=Math.sin(VY),fz=Math.cos(VY);const sc=ME.scale.y||1;const px=ME.position.x,py=ME.position.y,pz=ME.position.z;CAM.yaw=VY+Math.PI;CAM.tx=px;CAM.tz=pz;
+{const c0=camApply;camApply=function(){c0();const m=S&&S.view;if(!m||!viewOK())return;const dt=1/60;const h=ME.rotation.y;if(VY==null)VY=h;let d=h-VY;while(d>Math.PI)d-=Math.PI*2;while(d<-Math.PI)d+=Math.PI*2;VY+=d*Math.min(1,dt*(m==='fp'?1.6:1.2));ME.scale.setScalar(.8);
+  const fx=Math.sin(VY),fz=Math.cos(VY);const sc=.8;const px=ME.position.x,py=ME.position.y,pz=ME.position.z;CAM.yaw=VY+Math.PI;CAM.tx=px;CAM.tz=pz;
   if(m==='fp'){const ey=py+1.62*sc;camera.position.set(px+fx*.45*sc,ey,pz+fz*.45*sc);camera.lookAt(px+fx*20,ey-1.2,pz+fz*20);ME.visible=false}
-  else{const D=clamp(CAM.dist/6,7,26)*Math.max(1,sc*.7),H=D*.3+1.5*sc;let cx=px-fx*D,cz=pz-fz*D,cy=py+H;cy=Math.max(cy,hAt(cx,cz)+1);camera.position.set(cx,cy,cz);camera.lookAt(px+fx*8*sc,py+1.5*sc,pz+fz*8*sc)}}}
+  else{const D=clamp(CAM.dist/8,5,14),H=D*.3+1.5*sc;let cx=px-fx*D,cz=pz-fz*D,cy=py+H;cy=Math.max(cy,hAt(cx,cz)+1);camera.position.set(cx,cy,cz);camera.lookAt(px+fx*8*sc,py+1.5*sc,pz+fz*8*sc)}}}
 // ---- 貨運車站的設備 ----
 function forkModel(){const g=new THREE.Group();const B=new Batch();const yl=mat('',0xf0b020),dk=mat('',0x1c1c20);B.add(boxG(1.2,.8,2),yl,mxAt(0,.7,0));B.add(boxG(1.1,.08,1.1),dk,mxAt(0,1.9,-.3));for(const x of [-.5,.5])B.add(boxG(.06,1.2,.06),dk,mxAt(x,1.5,-.8));B.add(boxG(.1,2.2,.1),dk,mxAt(-.35,1.4,1.05));B.add(boxG(.1,2.2,.1),dk,mxAt(.35,1.4,1.05));
   for(const x of [-.25,.25])B.add(boxG(.12,.06,1.1),dk,mxAt(x,.3,1.6));for(const z of [-.6,.6])for(const s of [-1,1])B.add(new THREE.CylinderGeometry(.28,.28,.2,10),dk,mxAt(s*.6,.28,z,0,1,1,1,0,Math.PI/2));B.build(g);
@@ -3959,7 +3962,11 @@ function shunterModel(){const g=new THREE.Group();const B=new Batch();const or=m
   for(const z of [-2,0,2])for(const s of [-1,1])B.add(new THREE.CylinderGeometry(.42,.42,.2,10),dk,mxAt(s*.85,.45,z,0,1,1,1,0,Math.PI/2));B.add(boxG(.3,.18,.1),LAMP_M,mxAt(0,2,3.05));B.build(g);return g}
 function fyBuild(g,o,N,L,W,RH,ph){const u=g.userData;u.o=o;const B=new Batch();const xe=-(N*STSP/2)-2.1,xr=N*STSP/2+2.1;
   // 集貨倉庫（在屋頂外面左邊）
-  const wx=-(W/2+.6)-7.5,wl=Math.min(L*.75,54);B.add(boxG(13,7,wl),mat('',0xb8b0a0),mxAt(wx,3.5,0));B.add(boxG(14,.4,wl+1),mat('metal',0x6a7480,{metalness:.4}),mxAt(wx,7.2,0));
+  const wx=-(W/2+.6)-7.5,wl=Math.min(L*.75,54);const wm=mat('',0xb8b0a0);B.add(boxG(13,.15,wl),con2(),mxAt(wx,.08,0));
+  {const dw=5.5,dh=5.5,sz=(wl/2-dw/2);for(const sd of [-1,1])B.add(boxG(.3,7,sz),wm,mxAt(wx-6.5,3.5,sd*(dw/2+sz/2)));B.add(boxG(.3,1.5,dw),wm,mxAt(wx-6.5,6.25,0));
+   const sx2=(13-dw)/2;for(const zz of [-1,1]){for(const sd of [-1,1])B.add(boxG(sx2,7,.3),wm,mxAt(wx+sd*(dw/2+sx2/2),3.5,zz*wl/2));B.add(boxG(dw,1.5,.3),wm,mxAt(wx,6.25,zz*wl/2))}
+   B.add(boxG(.3,7,wl),wm,mxAt(wx+6.5,3.5,0));for(const zz of [-1,1])for(const xx of [-1,1])B.add(boxG(.35,5.6,.35),mat('',0xf0b020),mxAt(xx<0?wx-6.5:wx+xx*dw/2,2.8,xx<0?zz*dw/2:zz*wl/2));
+   for(const sd of [-1,1])for(let k=0;k<3;k++){const z=sd*(wl/2-3-k*4.5);if(Math.abs(z)<4)continue;B.add(boxG(2.4,.12,3.6),mat('metal',0x2a5a9a),mxAt(wx+4.5,.9+k*0,z));for(let lv=0;lv<3;lv++){B.add(boxG(2.4,.08,3.6),mat('metal',0x2a5a9a),mxAt(wx+4.6,.1+lv*1.8,z));palletStack(B,wx+4.6,.18+lv*1.8,z-.9,1);palletStack(B,wx+4.6,.18+lv*1.8,z+.9,1)}for(const c of [-1.7,1.7])for(const e of [-1.1,1.1])B.add(boxG(.1,5.4,.1),mat('',0xe8702a),mxAt(wx+4.6+e,2.7,z+c))}}B.add(boxG(14,.4,wl+1),mat('metal',0x6a7480,{metalness:.4}),mxAt(wx,7.2,0));
   for(let z=-wl/2+6;z<=wl/2-6;z+=9){B.add(boxG(.1,4,5),mat('metal',0x5a6068,{metalness:.5}),mxAt(wx+6.55,2,z));for(let k=0;k<6;k++)B.add(boxG(.12,.06,5),mat('',0x3a3e44),mxAt(wx+6.6,.4+k*.65,z))}
   B.add(boxG(5,.9,wl),con2(),mxAt(wx+9,.45,0));palletStack(B,wx+8.5,.9,-wl/4,2);palletStack(B,wx+9.5,.9,wl/5,3);palletStack(B,wx+8.2,.9,wl/3,1);
   // 左邊月台上的棧板貨
@@ -3973,6 +3980,7 @@ function fyBuild(g,o,N,L,W,RH,ph){const u=g.userData;u.o=o;const B=new Batch();c
     const tr=new THREE.Mesh(boxG(1.4,.8,1.4),mat('',0x2a2a2e));tr.position.set(xr,RH-2,z);g.add(tr);const cb=new THREE.Mesh(boxG(.08,1,.08),mat('',0x1c1c20));g.add(cb);const ct=new THREE.Mesh(boxG(2.4,2.5,6),mat('',[0xd8502a,0x2a6ad8,0x3a9a4a][u.cr.length%3]));ct.rotation.y=0;g.add(ct);u.cr.push({tr,cb,ct,z,t:Math.random()*8})}
   u.fk=[];for(let i=0;i<2;i++){const f=forkModel();g.add(f);u.fk.push({m:f,i,t:i*3})}
   u.wk=[];for(let i=0;i<3;i++){const p=person(0xf08020,true);g.add(p);u.wk.push({m:p,t:i*2.1,x:i<2?xe+1+i*.3:xr-1,z0:-L/3+i*L/3})}
+  {const tk=truckModel(1);tk.rotation.y=Math.PI/2;g.add(tk);const f3=forkModel();g.add(f3);u.wt={tk,f3,t:Math.random()*30};}
   const sh=shunterModel();sh.position.set(sx,0,-L/2+8);g.add(sh);u.sh={m:sh,z0:-L/2+6,z1:-L/2+sl-4,t:0};u.L=L;u.N=N;u.xe=xe;u.xr=xr;u.wx=wx;u.ph=ph;u.RH=RH;reg(g,o)}
 const con2=()=>mat('',0xa8a49c);
 function fyTick(g,dt){const u=g.userData;const o=u.o;if(!u.cr||!o)return;const act=TRN.some(v=>v.fr&&v.at&&v.at.id===o.id&&v.wait>0);u.act=act;const N=u.N,L=u.L;const lanes=[];for(let i=0;i<N;i++)lanes.push((i-(N-1)/2)*STSP);
@@ -3982,6 +3990,8 @@ function fyTick(g,dt){const u=g.userData;const o=u.o;if(!u.cr||!o)return;const a
   for(const f of u.fk){if(act)f.t+=dt;const T=(f.t%10)/10;const m=f.m;if(f.i===0){const k=Math.sin(T*Math.PI*2);const z=k*L*.32;m.position.set(u.xe+1.2,u.ph,z);m.rotation.y=Math.cos(T*Math.PI*2)>0?0:Math.PI;m.userData.pl.visible=Math.cos(T*Math.PI*2)>0}
     else{const k=(1-Math.cos(T*Math.PI*2))/2;const x0=u.wx+8.6,x1=u.xe-1.2;m.position.set(x0+(x1-x0)*k,0,L*.08);m.rotation.y=Math.sin(T*Math.PI*2)>0?Math.PI/2:-Math.PI/2;m.userData.pl.visible=Math.sin(T*Math.PI*2)>0}}
   for(const w of u.wk){if(act)w.t+=dt;const k=Math.sin(w.t*.6);w.m.position.set(w.x,u.ph+(act?Math.abs(Math.sin(w.t*8))*.05:0),w.z0+k*6);w.m.rotation.y=Math.cos(w.t*.6)>0?0:Math.PI}
+  {const w=u.wt;w.t+=dt;const T=w.t%32;const xin=u.wx-1,xout=u.wx-30;let x;if(T<7){const k=T/7;x=xout+(xin-xout)*(1-(1-k)*(1-k))}else if(T<20)x=xin;else if(T<27){const k=(T-20)/7;x=xin+(xout-xin)*k*k}else x=xout;w.tk.position.set(x,0,0);w.tk.visible=T<27;
+   const fk=w.f3;const ax=u.wx-1.5,az=-2.8,bx=u.wx+2.2,bz=-Math.min(u.L*.75,54)/2+5;if(T>=7&&T<20){const k=((T-7)%4.33)/4.33;const a=(1-Math.cos(k*Math.PI*2))/2;fk.position.set(ax+(bx-ax)*a,0,az+(bz-az)*a);const go=k<.5;fk.rotation.y=Math.atan2((bx-ax)*(go?1:-1),(bz-az)*(go?1:-1));fk.userData.pl.visible=go}else{fk.position.set(bx,0,bz+2);fk.rotation.y=0;fk.userData.pl.visible=false}}
   const s=u.sh;s.t+=dt*(act?1:.35);const k=(1-Math.cos(s.t*.25))/2;s.m.position.z=s.z0+(s.z1-s.z0)*k}
 DEC.fyard.anim={build(g,o){stnBuild(g,o)},tick(g,t,dt){fyTick(g,dt)}};
 // ---- 採集場旁邊的裝料倉（漏斗），貨運列車停在下面直接灌滿車廂 ----
@@ -3989,8 +3999,67 @@ function hopperModel(){const g=new THREE.Group();const B=new Batch();const st=ma
   B.add(boxG(5,4,6.4),bin,mxAt(0,9.4,0));B.add(new THREE.ConeGeometry(2.9,2.4,4),bin,mxAt(0,6,0,Math.PI/4,1,1,1,Math.PI));B.add(boxG(1,1.2,1),mat('',0x3a3a42),mxAt(0,4.4,0));B.add(boxG(5.2,.3,6.6),mat('',0xd8502a),mxAt(0,11.5,0));B.build(g);
   const tx=cTex(256,64,(x,cw,ch)=>{x.fillStyle='#d8502a';x.fillRect(0,0,cw,ch);x.fillStyle='#fff';x.font='bold 40px Huninn, sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText('裝料倉',cw/2,ch/2)});for(const s of [1,-1]){const m=new THREE.Mesh(new THREE.PlaneGeometry(4,1),new THREE.MeshStandardMaterial({map:tx}));m.position.set(s*2.52,9.6,0);m.rotation.y=s*Math.PI/2;g.add(m)}return g}
 const FALLP=[];
-function hopTick(dt){for(const g of SWM){const st=g.userData.hop;if(!st)continue;const act=TRN.some(v=>v.fr&&v.at===st&&v.wait>0);if(act&&FALLP.length<120&&Math.random()<dt*40){const sm=dustM.clone();sm.color.set(0x8a7a68);sm.opacity=.95;const s=new THREE.Sprite(sm);s.position.set(g.position.x+rand(-.3,.3),g.position.y+3.8,g.position.z+rand(-.3,.3));s.scale.setScalar(rand(.25,.5));scene.add(s);FALLP.push({s,v:0,y0:g.position.y+2.4})}}
+function hopTick(dt){for(const g of SWM){const st=g.userData.hop;if(!st)continue;const act=TRN.some(v=>v.fr&&v.at===st&&v.wait>0);const tt=performance.now()/1000;for(const w of g.userData.ws||[]){w.position.y=act?Math.abs(Math.sin(tt*6+w.position.x))*.06:0;w.rotation.z=act?Math.sin(tt*4+w.position.x)*.08:0}if(act&&FALLP.length<120&&Math.random()<dt*40){const sm=dustM.clone();sm.color.set(0x8a7a68);sm.opacity=.95;const s=new THREE.Sprite(sm);s.position.set(g.position.x+rand(-.3,.3),g.position.y+3.8,g.position.z+rand(-.3,.3));s.scale.setScalar(rand(.25,.5));scene.add(s);FALLP.push({s,v:0,y0:g.position.y+2.4})}}
   for(let i=FALLP.length-1;i>=0;i--){const p=FALLP[i];p.v+=dt*14;p.s.position.y-=p.v*dt;if(p.s.position.y<p.y0){scene.remove(p.s);FALLP.splice(i,1)}}}
+
+/* ======================= 2.40：小助手（車站用途、下一步、還缺什麼）、貨車看得到裝卸、作業員、視角變慢 ======================= */
+const RK2T={railS:'steam',rail:'emu',hsr:'hsr'},T2RK={steam:'railS',emu:'rail',hsr:'hsr'};const RKN={railS:'🚂 蒸汽火車',rail:'🚆 一般火車',hsr:'🚄 高鐵'};
+function stnThroats(o){const L=o.len||60;return [stnL2W(o,0,-L/2-20),stnL2W(o,0,L/2+20)]}
+function stnNearKinds(o){const th=stnThroats(o);const r={};for(const q of S.objs){if(q.t!=='road'||q.stnOf===o.id||!ROADS[q.k]||!ROADS[q.k].train)continue;let bd=1e9;for(const p of q.pts)for(const t of th)bd=Math.min(bd,Math.hypot(p.x-t.x,p.z-t.z));if(bd<40){const k=T2RK[ROADS[q.k].train];r[k]=Math.min(r[k]||1e9,bd)}}return r}
+function stnComp(o){return RNET.find(C=>C.E.some(e=>e.sid===o.id))}
+function stnStat(o){railSync();const fr=o.k==='fyard',rk=o.rk||'rail',kind=RK2T[rk],C=stnComp(o),R=rset()[kind],it=[];const near=stnNearKinds(o);const other=Object.keys(near).filter(k=>k!==rk);
+  it.push({ok:true,t:`這個車站的鐵軌是「${RKN[rk]}」，只有${RKN[rk]}的${fr?'貨運':'客運'}列車會停這裡。`});
+  if(other.length&&!near[rk])it.push({ok:false,t:`車站旁邊的鐵軌是「${RKN[other[0]]}」，跟車站不一樣，兩種鐵軌不會接在一起。`,fx:'rk|'+other[0],b:`改成${RKN[other[0]]}`});
+  const con=C&&C.E.some(e=>e.sid!==o.id);it.push(con?{ok:true,t:'車站兩頭已經接上鐵軌。'}:{ok:false,t:`車站還沒接上鐵軌：用「道路 → ${ROADS[rk].n}」從車站任一頭（鐵軌合成一條的地方）拉出去${fr?'，一路鋪到採集場旁邊':'，接到另一個車站'}。`,fx:'road|'+rk,b:`🛤️ 去鋪${ROADS[rk].n}`});
+  if(fr){const n=C?C.fst.length:0;it.push(n?{ok:true,t:`路線經過 ${n} 個採集場：${C.fst.map(s=>s.n).join('、')}（旁邊會自動蓋裝料倉）。`}:{ok:false,t:'路線還沒經過採集場：把鐵軌鋪到採集場旁邊 30 公尺內，就會自動蓋「裝料倉」，貨運列車停在下面裝貨。',fx:'road|'+rk,b:`🛤️ 去鋪${ROADS[rk].n}`});
+    it.push(R.f>0?{ok:true,t:`${RKN[rk]}貨運列車開了 ${R.f} 班，每列 ${carsOf(kind,1)} 節，每列最多載 ${Math.max(80,(carsOf(kind,1)-1)*80)} 個。`}:{ok:false,t:`還沒開${RKN[rk]}的貨運列車。`,fx:'f1|'+kind,b:'📦 加開 1 班貨運列車'});
+    if(C&&C.fst.length){const pile=C.fst.reduce((a,s)=>a+((S.zpile||{})[s.zk]||0),0);it.push(pile>0?{ok:true,t:`採集場旁邊堆著 ${Math.floor(pile)} 個材料，等火車來載。`}:{ok:null,t:'採集場旁邊現在沒有堆貨：要有工人、工程車或自動採集，材料才會堆在旁邊等火車載（採集場面板可以雇工人）。'})}}
+  else{const n=C?C.stn.length:0;it.push(n>=2?{ok:true,t:`路線上有 ${n} 個車站：${C.stn.map(s=>s.n).join('、')}。`}:{ok:null,t:'路線上只有這一個車站：可以再蓋一個火車站接在同一條路線上，旅客才能從這站坐到那站（只有一站時可以坐觀光列車）。'});
+    it.push(R.n>0?{ok:true,t:`${RKN[rk]}客運列車開了 ${R.n} 班，每列 ${carsOf(kind,0)} 節。`}:{ok:false,t:`還沒開${RKN[rk]}的客運列車。`,fx:'n1|'+kind,b:'🚆 加開 1 班客運列車'})}
+  const tr=TRN.filter(v=>C&&v.C===C&&(fr?v.fr:!v.fr)).length;if(it.every(q=>q.ok!==false))it.push({ok:tr>0,t:tr>0?`現在有 ${tr} 列${fr?'貨運':'客運'}列車在這條路線上跑，整套系統已經連起來了！`:'設定都好了，列車會在幾秒內開出來。'});
+  return {ok:it.every(q=>q.ok!==false),it}}
+function railHelp(o){if(!o||!byId(o.id))return;const fr=o.k==='fyard';const st=stnStat(o);const flow=fr?'⛏️ 採集場（工人把材料堆在旁邊）➜ 🏗️ 裝料倉把材料灌進車廂 ➜ 🚂 貨運列車 ➜ 📦 貨運車站（堆高機、龍門吊卸貨）➜ 🏭 集貨倉庫 ➜ 你的倉庫':'🏘️ 旅客到火車站 ➜ 🚆 客運列車進站停靠、旅客上下車 ➜ 🚉 下一站 ➜ 🎫 每位旅客收車票錢';
+  openPanel(`<h2>🤖 小助手：「${o.sign||'車站'}」還缺什麼？</h2><div style="background:#eef6ff;border-radius:10px;padding:8px 10px;font-size:14px;line-height:1.7">${flow}</div>${st.it.map((q,i)=>`<div class="prow" style="align-items:flex-start"><div class="em">${q.ok===true?'✅':q.ok===false?'❌':'💡'}</div><div class="tx" style="font-size:14px;line-height:1.6">${q.t}${q.fx?`<br><button class="hb ${q.ok===false?'g':''}" data-hf="${q.fx}" style="margin-top:4px">${q.b}</button>`:''}</div></div>`).join('')}
+    <div class="row2"><button class="hb b" data-hf="set">⚙️ 火車班次和車廂數</button><button class="hb" data-hf="ask">🧭 改車站用途</button></div>`,()=>$('#panel').querySelectorAll('[data-hf]').forEach(b=>b.onclick=()=>{const [k,v]=b.dataset.hf.split('|');SFX.click();
+      if(k==='set'){railPanel();return}if(k==='ask'){stnAsk(o);return}if(k==='rk'){o.rk=v;place(o);stnT=0;stnTick(0);dirty();railHelp(o);return}
+      if(k==='f1'||k==='n1'){const r=rset()[v];if(k==='f1')r.f=Math.max(1,r.f);else r.n=Math.max(1,r.n);railSig='';dirty();railHelp(o);return}
+      if(k==='road'){closePanel();SEL=null;editShow();TS.road=v;window.__rmode='line';setTool('road');toast(`🛤️ 從車站一頭（鐵軌合成一條的地方）往外拖，鋪「${ROADS[v].n}」。起點靠近車站的鐵軌會自動接上。`,4200)}}))}
+function stnAsk(o){if(!o||!byId(o.id))return;const near=stnNearKinds(o);const rec=Object.keys(near).sort((a,b)=>near[a]-near[b])[0];let pk=o.k,rk=o.rk||rec||'rail',ln=o.ln||2;
+  const draw=()=>openPanel(`<h2>🤖 小助手：這個車站要做什麼用？</h2><div style="font-size:14px;color:#7a6a4a;line-height:1.6">選好用途和火車種類，我會告訴你接下來還要蓋什麼，整套系統才會連起來。</div>
+    <div class="lab">用途</div><div class="row2"><button class="hb ${pk==='rstn'?'g':''}" data-sa="k|rstn" style="font-size:16px">🧑‍🤝‍🧑 載客（火車站）<br><small>旅客上下車、收車票</small></button><button class="hb ${pk==='fyard'?'g':''}" data-sa="k|fyard" style="font-size:16px">📦 載貨（貨運車站）<br><small>採集場的材料運回倉庫</small></button></div>
+    <div class="lab">停哪一種火車（鐵軌種類）</div><div class="chips">${Object.keys(RKN).map(k=>`<button data-sa="rk|${k}" class="${rk===k?'on':''}">${RKN[k]}${k===rec?'（附近的鐵軌是這種）':''}</button>`).join('')}</div>
+    <div class="lab">鐵軌幾條（列車要交會、多班列車時選 2 條以上）</div><div class="chips">${[1,2,3,4].map(n=>`<button data-sa="ln|${n}" class="${ln===n?'on':''}">${n} 條</button>`).join('')}</div>
+    <button class="hb g" data-sa="ok|1" style="width:100%;margin-top:10px;font-size:17px">✅ 好了，告訴我下一步</button>`,()=>$('#panel').querySelectorAll('[data-sa]').forEach(b=>b.onclick=()=>{const [k,v]=b.dataset.sa.split('|');SFX.click();if(k==='k')pk=v;else if(k==='rk')rk=v;else if(k==='ln')ln=+v;
+      if(k!=='ok'){draw();return}if(o.k!==pk){o.k=pk;const n=S.objs.filter(q=>q.t==='dec'&&q.k===pk&&q!==o).length+1;o.sign=pk==='fyard'?`📦 貨運站 ${n}`:`🚉 車站 ${n}`}o.rk=rk;o.ln=ln;place(o);stnT=0;stnTick(0);dirty();railHelp(o)}));draw()}
+// 小助手提示條：有車站還不能用
+let rhT=0;function rhTick(dt){rhT-=dt;if(rhT>0)return;rhT=3;let c=$('#rhChip');const bad=S.objs.filter(o=>o.t==='dec'&&STNK[o.k]&&!(S.rhOK||{})[o.id]&&o._bad);if(!c){c=document.createElement('button');c.id='rhChip';c.className='hb o';c.style.cssText='position:fixed;right:10px;top:calc(96px + env(safe-area-inset-top));z-index:8;font-size:14px;padding:6px 12px;display:none';document.body.appendChild(c);c.onclick=()=>{SFX.click();const o=S.objs.find(q=>q.t==='dec'&&STNK[q.k]&&q._bad);if(o)railHelp(o)}}
+  for(const o of S.objs){if(o.t!=='dec'||!STNK[o.k])continue;const C=stnComp(o);const kind=RK2T[o.rk||'rail'];const R=rset()[kind];o._bad=!C||!C.E.some(e=>e.sid!==o.id)||(o.k==='fyard'?(!C.fst.length||!R.f):!R.n)}
+  const n=S.objs.filter(o=>o.t==='dec'&&STNK[o.k]&&o._bad).length;c.textContent=`🤖 有 ${n} 個車站還不能用，按這裡看怎麼做`;c.style.display=n&&!$('#modal').classList.contains('on')&&$('#edit').style.display!=='block'&&!INT?'block':'none'}
+// 公共設施的小助手
+const FHELP=[[/宿舍/,'🛏️ 員工宿舍','給工班住的地方。每蓋好一棟，蓋房子的速度快 5%（4 層以上算 2 棟，最多快 30%）。',['多蓋幾棟宿舍','到「建材行 → 工班與人才」雇更多工班']],
+ [/保全/,'🛡️ 保全公司','可以雇保全，派到採集場和重要設施防小偷。每層樓可以雇 50 人，最多 500 人。',['點保全公司 →「🛡️ 保全派遣」','加蓋樓層可以多雇保全'],'grd'],
+ [/國小|國中|高中|大學|幼兒|學校/,'🎓 學校','附近住宅的小孩每天早上 7:30 出門上學，傍晚放學回家（路上看得到通學的小孩）。',['在附近蓋住宅，家裡有人住','鋪道路連到住宅區','路邊放公車亭，公車會載人']],
+ [/醫|診所|長照|安養/,'🏥 醫療機構','附近的居民白天會來這裡上班，路上看得到通勤的人。',['在附近蓋住宅','鋪道路連到住宅區']],
+ [/公車/,'🚌 公車總站','公車會停靠這裡，旅客上下車收車票錢。',['用柏油馬路把公車總站和住宅區連起來','路邊 14 公尺內放「🚏 公車亭」（擺設 → 街道）當其他站','在「⚙️ 火車和公車班次」設定公車台數'],'rail'],
+ [/警察|消防|市政|公所|郵局|法院|救援|活動中心/,'🏛️ 公共機關','居民白天會來這裡上班。建議蓋在「行政區」或「公共設施用地」。',['鋪道路連到住宅區','附近放公車亭']],
+ [/發電|自來水|回收/,'⚡ 公用事業','居民白天會來這裡上班。建議蓋在「公共設施用地」或工業區，離住宅遠一點。',['鋪道路連過去']],
+ [/機場|航廈/,'✈️ 機場','點跑道可以選每天幾班飛機，每班有航班收入；飛機會滑行、起飛、降落。',['點跑道設定每天幾班','派保全守機場']],
+ [/./,'🏢 上班的地方','附近的居民白天會來這裡上班，路上看得到通勤的人。',['在附近蓋住宅','鋪道路連到住宅區']]];
+function facHelp(sg,force){const h=FHELP.find(q=>q[0].test(sg));if(!h)return;S.hh=S.hh||{};if(!force&&S.hh[h[1]])return;
+  openPanel(`<h2>🤖 小助手：${h[1]}</h2><div style="background:#eef6ff;border-radius:10px;padding:8px 10px;font-size:15px;line-height:1.7">${h[2]}</div><div class="lab">接下來可以做</div>${h[3].map((t,i)=>`<div class="prow"><div class="em">${i+1}</div><div class="tx" style="font-size:14px">${t}</div></div>`).join('')}
+    <div class="row2">${h[4]==='grd'?'<button class="hb g" data-fh="grd">🛡️ 保全派遣</button>':''}${h[4]==='rail'?'<button class="hb g" data-fh="rail">⚙️ 公車班次</button>':''}<button class="hb" data-fh="no">🙈 這種建築不要再提示</button><button class="hb b" data-fh="ok">👍 知道了</button></div>`,
+    ()=>$('#panel').querySelectorAll('[data-fh]').forEach(b=>b.onclick=()=>{const k=b.dataset.fh;SFX.click();if(k==='no'){S.hh[h[1]]=1;dirty();closePanel()}else if(k==='grd')grdPanel();else if(k==='rail')railPanel();else closePanel()}))}
+{const p0=placeTpl;placeTpl=function(t){const n0=S.objs.length;const r=p0.apply(this,arguments);try{if(S.objs.length>n0&&t){const h=t.o.find(q=>q.t==='house'&&q.sign);if(h&&!t.o.some(q=>q.t==='dec'&&STNK[q.k]))setTimeout(()=>facHelp(h.sign),400)}}catch(e){}return r}}
+// 貨車：無蓋車廂，看得到材料慢慢裝滿、卸空
+function gondola(i){const g=new THREE.Group();const B=new Batch();const dk=mat('',0x1c1c20),cc=mat('metal',[0x6a4a3a,0x3a4a5a,0x4a5a3a][i%3],{metalness:.4});B.add(boxG(2.4,.35,8.6),dk,mxAt(0,.95,0));for(const z of [-2.8,2.8])for(const s of [-1,1])B.add(new THREE.CylinderGeometry(.42,.42,.2,10),dk,mxAt(s*.85,.45,z,0,1,1,1,0,Math.PI/2));
+  B.add(boxG(2.5,.2,8.2),cc,mxAt(0,1.2,0));for(const s of [-1,1])B.add(boxG(.12,1.6,8.2),cc,mxAt(s*1.2,2,0));for(const s of [-1,1])B.add(boxG(2.5,1.6,.12),cc,mxAt(0,2,s*4.05));for(let k=-3;k<=3;k++)for(const s of [-1,1])B.add(boxG(.06,1.6,.12),dk,mxAt(s*1.27,2,k*1.15));B.build(g);
+  const hp=new THREE.Mesh(new THREE.ConeGeometry(1,1,4,1),mat('',0x8a7a68,{roughness:1}));hp.rotation.y=Math.PI/4;hp.scale.set(1.55,1,5.4);hp.position.y=2.2;g.add(hp);g.userData.heap=hp;hp.visible=false;return g}
+function heapTick(v,dt){if(!v.fr||v.kind==='bus')return;const want=Math.min(1,cargoN(v)/fCap(v));v.fill=v.fill==null?want:v.fill+(want-v.fill)*Math.min(1,dt*.35);for(const g of v.gs){const h=g.userData.heap;if(!h)continue;h.visible=v.fill>.02;h.scale.y=Math.max(.05,v.fill*1.5);h.position.y=1.3+v.fill*.75}}
+// 採集場裝料倉旁邊的作業員
+function hopWorkers(g){const ws=[];for(const s of [-1,1]){const p=person(0xf08020,true);p.position.set(s*3.6,0,s*2);p.rotation.y=-s*Math.PI/2;g.add(p);ws.push(p)}g.userData.ws=ws}
+// 火車站的站務員
+function staffAdd(g,o){const u=g.userData;const N=o.ln||1,L=o.len||60;u.sf=[];for(const z of [-L/2+6,L/2-6]){const p=person(0x1a3a7a,false);const cap=new THREE.Mesh(new THREE.CylinderGeometry(.2,.21,.12,10),mat('',0x1a2a5a));cap.position.y=1.7;p.add(cap);const fl=new THREE.Mesh(boxG(.04,.35,.5),mat('',0x2ac84a));fl.position.set(.35,1.5,.2);p.add(fl);p.userData.fl=fl;p.position.set(-N*STSP/2,.95,z);g.add(p);u.sf.push(p)}u.o=o;reg(g,o)}
+DEC.rstn.anim={build(g,o){stnBuild(g,o);staffAdd(g,o)},tick(g,t,dt){const u=g.userData;if(!u.sf)return;const act=TRN.some(v=>!v.fr&&v.at&&v.at.id===u.o.id&&v.wait>0);for(const p of u.sf){p.userData.fl.visible=act;p.userData.fl.rotation.z=act?Math.sin(t*6)*.5:0;p.position.y=.95+(act?Math.abs(Math.sin(t*5))*.04:0)}}};
 
 /* ======================= 編輯面板（選到東西時出現） ======================= */
 const chipsH=(key,opts,cur,lock)=>`<div class="chips">${Object.entries(opts).map(([k,n])=>`<button data-${key}="${k}" class="${String(cur)===k?'on':''}" ${lock&&lock(k)?'disabled style="opacity:.4"':''}>${n}</button>`).join('')}</div>`;
