@@ -3199,7 +3199,7 @@ function lampTick(dt){lampT-=dt;if(lampT>0)return;lampT=.3;const L=[];
     for(const o of hs){if(L.length>=6)break;const n=lampItems(o).length;L.push([V(o.x,baseY(o)+1.8,o.z),NIGHT*Math.min(40,10+n*6),Math.max(o.w,o.d)*.9+9])}}
   LAMPL.forEach((l,i)=>{const q=L[i];if(!q){l.intensity=0;return}l.position.copy(q[0]);l.intensity=q[1];l.distance=q[2]})}
 
-function bal2Tick(dt){hdlTick();thrTick();ztTick(dt);rhTick(dt);stnTick(dt);grdTick(dt);airFarTick(dt);trainLifeTick(dt);skyWalkTick(dt);commTick(dt);rail2Tick(dt);sky2Tick(dt);air2Tick(dt);lmOutline();faceTick(dt);mvTick();mobCam();mobTick(dt);dashTick();layoutTick(dt);extTick(dt);repTick(dt);dmgFxTick(dt);mgrTick(dt);lampTick(dt)}
+function bal2Tick(dt){gtTick(dt);hdlTick();thrTick();ztTick(dt);rhTick(dt);stnTick(dt);grdTick(dt);airFarTick(dt);trainLifeTick(dt);skyWalkTick(dt);commTick(dt);rail2Tick(dt);sky2Tick(dt);air2Tick(dt);lmOutline();faceTick(dt);mvTick();mobCam();mobTick(dt);dashTick();layoutTick(dt);extTick(dt);repTick(dt);dmgFxTick(dt);mgrTick(dt);lampTick(dt)}
 
 /* ---- 畫面排版：左上角的小視窗由上往下排，不會互相蓋住（手機特別重要） ---- */
 let layT=0;function layoutTick(dt){layT-=dt;if(layT>0)return;layT=.4;const mob=MOB.on;const vis=e=>e&&getComputedStyle(e).display!=='none'&&e.offsetHeight>0;
@@ -3758,7 +3758,7 @@ function airTick(g,dt,far){const u=g.userData;if(!far)u.lt=performance.now();con
     else if(!dep){const used=new Set([...u.park.map(p=>p.userData.zp),...u.fl.filter(f=>!f.dep).map(f=>f.zp)]);const zp=APARK.find(z=>!used.has(z));if(zp!=null){const p=planeModel(AIRC[Math.floor(Math.random()*AIRC.length)],false);p.userData.zp=zp;g.add(p);u.fl.push({p,dep:false,t:0,zp,P:fltPath(false,zp),paid:0})}}}
   for(let i=u.fl.length-1;i>=0;i--){const F=u.fl[i];F.t+=dt;const D=fltDur(F);fltAt(F,F.t,_fa);fltAt(F,F.t+.5,_fb);const p=F.p;p.position.set(_fa.x,_fa.y,_fa.z);const dx=_fb.x-_fa.x,dy=_fb.y-_fa.y,dz=_fb.z-_fa.z,h=Math.hypot(dx,dz);
     if(h>.02||Math.abs(dy)>.02){const ty=Math.atan2(dx,dz),tp=-Math.atan2(dy,Math.max(h,.01));let d=ty-p.rotation.y;while(d>Math.PI)d-=Math.PI*2;while(d<-Math.PI)d+=Math.PI*2;p.rotation.order='YXZ';p.rotation.y+=d*Math.min(1,dt*3);p.rotation.x+=(tp-p.rotation.x)*Math.min(1,dt*3);p.rotation.z+=(clamp(-d*1.5,-.6,.6)*(_fa.y>5?1:0)-p.rotation.z)*Math.min(1,dt*2)}
-    if(!F.paid&&((F.dep&&_fa.y>8)||(!F.dep&&_fa.i>=5))){F.paid=1;if(S.mode!=='free'&&!(typeof CO!=='undefined'&&CO.role==='guest')){earn(1500);if(CAM.dist<400){const w=g.localToWorld(V(_fa.x,_fa.y+6,_fa.z));floatTxt(w,F.dep?'🛫 起飛！航班收入 +1500':'🛬 降落！航班收入 +1500')}}}
+    if(!F.paid&&((F.dep&&_fa.y>8)||(!F.dep&&_fa.i>=5))){F.paid=1;window.__cgFlt=!!(o&&o.cargo);if(S.mode!=='free'&&!(typeof CO!=='undefined'&&CO.role==='guest')){earn(o&&o.cargo?3000:1500);if(CAM.dist<400){const w=g.localToWorld(V(_fa.x,_fa.y+6,_fa.z));floatTxt(w,F.dep?'🛫 起飛！航班收入 +1500':'🛬 降落！航班收入 +1500')}}}
     if(F.t>=D){u.fl.splice(i,1);if(F.dep){g.remove(p)}else{p.rotation.set(0,-Math.PI/2,0);u.park.push(p)}}}}
 DEC.runway.anim={build(g,o){const u=g.userData;u.o=o;u.fl=[];u.park=[];u.k=0;u.nt=6+Math.random()*4;const tw=new THREE.Mesh(boxG(5,.06,112),mat('asphalt',0x4a4a52));tw.position.set(14,.03,-5);tw.receiveShadow=true;g.add(tw);const tl=new THREE.Mesh(boxG(.25,.02,112),mat('',0xf8d020));tl.position.set(14,.07,-5);g.add(tl);
     for(let i=0;i<2;i++){const p=planeModel(AIRC[i],false);p.userData.zp=APARK[i];p.position.set(14,1.3,APARK[i]);p.rotation.set(0,-Math.PI/2,0);g.add(p);u.park.push(p)}reg(g,o)},tick(g,t,dt){airTick(g,dt)}};
@@ -3770,7 +3770,7 @@ Object.assign(ZNALLOW,{rail:'t',airport:'tp',transit:'at',com3:ZNALLOW.com3+'t',
 Object.assign(ZKN,{t:'車站、機場航廈',p:'機場設施（跑道、塔台、飛機庫）'});
 {const sk=signKind;signKind=function(sg){if(sg&&/車站|高鐵站|航廈|機場/.test(sg))return 't';return sk(sg)}}
 {const z0=zkNow;zkNow=function(){if(ZKF)return ZKF;if(!INT){if(TOOL==='deco'&&DEC[TS.deco]&&DEC[TS.deco].cat==='air')return 'p';if(TOOL==='sel'&&SEL!=null){const o=byId(SEL);if(o&&o.t==='dec'&&DEC[o.k]&&DEC[o.k].cat==='air')return 'p'}}return z0()}}
-{const p0=placeTpl;placeTpl=function(t){if(t&&t.id==='airport'){const prev=ZKF;ZKF='t';try{return p0.apply(this,arguments)}finally{ZKF=prev}}return p0.apply(this,arguments)}}
+{const p0=placeTpl;placeTpl=function(t){if(t&&(t.id==='airport'||t.id==='cargoport')){const prev=ZKF;ZKF='t';try{return p0.apply(this,arguments)}finally{ZKF=prev}}return p0.apply(this,arguments)}}
 // 新的建築模板：高鐵站、國際機場
 {const S_=(n,bg,fg)=>({sign:n,signBg:bg,signFg:fg||'#ffffff'});
 TPL.push({id:'hsrst',n:'高鐵站',em:'🚄',lv:10,o:[H_(Object.assign({w:30,d:14,floors:2,wall:'glass',wallC:0xd8e8f0,roof:'shed',roofM:'metal',roofC:0xe8702a,pitch:.15,win:'none'},S_('🚄 高鐵站','#e8702a')))]},
@@ -3782,11 +3782,15 @@ function extraEdit(){if(INT)return;const o=SEL&&byId(SEL);const e=$('#edit');if(
   else if(o.t==='road'&&ROADS[o.k]&&ROADS[o.k].train&&o.stnOf==null){h=railEditH(o);const C=RNET.find(c=>c.kind===ROADS[o.k].train);h=`<div style="font-size:13px;color:#7a6a4a;margin:4px 0">${C?`這種軌道總長 ${Math.round(RNET.filter(c=>c.kind===C.kind).reduce((a,c)=>a+c.L,0))} 公尺・${TRN.filter(v=>v.kind===C.kind&&!v.fr).length} 班客運、${TRN.filter(v=>v.kind===C.kind&&v.fr).length} 班貨運列車`:''}</div><button class="hb b" data-xe="rail" style="width:100%">⚙️ 火車班次和停站設定</button>`+h}
   else if(o.t==='road'&&ROADS[o.k]&&ROADS[o.k].bus||(o.t==='dec'&&o.k==='bus')){const n=TRN.filter(v=>v.kind==='bus').length;h=`<div style="font-size:13px;color:#7a6a4a;margin:4px 0">🚌 現在有 ${n} 台公車在跑${o.t==='dec'?'・公車亭要放在路邊 14 公尺內才會停靠':''}</div><button class="hb b" data-xe="rail" style="width:100%">⚙️ 公車班次設定</button>`}
   else if(o.t==='house'&&(isStn(o)||isBusStop(o)))h=`<button class="hb b" data-xe="rail" style="width:100%;margin:4px 0">⚙️ 火車班次和停站設定</button>`;
-  else if(o.t==='dec'&&o.k==='runway')h=airPanelH(o);
+  else if(o.t==='dec'&&o.k==='runway')h=airPanelH(o)+cargoH(o);
+  else if(o.t==='dec'&&o.k==='fyard')h=stnEditH(o)+ywSec(o);
+  else if(isAW(o))h=awSec(o);
   else if(o.t==='dec'&&STNK[o.k])h=stnEditH(o);
+  h+=premH(o)+shopH(o);
   if(o.t==='house'&&isSec(o))h+=`<button class="hb g" data-gp="1" style="width:100%;margin:4px 0">🛡️ 保全派遣（已雇 ${grdTot()} / ${grdCap()} 人）</button>`;
   const GL=grdLocs().find(l=>l.key==='o:'+o.id);if(GL&&!isSec(o))h+=`<button class="hb" data-g1="1" style="width:100%;margin:4px 0">🛡️ 這裡的保全 ${(S.grd||{})[GL.key]||0} 人・派遣保全</button>`;
   if(!h)return;const d=document.createElement('div');d.className='xEd';d.innerHTML=h;hd.after(d);if(o.t==='road'&&ROADS[o.k]&&ROADS[o.k].train){railEditBind(d,o);const T=!!ROADS[o.k].train;e.querySelectorAll('[data-rk]').forEach(b=>{const R2=ROADS[b.dataset.rk];if(!R2||!!R2.train!==T)b.style.display='none'});const h3=e.querySelector('h3');if(h3&&h3.firstChild&&h3.firstChild.nodeType===3)h3.firstChild.textContent='🛤️ 鐵軌 '}
+  premBind(d,o);if(o.t==='dec'&&o.k==='runway')cargoBind(d,o);if(o.t==='dec'&&o.k==='fyard')ywBind(d,o);if(isAW(o))awBind(d,o);
   if(o.t==='dec'&&STNK[o.k]){stnEditBind(d,o);if((o.s||1)!==1){o.s=1;place(o)}const rg=e.querySelector('[data-rg="s"]');if(rg){const lb=rg.previousElementSibling;if(lb&&lb.classList.contains('lab'))lb.remove();rg.remove()}const rb=e.querySelector('[data-rot]');if(rb){const row=rb.closest('.row2');const lb=row&&row.previousElementSibling;if(lb&&lb.classList.contains('lab'))lb.remove();if(row)row.remove()}}d.querySelectorAll('[data-gp]').forEach(b=>b.onclick=()=>{SFX.click();grdPanel()});d.querySelectorAll('[data-g1]').forEach(b=>b.onclick=()=>{SFX.click();grdOne(GL)});
   d.querySelectorAll('[data-xe="rail"]').forEach(b=>b.onclick=()=>{SFX.click();railPanel()});d.querySelectorAll('[data-xe="help"]').forEach(b=>b.onclick=()=>{SFX.click();railHelp(o)});
   d.querySelectorAll('[data-fpd]').forEach(b=>b.onclick=()=>{o.fpd=+b.dataset.fpd;SFX.click();dirty();toast(`✈️ 改成每天 ${o.fpd} 班，大約每 ${Math.round(720/o.fpd)} 秒一班`,2200);editShow()})}
@@ -3828,7 +3832,7 @@ function truckModel(i){const g=new THREE.Group();const B=new Batch();const cc=[0
 
 /* ======================= 2.36：買地時選用途、貨運車站、保全公司和保全人員、小偷 ======================= */
 // 範本放置時，用範本裡房子的招牌決定是哪一種建築（鐵路用地可以放火車站）
-{const z1=zkNow;zkNow=function(){if(!ZKF&&!INT&&TOOL==='tpl'&&TPLSEL){if(TPLSEL.id==='airport')return 't';const h=TPLSEL.o.find(q=>q.t==='house');return h?(h.fac?'f':signKind(h.sign)):'h'}return z1()}}
+{const z1=zkNow;zkNow=function(){if(!ZKF&&!INT&&TOOL==='tpl'&&TPLSEL){if(TPLSEL.id==='airport'||TPLSEL.id==='cargoport')return 't';const h=TPLSEL.o.find(q=>q.t==='house');return h?(h.fac?'f':signKind(h.sign)):'h'}return z1()}}
 // ---- 買地用途 ----
 function buyZName(){const k=S.buyZ;if(!k||k==='none')return '🚫 不規劃';const z=ZN[k];return z?`${z[1]} ${z[0]}`:'🚫 不規劃'}
 function buyZApply(p){const k=S.buyZ;if(!k||k==='none'||!ZN[k])return;S.zone=S.zone||{};if(!S.zone[p])S.zone[p]=k}
@@ -4170,6 +4174,101 @@ ztPathMake=function(Z,y){const door=yardDoor(y);const W=(y.ln||1)*STSP+8;const i
   for(const v of RAILV){if(!v.car)continue;for(const g of v.gs){if(Math.abs(g.position.x-x)>5||Math.abs(g.position.z-z)>5)continue;if(box(g,1.3,2.6))return true}}
   const Z=rockAt(x,z);if(Z&&!(Z.nodes||[]).some(n=>n.st==='ok'&&Math.hypot(n.x-x,n.z-z)<3))return true;return false}}
 
+/* ======================= 2.44：指定貨運車站、指定中央物流倉庫、貨運機場和貨運飛機、空運物流倉庫、超大中央物流中心、新加工廠、商場補貨貨車 ======================= */
+const isHub=o=>o.t==='house'&&(o.fac==='whub'||o.fac==='lcenter')&&!(o.bt!=null&&o.bt<1)&&!o.burnt;
+const isAW=o=>o.t==='house'&&o.sign&&/空運物流/.test(o.sign)&&!(o.bt!=null&&o.bt<1)&&!o.burnt;
+const isShop=o=>o.t==='house'&&o.sign&&/百貨|商場|購物|超市|市場|賣場|娛樂|電影|遊樂|KTV|飯店|旅館|餐廳|美食|商店|便利/.test(o.sign)&&!(o.bt!=null&&o.bt<1)&&!o.burnt;
+const hubName=o=>o.fac?(FAC[o.fac].em+' '+FAC[o.fac].n):(o.sign||'倉庫');
+// ---- 中央物流中心（超大、可加蓋、自動化等級＝樓層） ----
+Object.assign(FAC,{lcenter:{n:'超大中央物流中心（自動化）',em:'🏭',p:60000,d:'超大型自動化物流中心：每一層樓＝自動化 1 級，全部工廠產能 +3%（最多 +60%），每層自動派 2 台送料車到各工廠（最多 20 台）。可以加蓋到 20 層，寬度、深度可以拉到 80 公尺',in:{},out:{},t:1e9,safe:'hub',h:{w:40,d:30,floors:3,wall:'concrete',wallC:0xd8dce4,roof:'flat',win:'wide',sign:'🏭 中央物流中心',signBg:'#1a4a8a'}}});
+let LCB=0,lcbT=0;function lcBonus(){const now=performance.now();if(now-lcbT>2000){lcbT=now;let f=0;for(const o of S.objs)if(o.fac==='lcenter'&&isHub(o))f+=o.floors||1;LCB=Math.min(.6,f*.03)}return LCB}
+{const fm=facMul;facMul=function(o){return fm(o)*(1+lcBonus())}}
+// ---- 新加工廠 ----
+Object.assign(MATD,{plyw:{n:'合板',em:'📋',p:20,g:'mod'},beam:{n:'H型鋼樑',em:'🏗️',p:45,g:'mod'},precast:{n:'預鑄混凝土板',em:'🧊',p:40,g:'mod'},ceramic:{n:'衛浴陶瓷',em:'🚽',p:35,g:'mod'},gwool:{n:'玻璃棉隔熱材',em:'🧶',p:28,g:'mod'},acon:{n:'瀝青混凝土',em:'🛣️',p:30,g:'mod'},window:{n:'鋁門窗',em:'🖼️',p:70,g:'mod'},lamp:{n:'LED 燈具',em:'💡',p:55,g:'mod'},furn:{n:'系統家具',em:'🛋️',p:60,g:'mod'}});
+for(const k of ['plyw','beam','precast','ceramic','gwool','acon','window','lamp','furn'])if(!MK.includes(k))MK.push(k);
+{const hh=(sg,bg,c,w,d,fl,roof)=>({w,d,floors:fl,wall:'siding',wallC:c,roof:roof||'shed',roofM:'metal',roofC:0x5a6a7a,pitch:.3,win:'wide',sign:sg,signBg:bg});
+Object.assign(FAC,{plywf:F2('合板廠','📋',4000,'3 木材 → 2 合板（每 6 秒）',{wood:3},{plyw:2},6,hh('📋 合板廠','#8a5a2a',0xc8a878,12,9,1)),
+ beamf:F2('鋼構廠','🏗️',9000,'3 鋼筋 → 1 H型鋼樑（每 8 秒）',{steel:3},{beam:1},8,hh('🏗️ 鋼構廠','#3a4a5a',0x8a96a4,16,10,1)),
+ precastf:F2('預鑄構件廠','🧊',9500,'2 水泥 ＋ 1 鋼筋 ＋ 1 河砂 → 2 預鑄混凝土板（每 9 秒）',{cement:2,steel:1,sand:1},{precast:2},9,hh('🧊 預鑄廠','#5a5a5a',0xb8b8b4,16,12,1)),
+ ceramicf:F2('衛浴陶瓷廠','🚽',7000,'3 黏土 ＋ 1 玻璃 → 1 衛浴陶瓷（每 8 秒）',{clay:3,glass:1},{ceramic:1},8,hh('🚽 陶瓷廠','#2a6a9a',0xe8e8f0,12,9,1)),
+ gwoolf:F2('隔熱材工廠','🧶',6000,'2 玻璃 → 2 玻璃棉隔熱材（每 7 秒）',{glass:2},{gwool:2},7,hh('🧶 隔熱材廠','#c8a020',0xe8d8a0,12,9,1)),
+ aconf:F2('瀝青拌合廠','🛣️',8000,'1 瀝青 ＋ 3 石材 → 3 瀝青混凝土（每 7 秒）',{asphalt:1,stone:3},{acon:3},7,hh('🛣️ 拌合廠','#2a2a2a',0x6a6a6a,14,10,1)),
+ windowf:F2('鋁門窗工廠','🖼️',11000,'1 鋁合金 ＋ 2 玻璃 → 1 鋁門窗（每 9 秒）',{alu:1,glass:2},{window:1},9,hh('🖼️ 門窗廠','#4a7a9a',0xd8e4ec,14,10,2,'flat')),
+ lampf:F2('燈具工廠','💡',12000,'1 銅芯電纜 ＋ 1 玻璃 ＋ 1 塑膠管材 → 2 LED 燈具（每 8 秒）',{cable:1,glass:1,plastic:1},{lamp:2},8,hh('💡 燈具廠','#c89a1a',0xf0e8c8,12,10,2,'flat')),
+ furnf:F2('家具工廠','🛋️',10000,'2 合板 ＋ 1 油漆 → 1 系統家具（每 10 秒）',{plyw:2,paint:1},{furn:1},10,hh('🛋️ 家具廠','#8a4a2a',0xd8c0a0,14,10,2))})}
+// ---- 通用貨車（指定路線來回送貨，會自動找路） ----
+const GTV=new Map(),PQ=[],PC=new Map();let pqT=0,gtT=0,OBSIG=0,obsT=0;
+function obsSig(){const now=performance.now();if(now-obsT>3000){obsT=now;let n=0;for(const o of S.objs)if(o.t==='house'||o.t==='dec'||o.t==='road'||o.t==='lm')n+=o.id;OBSIG=n}return OBSIG}
+function pathReq(key,a,b){const sig=Math.round(a.x)+','+Math.round(a.z)+'>'+Math.round(b.x)+','+Math.round(b.z)+'|'+obsSig();const c=PC.get(key);if(c&&c.sig===sig)return c.P;if(!PQ.some(q=>q.key===key))PQ.push({key,a,b,sig});return c?c.P:null}
+function pathPump(dt){pqT-=dt;if(pqT>0||!PQ.length)return;pqT=.35;const q=PQ.shift();let gp=null;try{gp=gridPath(q.a,q.b)}catch(e){}const pts=gp?crSpline(gp,2):densePts([q.a,q.b],4);const d=[0];let L=0;for(let i=1;i<pts.length;i++){L+=Math.hypot(pts[i].x-pts[i-1].x,pts[i].z-pts[i-1].z);d.push(L)}PC.set(q.key,{sig:q.sig,P:{pts,d,L}})}
+const fDoor=o=>{const r=o.r||0,L=(o.d||10)/2+3;return {x:o.x+Math.sin(r)*L,z:o.z+Math.cos(r)*L}};
+function gtRoutes(){const R=[];const guest=typeof CO!=='undefined'&&CO.role==='guest';const pf=prodFacs();
+  // 貨運車站 → 中央物流倉庫
+  for(const [id,c] of Object.entries(S.yw||{})){const y=byId(+id),h=byId(c.to);if(!y||!h||!isHub(h)||!c.n)continue;R.push({key:'yw'+id,n:Math.min(20,c.n),col:1,A:yardDoor(y),dests:[h],cap:150,
+    take:cap=>{const st=y.stk||{};const out={};let left=cap;for(const k of Object.keys(st)){const n=Math.min(st[k],left);if(n>0){out[k]=n;st[k]-=n;left-=n}if(left<=0)break}return cap-left>0?out:null},
+    give:(d,ld)=>{let t=[];for(const [k,n] of Object.entries(ld)){S.mat[k]=(S.mat[k]||0)+n;t.push(`${MATD[k].em}+${n}`)}matHud();return `🏬 送進${hubName(d)} ${t.join(' ')}`}})}
+  // 中央物流中心 → 各工廠（自動化送料車）
+  for(const o of S.objs)if(o.fac==='lcenter'&&isHub(o)&&pf.length)R.push({key:'lc'+o.id,n:Math.min(20,(o.floors||1)*2),col:2,A:hubDoor(o),dests:pf,cap:1,take:()=>({x:1}),give:(f)=>{const F=FAC[f.fac];if(F&&F.t<1e8)f.ft=(f.ft||0)+F.t*.3;return `🤖 自動送料到「${F.n}」`},quiet:1});
+  // 空運物流倉庫 → 各工廠
+  for(const o of S.objs)if(isAW(o)&&(o.awn||0)>0&&pf.length)R.push({key:'aw'+o.id,n:Math.min(50,o.awn),col:3,A:fDoor(o),dests:pf,cap:20,take:cap=>{const n=Math.min(cap,Math.floor(o.stk||0));if(n<1)return null;o.stk-=n;return {x:n}},
+    give:(f,ld)=>{const F=FAC[f.fac];if(F&&F.t<1e8)f.ft=(f.ft||0)+F.t*.6;return `✈️ 空運原料送到「${F.n}」`}});
+  // 商場、娛樂大樓補貨
+  const hubs=S.objs.filter(isHub);let ns=0;for(const o of S.objs){if(!isShop(o)||ns>=16)continue;ns++;let src=null,bd=1e9;for(const h of hubs){const d=Math.hypot(h.x-o.x,h.z-o.z);if(d<bd){bd=d;src=h}}const A=src?hubDoor(src):{x:clamp(o.x+(o.x>0?200:-200),-HALF+10,HALF-10),z:o.z};
+    R.push({key:'sh'+o.id,n:o.w*o.d*(o.floors||1)>2500?2:1,col:4,A,dests:[o],cap:1,take:()=>({x:1}),give:(d)=>{d.stk2=Date.now();return `🛒 「${d.sign}」補貨完成，人潮變多了`},idle:25})}
+  return guest?R.map(r=>Object.assign(r,{take:()=>({x:1}),give:()=>''})):R}
+function gtTick(dt){pathPump(dt);gtT-=dt;if(gtT<=0){gtT=2;const R=gtRoutes();const keys=new Set(R.map(r=>r.key));for(const [k,e] of GTV)if(!keys.has(k)){for(const t of e.ts)scene.remove(t.m);GTV.delete(k)}
+    for(const r of R){let e=GTV.get(r.key);if(!e){e={ts:[],i:0};GTV.set(r.key,e)}e.r=r;while(e.ts.length<r.n){const m=r.col===4?VEHD.van?VEHD.van.mk():truckModel(e.ts.length):truckModel(e.ts.length+r.col);m.visible=false;scene.add(m);e.ts.push({m,st:'load',t:-e.ts.length*3-Math.random()*4,s:0})}while(e.ts.length>r.n)scene.remove(e.ts.pop().m)}}
+  for(const [k,e] of GTV){const r=e.r;if(!r)continue;for(const t of e.ts){t.t+=dt;
+    if(t.st==='load'){t.m.visible=false;if(t.t>(r.idle||5)){const d=r.dests[(e.i++)%r.dests.length];if(!d||!byId(d.id)){t.t=0;continue}const B=d.fac||d.t==='house'?fDoor(d):d;const P=pathReq(r.key+'>'+d.id,r.A,B);if(!P){t.t=(r.idle||5)-1;continue}const ld=r.take(r.cap);if(!ld){t.t=0;continue}t.ld=ld;t.d=d;t.P=P;t.s=0;t.st='go';t.t=0}}
+    else if(t.st==='go'){t.s+=dt*12;if(t.s>=t.P.L){t.s=t.P.L;t.st='unload';t.t=0}}
+    else if(t.st==='unload'){if(t.t>5){const msg=r.give(t.d,t.ld);if(msg&&!r.quiet&&CAM.dist<300){const q=ztAt(t.P,t.P.L);floatTxt(V(q.x,hAt(q.x,q.z)+5,q.z),msg)}t.st='back';t.t=0}}
+    else if(t.st==='back'){t.s-=dt*12;if(t.s<=0){t.st='load';t.t=0}}
+    if(t.st!=='load'&&t.P){const q=ztAt(t.P,t.s);const back=t.st==='back';const lane=1.4*(back?-1:1);t.m.visible=true;t.m.position.set(q.x-Math.cos(q.a)*lane,hAt(q.x,q.z),q.z+Math.sin(q.a)*lane);t.m.rotation.y=q.a+(back?Math.PI:0)}}}}
+// 人物不能穿過這些貨車
+{const h2=meHit;meHit=function(x,z){if(h2(x,z))return true;if(RIDE&&RIDE.st==='on')return false;for(const e of GTV.values())for(const t of e.ts){const g=t.m;if(!g.visible||Math.abs(g.position.x-x)>7||Math.abs(g.position.z-z)>7)continue;const c=Math.cos(-g.rotation.y),s=Math.sin(-g.rotation.y);const dx=x-g.position.x,dz=z-g.position.z;if(Math.abs(dx*c+dz*s)<1.7&&Math.abs(-dx*s+dz*c)<5.2)return true}return false}}
+// ---- 指定：採集場的貨運列車送到哪一個貨運車站 ----
+function zfsSec(Z){const ys=yards();const cur=(S.zfs||{})[Z.k];return `<div class="lab">🚂 貨運列車送到哪一個貨運車站</div>${ys.length?`<div class="chips"><button data-zfs="0" class="${!cur?'on':''}">🔀 不限定（經過的都可以卸）</button>${ys.map(y=>`<button data-zfs="${y.id}" class="${cur===y.id?'on':''}">${y.sign||'貨運站'}</button>`).join('')}</div><div style="font-size:12px;color:#7a6a4a">限定之後，這裡的材料只會在那一個貨運車站卸貨；其他貨運車站經過時不會卸。</div>`:'<div style="font-size:13px;color:#c83a2a">還沒有貨運車站。</div>'}`}
+{const z0=zonePanel;zonePanel=function(Z){const r=z0.apply(this,arguments);try{const d=document.createElement('div');d.innerHTML=zfsSec(Z);$('#panel').appendChild(d);const bind=()=>d.querySelectorAll('[data-zfs]').forEach(b=>b.onclick=()=>{S.zfs=S.zfs||{};const v=+b.dataset.zfs;if(v)S.zfs[Z.k]=v;else delete S.zfs[Z.k];SFX.click();dirty();d.innerHTML=zfsSec(Z);bind()});bind()}catch(e){console.warn(e)}return r}}
+// 卸貨時只卸「送到這一站」的貨；要送去倉庫的先放在貨運車站的貨場
+fdUnload=function(v,st){const c=v.cargo||{};let tot=0,txt=[];if(typeof CO!=='undefined'&&CO.role==='guest'){v.cargo={};return}const y=byId(st.id);const yw=(S.yw||{})[st.id];const toStk=y&&yw&&yw.n>0&&byId(yw.to);
+  for(const [zk,n] of Object.entries(c)){if(n<1)continue;const lim=(S.zfs||{})[zk];if(lim&&lim!==st.id)continue;const Z=ZONES.find(z=>z.k===zk);if(!Z)continue;tot+=n;delete c[zk];
+    if((S.zsell||{})[zk]){const m=n*sellP(Z.mat);earn(m);txt.push(`${MATD[Z.mat].em}${n} 賣了 ${money(m)}`)}else if(toStk){y.stk=y.stk||{};y.stk[Z.mat]=(y.stk[Z.mat]||0)+n;txt.push(`${MATD[Z.mat].em}${n} 放到貨場，等貨車送去倉庫`)}else{S.mat[Z.mat]=(S.mat[Z.mat]||0)+n;txt.push(`+${n}${MATD[Z.mat].em}`)}}
+  v.cargo=c;if(tot&&CAM.dist<300)floatTxt(V(st.x,st.y+6,st.z),`🏗️ 貨運車站卸貨 ${txt.join('、')}`);if(tot)matHud()};
+{const tl=trainTick;trainTick=function(v,dt){return tl(v,dt)}}
+// 貨運列車：沒有要在這一站卸的貨就不停
+{const ts0=trStops;trStops=function(v,t){const L=ts0(v,t);if(!v.fr)return L;return L.filter(st=>{if(!st.dep)return true;const c=v.cargo||{};return Object.entries(c).some(([zk,n])=>n>0&&(!(S.zfs||{})[zk]||(S.zfs||{})[zk]===st.id))||!Object.keys(S.zfs||{}).length})}}
+// ---- 貨運車站：卸下來的貨送去哪一個中央物流倉庫 ----
+function ywSec(o){const hs=S.objs.filter(isHub);const c=(S.yw||{})[o.id]||{};const st=o.stk||{};const stt=Object.entries(st).filter(([k,n])=>n>0).map(([k,n])=>`${MATD[k].em}${Math.floor(n)}`).join(' ')||'空的';
+  return `<div class="lab">🚚 貨車把貨送到哪一個中央物流倉庫</div>${hs.length?`<div class="chips">${hs.map(h=>`<button data-yw="${h.id}" class="${c.to===h.id?'on':''}">${hubName(h)}</button>`).join('')}</div><div style="display:flex;gap:6px;align-items:center;margin-top:6px">貨車 <button class="hb" data-ywn="-1">－</button><b>${c.n||0} 台</b><button class="hb g" data-ywn="1">＋ 雇一台 ${money(6000)}</button></div><div style="font-size:12px;color:#7a6a4a">貨場現在堆著：${stt}<br>沒有雇貨車時，卸下來的貨會直接進倉庫。每台一次載 150 個，最多 20 台，每天薪水每台 ${money(60)}。</div>`:'<div style="font-size:13px;color:#c83a2a">還沒有中央物流倉庫或中央物流中心（建材行 → 生產工廠）。</div>'}`}
+function ywBind(d,o){d.querySelectorAll('[data-yw]').forEach(b=>b.onclick=()=>{S.yw=S.yw||{};const c=S.yw[o.id]=S.yw[o.id]||{n:0};c.to=+b.dataset.yw;SFX.click();dirty();editShow()});
+  d.querySelectorAll('[data-ywn]').forEach(b=>b.onclick=()=>{S.yw=S.yw||{};const c=S.yw[o.id]=S.yw[o.id]||{n:0};const dv=+b.dataset.ywn;if(dv>0){if(!c.to){const hs=S.objs.filter(isHub);if(hs.length===1)c.to=hs[0].id;else{SFX.err();toast('🚚 先選要送到哪一個倉庫',2000);return}}if(c.n>=20){SFX.err();toast('最多 20 台',1800);return}if(!spend(6000,'雇貨車'))return;c.n++}else c.n=Math.max(0,(c.n||0)-1);SFX.cash();dirty();gtT=0;editShow()})}
+// ---- 空運物流倉庫：送料貨車（最多 50 台） ----
+function awSec(o){return `<div style="background:#eef6ff;border-radius:10px;padding:6px 9px;margin:4px 0;font-size:13px;line-height:1.6">✈️📦 貨運飛機降落後，貨物會送到這裡。送料貨車再把空運原料分別送到各個生產工廠，工廠收到後會馬上多生產一些。<br>倉庫裡有 <b>${Math.floor(o.stk||0)}</b> 箱空運物資。</div><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">送料貨車 <button class="hb" data-awn="-5">－5</button><button class="hb" data-awn="-1">－</button><b>${o.awn||0} / 50 台</b><button class="hb g" data-awn="1">＋1</button><button class="hb g" data-awn="5">＋5</button></div><div style="font-size:12px;color:#7a6a4a">每台 ${money(5000)}，每天薪水每台 ${money(50)}，每趟載 20 箱。</div>`}
+function awBind(d,o){d.querySelectorAll('[data-awn]').forEach(b=>b.onclick=()=>{const dv=+b.dataset.awn;const cur=o.awn||0;if(dv>0){const k=Math.min(dv,50-cur);if(k<=0){SFX.err();toast('最多 50 台',1800);return}if(!spend(5000*k,'雇送料貨車'))return;o.awn=cur+k}else o.awn=Math.max(0,cur+dv);SFX.cash();dirty();gtT=0;editShow()})}
+{const d0=dayPass;dayPass=function(){const r=d0.apply(this,arguments);try{if(S.mode!=='free'&&!(typeof CO!=='undefined'&&CO.role==='guest')){let c=0;for(const v of Object.values(S.yw||{}))c+=(v.n||0)*60;for(const o of S.objs)if(isAW(o))c+=(o.awn||0)*50;if(c)S.money=Math.max(0,S.money-c)}}catch(e){}return r}}
+// ---- 貨運機場：貨運飛機飛到另一個貨運機場 ----
+const isCargoRW=o=>o&&o.t==='dec'&&o.k==='runway'&&o.cargo;
+function cargoH(o){const others=S.objs.filter(q=>isCargoRW(q)&&q!==o);return `<div class="lab">📦 機場種類</div><div class="chips"><button data-cg="0" class="${!o.cargo?'on':''}">🧳 客運機場</button><button data-cg="1" class="${o.cargo?'on':''}">📦 貨運機場</button></div>${o.cargo?`<div class="lab">貨運飛機飛往</div>${others.length?`<div class="chips">${others.map(q=>`<button data-cgd="${q.id}" class="${o.cdst===q.id?'on':''}">✈️ ${q.sign||'貨運機場 '+q.id}</button>`).join('')}</div>`:'<div style="font-size:13px;color:#c83a2a">要再蓋一座貨運機場，飛機才有地方飛。</div>'}<div style="font-size:12px;color:#7a6a4a">每一班貨運飛機起飛後會飛到目的地降落，載 400 箱空運物資到目的地旁邊的「空運物流倉庫」，每班收入 ${money(3000)}。</div>`:''}`}
+function cargoBind(d,o){d.querySelectorAll('[data-cg]').forEach(b=>b.onclick=()=>{o.cargo=+b.dataset.cg?1:0;if(o.cargo&&!o.sign){o.sign='貨運機場 '+(S.objs.filter(isCargoRW).length)}SFX.click();dirty();editShow()});d.querySelectorAll('[data-cgd]').forEach(b=>b.onclick=()=>{o.cdst=+b.dataset.cgd;SFX.click();dirty();toast('✈️ 貨運飛機會飛到「'+(byId(o.cdst).sign||'貨運機場')+'」',2000);editShow()})}
+function awNear(o){let b=null,bd=300;for(const q of S.objs){if(!isAW(q))continue;const d=Math.hypot(q.x-o.x,q.z-o.z);if(d<bd){bd=d;b=q}}return b}
+{const at0=airTick;airTick=function(g,dt,far){const u=g.userData;const o=u.o;if(o&&o.cargo&&u.fl){if(u.fq>0&&u.park.length+u.fl.filter(f=>!f.dep).length<APARK.length){const used=new Set([...u.park.map(p=>p.userData.zp),...u.fl.filter(f=>!f.dep).map(f=>f.zp)]);const zp=APARK.find(z=>!used.has(z));if(zp!=null){u.fq--;const p=planeModel(0xf0f0f0,false);p.userData.zp=zp;g.add(p);u.fl.push({p,dep:false,t:0,zp,P:fltPath(false,zp),paid:0,cg:1})}}
+    for(const F of u.fl){if(F.cgDone)continue;const D=fltDur(F);if(F.t+dt>=D){F.cgDone=1;if(F.dep&&o.cdst){const dst=byId(o.cdst);const dg=dst&&OBJM.get(dst.id);if(dg){dg.userData.fq=(dg.userData.fq||0)+1}}else if(!F.dep){const aw=awNear(o);if(aw&&!(typeof CO!=='undefined'&&CO.role==='guest')){aw.stk=(aw.stk||0)+400;if(CAM.dist<400)floatTxt(V(aw.x,hAt(aw.x,aw.z)+8,aw.z),'📦 空運物資 +400 箱')}}}}}
+  return at0(g,dt,far)}}
+// 貨運機場的收入改成每班 3000
+{const fp=floatTxt;floatTxt=function(p,t){if(typeof t==='string'&&/航班收入 \+1500/.test(t)&&window.__cgFlt){t=t.replace('+1500','+3000（貨運）')}return fp(p,t)}}
+TPL.push({id:'cargoport',n:'貨運機場（跑道、機場空運物流倉庫、塔台）',em:'📦',lv:12,o:[{t:'dec',k:'runway',dx:0,dz:0,cargo:1},H_({w:28,d:16,floors:2,wall:'siding',wallC:0xd8d0b8,roof:'shed',roofM:'metal',roofC:0x4a6a8a,pitch:.2,win:'wide',dx:44,dz:-10,r:-Math.PI/2,sign:'📦 機場空運物流倉庫',signBg:'#e8702a',signFg:'#ffffff'}),{t:'dec',k:'ctower',dx:36,dz:-56}]},
+  {id:'lcenterT',n:'超大中央物流中心（自動化，可加蓋到 20 層）',em:'🏭',lv:14,o:[Object.assign({t:'house',fac:'lcenter'},JSON.parse(JSON.stringify(FAC.lcenter.h)),{dx:0,dz:0})]});
+FHELP.splice(FHELP.length-1,0,[/空運物流/,'📦 空運物流倉庫','貨運飛機降落後，貨物會送到這裡。可以雇送料貨車（最多 50 台），把空運原料分別送到各個生產工廠，工廠收到後會多生產。',['點這棟倉庫 → 雇送料貨車','點跑道 → 改成「貨運機場」並選擇飛往哪一座貨運機場（要蓋兩座）']],[/物流中心/,'🏭 超大中央物流中心','自動化等級＝樓層數：每一層讓全部工廠產能 +3%（最多 +60%），並自動派 2 台送料車到各工廠（最多 20 台）。',['加蓋樓層提高自動化（最多 20 層）','寬度、深度可以拉到 80 公尺','貨運車站可以指定把貨送到這裡']]);
+
+/* ======================= 2.45：精裝修（用加工建材）、商場補貨影響收入 ======================= */
+function premMats(o){const f=o.floors||1,a=o.w*o.d,m={};const add=(k,n)=>{n=Math.ceil(n);if(n>0)m[k]=n};if(o.win!=='none')add('window',2*(o.w+o.d)/6*f);add('furn',a*f/40);add('lamp',a*f/25);add('ceramic',f);add('gwool',a*f/30);add('plyw',a*f/30);if(f>=6)add('beam',a*f/60);return m}
+const shopStocked=o=>o.stk2&&Date.now()-o.stk2<10*60*1000;
+{const v0=valueOf;valueOf=function(o){const r=v0(o);if(r&&o&&o.t==='house'){if(o.premium)r.v=Math.round(r.v*1.35);if(isShop(o)&&shopStocked(o))r.v=Math.round(r.v*1.2)}return r}}
+function premH(o){if(o.t!=='house'||o.fac||(o.bt!=null&&o.bt<1))return '';if(o.premium)return `<div style="background:#fff6d8;border-radius:10px;padding:6px 9px;margin:4px 0;font-size:13px">✨ <b>已經精裝修</b>：估價和房租 +35%</div>`;const m=premMats(o);const ok=Object.entries(m).every(([k,v])=>(S.mat[k]||0)>=v);
+  return `<div style="background:#fff6d8;border-radius:10px;padding:6px 9px;margin:4px 0;font-size:13px;line-height:1.6">✨ <b>精裝修</b>：用加工建材裝上鋁門窗、系統家具、LED 燈具、衛浴、隔熱材${(o.floors||1)>=6?'、H型鋼樑補強':''}，估價和房租 +35%。<br>需要：${mTxt(m,true)}</div><button class="hb ${ok?'g':''}" data-prem="1" style="width:100%">${ok?'✨ 精裝修':'材料不夠（加工廠可以做，建材行也能買）'}</button>`}
+function premBind(d,o){const b=d.querySelector('[data-prem]');if(b)b.onclick=()=>{const m=premMats(o);for(const [k,v] of Object.entries(m))if((S.mat[k]||0)<v){SFX.err();toast(`${MATD[k].em}${MATD[k].n}還差 ${v-Math.floor(S.mat[k]||0)}`,2200);return}for(const [k,v] of Object.entries(m))S.mat[k]-=v;o.premium=1;matHud();SFX.cash();dirty();floatTxt(V(o.x,hAt(o.x,o.z)+(o.floors||1)*FH+3,o.z),'✨ 精裝修完成！估價和房租 +35%');editShow()}}
+function shopH(o){if(!isShop(o))return '';const t=o.stk2?Math.round((Date.now()-o.stk2)/60000):null;return `<div style="font-size:13px;color:#7a6a4a;margin:4px 0">🛒 ${t==null?'還沒有補貨過':`最近補貨：${t<1?'剛剛':t+' 分鐘前'}`}・補貨後 10 分鐘內估價和租金 +20%${shopStocked(o)?'（現在有加成）':''}${S.objs.some(isHub)?'':'<br>蓋中央物流倉庫，補貨貨車會從倉庫出發，比較快'}</div>`}
+
 /* ======================= 編輯面板（選到東西時出現） ======================= */
 const chipsH=(key,opts,cur,lock)=>`<div class="chips">${Object.entries(opts).map(([k,n])=>`<button data-${key}="${k}" class="${String(cur)===k?'on':''}" ${lock&&lock(k)?'disabled style="opacity:.4"':''}>${n}</button>`).join('')}</div>`;
 const swH=(key,cols,cur)=>`<div class="chips">${cols.map(c=>`<button class="sw ${cur===c?'on':''}" data-${key}="${c}" style="background:${hex(c)}"></button>`).join('')}</div>`;
@@ -4179,7 +4278,7 @@ function editShow(){if(INT){intEdit();return}const e=$('#edit');const o=SEL&&byI
   const foot=`<div class="row2">${o.t!=='road'&&o.t!=='fence'&&o.t!=='wall'&&!o.fac?'<button class="hb o" id="eDup">📋 複製一個</button>':''}<button class="hb r" id="eDel">🗑️ 拆掉</button>${o.t==='house'&&!o.fac&&!(o.bt!=null&&o.bt<1)?'<button class="hb p" id="eSell">🏷️ 賣掉</button>':''}</div>`;
   if(o.t==='house'){const v=valueOf(o);h=head(o.fac?FAC[o.fac].em:'🏠',o.fac?FAC[o.fac].n:o.name||'我的房子')+`${o.fac?`<div style="font-size:13px;color:#7a6a4a">${FAC[o.fac].d}</div>`:`<div style="font-size:13px;color:#7a6a4a">材料價值 ${money(costOf(o))}・現在估價 <b style="color:#c8701a">${money(v.v)}</b></div>`}${o.bt!=null&&o.bt<1?`<div style="font-size:13px;color:#c8701a">🚧 施工中 ${Math.floor(o.bt*100)}%</div>`:''}<div style="font-size:12px;color:#7a6a4a;line-height:1.7">用掉的材料：${mTxt(matsOf(o))}</div>${typeof disHouseH==='function'?disHouseH(o):''}${typeof elevH==='function'?elevH(o):''}
     <div class="lab">樓層（最多 ${maxFloors(o)} 層）</div><div class="step"><button data-st="floors|-1">－</button><span>${o.floors} 層</span><button data-st="floors|1">＋</button>${floorTip(o)}</div>
-    <div class="lab">寬度 ${o.w} 公尺</div><input type="range" min="4" max="30" step=".5" value="${o.w}" data-rg="w"><div class="lab">深度 ${o.d} 公尺</div><input type="range" min="4" max="30" step=".5" value="${o.d}" data-rg="d">${rot}
+    <div class="lab">寬度 ${o.w} 公尺</div><input type="range" min="4" max="${o.fac==='lcenter'?80:30}" step=".5" value="${o.w}" data-rg="w"><div class="lab">深度 ${o.d} 公尺</div><input type="range" min="4" max="${o.fac==='lcenter'?80:30}" step=".5" value="${o.d}" data-rg="d">${rot}
     <div class="lab">外牆</div>${chipsH('wall',Object.fromEntries(Object.entries(WALLS).map(([k,x])=>[k,x.n+(wallOK(k)?'':' 🔒')])),o.wall,k=>!wallOK(k))}<div class="lab">外牆顏色</div>${swH('wc',WALL_COLS,o.wallC)}
     <div class="lab">屋頂</div>${chipsH('roof',ROOFS,o.roof)}${['gable','hip','shed'].includes(o.roof)?`<div class="lab">屋頂坡度</div><input type="range" min=".3" max="1.6" step=".05" value="${o.pitch||.7}" data-rg="pitch">`:''}
     <div class="lab">屋頂材質</div>${chipsH('rm',Object.fromEntries(Object.entries(ROOFM).map(([k,x])=>[k,x.n])),o.roofM)}<div class="lab">屋頂顏色</div>${swH('rc',ROOF_COLS,o.roofC)}
