@@ -549,7 +549,7 @@ function inFoot(o,x,z,m=0){if(o.t==='house'||o.t==='lm'){const c=Math.cos(-(o.r|
 const blockedAt=(x,z)=>S.objs.some(o=>(o.t==='house'||o.t==='tower')&&inFoot(o,x,z,.3));
 // 把房子底下整平
 function flattenUnder(o){const y=hAt(o.x,o.z);const R=Math.max(o.w||o.rad*2,o.d||o.rad*2)/2+2;const i0=Math.floor((o.x+HALF-R)/CELL),i1=Math.ceil((o.x+HALF+R)/CELL),j0=Math.floor((o.z+HALF-R)/CELL),j1=Math.ceil((o.z+HALF+R)/CELL);
-  for(let j=Math.max(1,j0);j<=Math.min(N-2,j1);j++)for(let i=Math.max(1,i0);i<=Math.min(N-2,i1);i++){const x=gx(i),z=gx(j);if(!owned(x,z))continue;const inside=inFoot(o,x,z,.6);const near=inFoot(o,x,z,1.8);if(!near)continue;const k=idx(i,j);const t=inside?1:.5;const nh=HT[k]+(y-HT[k])*t;if(nh<HT[k])RK[k]=Math.max(0,Math.min(RK[k],nh));HT[k]=nh}
+  for(let j=Math.max(1,j0);j<=Math.min(N-2,j1);j++)for(let i=Math.max(1,i0);i<=Math.min(N-2,i1);i++){const x=gx(i),z=gx(j);if(!o.anyLand&&!owned(x,z))continue;const inside=inFoot(o,x,z,.6);const near=inFoot(o,x,z,1.8);if(!near)continue;const k=idx(i,j);const t=inside?1:.5;const nh=HT[k]+(y-HT[k])*t;if(nh<HT[k])RK[k]=Math.max(0,Math.min(RK[k],nh));HT[k]=nh}
   terrainUpdate(i0-1,j0-1,i1+1,j1+1);TREG.push([i0-1,j0-1,i1+1,j1+1])}
 /* ---- 價錢 ---- */
 function costOf(o){if(['house','tower','wall','part','lm'].includes(o.t)&&typeof matsOf==='function'){return Math.round(mCost(matsOf(o))*1.15)}if(o.t==='house'){const r=(WALLS[o.wall]||WALLS.plaster).r;let c=o.w*o.d*o.floors*r+o.w*o.d*8;if(o.chimney)c+=200;if(o.balcony)c+=150*(o.floors-1);if(o.porch)c+=350;if(o.shutters)c+=60*o.floors;if(o.boxes)c+=40*o.floors;if(o.roof==='dome'||o.roof==='spire'||o.roof==='mansard')c+=o.w*o.d*6;if(o.sign)c+=300;return Math.round(c)}
@@ -3199,7 +3199,7 @@ function lampTick(dt){lampT-=dt;if(lampT>0)return;lampT=.3;const L=[];
     for(const o of hs){if(L.length>=6)break;const n=lampItems(o).length;L.push([V(o.x,baseY(o)+1.8,o.z),NIGHT*Math.min(40,10+n*6),Math.max(o.w,o.d)*.9+9])}}
   LAMPL.forEach((l,i)=>{const q=L[i];if(!q){l.intensity=0;return}l.position.copy(q[0]);l.intensity=q[1];l.distance=q[2]})}
 
-function bal2Tick(dt){gtTick(dt);hdlTick();thrTick();ztTick(dt);rhTick(dt);stnTick(dt);grdTick(dt);airFarTick(dt);trainLifeTick(dt);skyWalkTick(dt);commTick(dt);rail2Tick(dt);sky2Tick(dt);air2Tick(dt);lmOutline();faceTick(dt);mvTick();mobCam();mobTick(dt);dashTick();layoutTick(dt);extTick(dt);repTick(dt);dmgFxTick(dt);mgrTick(dt);lampTick(dt)}
+function bal2Tick(dt){gfxTick();gtTick(dt);hdlTick();thrTick();ztTick(dt);rhTick(dt);stnTick(dt);grdTick(dt);airFarTick(dt);trainLifeTick(dt);skyWalkTick(dt);commTick(dt);rail2Tick(dt);sky2Tick(dt);air2Tick(dt);lmOutline();faceTick(dt);mvTick();mobCam();mobTick(dt);dashTick();layoutTick(dt);extTick(dt);repTick(dt);dmgFxTick(dt);mgrTick(dt);lampTick(dt)}
 
 /* ---- 畫面排版：左上角的小視窗由上往下排，不會互相蓋住（手機特別重要） ---- */
 let layT=0;function layoutTick(dt){layT-=dt;if(layT>0)return;layT=.4;const mob=MOB.on;const vis=e=>e&&getComputedStyle(e).display!=='none'&&e.offsetHeight>0;
@@ -3804,7 +3804,7 @@ function skyWalkStep(dt){const w=SKYW;if(!w)return;w.t+=dt;const k=Math.min(1,w.
   if(k>=1){SKYW=null;const t=w.b;window.__up=t.on!=null?t.id:null;ME.position.x=t.x;ME.position.z=t.z;S.mePos={x:t.x,z:t.z};window.__inF=w.f;window.__inO=t.id;toast(`🌉 走過空橋，到「${t.fac?FAC[t.fac].n:t.name||'房子'}」的 ${w.f+1} 樓了`,2200)}}
 {const h0=meHit;meHit=function(x,z){if(SKYW)return false;return h0(x,z)};const g0=meGroundY;meGroundY=function(x,z){if(SKYW)return SKYW.y;return g0(x,z)}}
 function airFarTick(dt){const now=performance.now();for(const o of S.objs){if(o.t!=='dec'||o.k!=='runway')continue;const g=OBJM.get(o.id);if(!g||!g.userData.fl)continue;if(now-(g.userData.lt||0)>250)airTick(g,dt,1)}}
-{const a0=addObj;addObj=function(o){const r=a0.apply(this,arguments);if(o&&o.t==='dec'&&o.k==='runway'){const sc=o.s||1;flattenUnder({t:'house',x:o.x,z:o.z,r:o.r||0,w:36*sc,d:136*sc});refreshNear(o.x,o.z,80)}return r}}
+{const a0=addObj;addObj=function(o){const r=a0.apply(this,arguments);if(o&&o.t==='dec'&&o.k==='runway'){const sc=o.s||1;flattenUnder({t:'house',x:o.x,z:o.z,r:o.r||0,w:36*sc,d:136*sc,anyLand:1});refreshNear(o.x,o.z,80)}return r}}
 
 /* ======================= 2.35：馬路交叉變路口、紅綠燈、車子保持車距、貨運卡車 ======================= */
 function segX(a,b,c,d){const r1x=b.x-a.x,r1z=b.z-a.z,r2x=d.x-c.x,r2z=d.z-c.z;const den=r1x*r2z-r1z*r2x;if(Math.abs(den)<1e-6)return null;const t=((c.x-a.x)*r2z-(c.z-a.z)*r2x)/den,u=((c.x-a.x)*r1z-(c.z-a.z)*r1x)/den;return t>=0&&t<=1&&u>=0&&u<=1?{t,u}:null}
@@ -4322,6 +4322,56 @@ function pjBind(d,o){d.querySelectorAll('[data-pj]').forEach(b=>b.onclick=()=>{i
 // ---- 第一人稱和後方視角：鎖定遠近 ----
 let VD0=null;{const c2=camApply;camApply=function(){const m=S&&S.view;if(m&&viewOK()){if(VD0==null)VD0=CAM.dist;CAM.dist=60}else if(VD0!=null){CAM.dist=VD0;VD0=null}c2()}}
 
+/* ======================= 2.47：地圖上顯示建築物名稱，不顯示用地名稱 ======================= */
+const hasEm=t=>!/^[\u4e00-\u9fffA-Za-z0-9（(]/.test(t||'');
+hubName=function(o){const n=o.sign||o.name||(o.fac?FAC[o.fac].n:'倉庫');return hasEm(n)||!o.fac?n:FAC[o.fac].em+' '+n};
+function nameTags(){if(CAM.dist>420)return;const cx=CAM.tx,cz=CAM.tz,R=Math.max(160,CAM.dist*1.6);for(const o of S.objs){let n=null,y=0;
+    if(o.t==='house'){if(o.bt!=null&&o.bt<1)continue;n=o.sign||o.name||(o.fac?FAC[o.fac].n:null);if(!n)continue;if(o.fac&&!hasEm(n))n=FAC[o.fac].em+' '+n;const g=OBJM.get(o.id);y=baseY(o)+(g?g.userData.peak||6:6)+3}
+    else if(o.t==='dec'&&STNK[o.k]){n=o.sign||'車站';y=hAt(o.x,o.z)+11}else if(o.t==='dec'&&o.k==='runway'){n=o.sign||(o.cargo?'📦 貨運機場':'✈️ 機場');if(!hasEm(n))n=(o.cargo?'📦 ':'✈️ ')+n;y=hAt(o.x,o.z)+6}else continue;
+    if(Math.abs(o.x-cx)>R||Math.abs(o.z-cz)>R)continue;tag('n'+o.id,String(n).replace(/</g,'&lt;'),'sold',V(o.x,y,o.z))}}
+
+/* ======================= 2.48：畫質設定（自動降低畫質）、看不到的遠處不畫、少算一些東西 ======================= */
+const GFXL=['eco','low','mid','high'],GFXN={eco:'超省電',low:'低',mid:'中',high:'高'};
+const GFXC={high:{pr:Math.min(devicePixelRatio||1,2),sh:2,shs:2048,lamps:6,dd:9000,npc:1},mid:{pr:1,sh:1,shs:1024,lamps:2,dd:650,npc:.7},low:{pr:.8,sh:0,shs:512,lamps:0,dd:420,npc:.45},eco:{pr:.6,sh:0,shs:512,lamps:0,dd:280,npc:.25}};
+let GFX={mode:'auto',lv:matchMedia('(pointer:coarse)').matches?'low':'mid'};try{const q=JSON.parse(localStorage.getItem('b7gfx')||'null');if(q&&q.mode)GFX=q}catch(e){}
+function gfxCfg(){return GFXC[GFX.lv]||GFXC.mid}
+function gfxApply(lv,silent){if(lv)GFX.lv=lv;const c=gfxCfg();try{renderer.setPixelRatio(c.pr);renderer.setSize(innerWidth,innerHeight)}catch(e){}
+  const shOn=c.sh>0;const nt=c.sh===2?THREE.PCFSoftShadowMap:THREE.PCFShadowMap;const chg=renderer.shadowMap.enabled!==shOn||renderer.shadowMap.type!==nt;renderer.shadowMap.enabled=shOn;renderer.shadowMap.type=c.sh===2?THREE.PCFSoftShadowMap:THREE.PCFShadowMap;sun.shadow.mapSize.set(c.shs,c.shs);if(sun.shadow.map){sun.shadow.map.dispose();sun.shadow.map=null}
+  LAMPL.forEach((l,i)=>{if(i<c.lamps){if(!l.parent)scene.add(l)}else if(l.parent)scene.remove(l)});
+  if(chg)scene.traverse(m=>{const ms=m.material;if(!ms)return;(Array.isArray(ms)?ms:[ms]).forEach(x=>x.needsUpdate=true)});
+  try{localStorage.setItem('b7gfx',JSON.stringify(GFX))}catch(e){}if(!silent)toast(`🎮 畫質：${GFXN[GFX.lv]}${GFX.mode==='auto'?'（自動）':''}`,1600);railSig=''}
+// 遠處超過霧的地方不畫（看不到也不浪費）
+let fpsN=0,fpsT0=performance.now(),fpsV=60,gfxSlow=0,gfxFast=0,gfxDownT=0;
+function gfxTick(){const c=gfxCfg();const ff=Math.min(scene.fog.far,c.dd);if(ff<scene.fog.far){scene.fog.far=ff;scene.fog.near=Math.min(scene.fog.near,ff*.55)}camera.far=Math.max(400,scene.fog.far+40);camera.updateProjectionMatrix();
+  fpsN++;const now=performance.now();if(now-fpsT0<4000)return;fpsV=fpsN*1000/(now-fpsT0);fpsN=0;fpsT0=now;if(document.hidden||GFX.mode!=='auto')return;const i=GFXL.indexOf(GFX.lv);
+  if(fpsV<28){gfxSlow++;gfxFast=0;if(gfxSlow>=2&&i>0){gfxSlow=0;gfxDownT=now;gfxApply(GFXL[i-1],true);toast(`🎮 畫面有點卡，已經自動把畫質降到「${GFXN[GFX.lv]}」（介面 → 畫質 可以調）`,3200)}}
+  else if(fpsV>56){gfxFast++;gfxSlow=0;if(gfxFast>=6&&i<GFXL.length-1&&now-gfxDownT>120000&&GFX.lv!=='mid'){gfxFast=0;gfxApply(GFXL[i+1],true)}}else{gfxSlow=0;gfxFast=0}}
+{const u0=uizPanel;uizPanel=function(){const r=u0.apply(this,arguments);try{const d=document.createElement('div');const draw=()=>{d.innerHTML=`<div class="lab">🎮 畫質（覺得卡就調低）</div><div class="chips"><button data-gq="auto" class="${GFX.mode==='auto'?'on':''}">🤖 自動</button>${GFXL.slice().reverse().map(k=>`<button data-gq="${k}" class="${GFX.mode!=='auto'&&GFX.lv===k?'on':''}">${GFXN[k]}</button>`).join('')}</div><div style="font-size:12px;color:#7a6a4a;line-height:1.6">現在：${GFXN[GFX.lv]}${GFX.mode==='auto'?'（自動）':''}・每秒 ${Math.round(fpsV)} 張畫面<br>高：最漂亮（陰影、燈光全開）<br>中：筆電建議（陰影簡單、燈光 2 盞）<br>低：關掉陰影和路燈光，遠處不畫、路上人車變少<br>超省電：最順，畫面比較粗<br>🤖 自動：太卡會自動往下調</div>`;d.querySelectorAll('[data-gq]').forEach(b=>b.onclick=()=>{const k=b.dataset.gq;SFX.click();if(k==='auto'){GFX.mode='auto';gfxApply(GFX.lv)}else{GFX.mode='manual';gfxApply(k)}draw()})};draw();$('#panel').appendChild(d)}catch(e){console.warn(e)}return r}}
+setTimeout(()=>gfxApply(null,true),300);
+// 人車數量跟著畫質
+{const cs=carSpawn;carSpawn=function(){cs();const keep=Math.max(4,Math.round(RCARS.length*gfxCfg().npc));while(RCARS.length>keep)scene.remove(RCARS.pop().g)}}
+{const cm=commSync;commSync=function(){const sg0=commSig;cm();if(commSig===sg0)return;const keep=Math.max(4,Math.round(COMM.length*gfxCfg().npc));while(COMM.length>keep){const c=COMM.pop();scene.remove(c.g)}}}
+// 少算一些：機場跑道清單、拉伸點只在需要時更新
+let RWL=[],rwlT=0;airFarTick=function(dt){const now=performance.now();if(now-rwlT>2000){rwlT=now;RWL=S.objs.filter(o=>o.t==='dec'&&o.k==='runway')}for(const o of RWL){const g=OBJM.get(o.id);if(!g||!g.userData.fl)continue;if(now-(g.userData.lt||0)>250)airTick(g,dt,1)}};
+{const h0=hdlTick;let hT=0,hS=null;hdlTick=function(){const now=performance.now();if(!DRAG&&SEL===hS&&now-hT<300)return;hT=now;hS=SEL;h0()}}
+
+// 舊存檔：跑道下面（包含沒買的地）重新整平一次，不會再缺一角
+{const r0=rhTick;rhTick=function(dt){r0(dt);for(const o of S.objs){if(o.t==='dec'&&o.k==='runway'&&!o.flat2){o.flat2=1;const sc=o.s||1;flattenUnder({t:'house',x:o.x,z:o.z,r:o.r||0,w:36*sc,d:136*sc,anyLand:1});refreshNear(o.x,o.z,80)}}}}
+
+/* ======================= 2.49：只有在畫面裡（和身邊）的建築才畫、才更新 ======================= */
+const CULLF=new THREE.Frustum(),CULLM=new THREE.Matrix4(),_cb=new THREE.Box3(),_cs=new THREE.Sphere();let cullOn=true,cullN=0;
+function cullTick(){if(!cullOn)return;camera.updateMatrixWorld();CULLM.multiplyMatrices(camera.projectionMatrix,camera.matrixWorldInverse);CULLF.setFromProjectionMatrix(CULLM);
+  const px=ME.position.x,pz=ME.position.z;let budget=250;cullN=0;
+  for(const g of OBJG.children){const u=g.userData;if(u.br==null){if(budget--<=0)continue;const oo=u.id!=null&&byId(u.id);if(oo&&oo.t==='dec'&&(oo.k==='runway'||oo.k==='gondola'))u.nocull=1;_cb.setFromObject(g);if(_cb.isEmpty()){u.br=-1;continue}_cb.getBoundingSphere(_cs);u.bx=_cs.center.x-g.position.x;u.by=_cs.center.y-g.position.y;u.bz=_cs.center.z-g.position.z;u.br=_cs.radius}
+    if(u.br<0||u.nocull)continue;_cs.center.set(g.position.x+u.bx,g.position.y+u.by,g.position.z+u.bz);_cs.radius=u.br+15;
+    const dx=_cs.center.x-px,dz=_cs.center.z-pz;const near=dx*dx+dz*dz<(70+u.br)*(70+u.br);
+    const see=near||CULLF.intersectsSphere(_cs);
+    if(see){if(u.cv){u.cv=0;g.visible=true;g.updateMatrixWorld(true)}}else if(g.visible){u.cv=1;g.visible=false;cullN++}}}
+// 看不到的建築不用每格重算位置
+OBJG.updateMatrixWorld=function(force){if(this.matrixAutoUpdate)this.updateMatrix();if(this.matrixWorldNeedsUpdate||force){if(this.parent)this.matrixWorld.multiplyMatrices(this.parent.matrixWorld,this.matrix);else this.matrixWorld.copy(this.matrix);this.matrixWorldNeedsUpdate=false;force=true}
+  const ch=this.children;for(let i=0;i<ch.length;i++){const c=ch[i];if(c.visible||!c.userData.cv)c.updateMatrixWorld(force)}};
+{const g0=gfxTick;gfxTick=function(){g0();cullTick()}}
+
 /* ======================= 編輯面板（選到東西時出現） ======================= */
 const chipsH=(key,opts,cur,lock)=>`<div class="chips">${Object.entries(opts).map(([k,n])=>`<button data-${key}="${k}" class="${String(cur)===k?'on':''}" ${lock&&lock(k)?'disabled style="opacity:.4"':''}>${n}</button>`).join('')}</div>`;
 const swH=(key,cols,cur)=>`<div class="chips">${cols.map(c=>`<button class="sw ${cur===c?'on':''}" data-${key}="${c}" style="background:${hex(c)}"></button>`).join('')}</div>`;
@@ -4481,7 +4531,7 @@ function frame(){requestAnimationFrame(frame);if(window.__farmHold||window.__pz)
   for(const g of OBJG.children)if(g.userData.spin)g.userData.spin.rotation.z+=dt*1.2;
   waterTex.offset.x+=dt*.01;waterTex.offset.y+=dt*.006;
   tagT-=dt;if(tagT<=0){tagT=.5;for(const t of TAGS.values())t.seen=0;for(const o of S.objs){if(o.t!=='house'&&o.t!=='tower'&&o.t!=='wall')continue;const g=OBJM.get(o.id);const p=V(o.x,baseY(o)+(g?g.userData.peak||6:6)+.8,o.z);const near=!ME||Math.hypot(o.x-ME.position.x,o.z-ME.position.z)-Math.max(o.w||o.len||4,o.d||4)/2<14;if(o.bt!=null&&o.bt<1)tag('s'+o.id,`🚧 施工中 ${Math.floor(o.bt*100)}%`,'land',p);else if(!near){}else if(o.fac)tag('s'+o.id,`${FAC[o.fac].em} ${FAC[o.fac].n}${o.idle?'（缺原料）':''}`,o.idle?'land':'sold',p);else if(o.sold)tag('s'+o.id,`✅ ${o.name||'已售出'}`,'sold',p);else if(o.home)tag('s'+o.id,`🏡 ${o.name||'我的家'}`,'sold',p);else if(o.rent)tag('s'+o.id,`🔑 出租中 ${money(rentOf(o))}/分`,'land',p)}
-    const pr=landPrice();S.plots.forEach((ow,p)=>{const c=plotCenter(p);const near=Math.abs(c.x-CAM.tx)<150&&Math.abs(c.z-CAM.tz)<150&&CAM.dist<260;if(!near)return;const zn=typeof znTxt==='function'?znTxt(p):'';if(!ow)tag('p'+p,`🗺️ ${zn?zn+'・':''}可以買 ${money(pr)}`,'land',V(c.x,hAt(c.x,c.z)+3,c.z));else if(zn)tag('z'+p,zn,'land',V(c.x,hAt(c.x,c.z)+2,c.z))});tagsSweep();hud()}
+    const pr=landPrice();S.plots.forEach((ow,p)=>{const c=plotCenter(p);const near=Math.abs(c.x-CAM.tx)<150&&Math.abs(c.z-CAM.tz)<150&&CAM.dist<260;if(!near)return;if(!ow)tag('p'+p,`🗺️ 可以買 ${money(pr)}`,'land',V(c.x,hAt(c.x,c.z)+3,c.z))});if(typeof nameTags==='function')nameTags();tagsSweep();hud()}
   buildTick(dt);peopleTick(dt);titleTick(dt);vehTick(dt);meTick(dt);animTick(dt);lifeTick(dt);rentTick(dt);carTick(dt);petTick(dt);facTick(dt);guideTick(dt);fltTick(dt);tagsDraw();if(saveT>0){saveT-=dt;if(saveT<=0)save()}renderer.render(scene,camera)}
 function resize(){W=innerWidth;H=innerHeight;renderer.setSize(W,H);camera.aspect=W/H;camera.updateProjectionMatrix()}addEventListener('resize',resize);
 /* ======================= 按鈕 ======================= */
