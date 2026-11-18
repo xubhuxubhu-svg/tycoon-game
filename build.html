@@ -4149,13 +4149,27 @@ railEditBind=function(d,o){d.querySelectorAll('[data-cpx]').forEach(b=>b.onclick
     o.pts=railFromCP(o);const ob=railObst(o.pts);if(ob&&k!=='-1'&&k!=='1'){o.cp=old;o.pts=oldP;SFX.err();toast(`🚧 這樣會穿過「${ob}」`,2400)}place(o);railSig='';hdlSig='';dirty();editShow()})};
 // ---- 貨車自動繞過障礙物（格子尋路，優先走馬路） ----
 function stnBlockAt(x,z){for(const o of S.objs){if(o.t!=='dec'||!STNK[o.k])continue;const c=Math.cos(-(o.r||0)),s=Math.sin(-(o.r||0));const dx=x-o.x,dz=z-o.z;const lx=dx*c+dz*s,lz=-dx*s+dz*c;const W=stnW(o)/2,Lh=(o.len||60)/2+1;const wx=o.k==='fyard'?-(W+.6)-15:-W-1;if(lz>-Lh&&lz<Lh&&lx>wx&&lx<W+1)return true}return false}
-function gridPath(a,b){const C=5,pad=100;const x0=Math.min(a.x,b.x)-pad,z0=Math.min(a.z,b.z)-pad;const nx=Math.ceil((Math.max(a.x,b.x)+pad-x0)/C),nz=Math.ceil((Math.max(a.z,b.z)+pad-z0)/C);if(nx*nz>160000)return null;
+// 2.50：整張地圖的「哪裡能走」先算好一次（蓋了東西才重算），找路時直接查表，不再每一格去比對全部建築
+let GG=null;
+function gGrid(){const sig=obsSig();if(GG&&GG.sig===sig)return GG;const C=5,n=Math.ceil(SZ/C);const blk=new Uint8Array(n*n),rd=new Uint8Array(n*n);const cx=i=>-HALF+(i+.5)*C;
+  for(let j=0;j<n;j++)for(let i=0;i<n;i++){const x=cx(i),z=cx(j);if(Math.abs(x)>HALF-4||Math.abs(z)>HALF-4||hAt(x,z)<WATER_Y-.1)blk[j*n+i]=1}
+  const area=(x,z,R,test)=>{const i0=Math.max(0,Math.floor((x-R+HALF)/C)),i1=Math.min(n-1,Math.floor((x+R+HALF)/C)),j0=Math.max(0,Math.floor((z-R+HALF)/C)),j1=Math.min(n-1,Math.floor((z+R+HALF)/C));for(let j=j0;j<=j1;j++)for(let i=i0;i<=i1;i++){const k=j*n+i;if(!blk[k]&&test(cx(i),cx(j)))blk[k]=1}};
+  const pad=1.8;
+  for(const o of S.objs){if(!BLK(o))continue;if(o.t==='tower'){const R=(o.rad||2)+pad;area(o.x,o.z,R,(x,z)=>Math.hypot(x-o.x,z-o.z)<R);continue}
+    const w=o.t==='wall'?o.len:o.w,d=o.t==='wall'?(o.thick||1.2):o.d;if(!(w>0)||!(d>0))continue;const r=o.r||0,c=Math.cos(r),sn=Math.sin(r);
+    area(o.x,o.z,Math.hypot(w/2+pad,d/2+pad),(x,z)=>{const dx=x-o.x,dz=z-o.z;return Math.abs(dx*c-dz*sn)<w/2+pad&&Math.abs(dx*sn+dz*c)<d/2+pad})}
+  for(const Z of ZONES){if(Z.x==null||(Z.fam!=='rock'&&Z.fam!=='meteor'))continue;area(Z.x,Z.z,Z.r*1.16,(x,z)=>{const dx=x-Z.x,dz=z-Z.z,dd=Math.hypot(dx,dz);return dd>Z.r*.55&&dd<Z.r*1.15&&dz<-Z.r*.15})}
+  for(const o of S.objs){if(o.t!=='dec'||!STNK[o.k])continue;const c=Math.cos(-(o.r||0)),sn=Math.sin(-(o.r||0));const W=stnW(o)/2,Lh=(o.len||60)/2+1;const wx=o.k==='fyard'?-(W+.6)-15:-W-1;
+    area(o.x,o.z,Math.hypot(Math.max(W+1,-wx),Lh)+1,(x,z)=>{const dx=x-o.x,dz=z-o.z;const lx=dx*c+dz*sn,lz=-dx*sn+dz*c;return lz>-Lh&&lz<Lh&&lx>wx&&lx<W+1})}
+  for(const o of S.objs)if(o.t==='road'&&ROADS[o.k]&&!ROADS[o.k].train&&ROADS[o.k].br!=='sky'){const P=densePts(o.pts,2);for(const p of P){const i=Math.floor((p.x+HALF)/C),j=Math.floor((p.z+HALF)/C);if(i>=0&&j>=0&&i<n&&j<n){rd[j*n+i]=1;blk[j*n+i]=0}}}
+  GG={sig,n,C,blk,rd};return GG}
+function gridPath(a,b){const G=gGrid();const C=G.C,pad=100;const gi0=Math.max(0,Math.floor((Math.min(a.x,b.x)-pad+HALF)/C)),gj0=Math.max(0,Math.floor((Math.min(a.z,b.z)-pad+HALF)/C));const gi1=Math.min(G.n-1,Math.floor((Math.max(a.x,b.x)+pad+HALF)/C)),gj1=Math.min(G.n-1,Math.floor((Math.max(a.z,b.z)+pad+HALF)/C));
+  const x0=-HALF+gi0*C,z0=-HALF+gj0*C;const nx=gi1-gi0+1,nz=gj1-gj0+1;if(nx<2||nz<2)return null;
   const N=nx*nz,blk=new Uint8Array(N),rd=new Uint8Array(N);const X=i=>x0+(i+.5)*C,Zc=j=>z0+(j+.5)*C;
-  for(let j=0;j<nz;j++)for(let i=0;i<nx;i++){const x=X(i),z=Zc(j);if(Math.abs(x)>HALF-4||Math.abs(z)>HALF-4||hAt(x,z)<WATER_Y-.1||inBld(x,z,1.8)||rockAt(x,z)||stnBlockAt(x,z))blk[j*nx+i]=1}
-  for(const o of S.objs)if(o.t==='road'&&ROADS[o.k]&&!ROADS[o.k].train&&ROADS[o.k].br!=='sky'){const P=densePts(o.pts,2);for(const p of P){const i=Math.floor((p.x-x0)/C),j=Math.floor((p.z-z0)/C);if(i>=0&&j>=0&&i<nx&&j<nz){rd[j*nx+i]=1;blk[j*nx+i]=0}}}
+  for(let j=0;j<nz;j++){const go=(gj0+j)*G.n+gi0;blk.set(G.blk.subarray(go,go+nx),j*nx);rd.set(G.rd.subarray(go,go+nx),j*nx)}
   const cell=p=>{let i=clamp(Math.floor((p.x-x0)/C),0,nx-1),j=clamp(Math.floor((p.z-z0)/C),0,nz-1);if(!blk[j*nx+i])return j*nx+i;for(let r=1;r<20;r++)for(let dj=-r;dj<=r;dj++)for(let di=-r;di<=r;di++){if(Math.max(Math.abs(di),Math.abs(dj))!==r)continue;const ii=i+di,jj=j+dj;if(ii>=0&&jj>=0&&ii<nx&&jj<nz&&!blk[jj*nx+ii])return jj*nx+ii}return -1};
   const s=cell(a),t=cell(b);if(s<0||t<0)return null;const g=new Float32Array(N).fill(1e9),pr=new Int32Array(N).fill(-1),cl=new Uint8Array(N);const H=[];const hp=(f,k)=>{H.push([f,k]);let i=H.length-1;while(i>0){const p=(i-1)>>1;if(H[p][0]<=H[i][0])break;[H[p],H[i]]=[H[i],H[p]];i=p}};const pop=()=>{const r=H[0];const l=H.pop();if(H.length){H[0]=l;let i=0;for(;;){const a2=i*2+1,b2=a2+1;let m=i;if(a2<H.length&&H[a2][0]<H[m][0])m=a2;if(b2<H.length&&H[b2][0]<H[m][0])m=b2;if(m===i)break;[H[m],H[i]]=[H[i],H[m]];i=m}}return r};
-  const ti=t%nx,tj=(t/nx)|0;const hh=k=>Math.hypot(k%nx-ti,((k/nx)|0)-tj);g[s]=0;hp(hh(s),s);let it=0;
+  const ti=t%nx,tj=(t/nx)|0;const hh=k=>1.6*Math.hypot(k%nx-ti,((k/nx)|0)-tj);g[s]=0;hp(hh(s),s);let it=0;
   while(H.length&&it++<200000){const [,k]=pop();if(cl[k])continue;cl[k]=1;if(k===t)break;const ki=k%nx,kj=(k/nx)|0;for(let dj=-1;dj<=1;dj++)for(let di=-1;di<=1;di++){if(!di&&!dj)continue;const ii=ki+di,jj=kj+dj;if(ii<0||jj<0||ii>=nx||jj>=nz)continue;const q=jj*nx+ii;if(blk[q]||cl[q])continue;if(di&&dj&&(blk[kj*nx+ii]||blk[jj*nx+ki]))continue;const c=(di&&dj?1.414:1)*(rd[q]?1:2.2);if(g[k]+c<g[q]){g[q]=g[k]+c;pr[q]=k;hp(g[q]+hh(q),q)}}}
   if(pr[t]<0&&s!==t)return null;const path=[];for(let k=t;k>=0;k=pr[k]){path.unshift({x:X(k%nx),z:Zc((k/nx)|0)});if(k===s)break}
   const free=(p,q)=>{const L=Math.hypot(q.x-p.x,q.z-p.z),n=Math.ceil(L/1.5);for(let m=0;m<=n;m++){const x=p.x+(q.x-p.x)*m/n,z=p.z+(q.z-p.z)*m/n;const i=Math.floor((x-x0)/C),j=Math.floor((z-z0)/C);if(i<0||j<0||i>=nx||j>=nz||blk[j*nx+i])return false;if(rd[j*nx+i]!==rd[Math.floor((p.z-z0)/C)*nx+Math.floor((p.x-x0)/C)])return false}return true};
@@ -4198,8 +4212,10 @@ Object.assign(FAC,{plywf:F2('合板廠','📋',4000,'3 木材 → 2 合板（每
 // ---- 通用貨車（指定路線來回送貨，會自動找路） ----
 const GTV=new Map(),PQ=[],PC=new Map();let pqT=0,gtT=0,OBSIG=0,obsT=0;
 function obsSig(){const now=performance.now();if(now-obsT>3000){obsT=now;let n=0;for(const o of S.objs)if(o.t==='house'||o.t==='dec'||o.t==='road'||o.t==='lm')n+=o.id;OBSIG=n}return OBSIG}
-function pathReq(key,a,b){const sig=Math.round(a.x)+','+Math.round(a.z)+'>'+Math.round(b.x)+','+Math.round(b.z)+'|'+obsSig();const c=PC.get(key);if(c&&c.sig===sig)return c.P;if(!PQ.some(q=>q.key===key))PQ.push({key,a,b,sig});return c?c.P:null}
-function pathPump(dt){pqT-=dt;if(pqT>0||!PQ.length)return;pqT=.35;const q=PQ.shift();let gp=null;try{gp=gridPath(q.a,q.b)}catch(e){}const pts=gp?crSpline(gp,2):densePts([q.a,q.b],4);const d=[0];let L=0;for(let i=1;i<pts.length;i++){L+=Math.hypot(pts[i].x-pts[i-1].x,pts[i].z-pts[i-1].z);d.push(L)}PC.set(q.key,{sig:q.sig,P:{pts,d,L}})}
+function pathReq(key,a,b){const sig=Math.round(a.x)+','+Math.round(a.z)+'>'+Math.round(b.x)+','+Math.round(b.z);const c=PC.get(key);if(c&&c.sig===sig){const G=gGrid();if(c.gs===G.sig)return c.P;
+  // 地圖有變：只檢查這條路有沒有被新東西擋到，沒擋到就繼續用
+  let bad=false;const P=c.P.pts;for(let m=2;m<P.length-2&&!bad;m+=2){const i=Math.floor((P[m].x+HALF)/G.C),j=Math.floor((P[m].z+HALF)/G.C);if(i>=0&&j>=0&&i<G.n&&j<G.n&&G.blk[j*G.n+i]&&!G.rd[j*G.n+i])bad=true}if(!bad){c.gs=G.sig;return c.P}c.sig='x'}if(!PQ.some(q=>q.key===key))PQ.push({key,a,b,sig});return c?c.P:null}
+function pathPump(dt){pqT-=dt;if(pqT>0||!PQ.length)return;pqT=.35;const q=PQ.shift();let gp=null;try{gp=gridPath(q.a,q.b)}catch(e){}const pts=gp?crSpline(gp,2):densePts([q.a,q.b],4);const d=[0];let L=0;for(let i=1;i<pts.length;i++){L+=Math.hypot(pts[i].x-pts[i-1].x,pts[i].z-pts[i-1].z);d.push(L)}PC.set(q.key,{sig:q.sig,gs:GG?GG.sig:0,P:{pts,d,L}})}
 const fDoor=o=>{const r=o.r||0,L=(o.d||10)/2+3;return {x:o.x+Math.sin(r)*L,z:o.z+Math.cos(r)*L}};
 function gtRoutes(){const R=[];const guest=typeof CO!=='undefined'&&CO.role==='guest';const pf=prodFacs();
   // 貨運車站 → 中央物流倉庫
