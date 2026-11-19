@@ -4266,8 +4266,8 @@ const isCargoRW=o=>o&&o.t==='dec'&&o.k==='runway'&&o.cargo;
 function cargoH(o){const others=S.objs.filter(q=>isCargoRW(q)&&q!==o);return `<div class="lab">📦 機場種類</div><div class="chips"><button data-cg="0" class="${!o.cargo?'on':''}">🧳 客運機場</button><button data-cg="1" class="${o.cargo?'on':''}">📦 貨運機場</button></div>${o.cargo?`<div class="lab">貨運飛機飛往</div>${others.length?`<div class="chips">${others.map(q=>`<button data-cgd="${q.id}" class="${o.cdst===q.id?'on':''}">✈️ ${q.sign||'貨運機場 '+q.id}</button>`).join('')}</div>`:'<div style="font-size:13px;color:#c83a2a">要再蓋一座貨運機場，飛機才有地方飛。</div>'}<div style="font-size:12px;color:#7a6a4a">每一班貨運飛機起飛後會飛到目的地降落，載 400 箱空運物資到目的地旁邊的「空運物流倉庫」，每班收入 ${money(3000)}。</div>`:''}`}
 function cargoBind(d,o){d.querySelectorAll('[data-cg]').forEach(b=>b.onclick=()=>{o.cargo=+b.dataset.cg?1:0;if(o.cargo&&!o.sign){o.sign='貨運機場 '+(S.objs.filter(isCargoRW).length)}SFX.click();dirty();editShow()});d.querySelectorAll('[data-cgd]').forEach(b=>b.onclick=()=>{o.cdst=+b.dataset.cgd;SFX.click();dirty();toast('✈️ 貨運飛機會飛到「'+(byId(o.cdst).sign||'貨運機場')+'」',2000);editShow()})}
 function awNear(o){let b=null,bd=300;for(const q of S.objs){if(!isAW(q))continue;const d=Math.hypot(q.x-o.x,q.z-o.z);if(d<bd){bd=d;b=q}}return b}
-{const at0=airTick;airTick=function(g,dt,far){const u=g.userData;const o=u.o;if(o&&o.cargo&&u.fl){if(u.fq>0&&u.park.length+u.fl.filter(f=>!f.dep).length<APARK.length){const used=new Set([...u.park.map(p=>p.userData.zp),...u.fl.filter(f=>!f.dep).map(f=>f.zp)]);const zp=APARK.find(z=>!used.has(z));if(zp!=null){u.fq--;const p=pickPlane(o,'cargo');p.userData.zp=zp;g.add(p);u.fl.push({p,dep:false,t:0,zp,P:fltPath(false,zp),paid:0,cg:1})}}
-    for(const F of u.fl){if(F.cgDone)continue;const D=fltDur(F);if(F.t+dt>=D){F.cgDone=1;if(F.dep&&o.cdst){const dst=byId(o.cdst);const dg=dst&&OBJM.get(dst.id);if(dg){dg.userData.fq=(dg.userData.fq||0)+1}}else if(!F.dep){const aw=awNear(o);if(aw&&!(typeof CO!=='undefined'&&CO.role==='guest')){aw.stk=(aw.stk||0)+400;if(CAM.dist<400)floatTxt(V(aw.x,hAt(aw.x,aw.z)+8,aw.z),'📦 空運物資 +400 箱')}}}}}
+{const at0=airTick;airTick=function(g,dt,far){const u=g.userData;const o=u.o;if(o&&o.cargo&&u.fl){if(u.fq>0&&!u.fl.length&&u.park.length+u.fl.filter(f=>!f.dep).length<APARK.length){const used=new Set([...u.park.map(p=>p.userData.zp),...u.fl.filter(f=>!f.dep).map(f=>f.zp)]);const zp=APARK.find(z=>!used.has(z));if(zp!=null){u.fq--;const p=pickPlane(o,'cargo');p.userData.zp=zp;g.add(p);u.fl.push({p,dep:false,t:0,zp,P:fltPath(false,zp),paid:0,cg:1})}}
+    for(const F of u.fl){if(F.cgDone)continue;const D=fltDur(F);if(F.t+dt>=D){F.cgDone=1;if(F.dep&&F.xp){xferStart(g,F)}else if(F.dep&&o.cdst){const dst=byId(o.cdst);const dg=dst&&OBJM.get(dst.id);if(dg){dg.userData.fq=(dg.userData.fq||0)+1}}else if(!F.dep){const aw=awNear(o);if(aw&&!(typeof CO!=='undefined'&&CO.role==='guest')){aw.stk=(aw.stk||0)+400;if(CAM.dist<400)floatTxt(V(aw.x,hAt(aw.x,aw.z)+8,aw.z),'📦 空運物資 +400 箱')}}}}}
   return at0(g,dt,far)}}
 // 貨運機場的收入改成每班 3000
 {const fp=floatTxt;floatTxt=function(p,t){if(typeof t==='string'&&/航班收入 \+1500/.test(t)&&window.__cgFlt){t=t.replace('+1500','+3000（貨運）')}return fp(p,t)}}
@@ -4387,6 +4387,74 @@ function cullTick(){if(!cullOn)return;camera.updateMatrixWorld();CULLM.multiplyM
 OBJG.updateMatrixWorld=function(force){if(this.matrixAutoUpdate)this.updateMatrix();if(this.matrixWorldNeedsUpdate||force){if(this.parent)this.matrixWorld.multiplyMatrices(this.parent.matrixWorld,this.matrix);else this.matrixWorld.copy(this.matrix);this.matrixWorldNeedsUpdate=false;force=true}
   const ch=this.children;for(let i=0;i<ch.length;i++){const c=ch[i];if(c.visible||!c.userData.cv)c.updateMatrixWorld(force)}};
 {const g0=gfxTick;gfxTick=function(){g0();cullTick()}}
+
+/* ======================= 2.51：貨運飛機直飛指定機場、飛機互相避開、飛機顏色和彩繪、從其他系列匯入資金 ======================= */
+// ---- 飛機顏色和彩繪 ----
+const PCOL=[['🎲 隨機',null],['紅',0xd83a2a],['藍',0x2a6ad8],['綠',0x3aa85a],['黃',0xe8b020],['紫',0x8a4ad8],['橘',0xe8702a],['粉',0xec6fa6],['黑',0x2a2a32],['銀',0xb8bcc4]];
+const PLIV={none:'原廠（白色機身）',body:'整台機身塗色',stripe:'機身腰線',belly:'上白下彩（雙色）',rainbow:'彩虹條紋',dots:'彩色圓點'};
+const RAINB=[0xe84a4a,0xf08a20,0xf8d020,0x3aa85a,0x2a6ad8,0x8a4ad8];
+function plLivery(p,k,c,lv){if(!lv||lv==='none')return;const big=k==='jumbo'||k==='cargo';const s=big?2.2:1;const M=x=>mat('',x,{metalness:.3,roughness:.4});
+  bat(p,B=>{if(lv==='body')B.add(cyl(.915*s,.915*s,11.6*s,14),M(c),mxAt(0,0,0,0,1,1,1,Math.PI/2));
+    else if(lv==='stripe'){for(const x of [-1,1]){B.add(boxG(.05,.26*s,11*s),M(c),mxAt(x*.9*s,.08*s,0));B.add(boxG(.05,.08*s,11*s),M(0x2a2a32),mxAt(x*.895*s,-.12*s,0))}}
+    else if(lv==='belly')B.add(new THREE.CylinderGeometry(.925*s,.925*s,11.6*s,14,1,true,-Math.PI*.62,Math.PI*1.24),M(c),mxAt(0,0,0,0,1,1,1,Math.PI/2));
+    else if(lv==='rainbow'){RAINB.forEach((col,i)=>{for(const x of [-1,1])B.add(boxG(.05,.12*s,9*s),M(col),mxAt(x*(.9-Math.abs(.3-i*.12)*.12)*s,(.3-i*.12)*s,-.5*s))})}
+    else if(lv==='dots'){for(let i=0;i<22;i++){const x=i%2?1:-1;const y=(Math.random()-.5)*.9*s,z=(Math.random()-.5)*10*s;const xx=Math.sqrt(Math.max(.01,(.9*s)**2-y*y));B.add(boxG(.05,.32*s,.32*s),M(RAINB[i%6]),mxAt(x*xx,y,z))}}})}
+{const pf=planeOf;planeOf=function(k,o){if(!o||(o.pcol==null&&!o.pliv))return pf(k);const T=PTYPE[k]||PTYPE.jet;const c=o.pcol!=null?o.pcol:T.c[Math.floor(Math.random()*T.c.length)];
+  const sv=Math.random;let p;try{Math.random=()=>0;const keep=T.c;T.c=[c];try{p=pf(k)}finally{T.c=keep}}finally{Math.random=sv}plLivery(p,k,c,o.pliv);return p}}
+pickPlane=function(o,force){const L=(o&&o.ptypes&&o.ptypes.length)?o.ptypes:(o&&o.cargo?['cargo']:['jet','prop','jumbo']);return planeOf(force||L[Math.floor(Math.random()*L.length)],o)};
+function livH(o){return `<div class="lab">🎨 飛機顏色</div><div class="chips">${PCOL.map(([n,c],i)=>`<button data-pc="${i}" class="${(o.pcol??null)===c?'on':''}">${c==null?n:`<span style="display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:-2px;background:#${c.toString(16).padStart(6,'0')};border:1px solid #0003"></span> ${n}`}</button>`).join('')}</div>
+  <div class="lab">🖌️ 機身彩繪</div><div class="chips">${Object.entries(PLIV).map(([k,n])=>`<button data-pl="${k}" class="${(o.pliv||'none')===k?'on':''}">${n}</button>`).join('')}</div><div style="font-size:12px;color:#7a6a4a">停機坪上的飛機會馬上換新塗裝，之後起降的飛機也是這個樣子。</div>`}
+function livApply(o){const g=OBJM.get(o.id);if(!g||!g.userData.park)return;const u=g.userData;u.park=u.park.map(p=>{const q=pickPlane(o,p.userData.pk);q.userData.zp=p.userData.zp;q.position.copy(p.position);q.rotation.copy(p.rotation);g.remove(p);g.add(q);return q})}
+function livBind(d,o){d.querySelectorAll('[data-pc]').forEach(b=>b.onclick=()=>{o.pcol=PCOL[+b.dataset.pc][1];SFX.click();livApply(o);dirty();editShow()});d.querySelectorAll('[data-pl]').forEach(b=>b.onclick=()=>{o.pliv=b.dataset.pl;SFX.click();livApply(o);dirty();editShow()})}
+{const h0=ptypeH;ptypeH=function(o){return h0(o)+livH(o)};const b0=ptypeBind;ptypeBind=function(d,o){b0(d,o);livBind(d,o)}}
+
+// ---- 貨運飛機：起飛後直線飛往指定的機場，到了就排隊降落 ----
+const XF=[];const XSPD=55;
+const arrPath=zp=>[[0,150,-760,0],[0,120,-560,6]].concat(fltPath(false,zp).slice(2));
+function xferStart(g,F){const dst=byId(F.toId);const dg=dst&&OBJM.get(dst.id);const p=F.p;g.updateMatrixWorld(true);const a=g.localToWorld(V(0,90,400));const b=dg?(dg.updateMatrixWorld(true),dg.localToWorld(V(0,150,-760))):a.clone().add(V(0,0,600));
+  const L=Math.hypot(b.x-a.x,b.z-a.z);const east=(b.x-a.x)>=0;p.userData.s0=p.scale.x;XF.push({p,a,b,toId:F.toId,t:0,D:Math.max(6,L/XSPD),alt:east?260:300,yo:0,sc:g.scale.x,added:0,hold:0,ha:0})}
+const _xa=new THREE.Vector3();
+function xfTick(dt){for(let i=XF.length-1;i>=0;i--){const x=XF[i];const p=x.p;if(!x.added){if(p.parent)continue;p.scale.setScalar(x.s0n=(p.userData.s0||1)*x.sc);scene.add(p);x.added=1}
+    const dst=byId(x.toId);const dg=dst&&OBJM.get(dst.id);
+    // 互相避開：太近就往上爬一層
+    let conf=false;for(const y of XF){if(y===x||!y.added)continue;const q=y.p.position;if(Math.hypot(q.x-p.position.x,q.z-p.position.z)<70&&Math.abs(q.y-p.position.y)<30&&XF.indexOf(y)<i){conf=true;break}}x.yo+=((conf?45:0)-x.yo)*Math.min(1,dt*.8);
+    let px,py,pz,hx,hz;
+    if(!x.hold){x.t+=dt;const k=Math.min(1,x.t/x.D);px=x.a.x+(x.b.x-x.a.x)*k;pz=x.a.z+(x.b.z-x.a.z)*k;const up=Math.min(1,k/.18),dn=Math.min(1,(1-k)/.18);const sm=v=>v*v*(3-2*v);
+      py=Math.min(x.a.y+(x.alt-x.a.y)*sm(up),x.b.y+(x.alt-x.b.y)*sm(dn))+x.yo;hx=x.b.x-x.a.x;hz=x.b.z-x.a.z;if(k>=1){x.hold=1;x.ha=Math.atan2(hx,hz);x.atB=true}}
+    if(x.hold){if(!dg){scene.remove(p);XF.splice(i,1);continue}const u=dg.userData;const idx=XF.filter(z=>z.hold&&z.toId===x.toId).indexOf(x);
+      const used=new Set([...u.park.map(q=>q.userData.zp),...u.fl.filter(f=>!f.dep).map(f=>f.zp)]);const zp=APARK.find(z=>!used.has(z));
+      if(x.atB&&idx===0&&!u.fl.length&&zp!=null){scene.remove(p);p.scale.setScalar((p.userData.s0||1)*x.sc/(dg.scale.x||1));p.userData.zp=zp;p.position.set(0,150,-760);p.rotation.y-=dg.rotation.y;p.rotation.x=0;dg.add(p);u.fl.push({p,dep:false,t:0,zp,P:arrPath(zp),paid:0,cg:1});XF.splice(i,1);continue}
+      // 跑道有飛機在用、停機坪滿了：在機場外面繞圈等（後面的飛機高度不一樣）
+      if(x.ha0==null)x.ha0=x.ha;x.ha+=dt*XSPD/110;const c=x.b;px=c.x+(Math.sin(x.ha-Math.PI/2)-Math.sin(x.ha0-Math.PI/2))*110;pz=c.z+(Math.cos(x.ha-Math.PI/2)-Math.cos(x.ha0-Math.PI/2))*110;py=c.y+idx*35+x.yo;
+      hx=Math.cos(x.ha-Math.PI/2);hz=-Math.sin(x.ha-Math.PI/2);x.atB=Math.hypot(px-c.x,pz-c.z)<25}
+    const prev=_xa.copy(p.position);p.position.set(px,py,pz);const ty=Math.atan2(hx,hz);let d=ty-p.rotation.y;while(d>Math.PI)d-=Math.PI*2;while(d<-Math.PI)d+=Math.PI*2;p.rotation.order='YXZ';p.rotation.y+=d*Math.min(1,dt*2);p.rotation.z+=(clamp(-d*1.5,-.6,.6)-p.rotation.z)*Math.min(1,dt*2);
+    const vy=(py-prev.y)/Math.max(dt,.001);p.rotation.x+=(-Math.atan2(vy,XSPD)-p.rotation.x)*Math.min(1,dt*2)}}
+// 起飛的貨機改成往前直飛（不再繞到地圖外面）
+{const a1=airTick;airTick=function(g,dt,far){const u=g.userData;const o=u.o;if(u.fl){if(u.fl.length&&u.nt<1)u.nt=1;  // 同一條跑道一次只起降一架，不會撞在一起
+    if(o&&o.cargo&&o.cdst&&byId(o.cdst))for(const F of u.fl){if(F.dep&&!F.xp){F.xp=1;F.toId=o.cdst;F.P=fltPath(true,F.p.userData.zp).slice(0,6).concat([[0,60,260,5],[0,90,400,4]])}}}
+  const isT=o&&o.cargo&&S.objs.some(q=>isCargoRW(q)&&q.cdst===o.id);
+  if(u.fl&&isT&&XF.some(x=>x.toId===o.id&&x.hold))u.nt=Math.max(u.nt,1);   // 有直飛過來的貨機在等：先讓它降落
+  const n0=u.fl?u.fl.length:0;const r=a1(g,dt,far);
+  // 別的貨運機場會飛過來的機場：不再從地圖外面變出貨機（飛機都是從另一座機場飛來的）
+  if(isT&&u.fl&&u.fl.length>n0){for(let i=u.fl.length-1;i>=n0;i--){const F=u.fl[i];if(!F.dep&&!F.cg){g.remove(F.p);u.fl.splice(i,1)}}}
+  return r}}
+{const b0=bal2Tick;bal2Tick=function(dt){b0(dt);xfTick(dt)}}
+// ---- 從其他系列匯入資金（共用的錢） ----
+const XSER=[['farm','zzdh_farm_v1',1,'🌾 農業與畜牧'],['fish','zzdh_fish_v1',3,'🐟 漁業與海洋'],['wood','zzdh_wood_v1',4,'🪵 林業與木工'],['mine','zzdh_mine_v1',5,'⛏️ 採礦與冶金'],['chem','zzdh_chem_v1',6,'⚗️ 化工與能源']];
+const XFLOOR=5000000;let xsSel=null;
+function xsRead(k){try{const d=JSON.parse(localStorage.getItem(k)||'null');if(d&&typeof d.money==='number')return d}catch(e){}return null}
+function xsList(){return XSER.map(([id,k,n,name])=>({id,k,n,name,d:xsRead(k)})).filter(x=>x.d)}
+function xsH(){if(S.mode==='free')return '';if(typeof CO!=='undefined'&&CO.role==='guest')return `<div class="lab">💱 從其他系列匯入資金</div><div style="font-size:13px;color:#7a6a4a">合作模式的客人不能匯入，請房主匯入。</div>`;
+  const L=xsList();if(!L.length)return `<div class="lab">💱 從其他系列匯入資金</div><div style="font-size:13px;color:#7a6a4a">還沒有找到其他系列的存檔（要先在大廳玩過其他系列）。</div>`;
+  if(!xsSel||!L.some(x=>x.id===xsSel))xsSel=L[0].id;const x=L.find(q=>q.id===xsSel);const can=Math.max(0,Math.floor(x.d.money-XFLOOR));const opts=[1e6,1e7,1e8].filter(v=>v<can);
+  return `<div class="lab">💱 從其他系列匯入資金（變成這裡共用的錢）</div><div style="font-size:13px;color:#7a6a4a;margin-bottom:4px">選擇要從哪一個系列帶錢過來：</div><div class="chips">${L.map(q=>`<button data-xs="${q.id}" class="${q.id===xsSel?'on':''}">第 ${q.n} 系列 ${q.name}</button>`).join('')}</div>
+  <div style="background:#fff6d8;border-radius:10px;padding:7px 10px;margin:6px 0;font-size:14px;line-height:1.7">第 ${x.n} 系列現在有：<b>${money(Math.floor(x.d.money))}</b><br>保底金額（要留在原本系列）：${money(XFLOOR)}<br>可以匯入：<b style="color:${can?'#2a8a3a':'#c83a2a'}">${money(can)}</b></div>
+  ${can>0?`<div class="chips">${opts.map(v=>`<button data-xa="${v}">匯入 ${money(v)}</button>`).join('')}<button class="on" data-xa="${can}">全部匯入 ${money(can)}</button></div>`:`<div style="font-size:13px;color:#c83a2a">第 ${x.n} 系列的錢低於 ${money(XFLOOR)}，不能匯入。</div>`}`}
+function xsDo(id,amt){const x=XSER.find(q=>q[0]===id);if(!x)return;try{parent!==window&&parent.__serFlush&&parent.__serFlush(id)}catch(e){}const d=xsRead(x[1]);if(!d){toast('找不到這個系列的存檔',2000);return}
+  const can=Math.max(0,Math.floor(d.money-XFLOOR));amt=Math.min(Math.floor(amt),can,Math.max(0,MONEY_MAX-S.money));if(amt<=0){SFX.err();toast(`第 ${x[2]} 系列的錢要留 ${money(XFLOOR)}，不能再匯了`,2600);return}
+  d.money-=amt;try{localStorage.setItem(x[1],JSON.stringify(d))}catch(e){toast('匯入失敗：儲存空間不夠',2400);return}S.money+=amt;hud();save();SFX.cash();toast(`💱 從第 ${x[2]} 系列匯入 ${money(amt)}！`,2600)}
+function xsBind(){const p=$('#panel');p.querySelectorAll('[data-xs]').forEach(b=>b.onclick=()=>{xsSel=b.dataset.xs;SFX.click();moneyPanel()});p.querySelectorAll('[data-xa]').forEach(b=>b.onclick=()=>{const v=+b.dataset.xa;const x=XSER.find(q=>q[0]===xsSel);ask(`確定要從第 ${x[2]} 系列「${x[3]}」匯入 <b>${money(v)}</b> 到這裡嗎？<br><small>第 ${x[2]} 系列的錢會減少同樣的金額</small>`,()=>{xsDo(xsSel,v);setTimeout(moneyPanel,50)})})}
+{const m0=moneyPanel;moneyPanel=function(){const r=m0.apply(this,arguments);try{const h=xsH();if(h){const d=document.createElement('div');d.innerHTML=h;$('#panel').appendChild(d);xsBind()}}catch(e){console.warn(e)}return r}}
 
 /* ======================= 編輯面板（選到東西時出現） ======================= */
 const chipsH=(key,opts,cur,lock)=>`<div class="chips">${Object.entries(opts).map(([k,n])=>`<button data-${key}="${k}" class="${String(cur)===k?'on':''}" ${lock&&lock(k)?'disabled style="opacity:.4"':''}>${n}</button>`).join('')}</div>`;
