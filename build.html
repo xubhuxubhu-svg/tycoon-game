@@ -316,16 +316,27 @@ function buildTower(o){const g=new THREE.Group();const B=new Batch();const k=o.k
   if(k==='mill'){const hub=new THREE.Group();hub.position.set(0,top-.6,r+.4);g.add(hub);const bm=mat('wood',0xe8dcc8);for(let q=0;q<4;q++){const a=new THREE.Group();a.rotation.z=q*Math.PI/2;const arm=mesh2(boxG(.2,Hh*.55,.1),mat('wood',0x7a5a3a));arm.position.y=Hh*.28;a.add(arm);const sail=mesh2(planeG(1.3,Hh*.45,1),bm);sail.position.set(.75,Hh*.33,0);a.add(sail);hub.add(a)}g.userData.spin=hub}
   g.userData.peak=peak;return g}
 function mesh2(geo,m){const x=new THREE.Mesh(geo,m);x.castShadow=true;return x}
+const VAULT_M=new THREE.MeshStandardMaterial({color:0x8a8478,roughness:.9,side:THREE.DoubleSide});
 /* ---- 城牆（兩點之間；可以加高、開箭窗、城門、城垛） ---- */
 function buildWall(o){const g=new THREE.Group();const B=new Batch();const L=o.len,h=o.h||4.5,t=o.thick||1.2;const wm=mat((WALLS[o.wall]||WALLS.stone).t,o.wallC||0xd8d0c4);
-  B.add(boxG(L,h+3,t),wm,mxAt(0,(h-3)/2,0));B.add(boxG(L+.1,.3,t+.35),wm,mxAt(0,h,0));
+  const GW=o.gate&&L>5?Math.min(L-2,Math.max(4,h*.42)):0,GH=GW?Math.min(h-1.2,Math.max(4.6,h*.62)):0,GR=GH-GW/2;
+  if(GW){// 城門是真的開口，人可以走進去
+    const sl=(L-GW)/2;for(const sg of [-1,1])B.add(boxG(sl,h+3,t),wm,mxAt(sg*(GW/2+sl/2),(h-3)/2,0));B.add(boxG(GW,3,t),wm,mxAt(0,-1.5,0));
+    const top=GH+.3;if(h>top)B.add(boxG(GW,h-top,t),wm,mxAt(0,top+(h-top)/2,0));
+    const sh=new THREE.Shape();sh.moveTo(-GW/2,0);sh.lineTo(-GW/2,GW/2+.3);sh.lineTo(GW/2,GW/2+.3);sh.lineTo(GW/2,0);sh.absarc(0,0,GW/2,0,Math.PI,false);
+    const eg=new THREE.ExtrudeGeometry(sh,{depth:t,bevelEnabled:false,curveSegments:14});eg.translate(0,0,-t/2);B.add(eg,wm,mxAt(0,GR,0));
+    B.add(new THREE.CylinderGeometry(GW/2,GW/2,t,14,1,true,Math.PI/2,Math.PI),VAULT_M,mxAt(0,GR,0,0,1,1,1,Math.PI/2));for(const sg of [-1,1])B.add(planeG(t,GR,1),VAULT_M,mxAt(sg*GW/2,GR/2,0,sg*Math.PI/2));
+    B.add(boxG(GW,.06,t),mat('stone',0x9a9488),mxAt(0,.03,0))}
+  else B.add(boxG(L,h+3,t),wm,mxAt(0,(h-3)/2,0));
+  B.add(boxG(L+.1,.3,t+.35),wm,mxAt(0,h,0));
   if(o.cren!==0){const n=Math.max(2,Math.floor(L/1.2));for(let k=0;k<n;k++)for(const s of [-1,1])B.add(boxG(.6,.8,.3),wm,mxAt(-L/2+.6+k*(L-1.2)/Math.max(1,n-1),h+.55,s*(t/2)))}
-  if(o.slits){const rows=Math.max(1,Math.floor((h-1.5)/3));const n=Math.max(1,Math.floor(L/2.5));for(let r=0;r<rows;r++)for(let k=0;k<n;k++)for(const s of [-1,1]){const x=-L/2+L/n*(k+.5);if(o.gate&&Math.abs(x)<2.2&&r===0)continue;B.add(boxG(.18,1.1,.05),mat('',0x1a1612),mxAt(x,1.8+r*3,s*(t/2+.01)));B.add(boxG(.5,.18,.05),mat('',0x1a1612),mxAt(x,1.95+r*3,s*(t/2+.01)))}}
-  if(o.windows){const rows=Math.max(1,Math.floor((h-1.5)/3));const n=Math.max(1,Math.floor(L/3));for(let r=0;r<rows;r++)for(let k=0;k<n;k++){const x=-L/2+L/n*(k+.5);if(o.gate&&Math.abs(x)<2.5&&r===0)continue;for(const s of [-1,1]){const m=mxAt(x,1.6+r*3,s*(t/2+.02),s>0?0:Math.PI);B.add(planeG(.8,1.3,1),GLASS_L,m);B.add(new THREE.CircleGeometry(.4,10,0,Math.PI),GLASS_M,M4().multiplyMatrices(m,mxAt(0,.65,0)));B.add(new THREE.TorusGeometry(.45,.07,4,10,Math.PI),mat('stone',0xe8e0d0),M4().multiplyMatrices(m,mxAt(0,.65,.02)))}}}
+  if(o.slits){const rows=Math.max(1,Math.floor((h-1.5)/3));const n=Math.max(1,Math.floor(L/2.5));for(let r=0;r<rows;r++)for(let k=0;k<n;k++)for(const s of [-1,1]){const x=-L/2+L/n*(k+.5);if(o.gate&&Math.abs(x)<Math.max(2.2,h*.25)&&r*3<h*.62)continue;B.add(boxG(.18,1.1,.05),mat('',0x1a1612),mxAt(x,1.8+r*3,s*(t/2+.01)));B.add(boxG(.5,.18,.05),mat('',0x1a1612),mxAt(x,1.95+r*3,s*(t/2+.01)))}}
+  if(o.windows){const rows=Math.max(1,Math.floor((h-1.5)/3));const n=Math.max(1,Math.floor(L/3));for(let r=0;r<rows;r++)for(let k=0;k<n;k++){const x=-L/2+L/n*(k+.5);if(o.gate&&Math.abs(x)<Math.max(2.5,h*.26)&&r*3<h*.62)continue;for(const s of [-1,1]){const m=mxAt(x,1.6+r*3,s*(t/2+.02),s>0?0:Math.PI);B.add(planeG(.8,1.3,1),GLASS_L,m);B.add(new THREE.CircleGeometry(.4,10,0,Math.PI),GLASS_M,M4().multiplyMatrices(m,mxAt(0,.65,0)));B.add(new THREE.TorusGeometry(.45,.07,4,10,Math.PI),mat('stone',0xe8e0d0),M4().multiplyMatrices(m,mxAt(0,.65,.02)))}}}
   if(o.walk){B.add(boxG(L,.15,1.2),mat('wood',0x8a6a4a),mxAt(0,h-.5,-t/2-.6));for(let k=0;k<=Math.floor(L/2);k++)B.add(boxG(.15,h-.5,.15),mat('wood',0x6a4a2a),mxAt(-L/2+k*2,(h-.5)/2,-t/2-1.1))}
-  if(o.gate&&L>5){const gw=Math.min(4,L-2),gh=Math.min(h-1,4.6);B.add(boxG(gw,gh-gw/2,t+.12),mat('',0x2a2016),mxAt(0,(gh-gw/2)/2,0));B.add(new THREE.CylinderGeometry(gw/2,gw/2,t+.12,14,1,false,0,Math.PI),mat('',0x2a2016),mxAt(0,gh-gw/2,0,0,1,1,1,Math.PI/2,Math.PI/2));
-    for(let q=0;q<6;q++)B.add(boxG(.08,gh-.3,.08),mat('',0x3a3a3a,{metalness:.6}),mxAt(-gw/2+.3+q*(gw-.6)/5,(gh-.3)/2,t/2+.1));for(let q=0;q<4;q++)B.add(boxG(gw-.4,.08,.08),mat('',0x3a3a3a,{metalness:.6}),mxAt(0,.5+q*1,t/2+.1));
-    B.add(new THREE.TorusGeometry(gw/2+.15,.25,6,14,Math.PI),mat('stone',0xe8e0d0),mxAt(0,gh-gw/2,t/2+.05))}
+  if(GW){const gw=GW,gh=GH;// 升起來的鐵柵門（只露出最上面一點）、拱門石框、兩邊打開的木門
+    for(let q=0;q<7;q++)B.add(boxG(.1,.9,.1),mat('',0x3a3a3a,{metalness:.6}),mxAt(-gw/2+.3+q*(gw-.6)/6,GH-.2,0));B.add(boxG(gw,.1,.12),mat('',0x3a3a3a,{metalness:.6}),mxAt(0,GH-.65,0));
+    for(const sd of [-1,1])B.add(new THREE.TorusGeometry(gw/2+.2,.28,6,16,Math.PI),mat('stone',0xe8e0d0),mxAt(0,GR,sd*(t/2+.05)));
+    for(const sg of [-1,1])B.add(boxG(.15,GR+gw*.35,gw/2-.1),mat('wood',0x5a3a22),mxAt(sg*(gw/2-.1),(GR+gw*.35)/2,t/2+gw/4+.05))}
   if(o.banner){const fm=mat('',o.bannerC||0xc83a2a);for(const x of [-L/3,L/3])B.add(planeG(.9,2.2,1),fm,mxAt(x,h-1.6,t/2+.03))}
   B.build(g);return g}
 
@@ -548,7 +559,10 @@ function refreshNear(x,z,r){for(const o of S.objs){if(o.t==='road'||o.t==='fence
 function inFoot(o,x,z,m=0){if(o.t==='house'||o.t==='lm'){const c=Math.cos(-(o.r||0)),s=Math.sin(-(o.r||0));const dx=x-o.x,dz=z-o.z;const lx=dx*c+dz*s,lz=-dx*s+dz*c;return Math.abs(lx)<o.w/2+m&&Math.abs(lz)<o.d/2+m}if(o.t==='tower')return Math.hypot(x-o.x,z-o.z)<o.rad+m;return false}
 const blockedAt=(x,z)=>S.objs.some(o=>(o.t==='house'||o.t==='tower')&&inFoot(o,x,z,.3));
 // 把房子底下整平
-function flattenUnder(o){const y=hAt(o.x,o.z);const R=Math.max(o.w||o.rad*2,o.d||o.rad*2)/2+2;const i0=Math.floor((o.x+HALF-R)/CELL),i1=Math.ceil((o.x+HALF+R)/CELL),j0=Math.floor((o.z+HALF-R)/CELL),j1=Math.ceil((o.z+HALF+R)/CELL);
+function flattenUnder(o){const R0=Math.max(o.w||o.rad*2,o.d||o.rad*2)/2+2;
+  // 2.52：先看底下：已經是平的就不動（玩家自己整好的地形不會被改掉）；不平的話整成平均高度，而且不會低於水面（不會冒出水池）
+  let sum=0,n=0,mn=1e9,mx=-1e9;{const i0=Math.floor((o.x+HALF-R0)/CELL),i1=Math.ceil((o.x+HALF+R0)/CELL),j0=Math.floor((o.z+HALF-R0)/CELL),j1=Math.ceil((o.z+HALF+R0)/CELL);for(let j=Math.max(1,j0);j<=Math.min(N-2,j1);j++)for(let i=Math.max(1,i0);i<=Math.min(N-2,i1);i++){const x=gx(i),z=gx(j);if(!inFoot(o,x,z,.6))continue;const h=HT[idx(i,j)];sum+=h;n++;if(h<mn)mn=h;if(h>mx)mx=h}}
+  if(!n)return;if(mx-mn<.35&&mn>WATER_Y+.05)return;const y=Math.max(sum/n,WATER_Y+.25);const R=Math.max(o.w||o.rad*2,o.d||o.rad*2)/2+2;const i0=Math.floor((o.x+HALF-R)/CELL),i1=Math.ceil((o.x+HALF+R)/CELL),j0=Math.floor((o.z+HALF-R)/CELL),j1=Math.ceil((o.z+HALF+R)/CELL);
   for(let j=Math.max(1,j0);j<=Math.min(N-2,j1);j++)for(let i=Math.max(1,i0);i<=Math.min(N-2,i1);i++){const x=gx(i),z=gx(j);if(!o.anyLand&&!owned(x,z))continue;const inside=inFoot(o,x,z,.6);const near=inFoot(o,x,z,1.8);if(!near)continue;const k=idx(i,j);const t=inside?1:.5;const nh=HT[k]+(y-HT[k])*t;if(nh<HT[k])RK[k]=Math.max(0,Math.min(RK[k],nh));HT[k]=nh}
   terrainUpdate(i0-1,j0-1,i1+1,j1+1);TREG.push([i0-1,j0-1,i1+1,j1+1])}
 /* ---- 價錢 ---- */
@@ -925,7 +939,7 @@ let OBST=null,obstT=0;const OC=4;// 障礙物格子（4 公尺一格）
 function obstBuild(){OBST=new Map();const put=(x,z,r,item)=>{const i0=Math.floor((x-r)/OC),i1=Math.floor((x+r)/OC),j0=Math.floor((z-r)/OC),j1=Math.floor((z+r)/OC);for(let i=i0;i<=i1;i++)for(let j=j0;j<=j1;j++){const k=i*1000+j;let a=OBST.get(k);if(!a){a=[];OBST.set(k,a)}a.push(item)}};
   for(const o of S.objs){if(o.t==='house')put(o.x,o.z,Math.hypot(o.w,o.d)/2+.5,{o,k:'rect',w:o.w/2+.35,d:o.d/2+.35,r:o.r||0,x:o.x,z:o.z});
     else if(o.t==='tower')put(o.x,o.z,o.rad+1,{o,k:'circ',x:o.x,z:o.z,rr:o.rad+.4});
-    else if(o.t==='wall')put(o.x,o.z,o.len/2+1,{o,k:'rect',w:o.len/2+.3,d:(o.thick||1.2)/2+.3,r:o.r||0,x:o.x,z:o.z});
+    else if(o.t==='wall'){const L=o.len,h=o.h||4.5,GW=o.gate&&L>5?Math.min(L-2,Math.max(4,h*.42)):0;if(GW){const sl=(L-GW)/2,c=Math.cos(o.r||0),sn=Math.sin(o.r||0);for(const sg of [-1,1]){const cx=sg*(GW/2+sl/2);const x=o.x+c*cx,z=o.z-sn*cx;put(x,z,sl/2+1,{o,k:'rect',w:sl/2+.3,d:(o.thick||1.2)/2+.3,r:o.r||0,x,z})}}else put(o.x,o.z,o.len/2+1,{o,k:'rect',w:o.len/2+.3,d:(o.thick||1.2)/2+.3,r:o.r||0,x:o.x,z:o.z})}
     else if(o.t==='part'){const P=PART[o.k];if(!P||o.y>hAt(o.x,o.z)+1.5||P.cat==='floor'&&P.h<.5||o.k==='cdb')continue;put(o.x,o.z,Math.hypot(P.w,P.d)/2+.4,{o,k:'rect',w:P.w/2+.25,d:Math.max(P.d,.2)/2+.25,r:o.r||0,x:o.x,z:o.z})}
     else if(o.t==='lm')put(o.x,o.z,Math.hypot(o.w,o.d)/2+.5,{o,k:'rect',w:o.w/2+.3,d:o.d/2+.3,r:o.r||0,x:o.x,z:o.z});
     else if(o.t==='dec'){const r=({fountain:2.3,fount2:4.3,pool:3.4,gazebo:2.2,tent:1.4,bus:1.6,car:2.2,picnic:1.2,well:1.1,statue:.9,swing:1.6,slide:1.3,bridge:0,dock:0,boat:0})[o.k];const rr=(r==null?(DEC[o.k]&&DEC[o.k].rad!=null?DEC[o.k].rad:.5):r)*(o.s||1);if(rr>0)put(o.x,o.z,rr,{o,k:'circ',x:o.x,z:o.z,rr})}
@@ -1467,7 +1481,7 @@ function meTick(dt){if(!meInit){meInit=true;const p=S.mePos||{x:CAM.tx,z:CAM.tz}
   let L=Math.hypot(ix,iy);if(L>1){ix/=L;iy/=L}if(L>.08)AG.hold=1.5;else if(!INT){const a=autoIn();if(a){const fx=-Math.sin(CAM.yaw),fz=-Math.cos(CAM.yaw),rx=-fz,rz=fx;ix=(a.x*rx+a.z*rz)*.85;iy=-(a.x*fx+a.z*fz)*.85;L=.85}}
   if(L>.08&&!INT){// 畫面的前方、右方
     const fx=-Math.sin(CAM.yaw),fz=-Math.cos(CAM.yaw),rx=-fz,rz=fx;const mx=rx*ix+fx*-iy,mz=rz*ix+fz*-iy;const run=keys.shift||L>.92;const sp=meSpd(run,L)*(CAM.dist>200?3:1)*(S.need&&S.need.en<15?.6:1)*dt;
-    const nx=clamp(ME.position.x+mx*sp,-HALF+1,HALF-1),nz=clamp(ME.position.z+mz*sp,-HALF+1,HALF-1);const ok=(x,z)=>!meHit(x,z)&&hAt(x,z)>WATER_Y-.7;
+    const nx=clamp(ME.position.x+mx*sp,-HALF+1,HALF-1),nz=clamp(ME.position.z+mz*sp,-HALF+1,HALF-1);const ok=(x,z)=>!meHit(x,z)&&(hAt(x,z)>WATER_Y-.7||typeof swimOK==='function'&&swimOK(x,z));
     if(ok(nx,nz)){ME.position.x=nx;ME.position.z=nz}else if(ok(nx,ME.position.z))ME.position.x=nx;else if(ok(ME.position.x,nz))ME.position.z=nz;else if(meHit(ME.position.x,ME.position.z)){ME.position.x=nx;ME.position.z=nz}
     const a=Math.atan2(mx,mz);let da=a-ME.rotation.y;while(da>Math.PI)da-=Math.PI*2;while(da<-Math.PI)da+=Math.PI*2;ME.rotation.y+=da*Math.min(1,dt*12);
     const s=Math.sin(t*(run?16:11));u.legs[0].rotation.x=s*.7;u.legs[1].rotation.x=-s*.7;u.arms[0].rotation.x=-s*.6;u.arms[1].rotation.x=s*.6;u.body.position.y=Math.abs(s)*.06;
@@ -4455,6 +4469,66 @@ function xsDo(id,amt){const x=XSER.find(q=>q[0]===id);if(!x)return;try{parent!==
   d.money-=amt;try{localStorage.setItem(x[1],JSON.stringify(d))}catch(e){toast('匯入失敗：儲存空間不夠',2400);return}S.money+=amt;hud();save();SFX.cash();toast(`💱 從第 ${x[2]} 系列匯入 ${money(amt)}！`,2600)}
 function xsBind(){const p=$('#panel');p.querySelectorAll('[data-xs]').forEach(b=>b.onclick=()=>{xsSel=b.dataset.xs;SFX.click();moneyPanel()});p.querySelectorAll('[data-xa]').forEach(b=>b.onclick=()=>{const v=+b.dataset.xa;const x=XSER.find(q=>q[0]===xsSel);ask(`確定要從第 ${x[2]} 系列「${x[3]}」匯入 <b>${money(v)}</b> 到這裡嗎？<br><small>第 ${x[2]} 系列的錢會減少同樣的金額</small>`,()=>{xsDo(xsSel,v);setTimeout(moneyPanel,50)})})}
 {const m0=moneyPanel;moneyPanel=function(){const r=m0.apply(this,arguments);try{const h=xsH();if(h){const d=document.createElement('div');d.innerHTML=h;$('#panel').appendChild(d);xsBind()}}catch(e){console.warn(e)}return r}}
+
+/* ======================= 2.52：超大城堡（9 塊地以上）、更多城牆和塔、城門走得進去、游泳、游泳圈、岩石燈 ======================= */
+// ---- 更多城牆 ----
+Object.assign(WALLK,{tall:['🏯 超高城牆',{h:16,slits:1,walk:1,thick:2.4}],biggate:['🚪 大城門',{h:14,gate:1,banner:1,thick:2.4}],palace:['🏛️ 宮殿城牆',{h:11,windows:1,banner:1}],fort:['⚔️ 要塞城牆',{h:10,slits:1,walk:1,thick:2}],white:['🤍 白色城牆',{h:8,wallC:0xf4f0e8}],dark:['🖤 黑石城牆',{h:8,wallC:0x5a5650}],brickw:['🧱 紅磚城牆',{h:8,wall:'brick',wallC:0xb04a32}]});
+// ---- 更多城堡的塔 ----
+Object.assign(TOWERK,{ctow:'城堡圓塔',cspire:'童話尖塔',cbatt:'城垛方塔',cdome:'圓頂塔',cgiant:'巨型主塔'});
+Object.assign(TOWER_DEF,{ctow:{kind:'round',rad:4,floors:7,wallC:0xd8d0c4,roof:'cone',roofC:0x3a4a6a},cspire:{kind:'round',rad:2.6,floors:12,wallC:0xf4f0e8,roof:'cone',roofC:0x3a4a6a},cbatt:{kind:'square',rad:4,floors:8,wallC:0x8a8478,roof:'battlement'},cdome:{kind:'round',rad:5,floors:8,wallC:0xf2ead8,roof:'dome',roofM:'metal',roofC:0xd8b030},cgiant:{kind:'round',rad:10,floors:30,wallC:0xd8d0c4,roof:'cone',roofC:0x3a4a6a}});
+// ---- 超大城堡模板（3×3 塊地，中間的主塔比四個角的圓塔高好幾倍） ----
+function castleKit(c){const S=c.S||160,H=c.H||12,n=5,L=S/n,O=[];const W=Object.assign({t:'wall',h:H,wall:c.wall||'stone',wallC:c.wc,thick:2.4,walk:1},c.wx||{});
+  for(const [side,fx,fz,r] of [['n',0,-1,0],['s',0,1,0],['w',-1,0,Math.PI/2],['e',1,0,Math.PI/2]])for(let k=0;k<n;k++){const u=-S/2+L*(k+.5);const o=Object.assign({},W,{len:L+.4,r,dx:fx?fx*S/2:u,dz:fz?fz*S/2:u});if(side==='s'&&k===2){o.gate=1;o.banner=1;o.h=H+2}O.push(o)}
+  const T=(dx,dz,rad,floors,x)=>O.push(Object.assign({t:'tower',kind:'round',rad,floors,wall:c.wall||'stone',wallC:c.wc,roof:'cone',roofM:'slate',roofC:c.rc,trimC:0xffffff,dx,dz},c.tx||{},x||{}));
+  for(const a of [-1,1])for(const b of [-1,1])T(a*S/2,b*S/2,8,8);for(const a of [-1,1])for(const [fx,fz] of [[a*S*.3,-S/2],[a*S*.3,S/2],[-S/2,a*S*.3],[S/2,a*S*.3]])T(fx,fz,5,7);for(const a of [-1,1])T(a*(L/2+5),S/2,5.5,9,{floors:10});
+  c.inner(O,T,S);return O}
+const HB=(dx,dz,w,d,floors,x)=>Object.assign({t:'house',w,d,floors,wall:'stone',wallC:0xd8d0c4,roof:'hip',roofM:'slate',roofC:0x3a4a6a,pitch:1.2,trimC:0xe8e0d0,win:'arch',dx,dz},x||{});
+const CASTLES=[
+ {id:'c_fairy',n:'童話白城堡（新天鵝堡風）',em:'🏰',lv:25,wall:'plaster',wc:0xf8f6f0,rc:0x34466e,inner:(O,T,S)=>{O.push(HB(0,-48,70,24,9,{wall:'plaster',wallC:0xf8f6f0,roofC:0x34466e}));for(const a of [-1,1])O.push(HB(a*46,2,22,46,7,{wall:'plaster',wallC:0xf8f6f0,roofC:0x34466e}));
+   T(0,0,11,32);for(const a of [-1,1])for(const b of [-1,1])T(a*11,b*11,3,22);for(const a of [-1,1])T(a*35,-36,3.5,16);}},
+ {id:'c_prague',n:'布拉格城堡風（宮殿＋哥德大教堂）',em:'⛪',lv:28,wc:0xe9dec4,rc:0x5f9a86,inner:(O,T,S)=>{const pal={wall:'plaster',wallC:0xece2c8,roof:'mansard',roofM:'metal',roofC:0x5f9a86,win:'tall',trimC:0xffffff};
+   O.push(HB(0,-62,140,20,6,pal));for(const a of [-1,1]){O.push(HB(a*62,-6,20,92,6,pal));O.push(HB(a*42,56,40,18,5,pal))}
+   O.push(HB(-6,-14,72,26,10,{wallC:0x8a8478,roof:'gable',pitch:2.2,roofM:'slate',roofC:0x3a5048}));T(26,10,7,30,{kind:'square',wallC:0x8a8478,roofC:0x4a7a6a});for(const b of [-1,1])T(-44,-14+b*9,4.5,22,{wallC:0x8a8478,roofC:0x3a5048})}},
+ {id:'c_dome',n:'圓頂宮殿城堡',em:'🕌',lv:30,wall:'plaster',wc:0xdedcd6,rc:0x3b3f55,inner:(O,T,S)=>{T(0,0,18,32,{roof:'dome',roofM:'metal',roofC:0x3b3f55});for(let k=0;k<8;k++){const a=k/8*Math.PI*2;T(Math.round(Math.sin(a)*30),Math.round(Math.cos(a)*30),5,18)}
+   for(const a of [-1,1])O.push(HB(a*56,0,26,60,8,{wall:'plaster',wallC:0xdedcd6}));O.push(HB(0,-56,60,20,8,{wall:'plaster',wallC:0xdedcd6}))}},
+ {id:'c_fort',n:'黑石要塞',em:'🏯',lv:32,wc:0x5a5650,rc:0x2a2a2e,H:14,wx:{slits:1},tx:{kind:'square',roof:'battlement'},inner:(O,T,S)=>{T(0,0,15,30);for(const a of [-1,1])for(const b of [-1,1])T(a*15,b*15,4,34);
+   for(const a of [-1,1])O.push(HB(a*52,0,16,70,5,{wallC:0x5a5650,roof:'flat',roofC:0x3a3a3a,win:'classic'}))}},
+ {id:'c_red',n:'紅磚皇宮城堡',em:'🕍',lv:35,wall:'brick',wc:0xb04a32,rc:0x2f7a52,tx:{kind:'square'},inner:(O,T,S)=>{O.push(HB(0,-44,72,36,9,{wall:'plaster',wallC:0xf2ead8,roofC:0x2f7a52,win:'tall'}));
+   const G={roof:'dome',roofM:'metal',roofC:0xd8b030,wall:'plaster',wallC:0xf4f0e8,kind:'round'};T(0,6,8,34,G);for(const a of [-1,1])T(a*24,14,5.5,15,G);T(0,32,5,13,G)}}];
+for(const c of CASTLES)TPL.push({id:c.id,n:c.n,em:c.em,lv:c.lv,big:1,o:castleKit(c)});
+const plotSnap=v=>-HALF+(Math.floor((v+HALF)/PLOT)+.5)*PLOT;
+{const p0=placeTpl;placeTpl=function(t,x,z){if(t&&t.big){x=plotSnap(x);z=plotSnap(z);if(t.o.every(q=>owned(x+(q.dx||0),z+(q.dz||0)))){const sz=tplSize(t);flattenUnder({t:'house',x,z,r:0,w:sz.w+6,d:sz.d+6});refreshNear(x,z,sz.w)}}return p0(t,x,z)}}
+{const h0=hover;hover=function(x,y){h0(x,y);if(TOOL==='tpl'&&TPLSEL&&TPLSEL.big&&ghost.visible){ghost.position.x=plotSnap(ghost.position.x);ghost.position.z=plotSnap(ghost.position.z)}}}
+{const tp=tplPanel;tplPanel=function(){tp.apply(this,arguments);try{const d=document.createElement('div');d.style.cssText='font-size:13px;color:#7a6a4a;margin-top:6px;line-height:1.6';d.innerHTML='🏰 <b>超大城堡</b>要先買好 <b>3×3 共 9 塊相連的地</b>，點中間那一塊就會整座蓋在 9 塊地正中央。城門可以直接走進去。';$('#panel').appendChild(d)}catch(e){}}}
+
+// ---- 岩石燈、游泳圈（擺設） ----
+Object.assign(DEC,{
+ rocklamp:{n:'岩石燈',em:'🪨',p:120,cat:'park',glow:1.75,parts:DB(B=>{const r=mat('stone',0x8a8478);B.add(new THREE.DodecahedronGeometry(.9,0),r,mxAt(0,.45,0,.4,1.2,.75,1));B.add(new THREE.DodecahedronGeometry(.5,0),r,mxAt(.7,.25,.3,1,1,.8,1));const m=mat('',0x2a2a2e,{metalness:.5});
+   B.add(new THREE.CylinderGeometry(.05,.06,.6,6),m,mxAt(0,1.1,0));B.add(new THREE.CylinderGeometry(.2,.16,.08,8),m,mxAt(0,1.42,0));B.add(new THREE.CylinderGeometry(.15,.15,.35,8),LAMP_M,mxAt(0,1.62,0));B.add(new THREE.ConeGeometry(.24,.25,8),m,mxAt(0,1.92,0))})},
+ rockspot:{n:'岩石投射燈',em:'🔦',p:150,cat:'park',glow:.9,parts:DB(B=>{const r=mat('stone',0x7a7468);B.add(new THREE.DodecahedronGeometry(.8,0),r,mxAt(0,.35,0,.2,1.3,.6,1));const m=mat('',0x2a2a2e,{metalness:.6});
+   B.add(boxG(.1,.3,.1),m,mxAt(0,.75,0));B.add(new THREE.CylinderGeometry(.16,.12,.35,10),m,mxAt(0,.95,.05,0,1,1,1,-.8));B.add(new THREE.CircleGeometry(.13,10),LAMP_M,mxAt(0,1.05,.2,0,1,1,1,-.8))})},
+ sring:{n:'游泳圈',em:'🛟',p:60,cat:'park',parts:DB(B=>{for(let q=0;q<8;q++)B.add(new THREE.TorusGeometry(.55,.2,8,6,Math.PI/4+.02),mat('',q%2?0xffffff:0xe8402a),mxAt(0,.12,0,0,1,1,1,-Math.PI/2,q*Math.PI/4))})}});
+
+// ---- 游泳：走進深水就會游泳；有買游泳圈可以戴墨鏡躺在上面漂 ----
+let SWIM=0,SWRING=null,swimUI=null;const SWDEEP=.75;
+const swimOK=(x,z)=>Math.abs(x)<HALF-6&&Math.abs(z)<HALF-6;
+function swimDepth(){return WATER_Y-hAt(ME.position.x,ME.position.z)}
+function ringMesh(){const g=new THREE.Group();for(let q=0;q<8;q++){const m=new THREE.Mesh(new THREE.TorusGeometry(.55,.2,8,6,Math.PI/4+.02),new THREE.MeshStandardMaterial({color:q%2?0xffffff:0xe8402a,roughness:.5}));m.rotation.set(-Math.PI/2,0,q*Math.PI/4);g.add(m)}scene.add(g);return g}
+function shades(){const u=ME.userData;if(u.sg&&u.sg.parent)return u.sg;const g=new THREE.Group();const m=new THREE.MeshStandardMaterial({color:0x111111,roughness:.2,metalness:.6});for(const s of [-1,1]){const l=new THREE.Mesh(new THREE.BoxGeometry(.15,.09,.03),m);l.position.set(.09*s,0,0);g.add(l);const ar=new THREE.Mesh(new THREE.BoxGeometry(.015,.02,.3),m);ar.position.set(.17*s,.02,-.15);g.add(ar)}const br=new THREE.Mesh(new THREE.BoxGeometry(.06,.02,.03),m);g.add(br);g.position.set(0,1.215,.36);u.body.add(g);u.sg=g;return g}
+function swimUIShow(on){if(!swimUI){swimUI=document.createElement('button');swimUI.className='hb';swimUI.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:132px;z-index:30;font-size:15px;padding:8px 16px;background:#fff8e0;border-radius:22px;box-shadow:0 2px 8px #0003';document.body.appendChild(swimUI);
+  swimUI.onclick=()=>{SFX.click();if(!S.ringOwn){if(S.mode!=='free'&&S.money<800){SFX.err();toast('錢不夠，游泳圈要 💵800',2000);return}if(S.mode!=='free')S.money-=800;S.ringOwn=1;hud();dirty();toast('🛟 買了一個游泳圈！戴上墨鏡躺著漂吧 😎',2600)}S.onRing=!S.onRing;swimUIShow(1)}}
+  swimUI.style.display=on?'block':'none';if(on)swimUI.textContent=!S.ringOwn?'🛟 買游泳圈（💵800）躺著漂':S.onRing?'🏊 離開游泳圈':'🛟 躺上游泳圈 😎'}
+{const mt=meTick;meTick=function(dt){mt(dt);try{const u=ME.userData;ME.rotation.order='YXZ';const dep=(!INT&&!ACT&&!IN.o&&!(typeof RIDE!=='undefined'&&RIDE)&&!SKYW&&!ONBR)?swimDepth():0;const t=performance.now()/1000;
+  if(dep>SWDEEP){if(!SWIM){SWIM=1;try{SFX.place()}catch(e){}}const mv=u.legs[0].rotation.x!==0;const ring=S.ringOwn&&S.onRing;
+    if(ring){if(!SWRING)SWRING=ringMesh();SWRING.visible=true;ME.rotation.x+=(-1.25-ME.rotation.x)*Math.min(1,dt*4);ME.position.y=WATER_Y+.32+Math.sin(t*1.6)*.05;shades().visible=true;
+      u.arms[0].rotation.x=-2.6+Math.sin(t*(mv?5:1))*(mv?.4:.08);u.arms[1].rotation.x=-2.6-Math.sin(t*(mv?5:1))*(mv?.4:.08);u.legs[0].rotation.x=u.legs[1].rotation.x=.25+Math.sin(t*2)*.05;
+      const c=ME.localToWorld(new THREE.Vector3(0,.6,0));SWRING.position.set(c.x,WATER_Y+.1+Math.sin(t*1.6)*.05,c.z);SWRING.rotation.y=ME.rotation.y;SWRING.scale.setScalar(ME.scale.x*1.25)}
+    else{if(SWRING)SWRING.visible=false;if(u.sg)u.sg.visible=false;
+      if(mv){ME.rotation.x+=(1.3-ME.rotation.x)*Math.min(1,dt*4);ME.position.y=WATER_Y-.42;const a=t*6;u.arms[0].rotation.x=a%(Math.PI*2);u.arms[1].rotation.x=(a+Math.PI)%(Math.PI*2);u.legs[0].rotation.x=Math.sin(t*12)*.35;u.legs[1].rotation.x=-Math.sin(t*12)*.35}
+      else{ME.rotation.x+=(0-ME.rotation.x)*Math.min(1,dt*4);ME.position.y=WATER_Y-1.02+Math.sin(t*2)*.05;u.arms[0].rotation.x=-.6+Math.sin(t*3)*.4;u.arms[1].rotation.x=-.6-Math.sin(t*3)*.4;u.legs[0].rotation.x=Math.sin(t*3)*.3;u.legs[1].rotation.x=-Math.sin(t*3)*.3}}
+    u.ring.visible=false;swimUIShow(1)}
+  else if(SWIM||ME.rotation.x){SWIM=0;ME.rotation.x=0;u.ring.visible=true;if(SWRING)SWRING.visible=false;if(u.sg)u.sg.visible=false;swimUIShow(0)}}catch(e){console.warn(e)}}}
+{const sp=meSpd;meSpd=function(run,L){const v=sp(run,L);return SWIM?v*(S.onRing&&S.ringOwn?.35:.55):v}}
 
 /* ======================= 編輯面板（選到東西時出現） ======================= */
 const chipsH=(key,opts,cur,lock)=>`<div class="chips">${Object.entries(opts).map(([k,n])=>`<button data-${key}="${k}" class="${String(cur)===k?'on':''}" ${lock&&lock(k)?'disabled style="opacity:.4"':''}>${n}</button>`).join('')}</div>`;
