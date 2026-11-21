@@ -3967,7 +3967,7 @@ function viewSet(m){S.view=S.view===m?'':m;VY=null;SFX.click();viewUI();toast(S.
 function viewUI(){const jw=$('#joyW');if(!jw)return;let r=$('#viewR');if(!r){r=document.createElement('div');r.id='viewR';r.style.cssText='display:flex;gap:4px';r.innerHTML='<button class="hb" data-vw="fp" style="font-size:13px;padding:5px 8px">👁️ 第一人稱</button><button class="hb" data-vw="back" style="font-size:13px;padding:5px 8px">🎥 後方視角</button>';jw.insertBefore(r,$('#joy').nextSibling);r.querySelectorAll('[data-vw]').forEach(b=>b.onclick=e=>{e.stopPropagation();viewSet(b.dataset.vw)})}
   r.querySelectorAll('[data-vw]').forEach(b=>{b.classList.toggle('g',S.view===b.dataset.vw)})}
 setTimeout(viewUI,500);
-{const c0=camApply;camApply=function(){c0();const m=S&&S.view;if(!m||!viewOK())return;const dt=1/60;const h=ME.rotation.y;if(VY==null)VY=h;let d=h-VY;while(d>Math.PI)d-=Math.PI*2;while(d<-Math.PI)d+=Math.PI*2;VY+=d*Math.min(1,dt*(m==='fp'?1.6:1.2));ME.scale.setScalar(1);
+{const c0=camApply;camApply=function(){c0();const m=S&&S.view;if(!m||!viewOK())return;const dt=1/60;const h=ME.rotation.y;if(VY==null)VY=h;let d=h-VY;while(d>Math.PI)d-=Math.PI*2;while(d<-Math.PI)d+=Math.PI*2;VY+=d*Math.min(1,dt*(m==='fp'?.8:.6));ME.scale.setScalar(1);
   const fx=Math.sin(VY),fz=Math.cos(VY);const sc=1;const px=ME.position.x,py=ME.position.y,pz=ME.position.z;CAM.yaw=VY+Math.PI;CAM.tx=px;CAM.tz=pz;
   if(m==='fp'){const ey=py+1.62*sc;camera.position.set(px+fx*.45*sc,ey,pz+fz*.45*sc);camera.lookAt(px+fx*20,ey-1.2,pz+fz*20);ME.visible=false}
   else{const D=clamp(CAM.dist/8,5,14),H=D*.3+1.5*sc;let cx=px-fx*D,cz=pz-fz*D,cy=py+H;cy=Math.max(cy,hAt(cx,cz)+1);camera.position.set(cx,cy,cz);camera.lookAt(px+fx*8*sc,py+1.5*sc,pz+fz*8*sc)}}}
@@ -4515,7 +4515,7 @@ const swimOK=(x,z)=>Math.abs(x)<HALF-6&&Math.abs(z)<HALF-6;
 function swimDepth(){return WATER_Y-hAt(ME.position.x,ME.position.z)}
 function ringMesh(){const g=new THREE.Group();for(let q=0;q<8;q++){const m=new THREE.Mesh(new THREE.TorusGeometry(.55,.2,8,6,Math.PI/4+.02),new THREE.MeshStandardMaterial({color:q%2?0xffffff:0xe8402a,roughness:.5}));m.rotation.set(-Math.PI/2,0,q*Math.PI/4);g.add(m)}scene.add(g);return g}
 function shades(){const u=ME.userData;if(u.sg&&u.sg.parent)return u.sg;const g=new THREE.Group();const m=new THREE.MeshStandardMaterial({color:0x111111,roughness:.2,metalness:.6});for(const s of [-1,1]){const l=new THREE.Mesh(new THREE.BoxGeometry(.15,.09,.03),m);l.position.set(.09*s,0,0);g.add(l);const ar=new THREE.Mesh(new THREE.BoxGeometry(.015,.02,.3),m);ar.position.set(.17*s,.02,-.15);g.add(ar)}const br=new THREE.Mesh(new THREE.BoxGeometry(.06,.02,.03),m);g.add(br);g.position.set(0,1.215,.36);u.body.add(g);u.sg=g;return g}
-function swimUIShow(on){if(!swimUI){swimUI=document.createElement('button');swimUI.className='hb';swimUI.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:132px;z-index:30;font-size:15px;padding:8px 16px;background:#fff8e0;border-radius:22px;box-shadow:0 2px 8px #0003';document.body.appendChild(swimUI);
+function swimUIShow(on){if(!swimUI){swimUI=document.createElement('button');swimUI.className='hb';swimUI.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:132px;z-index:30;font-size:15px;padding:8px 16px;background:#fff8e0;color:#5a3a1a;font-weight:bold;border-radius:22px;box-shadow:0 2px 8px #0003';document.body.appendChild(swimUI);
   swimUI.onclick=()=>{SFX.click();if(!S.ringOwn){if(S.mode!=='free'&&S.money<800){SFX.err();toast('錢不夠，游泳圈要 💵800',2000);return}if(S.mode!=='free')S.money-=800;S.ringOwn=1;hud();dirty();toast('🛟 買了一個游泳圈！戴上墨鏡躺著漂吧 😎',2600)}S.onRing=!S.onRing;swimUIShow(1)}}
   swimUI.style.display=on?'block':'none';if(on)swimUI.textContent=!S.ringOwn?'🛟 買游泳圈（💵800）躺著漂':S.onRing?'🏊 離開游泳圈':'🛟 躺上游泳圈 😎'}
 {const mt=meTick;meTick=function(dt){mt(dt);try{const u=ME.userData;ME.rotation.order='YXZ';const dep=(!INT&&!ACT&&!IN.o&&!(typeof RIDE!=='undefined'&&RIDE)&&!SKYW&&!ONBR)?swimDepth():0;const t=performance.now()/1000;
@@ -4529,6 +4529,85 @@ function swimUIShow(on){if(!swimUI){swimUI=document.createElement('button');swim
     u.ring.visible=false;swimUIShow(1)}
   else if(SWIM||ME.rotation.x){SWIM=0;ME.rotation.x=0;u.ring.visible=true;if(SWRING)SWRING.visible=false;if(u.sg)u.sg.visible=false;swimUIShow(0)}}catch(e){console.warn(e)}}}
 {const sp=meSpd;meSpd=function(run,L){const v=sp(run,L);return SWIM?v*(S.onRing&&S.ringOwn?.35:.55):v}}
+
+/* ======================= 2.53：模板可以轉方向（城門自動朝向你）、顯示要幾塊地和黃框、已經蓋了幾座、自己開交通工具 ======================= */
+// ---- 模板方向 ----
+let TROT='auto';
+function tplRotA(x,z){if(TROT!=='auto')return TROT*Math.PI/2;const a=Math.atan2(ME.position.x-x,ME.position.z-z);return Math.round(a/(Math.PI/2))*Math.PI/2}
+function tplRotated(t,a){if(!a)return t;const c=Math.cos(a),sn=Math.sin(a);return Object.assign({},t,{o:t.o.map(q=>{const dx=q.dx||0,dz=q.dz||0;return Object.assign({},q,{dx:Math.round((dx*c+dz*sn)*100)/100,dz:Math.round((-dx*sn+dz*c)*100)/100,r:((q.r||0)+a)%(Math.PI*2)})})})}
+{const p1=placeTpl;placeTpl=function(t,x,z){if(!t||t.__rot)return p1(t,x,z);const sx=t.big?plotSnap(x):x,sz=t.big?plotSnap(z):z;const a=tplRotA(sx,sz);const t2=tplRotated(t,a);t2.__rot=1;
+  const n0=S.objs.length;const r=p1(t2,x,z);if(S.objs.length>n0){const tg=Date.now();for(let i=n0;i<S.objs.length;i++){S.objs[i].tpl=t.id;S.objs[i].tg=tg}}return r}}
+function tplCount(id){const s=new Set();for(const o of S.objs)if(o.tpl===id)s.add(o.tg);return s.size}
+function tplPlots(t){if(t.big)return 9;const z=tplSize(t);return Math.max(1,Math.ceil(z.w/PLOT)*Math.ceil(z.d/PLOT))}
+{const tp=tplPanel;tplPanel=function(){tp.apply(this,arguments);try{$('#panel').querySelectorAll('[data-t]').forEach(b=>{const t=TPL.find(q=>q.id===b.dataset.t);const tx=b.closest('.prow')&&b.closest('.prow').querySelector('.tx');if(!t||!tx)return;const z=tplSize(t);const n=tplCount(t.id);const d=document.createElement('div');d.style.cssText='font-size:13px;margin-top:3px;color:#5a4a2a';
+  d.innerHTML=`🗺️ 佔地 ${Math.round(z.w)}×${Math.round(z.d)} 公尺・${t.big?'<b style="color:#c8501a">需要 3×3＝9 塊相連的地</b>':`大約需要 ${tplPlots(t)} 塊地`}${n?`・<b style="color:#2a7a3a">🏗️ 已經蓋了 ${n} 座</b>`:''}`;tx.appendChild(d)})}catch(e){console.warn(e)}}}
+// 黃框：放模板時看得到佔多大、蓋在哪幾塊地
+const TFR=new THREE.Group();TFR.visible=false;scene.add(TFR);let tfrKey='';
+function tfrBuild(t,a){const z=tplSize(t);const sw=Math.abs(Math.cos(a))>.5;const w=sw?z.w:z.d,d=sw?z.d:z.w;while(TFR.children.length){const c=TFR.children.pop();c.geometry.dispose()}
+  const P=[];const rect=(x0,z0,x1,z1)=>P.push(x0,0,z0,x1,0,z0,x1,0,z0,x1,0,z1,x1,0,z1,x0,0,z1,x0,0,z1,x0,0,z0);
+  if(t.big){for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++)rect(i*PLOT-PLOT/2+.5,j*PLOT-PLOT/2+.5,i*PLOT+PLOT/2-.5,j*PLOT+PLOT/2-.5)}rect(-w/2,-d/2,w/2,d/2);
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(P,3));const L=new THREE.LineSegments(g,new THREE.LineBasicMaterial({color:0xffd800,depthTest:false,transparent:true}));L.renderOrder=999;TFR.add(L);
+  // 城門方向的箭頭
+  const ag=new THREE.BufferGeometry();const ex=Math.sin(a),ez=Math.cos(a);const L2=Math.max(w,d)/2+14;ag.setAttribute('position',new THREE.Float32BufferAttribute([ex*(L2-12),0,ez*(L2-12),ex*L2,0,ez*L2,ex*L2,0,ez*L2,ex*(L2-5)+ez*4,0,ez*(L2-5)-ex*4,ex*L2,0,ez*L2,ex*(L2-5)-ez*4,0,ez*(L2-5)+ex*4],3));const A=new THREE.LineSegments(ag,new THREE.LineBasicMaterial({color:0xff6a00,depthTest:false}));A.renderOrder=999;TFR.add(A)}
+{const h1=hover;hover=function(x,y){h1(x,y);try{if(TOOL==='tpl'&&TPLSEL&&ghost.visible){const gx_=TPLSEL.big?plotSnap(ghost.position.x):ghost.position.x,gz_=TPLSEL.big?plotSnap(ghost.position.z):ghost.position.z;const a=tplRotA(gx_,gz_);const k=TPLSEL.id+'|'+a.toFixed(2);if(k!==tfrKey){tfrKey=k;tfrBuild(TPLSEL,a)}TFR.position.set(gx_,hAt(gx_,gz_)+1,gz_);TFR.visible=true}else TFR.visible=false}catch(e){}}}
+let trUI=null;function trUIshow(){if(!trUI){trUI=document.createElement('div');trUI.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:132px;z-index:30;display:flex;gap:4px;flex-wrap:wrap;justify-content:center;background:#fff8e8;padding:5px 8px;border-radius:14px;box-shadow:0 2px 8px #0003;font-size:13px;color:#5a3a1a;font-weight:bold;align-items:center';document.body.appendChild(trUI)}
+  const on=TOOL==='tpl'&&TPLSEL;trUI.style.display=on?'flex':'none';if(!on)return;const k=TROT+'';if(trUI.dataset.k===k)return;trUI.dataset.k=k;
+  trUI.innerHTML=`🚪 正門朝向：`+[['auto','🧍 自動朝向我'],[0,'⬇️ 南'],[1,'➡️ 東'],[2,'⬆️ 北'],[3,'⬅️ 西']].map(([v,n])=>`<button class="hb ${TROT==v&&String(TROT)===String(v)?'g':''}" data-tr="${v}" style="font-size:13px;padding:4px 8px">${n}</button>`).join('')+`<span style="font-weight:normal">（橘色箭頭＝正門）</span>`;
+  trUI.querySelectorAll('[data-tr]').forEach(b=>b.onclick=e=>{e.stopPropagation();TROT=b.dataset.tr==='auto'?'auto':+b.dataset.tr;SFX.click();tfrKey='';trUIshow()})}
+
+// ---- 自己開交通工具：叫出來、坐上去、下車停好、收起來 ----
+let DRV=null;const DRVK={car:'🚗',boat:'🚤',heli:'🚁',plane:'✈️',balloon:'🎈'};
+function vehIdx(i){return VEH[i]}
+function myVehPanel(){S.veh=S.veh||[];const L=S.veh.map((v,i)=>({v,i,d:VEHD[v.k]})).filter(x=>x.d);
+  openPanel(`<h2>🚗 我的交通工具</h2><div style="font-size:14px;color:#7a6a4a;line-height:1.7">按「叫過來坐上去」，交通工具會開到你旁邊，你就坐上去自己開。<br>開的時候：搖桿（或 W A S D）前進、轉彎；飛的會有「⬆️ 上升 ⬇️ 下降」按鈕。<br>「🅿️ 下車停這裡」會停在原地；「📦 收起來」交通工具會回去自己在小鎮跑。</div>`+
+   (L.length?L.map(({v,i,d})=>`<div class="prow"><div class="em">${d.em}</div><div class="tx"><b>${d.n}</b> #${i+1}<small>${DRV&&DRV.i===i?'🧍 你正在開':v.park?'🅿️ 停在路邊':'在小鎮自己跑'}</small></div>${DRV&&DRV.i===i?`<button class="hb o" data-vout="1">下車</button>`:`<button class="hb g" data-vride="${i}">叫過來坐上去</button>`}${v.park&&!(DRV&&DRV.i===i)?`<button class="hb" data-vstow="${i}">📦 收起來</button>`:''}</div>`).join(''):'<div style="padding:12px;color:#7a6a4a">還沒有交通工具，先到「小鎮 → 交通工具」買一台吧。</div>'),
+   ()=>{const P=$('#panel');P.querySelectorAll('[data-vride]').forEach(b=>b.onclick=()=>{closePanel();vehRide(+b.dataset.vride)});P.querySelectorAll('[data-vstow]').forEach(b=>b.onclick=()=>{const v=S.veh[+b.dataset.vstow];delete v.park;dirty();SFX.click();toast('📦 收起來了，它會回去自己在小鎮跑',2000);myVehPanel()});P.querySelectorAll('[data-vout]').forEach(b=>b.onclick=()=>{closePanel();vehOut(false)})})}
+function vehRide(i){const v=VEH[i],sv=S.veh[i];if(!v||!sv)return;if(DRV)vehOut(false);if(PJ){toast('先下飛機再開',1800);return}const d=v.d;const g=v.g;let x=ME.position.x,z=ME.position.z;const h0=ME.rotation.y;
+  if(d.k==='boat'){if(hAt(x,z)>WATER_Y-.4){const w=findWater({x,z});if(!w){SFX.err();toast('附近找不到湖或池塘，快艇沒地方開',2400);return}x=w.x;z=w.z;toast('🚤 已經把你帶到最近的水邊',2000)}}
+  else{x+=Math.sin(h0+Math.PI/2)*3;z+=Math.cos(h0+Math.PI/2)*3}
+  if(S.view){DRV={i,v,sv,x,z,h:h0,sp:0,y:0,alt:0,view:S.view};S.view='';viewUI()}else DRV={i,v,sv,x,z,h:h0,sp:0,y:0,alt:0,view:''};
+  DRV.y=d.k==='boat'?WATER_Y-.25:Math.max(hAt(x,z),WATER_Y);if(d.k==='heli'||d.k==='plane'||d.k==='balloon')DRV.y+=.1;delete sv.park;closePanel();SEL=null;editShow();SFX.click();drvUI();
+  toast(`${d.em} 坐上${d.n}了！${{car:'搖桿往前是油門，左右轉彎',boat:'只能在水上開',heli:'按 ⬆️ 上升就能起飛',plane:'按 ⬆️ 上升就能起飛',balloon:'你抓著熱氣球的籃子，⬆️ 上升、搖桿移動'}[d.k]}`,3200)}
+function vehOut(stow){if(!DRV)return;const D=DRV,d=D.v.d;const gy=Math.max(hAt(D.x,D.z),WATER_Y);
+  if(!stow&&(d.k==='heli'||d.k==='plane'||d.k==='balloon')&&D.y>gy+3){SFX.err();toast('先按 ⬇️ 下降，降落到地面才能下車',2200);return}
+  if(!stow&&d.k==='boat'){/* 從船上下來：找最近的岸邊 */let best=null;for(let r=2;r<40&&!best;r+=2)for(let k=0;k<16;k++){const a=k/16*6.28;const x=D.x+Math.sin(a)*r,z=D.z+Math.cos(a)*r;if(hAt(x,z)>WATER_Y-.2&&!meHit(x,z)){best={x,z};break}}if(best){ME.position.x=best.x;ME.position.z=best.z}else{ME.position.x=D.x;ME.position.z=D.z}}
+  else{const a=D.h+Math.PI/2;const ex=D.x+Math.sin(a)*3,ez=D.z+Math.cos(a)*3;ME.position.x=meHit(ex,ez)?D.x:ex;ME.position.z=meHit(ex,ez)?D.z:ez}
+  if(stow)delete D.sv.park;else D.sv.park={x:Math.round(D.x*10)/10,z:Math.round(D.z*10)/10,y:Math.round(Math.max(D.y,gy)*10)/10,r:Math.round(D.h*100)/100};
+  ME.visible=true;ME.rotation.x=0;ME.userData.arms.forEach(a=>a.rotation.x=0);if(D.view){S.view=D.view;viewUI()}DRV=null;dirty();SFX.click();drvUI();toast(stow?'📦 收起來了':'🅿️ 停好了，下次在「🚗 我的交通工具」再叫它',2200)}
+let drvBtn=null,drvBar=null;
+function drvUI(){const jw=$('#joyW');if(jw&&!drvBtn){drvBtn=document.createElement('button');drvBtn.className='hb y';drvBtn.style.cssText='font-size:13px;padding:5px 8px';drvBtn.textContent='🚗 我的交通工具';drvBtn.onclick=e=>{e.stopPropagation();SFX.click();myVehPanel()};jw.appendChild(drvBtn)}
+  if(!drvBar){drvBar=document.createElement('div');drvBar.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:132px;z-index:31;display:none;gap:6px;background:#fff8e8;padding:6px 10px;border-radius:16px;box-shadow:0 2px 8px #0003;color:#5a3a1a;font-weight:bold;font-size:14px;align-items:center';document.body.appendChild(drvBar)}
+  if(!DRV){drvBar.style.display='none';return}const k=DRV.v.d.k;const air=k==='heli'||k==='plane'||k==='balloon';
+  drvBar.innerHTML=`<span>${DRV.v.d.em} ${DRV.v.d.n}・<span id="drvSp">0</span></span>${air?'<button class="hb b" id="drvUp" style="padding:6px 12px">⬆️ 上升</button><button class="hb b" id="drvDn" style="padding:6px 12px">⬇️ 下降</button>':''}<button class="hb o" id="drvOut">🅿️ 下車停這裡</button><button class="hb" id="drvStow">📦 收起來</button>`;drvBar.style.display='flex';
+  const hold=(id,key)=>{const b=$('#'+id);if(!b)return;const on=e=>{e.preventDefault();e.stopPropagation();DRV&&(DRV[key]=1)},off=e=>{DRV&&(DRV[key]=0)};b.addEventListener('pointerdown',on);b.addEventListener('pointerup',off);b.addEventListener('pointerleave',off);b.addEventListener('pointercancel',off)};hold('drvUp','up');hold('drvDn','dn');
+  $('#drvOut').onclick=e=>{e.stopPropagation();vehOut(false)};$('#drvStow').onclick=e=>{e.stopPropagation();vehOut(true)}}
+setTimeout(drvUI,1500);
+function drvTick(dt){const D=DRV;const v=D.v,d=v.d,g=v.g;const typing=document.activeElement&&/INPUT|TEXTAREA/.test(document.activeElement.tagName);
+  let ix=JOY.x,iy=JOY.y;if(!typing){if(keys.a||keys.arrowleft)ix-=1;if(keys.d||keys.arrowright)ix+=1;if(keys.w||keys.arrowup)iy-=1;if(keys.s||keys.arrowdown)iy+=1}ix=clamp(ix,-1,1);iy=clamp(iy,-1,1);
+  const up=D.up||(!typing&&(keys[' ']||keys.e)),dn=D.dn||(!typing&&(keys.q||keys.c));const k=d.k;const gy=Math.max(hAt(D.x,D.z),WATER_Y);
+  const MAX={car:(d.sp||12)*2.4,boat:22,heli:30,plane:d.big?70:50,balloon:7}[k];
+  if(k==='balloon'){// 熱氣球：搖桿照畫面方向移動
+    const fx=-Math.sin(CAM.yaw),fz=-Math.cos(CAM.yaw),rx=-fz,rz=fx;const mx=rx*ix+fx*-iy,mz=rz*ix+fz*-iy;const air=D.y>gy+1;if(air){D.x+=mx*MAX*dt;D.z+=mz*MAX*dt}D.sp=air?Math.hypot(mx,mz)*MAX:0}
+  else{const air=(k==='heli'||k==='plane')&&D.y>gy+1.5;const canMove=k==='heli'?air:true;const tgt=-iy*MAX*(k==='plane'&&!air?.5:1);D.sp+=(tgt-D.sp)*Math.min(1,dt*(k==='car'?1.6:1.2));if(!canMove)D.sp*=.9;
+    const turn=(k==='car'||k==='boat')?1.6*clamp(D.sp/6,-1,1):1.2;D.h-=ix*turn*dt;
+    const nx=D.x+Math.sin(D.h)*D.sp*dt,nz=D.z+Math.cos(D.h)*D.sp*dt;let ok=Math.abs(nx)<HALF-4&&Math.abs(nz)<HALF-4;
+    if(ok&&k==='car')ok=hAt(nx,nz)>WATER_Y-.3&&!meHit(nx,nz);if(ok&&k==='boat')ok=hAt(nx,nz)<WATER_Y-.3;if(ok&&(k==='heli'||k==='plane')&&D.y<gy+12)ok=!meHit(nx,nz);
+    if(ok){D.x=nx;D.z=nz}else{D.sp*=-.2}}
+  if(k==='heli'||k==='plane'||k==='balloon'){const vs={heli:9,plane:12,balloon:3}[k];if(up&&(k!=='plane'||Math.abs(D.sp)>18||D.y>gy+2))D.y+=vs*dt;if(dn)D.y-=vs*dt;D.y=clamp(D.y,Math.max(hAt(D.x,D.z),WATER_Y)+(k==='balloon'?.1:.1),400)}
+  else D.y=k==='boat'?WATER_Y-.25+Math.sin(performance.now()/500)*.05:Math.max(hAt(D.x,D.z),WATER_Y);
+  // 交通工具的位置
+  g.position.set(D.x,D.y+(k==='balloon'?0:0),D.z);g.rotation.order='YXZ';g.rotation.y=D.h;g.rotation.x=(k==='heli'?.12*clamp(D.sp/MAX,-1,1):k==='boat'?-.06*clamp(D.sp/MAX,0,1):0);g.rotation.z=(k==='heli'||k==='plane')?-ix*.25:0;if(k==='plane'&&D.y>gy+2)g.rotation.x=-.08;
+  if(g.userData.rotor)g.userData.rotor.rotation.y+=dt*(D.y>gy+.5?28:10);
+  // 人物：熱氣球是抓著籃子吊在下面，其他都坐在裡面
+  if(k==='balloon'){ME.visible=true;ME.position.set(D.x+Math.sin(D.h)*.0,D.y-1.75,D.z);ME.rotation.y=D.h;ME.userData.arms.forEach(a=>a.rotation.x=-3);const sw=Math.sin(performance.now()/400)*.25;ME.userData.legs[0].rotation.x=sw;ME.userData.legs[1].rotation.x=-sw;ME.scale.setScalar(1)}
+  else{ME.visible=false;ME.position.set(D.x,D.y,D.z);ME.rotation.y=D.h}
+  // 鏡頭跟在後面
+  CAM.tx+=(D.x-CAM.tx)*Math.min(1,dt*5);CAM.tz+=(D.z-CAM.tz)*Math.min(1,dt*5);if(Math.abs(D.sp)>2){let dy=(D.h+Math.PI)-CAM.yaw;while(dy>Math.PI)dy-=Math.PI*2;while(dy<-Math.PI)dy+=Math.PI*2;CAM.yaw+=dy*Math.min(1,dt*.9)}
+  if(D.y>gy+20&&CAM.dist<D.y-gy)CAM.dist+=(Math.min(260,D.y-gy+60)-CAM.dist)*dt*.5;S.mePos={x:D.x,z:D.z};const e=$('#drvSp');if(e)e.textContent=`時速 ${Math.round(Math.abs(D.sp)*3.6)} 公里${(k==='heli'||k==='plane'||k==='balloon')?`・高度 ${Math.round(D.y-gy)} 公尺`:''}`}
+{const mt=meTick;meTick=function(dt){if(DRV&&!INT){const jw=document.getElementById('joyW');if(jw)jw.style.display='flex';try{drvTick(dt)}catch(e){console.warn(e)}return}return mt(dt)}}
+{const vt=vehTick;vehTick=function(dt){vt(dt);for(let i=0;i<VEH.length;i++){const sv=S.veh[i];if(!sv)continue;const g=VEH[i].g;if(DRV&&DRV.i===i){g.position.set(DRV.x,DRV.y,DRV.z);g.rotation.order='YXZ';g.rotation.y=DRV.h;g.visible=true;continue}
+  if(sv.park){g.visible=true;g.position.set(sv.park.x,sv.park.y!=null?sv.park.y:Math.max(hAt(sv.park.x,sv.park.z),WATER_Y),sv.park.z);g.rotation.set(0,sv.park.r||0,0)}}}}
+{const b=bal2Tick;bal2Tick=function(dt){b(dt);try{trUIshow()}catch(e){}}}
 
 /* ======================= 編輯面板（選到東西時出現） ======================= */
 const chipsH=(key,opts,cur,lock)=>`<div class="chips">${Object.entries(opts).map(([k,n])=>`<button data-${key}="${k}" class="${String(cur)===k?'on':''}" ${lock&&lock(k)?'disabled style="opacity:.4"':''}>${n}</button>`).join('')}</div>`;
