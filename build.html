@@ -3820,7 +3820,7 @@ function extraEdit(){if(INT)return;const o=SEL&&byId(SEL);const e=$('#edit');if(
   else if(o.t==='dec'&&STNK[o.k])h=stnEditH(o);
   h=renameH(o)+h;h+=premH(o)+shopH(o);
   if(o.t==='house'&&isSec(o))h+=`<button class="hb g" data-gp="1" style="width:100%;margin:4px 0">🛡️ 保全派遣（已雇 ${grdTot()} / ${grdCap()} 人）</button>`;
-  const GL=grdLocs().find(l=>l.key==='o:'+o.id);if(GL&&!isSec(o))h+=`<button class="hb" data-g1="1" style="width:100%;margin:4px 0">🛡️ 這裡的保全 ${(S.grd||{})[GL.key]||0} 人・派遣保全</button>`;
+  const GL=grdLocs().find(l=>l.key===(o.tg?'g:'+o.tg:'o:'+o.id));if(GL&&!isSec(o)&&!o.tg)h+=`<button class="hb" data-g1="1" style="width:100%;margin:4px 0">🛡️ ${o.tg?'整座「'+cgName(o.tg)+'」':'這裡'}的保全 ${(S.grd||{})[GL.key]||0} 人・派遣保全</button>`;
   if(!h)return;const d=document.createElement('div');d.className='xEd';d.innerHTML=h;hd.after(d);if(o.t==='road'&&ROADS[o.k]&&ROADS[o.k].train){railEditBind(d,o);const T=!!ROADS[o.k].train;e.querySelectorAll('[data-rk]').forEach(b=>{const R2=ROADS[b.dataset.rk];if(!R2||!!R2.train!==T)b.style.display='none'});const h3=e.querySelector('h3');if(h3&&h3.firstChild&&h3.firstChild.nodeType===3)h3.firstChild.textContent='🛤️ 鐵軌 '}
   premBind(d,o);renameBind(d,o);if(o.t==='dec'&&o.k==='runway'){cargoBind(d,o);ptypeBind(d,o);pjBind(d,o)}if(o.t==='dec'&&o.k==='fyard')ywBind(d,o);if(isAW(o))awBind(d,o);
   if(o.t==='dec'&&STNK[o.k]){stnEditBind(d,o);if((o.s||1)!==1){o.s=1;place(o)}const rg=e.querySelector('[data-rg="s"]');if(rg){const lb=rg.previousElementSibling;if(lb&&lb.classList.contains('lab'))lb.remove();rg.remove()}const rb=e.querySelector('[data-rot]');if(rb){const row=rb.closest('.row2');const lb=row&&row.previousElementSibling;if(lb&&lb.classList.contains('lab'))lb.remove();if(row)row.remove()}}d.querySelectorAll('[data-gp]').forEach(b=>b.onclick=()=>{SFX.click();grdPanel()});d.querySelectorAll('[data-g1]').forEach(b=>b.onclick=()=>{SFX.click();grdOne(GL)});
@@ -4784,9 +4784,9 @@ function gFlash(m){// 晚上的手電筒（光束＋地上的光圈）
 // 巡邏地點：加上超大城堡（模板一整座）和任何房子、塔
 {const gl=grdLocs;grdLocs=function(){const L=gl();const has=new Set(L.map(l=>l.key));const grp=new Map();
   for(const o of S.objs){if(o.burnt)continue;if(o.tg&&o.tpl){const k='g:'+o.tg;let e=grp.get(k);if(!e){e={key:k,objs:[],tpl:o.tpl};grp.set(k,e)}e.objs.push(o);continue}
-    if((o.t==='house'||o.t==='tower')&&!has.has('o:'+o.id)&&!(o.bt!=null&&o.bt<1)){const r=o.t==='tower'?o.rad+3:Math.max(o.w,o.d)/2+4;L.push({key:'o:'+o.id,n:`${o.t==='tower'?'🗼':'🏠'} ${o.name||(o.t==='tower'?'塔':'房子')}`,x:o.x,z:o.z,r,o})}}
-  for(const [k,e] of grp){let x0=1e9,x1=-1e9,z0=1e9,z1=-1e9;for(const o of e.objs){const r=o.t==='wall'?o.len/2:o.t==='tower'?o.rad:Math.max(o.w||4,o.d||4)/2;x0=Math.min(x0,o.x-r);x1=Math.max(x1,o.x+r);z0=Math.min(z0,o.z-r);z1=Math.max(z1,o.z+r)}const t=TPL.find(q=>q.id===e.tpl);
-    L.push({key:k,n:`${t&&t.big?'🏰':'🏘️'} ${t?t.n:'建築群'}`,x:(x0+x1)/2,z:(z0+z1)/2,r:Math.max(x1-x0,z1-z0)/2,box:[x0,x1,z0,z1],objs:e.objs})}
+    if(o.t==='fence'||o.t==='wall')continue;if((o.t==='house'||o.t==='tower')&&!has.has('o:'+o.id)&&!(o.bt!=null&&o.bt<1)){const r=o.t==='tower'?o.rad+3:Math.max(o.w,o.d)/2+4;L.push({key:'o:'+o.id,n:`${o.t==='tower'?'🗼':'🏠'} ${o.name||(o.t==='tower'?'塔':'房子')}`,x:o.x,z:o.z,r,o})}}
+  for(const [k,e] of grp){let x0=1e9,x1=-1e9,z0=1e9,z1=-1e9;for(const o of e.objs){const b=oBounds(o);x0=Math.min(x0,b[0]);x1=Math.max(x1,b[1]);z0=Math.min(z0,b[2]);z1=Math.max(z1,b[3])}
+    L.push({key:k,n:cgName(e.objs[0].tg),x:(x0+x1)/2,z:(z0+z1)/2,r:Math.max(x1-x0,z1-z0)/2,box:[x0,x1,z0,z1],objs:e.objs})}
   return L}}
 const gRect=(x,z,w,d,r,m)=>{const c=Math.cos(r||0),s=Math.sin(r||0);const P=[[-1,-1],[1,-1],[1,1],[-1,1]].map(([a,b])=>{const lx=a*(w/2+m),lz=b*(d/2+m);return {x:x+lx*c+lz*s,z:z-lx*s+lz*c}});P.push(P[0]);return P};
 function gRoutes(l){if(l.rt)return l.rt;const R=[];if(l.box){const [x0,x1,z0,z1]=l.box;R.push(gRect((x0+x1)/2,(z0+z1)/2,x1-x0,z1-z0,0,6));for(const o of l.objs){if(o.t==='house')R.push(gRect(o.x,o.z,o.w,o.d,o.r,3));else if(o.t==='tower'&&o.rad>6)R.push(gRect(o.x,o.z,o.rad*2,o.rad*2,0,3))}}
@@ -4812,6 +4812,36 @@ function grdCfgPanel(k,back){const L=grdLocs().find(l=>l.key===k);const cf=Objec
     const r=P.querySelector('#gsz');if(r){r.oninput=()=>{cf.sz=+r.value;P.querySelector('#gszv').textContent=cf.sz;sv()}}P.querySelector('[data-gback]').onclick=()=>{SFX.click();back?back():grdPanel()}})}
 {const gr=grdRow;grdRow=function(L){const h=gr(L);const cf=gCfg(L.key);const T=GTYPE[cf.t]||GTYPE.human;return h.replace('</small></div>',`</small><button class="hb y" data-gcf="${L.key}" style="padding:3px 8px;font-size:12px;margin-top:3px">${T.em} ${T.n}・換類型</button></div>`)}}
 {const gb=grdBind;grdBind=function(re){gb(re);$('#panel').querySelectorAll('[data-gcf]').forEach(b=>b.onclick=ev=>{ev.stopPropagation();SFX.click();grdCfgPanel(b.dataset.gcf,re)})}}
+
+/* ======================= 2.57：整座城堡算一棟（自動把城牆、塔、裡面的房子合成一座）、整座鎖定、整座派保全、圍牆也能派保全 ======================= */
+function oBounds(o){if(o.pts&&o.pts.length){let x0=1e9,x1=-1e9,z0=1e9,z1=-1e9;for(const p of o.pts){x0=Math.min(x0,p.x);x1=Math.max(x1,p.x);z0=Math.min(z0,p.z);z1=Math.max(z1,p.z)}return [x0,x1,z0,z1]}
+  const r=o.t==='wall'?o.len/2:o.t==='tower'?o.rad:Math.max(o.w||4,o.d||4)/2;return [o.x-r,o.x+r,o.z-r,o.z+r]}
+function cgName(tg){const n=(S.cgName||{})[tg];if(n)return n;const o=S.objs.find(q=>q.tg===tg);const t=o&&TPL.find(q=>q.id===o.tpl);if(t)return `${t.big?'🏰':'🏘️'} ${t.n}`;return o&&o.tpl==='fencearea'?'🚧 圍牆區':'🏰 我的城堡'}
+function wEnds(o){if(o.t==='wall'){const c=Math.cos(o.r||0),s=Math.sin(o.r||0),h=o.len/2;return [{x:o.x+c*h,z:o.z-s*h},{x:o.x-c*h,z:o.z+s*h},{x:o.x,z:o.z}]}if(o.t==='fence')return o.pts.filter((p,i)=>i===0||i===o.pts.length-1||i%5===0);return [{x:o.x,z:o.z}]}
+let cgSig='',cgT=0;
+function cgAuto(){const sig=S.objs.length+'|'+S.objs.filter(o=>o.tg).length;if(sig===cgSig)return;cgSig=sig;const isC=o=>!o.tg&&!o.notg&&!o.burnt&&(o.t==='wall'||o.t==='fence'||o.t==='tower'||o.t==='house');
+  const G=new Map();for(const o of S.objs)if(o.tg){let b=G.get(o.tg);const ob=oBounds(o);if(!b){G.set(o.tg,[...ob]);continue}b[0]=Math.min(b[0],ob[0]);b[1]=Math.max(b[1],ob[1]);b[2]=Math.min(b[2],ob[2]);b[3]=Math.max(b[3],ob[3])}
+  const inB=(b,x,z,m)=>x>b[0]-m&&x<b[1]+m&&z>b[2]-m&&z<b[3]+m;let ch=false;
+  // 1) 靠近現有城堡的城牆、圍牆、塔 → 加進那座城堡；在城堡範圍裡的房子 → 也加進去
+  for(const o of S.objs){if(!isC(o))continue;for(const [tg,b] of G){const m=(o.t==='house')?0:15;if(wEnds(o).some(p=>inB(b,p.x,p.z,m))){const ref=S.objs.find(q=>q.tg===tg);o.tg=tg;o.tpl=ref?ref.tpl:'mycastle';ch=true;break}}}
+  // 2) 沒有歸屬的城牆／圍牆：連在一起的變成一座新的城堡（或圍牆區）
+  const W=S.objs.filter(o=>isC(o)&&(o.t==='wall'||o.t==='fence'));const par=new Map(W.map(o=>[o,o]));const f=o=>{while(par.get(o)!==o)o=par.get(o);return o};
+  for(let i=0;i<W.length;i++)for(let j=i+1;j<W.length;j++){const A=wEnds(W[i]),B=wEnds(W[j]);if(A.some(a=>B.some(b=>Math.hypot(a.x-b.x,a.z-b.z)<14)))par.set(f(W[i]),f(W[j]))}
+  const C=new Map();for(const o of W){const r=f(o);if(!C.has(r))C.set(r,[]);C.get(r).push(o)}
+  let n=Object.keys(S.cgName||{}).length;for(const [r,list] of C){const tg='c'+Date.now().toString(36)+(n++);const wall=list.some(o=>o.t==='wall');for(const o of list){o.tg=tg;o.tpl=wall?'mycastle':'fencearea'}S.cgName=S.cgName||{};S.cgName[tg]=wall?`🏰 我的城堡 ${Object.values(S.cgName).filter(v=>/我的城堡/.test(v)).length+1}`:`🚧 圍牆區 ${Object.values(S.cgName).filter(v=>/圍牆區/.test(v)).length+1}`;
+    let b=null;for(const o of list){const ob=oBounds(o);if(!b)b=[...ob];else{b[0]=Math.min(b[0],ob[0]);b[1]=Math.max(b[1],ob[1]);b[2]=Math.min(b[2],ob[2]);b[3]=Math.max(b[3],ob[3])}}
+    for(const o of S.objs)if(isC(o)&&(o.t==='house'||o.t==='tower')){const near=o.t==='tower'?8:0;if(inB(b,o.x,o.z,near)){o.tg=tg;o.tpl=wall?'mycastle':'fencearea'}}ch=true}
+  if(ch){cgSig=S.objs.length+'|'+S.objs.filter(o=>o.tg).length;dirty()}}
+{const b=bal2Tick;bal2Tick=function(dt){b(dt);cgT-=dt;if(cgT<=0){cgT=3;try{cgAuto()}catch(e){console.warn(e)}}}}
+// 點到城堡的任何一部分：整座城堡的設定
+{const es=editShow;editShow=function(){es.apply(this,arguments);try{const o=SEL&&byId(SEL);const e=$('#edit');if(!o||!o.tg||!e||e.style.display==='none'||INT)return;const parts=S.objs.filter(q=>q.tg===o.tg);const allL=parts.every(q=>q.lock);const key='g:'+o.tg;
+  const d=document.createElement('div');d.style.cssText='background:#eef4ff;border-radius:12px;padding:8px 10px;margin:4px 0 8px;font-size:14px;color:#2a4a7a';
+  d.innerHTML=`<b>${cgName(o.tg)}</b>・整座有 ${parts.length} 個部分（城牆、塔、房子）<div class="row2" style="flex-wrap:wrap;margin-top:6px"><button class="hb ${allL?'':'o'}" data-cg="lock">${allL?'🔓 整座解除鎖定':'🔒 整座一起鎖定'}</button><button class="hb b" data-cg="grd">🛡️ 整座派保全（${(S.grd||{})[key]||0} 人）</button><button class="hb" data-cg="name">✏️ 改城堡名字</button><button class="hb" data-cg="out">✂️ 這一個不算進城堡</button></div>`;
+  e.insertBefore(d,e.children[1]||null);
+  d.querySelector('[data-cg="lock"]').onclick=()=>{for(const q of parts){if(allL)delete q.lock;else q.lock=1}SFX.click();dirty();toast(allL?'🔓 整座都解除鎖定了':`🔒 整座 ${parts.length} 個部分都鎖定了，不會被拖動`,2200);editShow()};
+  d.querySelector('[data-cg="grd"]').onclick=()=>{SFX.click();const L=grdLocs().find(l=>l.key===key);if(L)grdOne(L)};
+  d.querySelector('[data-cg="name"]').onclick=()=>{const v=prompt('城堡的新名字',cgName(o.tg).replace(/^\S+\s/,''));if(v&&v.trim()){S.cgName=S.cgName||{};S.cgName[o.tg]='🏰 '+v.trim().slice(0,20);dirty();editShow()}};
+  d.querySelector('[data-cg="out"]').onclick=()=>{delete o.tg;delete o.tpl;o.notg=1;SFX.click();dirty();toast('✂️ 這一個已經從城堡裡拿出來了',1800);editShow()}}catch(err){console.warn(err)}}}
 
 /* ======================= 編輯面板（選到東西時出現） ======================= */
 const chipsH=(key,opts,cur,lock)=>`<div class="chips">${Object.entries(opts).map(([k,n])=>`<button data-${key}="${k}" class="${String(cur)===k?'on':''}" ${lock&&lock(k)?'disabled style="opacity:.4"':''}>${n}</button>`).join('')}</div>`;
