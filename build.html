@@ -329,16 +329,33 @@ function buildWall(o){const g=new THREE.Group();const B=new Batch();const L=o.le
     B.add(boxG(GW,.06,t),mat('stone',0x9a9488),mxAt(0,.03,0))}
   else B.add(boxG(L,h+3,t),wm,mxAt(0,(h-3)/2,0));
   B.add(boxG(L+.1,.3,t+.35),wm,mxAt(0,h,0));
-  if(o.cren!==0){const n=Math.max(2,Math.floor(L/1.2));for(let k=0;k<n;k++)for(const s of [-1,1])B.add(boxG(.6,.8,.3),wm,mxAt(-L/2+.6+k*(L-1.2)/Math.max(1,n-1),h+.55,s*(t/2)))}
+  const CR=o.crenS||'block';
+  if(o.cren!==0&&CR!=='none'){const n=Math.max(2,Math.floor(L/1.2));for(let k=0;k<n;k++){const x=-L/2+.6+k*(L-1.2)/Math.max(1,n-1);for(const s of [-1,1]){
+    if(CR==='swallow'){B.add(boxG(.7,.7,.3),wm,mxAt(x,h+.5,s*(t/2)));for(const q of [-1,1])B.add(new THREE.ConeGeometry(.2,.5,4),wm,mxAt(x+q*.2,h+1.05,s*(t/2),Math.PI/4))}
+    else if(CR==='round'){B.add(boxG(.6,.5,.3),wm,mxAt(x,h+.4,s*(t/2)));B.add(new THREE.CylinderGeometry(.3,.3,.3,10,1,false,0,Math.PI),wm,mxAt(x,h+.65,s*(t/2),0,1,1,1,Math.PI/2))}
+    else if(CR==='spike'){B.add(new THREE.ConeGeometry(.22,1,6),mat('',0x2a2a2e,{metalness:.6}),mxAt(x,h+.65,s*(t/2)))}
+    else B.add(boxG(.6,.8,.3),wm,mxAt(x,h+.55,s*(t/2)))}}}
+  // 讓城牆長得不一樣：扶壁、色帶、突出的石托、屋頂走廊、底座
+  if(o.but){const n=Math.max(1,Math.floor(L/6));for(let k=0;k<=n;k++){const x=-L/2+k*L/n;if(GW&&Math.abs(x)<GW/2+1)continue;for(const s of [-1,1]){B.add(boxG(1.1,h*.85,.9),wm,mxAt(x,h*.42-.4,s*(t/2+.45)));B.add(boxG(1.1,.9,.6),wm,mxAt(x,h*.85-.3,s*(t/2+.3),0,1,1,1,s*.6))}}}
+  if(o.band){const bm=mat('',o.bandC||0xf0ece0);for(const y of [h*.33,h*.66])for(const s of [-1,1])B.add(boxG(L,.45,.08),bm,mxAt(0,y,s*(t/2+.04)))}
+  if(o.mach){const n=Math.max(2,Math.floor(L/1.5));for(let k=0;k<n;k++){const x=-L/2+L/n*(k+.5);for(const s of [-1,1])B.add(boxG(.35,.9,.6),wm,mxAt(x,h-.55,s*(t/2+.3)))}B.add(boxG(L,.5,t+1.3),wm,mxAt(0,h+.05,0))}
+  if(o.roofw){const rm=mat('roof',o.roofC||0x8a3a2a);const W=(t+1.6)/2/Math.cos(.55);for(const s of [-1,1])B.add(boxG(L+.6,.14,W),rm,mxAt(0,h+1.55,s*(t+1.6)/4,0,1,1,1,s*.55));for(let k=0;k<=Math.floor(L/3);k++)for(const s of [-1,1])B.add(boxG(.2,1.2,.2),mat('wood',0x5a3a22),mxAt(-L/2+k*(L/Math.max(1,Math.floor(L/3))),h+.9,s*(t/2+.3)))}
+  if(o.plinth){B.add(boxG(L+.4,1.4,t+.8),mat('stone',o.plinthC||0x6a6660),mxAt(0,.2,0))}
   if(o.slits){const rows=Math.max(1,Math.floor((h-1.5)/3));const n=Math.max(1,Math.floor(L/2.5));for(let r=0;r<rows;r++)for(let k=0;k<n;k++)for(const s of [-1,1]){const x=-L/2+L/n*(k+.5);if(o.gate&&Math.abs(x)<Math.max(2.2,h*.25)&&r*3<h*.62)continue;B.add(boxG(.18,1.1,.05),mat('',0x1a1612),mxAt(x,1.8+r*3,s*(t/2+.01)));B.add(boxG(.5,.18,.05),mat('',0x1a1612),mxAt(x,1.95+r*3,s*(t/2+.01)))}}
   if(o.windows){const rows=Math.max(1,Math.floor((h-1.5)/3));const n=Math.max(1,Math.floor(L/3));for(let r=0;r<rows;r++)for(let k=0;k<n;k++){const x=-L/2+L/n*(k+.5);if(o.gate&&Math.abs(x)<Math.max(2.5,h*.26)&&r*3<h*.62)continue;for(const s of [-1,1]){const m=mxAt(x,1.6+r*3,s*(t/2+.02),s>0?0:Math.PI);B.add(planeG(.8,1.3,1),GLASS_L,m);B.add(new THREE.CircleGeometry(.4,10,0,Math.PI),GLASS_M,M4().multiplyMatrices(m,mxAt(0,.65,0)));B.add(new THREE.TorusGeometry(.45,.07,4,10,Math.PI),mat('stone',0xe8e0d0),M4().multiplyMatrices(m,mxAt(0,.65,.02)))}}}
   if(o.walk){B.add(boxG(L,.15,1.2),mat('wood',0x8a6a4a),mxAt(0,h-.5,-t/2-.6));for(let k=0;k<=Math.floor(L/2);k++)B.add(boxG(.15,h-.5,.15),mat('wood',0x6a4a2a),mxAt(-L/2+k*2,(h-.5)/2,-t/2-1.1))}
   if(GW){const gw=GW,gh=GH;// 升起來的鐵柵門（只露出最上面一點）、拱門石框、兩邊打開的木門
     for(let q=0;q<7;q++)B.add(boxG(.1,.9,.1),mat('',0x3a3a3a,{metalness:.6}),mxAt(-gw/2+.3+q*(gw-.6)/6,GH-.2,0));B.add(boxG(gw,.1,.12),mat('',0x3a3a3a,{metalness:.6}),mxAt(0,GH-.65,0));
     for(const sd of [-1,1])B.add(new THREE.TorusGeometry(gw/2+.2,.28,6,16,Math.PI),mat('stone',0xe8e0d0),mxAt(0,GR,sd*(t/2+.05)));
-    for(const sg of [-1,1])B.add(boxG(.15,GR+gw*.35,gw/2-.1),mat('wood',0x5a3a22),mxAt(sg*(gw/2-.1),(GR+gw*.35)/2,t/2+gw/4+.05))}
+  }
   if(o.banner){const fm=mat('',o.bannerC||0xc83a2a);for(const x of [-L/3,L/3])B.add(planeG(.9,2.2,1),fm,mxAt(x,h-1.6,t/2+.03))}
-  B.build(g);return g}
+  B.build(g);
+  if(GW){// 城門門板：平常關著，人或車靠近才會自動打開
+    const dm=mat('wood',0x5a3a22),im=mat('',0x2a2a2e,{metalness:.6});const DH=GH-.05,DW=GW/2;g.userData.doors=[];
+    for(const sg of [-1,1]){const pv=new THREE.Group();pv.position.set(-sg*GW/2,0,0);const d=new THREE.Mesh(boxG(DW,DH,.2),dm);d.position.set(sg*DW/2,DH/2,0);d.castShadow=true;pv.add(d);
+      for(const y of [DH*.2,DH*.55,DH*.85]){const b=new THREE.Mesh(boxG(DW*.95,.14,.24),im);b.position.set(sg*DW/2,y,0);pv.add(b)}const rg=new THREE.Mesh(new THREE.TorusGeometry(.14,.03,6,10),im);rg.position.set(sg*(DW-.35),DH*.45,.13);pv.add(rg);
+      pv.userData.sg=sg;g.add(pv);g.userData.doors.push(pv)}g.userData.gate={w:GW,a:0}}
+  return g}
 
 /* ======================= 建材零件：一塊一塊蓋出自己的房子、城堡 ======================= */
 // 每個零件的原點在「底部中間」，牆面沿著 x 方向，厚度在 z 方向；一層 3 公尺，可以往上疊
@@ -766,7 +783,8 @@ function startTool(x,y){if(INT){intStart(x,y);return}const t=TOOL;
   if(t==='tp'){G={k:'tap',move:(cx,cy,dx,dy,dist)=>{if(dist>6)panBy(dx,dy)},end:(tap)=>{if(!tap)return;const g=groundAt(x,y);if(g)tpAsk(g.x,g.z)}};return}
   if(t==='cam'){G={k:'pan'};return}
   if(t==='sel'){const o=objAt(x,y);const pick=o&&!o.sold?o:null;
-    if(pick&&(pick.id===SEL||PT.size===1)&&pick.t!=='road'&&pick.t!=='fence'&&(!document.body.classList.contains('mob')||window.__mv===pick.id)){const g0=groundAt(x,y);const ox=pick.x,oz=pick.z;let moved=false;
+    if(pick&&pick.lock&&pick.id===SEL&&!window.__lockTip){window.__lockTip=1;setTimeout(()=>window.__lockTip=0,4000);toast('🔒 這個已經鎖定，不能拖動。要移動請先在右邊取消「鎖定」',2600)}
+    if(pick&&!pick.lock&&(pick.id===SEL||PT.size===1)&&pick.t!=='road'&&pick.t!=='fence'&&(!document.body.classList.contains('mob')||window.__mv===pick.id)){const g0=groundAt(x,y);const ox=pick.x,oz=pick.z;let moved=false;
       G={move:(cx,cy,dx,dy,dist)=>{if(dist<8&&!moved)return;if(!moved){moved=true;snapUndo();SEL=pick.id;editShow()}const g=groundAt(cx,cy);if(!g||!g0)return;const nx=snap(ox+g.x-g0.x),nz=snap(oz+g.z-g0.z);if(!owned(nx,nz))return;pick.x=nx;pick.z=nz;if(pick.t==='wall'){}place(pick);selSync()},
         end:(tap)=>{if(tap){SEL=o.id;SFX.click();editShow()}else{if(pick.t==='house'||pick.t==='tower'){flattenUnder(pick);refreshNear(pick.x,pick.z,6);place(pick)}SFX.place();dirty();selSync()}}};return}
     G={k:'tap',move:(cx,cy,dx,dy,dist)=>{if(dist>6)panBy(dx,dy)},end:(tap)=>{if(tap){if(o&&o.sold){SEL=null;editShow();soldInfo(o)}else{SEL=o?o.id:null;editShow()}}}};return}
@@ -4653,6 +4671,148 @@ function sirenTick(){if(!A.ctx||!A.out)return;const ctx=A.ctx,t=ctx.currentTime;
     let V=SIRV[k];if(!V&&vol>0){const o=ctx.createOscillator();o.type=SIRK[k].type;const lp=ctx.createBiquadFilter();lp.type='lowpass';lp.frequency.value=2200;const gn=ctx.createGain();gn.gain.value=0;o.connect(lp);lp.connect(gn);gn.connect(A.out);o.start();V=SIRV[k]={o,gn}}
     if(V){V.o.frequency.setTargetAtTime(SIRK[k].f(t),t,.03);V.gn.gain.setTargetAtTime(vol,t,.2)}}}
 
+/* ======================= 2.56：圍牆兩點建立、高圍牆、圍牆擋人擋車、城牆 500 公尺、城門自動開關、城牆更多樣、玻璃電梯、鎖定、保全巡邏城堡、各種保全 ======================= */
+// ---- 城牆種類各有特色 ----
+Object.assign(WALLK,{tall:['🏯 超高城牆',{h:16,slits:1,walk:1,thick:2.4,but:1}],biggate:['🚪 大城門',{h:14,gate:1,banner:1,thick:2.4,mach:1}],palace:['🏛️ 宮殿城牆',{h:11,windows:1,banner:1,band:1,crenS:'round',wall:'plaster',wallC:0xf2ead8}],
+  fort:['⚔️ 要塞城牆',{h:10,slits:1,walk:1,thick:2,mach:1,plinth:1,wallC:0x8a8478}],white:['🤍 白色城牆',{h:8,wall:'plaster',wallC:0xf4f0e8,crenS:'round',band:1,bandC:0xc8b890}],dark:['🖤 黑石城牆',{h:8,wallC:0x5a5650,crenS:'spike',but:1}],
+  brickw:['🧱 紅磚城牆（燕尾垛）',{h:8,wall:'brick',wallC:0xb04a32,crenS:'swallow'}],roofed:['🏮 屋頂城牆',{h:7,roofw:1,walk:1,wallC:0xd8d0c4,crenS:'none',roofC:0x3a3a42}],
+  japan:['🏯 和風石垣城牆',{h:7,wall:'plaster',wallC:0xf8f6f0,plinth:1,plinthC:0x8a8478,roofw:1,roofC:0x3a4048,crenS:'none',band:1,bandC:0x2a2a2e}],great:['🐉 長城風城牆',{h:7,thick:4,walk:1,wallC:0x9a8a70,but:1,crenS:'block'}]});
+// ---- 圍籬新種類（高度可以調） ----
+Object.assign(FENCES,{hwall:{n:'高圍牆（水泥）',p:30,fh:3},brickf:{n:'紅磚圍牆',p:26,fh:2.2},stonew:{n:'石砌高牆',p:36,fh:3.5},mesh:{n:'高鐵網圍籬',p:20,fh:3},glassf:{n:'玻璃圍欄',p:24,fh:1.2},bamboo:{n:'竹籬',p:10,fh:1.8}});
+const NEWF={hwall:1,brickf:1,stonew:1,mesh:1,glassf:1,bamboo:1};
+const fenceH=o=>o.fh||(FENCES[o.k]&&FENCES[o.k].fh)||1.2;
+{const bf=buildFence;buildFence=function(o){if(!NEWF[o.k])return bf(o);const B=new Batch(),H=fenceH(o),k=o.k,pts=o.pts;
+  const wm=k==='hwall'?mat('plaster',0xc8c4bc):k==='brickf'?mat('brick',0xb8583a):k==='stonew'?mat('stone',0x9a9488):k==='bamboo'?mat('',0x9ab048):mat('',0x6a6e76,{metalness:.6});
+  for(let i=1;i<pts.length;i++){const a=pts[i-1],b=pts[i];const L=Math.hypot(b.x-a.x,b.z-a.z);if(L<.1)continue;const ang=Math.atan2(b.x-a.x,b.z-a.z);const mx=(a.x+b.x)/2,mz=(a.z+b.z)/2,my=Math.min(hAt(a.x,a.z),hAt(b.x,b.z),hAt(mx,mz));
+    if(k==='hwall'||k==='brickf'||k==='stonew'){const T=k==='stonew'?.8:.3;B.add(boxG(T,H+1,L+T),wm,mxAt(mx,my+H/2-.5,mz,ang));B.add(boxG(T+.15,.18,L+T+.1),k==='brickf'?mat('stone',0xe8e0d0):wm,mxAt(mx,my+H+.05,mz,ang));
+      if(k!=='hwall'){const n=Math.max(1,Math.round(L/3));for(let q=0;q<=n;q++){const t=q/n,x=a.x+(b.x-a.x)*t,z=a.z+(b.z-a.z)*t;B.add(boxG(T+.25,H+1.3,T+.25),wm,mxAt(x,my+H/2-.35,z,ang))}}}
+    else if(k==='mesh'){const n=Math.max(1,Math.round(L/2.5));for(let q=0;q<=n;q++){const t=q/n,x=a.x+(b.x-a.x)*t,z=a.z+(b.z-a.z)*t;B.add(boxG(.1,H+.5,.1),wm,mxAt(x,hAt(x,z)+H/2,z));B.add(boxG(.06,.6,.06),wm,mxAt(x,hAt(x,z)+H+.25,z,ang,1,1,1,.5))}
+      B.add(planeG(L,H,1),MESH_M,mxAt(mx,my+H/2+.1,mz,ang+Math.PI/2));for(const hh of [.1,H])B.add(boxG(.05,.05,L),wm,mxAt(mx,my+hh,mz,ang));B.add(new THREE.TorusGeometry(.2,.03,4,8),wm,mxAt(mx,my+H+.45,mz,ang,L/0.4,1,1))}
+    else if(k==='glassf'){const n=Math.max(1,Math.round(L/2));for(let q=0;q<=n;q++){const t=q/n,x=a.x+(b.x-a.x)*t,z=a.z+(b.z-a.z)*t;B.add(boxG(.08,H,.08),wm,mxAt(x,hAt(x,z)+H/2,z))}B.add(planeG(L,H*.85,1),GLASS_L,mxAt(mx,my+H*.5,mz,ang+Math.PI/2));B.add(boxG(.1,.08,L),wm,mxAt(mx,my+H,mz,ang))}
+    else if(k==='bamboo'){const n=Math.max(1,Math.round(L/.12));for(let q=0;q<=n;q++){const t=q/n,x=a.x+(b.x-a.x)*t,z=a.z+(b.z-a.z)*t;const hh=H*(.92+((q*37)%10)/100);B.add(new THREE.CylinderGeometry(.05,.05,hh,5),wm,mxAt(x,hAt(x,z)+hh/2,z))}for(const hh of [H*.3,H*.75])B.add(boxG(.06,.06,L),mat('',0x6a4a2a),mxAt(mx,my+hh,mz,ang))}}
+  const g=new THREE.Group();B.build(g);return g}}
+const MESH_M=new THREE.MeshStandardMaterial({color:0x9aa0a8,transparent:true,opacity:.35,metalness:.6,side:THREE.DoubleSide,depthWrite:false});
+// 圍籬高度可以調
+{const es=editShow;editShow=function(){es.apply(this,arguments);try{const o=SEL&&byId(SEL);const e=$('#edit');if(!o||!e||e.style.display==='none'||INT)return;
+  if(o.t==='fence'&&NEWF[o.k]){const d=document.createElement('div');d.innerHTML=`<div class="lab">高度 ${fenceH(o)} 公尺</div><input type="range" min=".8" max="8" step=".1" value="${fenceH(o)}" id="fhR" style="width:100%">`;const ft=e.querySelector('.row2:last-of-type')||null;e.insertBefore(d,e.children[2]||null);const r=d.querySelector('#fhR');r.oninput=()=>{o.fh=+r.value;d.querySelector('.lab').textContent=`高度 ${o.fh} 公尺`;place(o)};r.onchange=()=>{dirty();obstT=0}}
+  // 🔒 鎖定
+  if(o.t!=='nat'){const d=document.createElement('label');d.style.cssText='display:flex;align-items:center;gap:8px;background:#fff3d6;border-radius:10px;padding:6px 10px;margin:4px 0 6px;font-weight:bold;color:#7a4a1a;cursor:pointer';d.innerHTML=`<input type="checkbox" ${o.lock?'checked':''} style="width:20px;height:20px"> 🔒 鎖定（勾起來就不會被拖動）`;d.querySelector('input').onchange=ev=>{o.lock=ev.target.checked?1:0;if(!o.lock)delete o.lock;SFX.click();dirty();toast(o.lock?'🔒 鎖定了，不會被拖動':'🔓 取消鎖定',1600)};e.insertBefore(d,e.children[1]||null)}}catch(err){console.warn(err)}}}
+{const xa=xformAdd;xformAdd=function(o){if(o&&o.lock)return;return xa(o)}}
+// 圍籬擋人擋車
+{const ob=obstBuild;obstBuild=function(){ob();const put=(x,z,r,item)=>{const i0=Math.floor((x-r)/OC),i1=Math.floor((x+r)/OC),j0=Math.floor((z-r)/OC),j1=Math.floor((z+r)/OC);for(let i=i0;i<=i1;i++)for(let j=j0;j<=j1;j++){const k=i*1000+j;let a=OBST.get(k);if(!a){a=[];OBST.set(k,a)}a.push(item)}};
+  for(const o of S.objs){if(o.t!=='fence'||!o.pts)continue;const T=(o.k==='stonew'?.8:o.k==='hedge'?.9:.4)/2+.2;for(let i=1;i<o.pts.length;i++){const a=o.pts[i-1],b=o.pts[i];const L=Math.hypot(b.x-a.x,b.z-a.z);if(L<.05)continue;const ux=(b.x-a.x)/L,uz=(b.z-a.z)/L;const mx=(a.x+b.x)/2,mz=(a.z+b.z)/2;put(mx,mz,L/2+1,{o,k:'rect',w:L/2+.15,d:T,r:Math.atan2(-uz,ux),x:mx,z:mz})}}}}
+// ---- 城牆、圍籬：點起點、再點終點，自動蓋好（也可以照舊按住拖曳） ----
+let WFS=null;const WFM=new THREE.Mesh(new THREE.CylinderGeometry(.6,.6,4,12),new THREE.MeshBasicMaterial({color:0xffd800,transparent:true,opacity:.7,depthTest:false}));WFM.visible=false;WFM.renderOrder=998;scene.add(WFM);
+function wfBuild(t,a,b){let L=Math.hypot(b.x-a.x,b.z-a.z);if(L<2){SFX.err();return}
+  for(let s=0;s<=L;s+=8){const x=a.x+(b.x-a.x)*s/L,z=a.z+(b.z-a.z)*s/L;if(!owned(x,z)){landHint();return}}
+  if(t==='wall'){if(L>500){b={x:a.x+(b.x-a.x)*500/L,z:a.z+(b.z-a.z)*500/L};L=500;toast('🧱 城牆最長 500 公尺，已經幫你截到 500 公尺',2400)}const c={x:(a.x+b.x)/2,z:(a.z+b.z)/2};const o=Object.assign({t:'wall',x:c.x,z:c.z,r:Math.atan2(-(b.z-a.z),b.x-a.x),len:Math.round(L*2)/2,h:4.5,wallC:0xd8d0c4},WALLK[TS.wallk][1]);snapUndo();if(!useMats(matsOf(o),'城牆'))return;addObj(o);startBuild(o);SFX.build();dirty();SEL=o.id;editShow()}
+  else{const n=Math.max(1,Math.ceil(L/2));const pts=[];for(let i=0;i<=n;i++)pts.push({x:Math.round((a.x+(b.x-a.x)*i/n)*10)/10,z:Math.round((a.z+(b.z-a.z)*i/n)*10)/10});const o={t:'fence',k:TS.fence,pts};snapUndo();if(!spend(costOf(o),'圍籬'))return;addObj(o);SFX.place();dirty();obstT=0}}
+{const st=startTool;startTool=function(x,y){st(x,y);if((TOOL!=='wall'&&TOOL!=='fence')||INT||!G)return;const g0=groundAt(x,y);const G0=G;let moved=false;
+  G={...G0,move:(...a)=>{if((a[4]||0)>10||Math.hypot((a[0]||x)-x,(a[1]||y)-y)>10)moved=true;if(moved||!WFS)return G0.move&&G0.move(...a)},end:(...a)=>{if(moved){WFS=null;WFM.visible=false;return G0.end&&G0.end(...a)}if(G0.cancel)G0.cancel();ghost.visible=false;if(!g0)return;
+    if(!WFS){WFS={x:g0.x,z:g0.z,t:TOOL};WFM.position.set(g0.x,hAt(g0.x,g0.z)+2,g0.z);WFM.visible=true;SFX.click();toast(`📍 起點標好了，再點一下終點，就會自動蓋${TOOL==='wall'?'城牆（最長 500 公尺）':'圍籬'}`,2600)}
+    else{const a0=WFS;WFS=null;WFM.visible=false;wfBuild(a0.t,a0,{x:g0.x,z:g0.z})}}}}}
+{const sT=setTool;setTool=function(t){if(t!=='wall'&&t!=='fence'){WFS=null;WFM.visible=false}return sT.apply(this,arguments)}}
+// ---- 城門：人、車、保全靠近才自動打開 ----
+let gateT=0;function gateTick(dt){for(const o of S.objs){if(o.t!=='wall'||!o.gate)continue;const g=OBJM.get(o.id);if(!g||!g.userData.doors)continue;const u=g.userData.gate;
+  const R=Math.max(10,u.w*2);let near=Math.hypot(ME.position.x-o.x,ME.position.z-o.z)<R;
+  if(!near)for(const v of VEH){if(Math.hypot(v.g.position.x-o.x,v.g.position.z-o.z)<R&&v.g.visible){near=true;break}}
+  if(!near)for(const [k,e] of GRD.v)for(const q of e.gs)if(q.m.visible&&Math.hypot(q.m.position.x-o.x,q.m.position.z-o.z)<R){near=true;break}
+  const tg=near?1:0;if(Math.abs(u.a-tg)<.001)continue;const pa=u.a;u.a+=(tg-u.a)*Math.min(1,dt*2.2);if(Math.abs(u.a-tg)<.01)u.a=tg;if(pa===0&&tg===1&&Math.hypot(ME.position.x-o.x,ME.position.z-o.z)<R)try{tone(140,.4,'sawtooth',.05)}catch(e){}
+  for(const d of g.userData.doors)d.rotation.y=d.userData.sg*u.a*Math.PI/2*.95}}
+// ---- 玻璃電梯：慢 3 倍、看得到人站在裡面、可以看到外面 ----
+ELEV_M.car=new THREE.MeshStandardMaterial({color:0xcfefff,transparent:true,opacity:.22,roughness:.05,metalness:.2,emissive:0x406070,emissiveIntensity:.25,depthWrite:false,side:THREE.DoubleSide});ELEV_M.shaft.opacity=.16;
+{const em=elevMesh;elevMesh=function(o){const g=em(o);const car=g.userData.car;if(car){const fm=ELEV_M.frame;for(const [x,z] of [[-.67,-.67],[.67,-.67],[-.67,.67],[.67,.67]]){const p=new THREE.Mesh(new THREE.BoxGeometry(.07,2.1,.07),fm);p.position.set(x,0,z);car.add(p)}
+  for(const y of [-1.05,1.05]){const f=new THREE.Mesh(new THREE.BoxGeometry(1.38,.08,1.38),fm);f.position.y=y;car.add(f)}const rail=new THREE.Mesh(new THREE.BoxGeometry(1.3,.05,.05),fm);rail.position.set(0,-.05,-.62);car.add(rail);const lt=new THREE.Mesh(new THREE.BoxGeometry(.6,.03,.6),new THREE.MeshBasicMaterial({color:0xfff4d0}));lt.position.y=1.0;car.add(lt)}return g}}
+if(typeof S!=='undefined'&&S&&S.objs)for(const o of S.objs)if(o.elev)place(o);
+{const eg=elevGo;elevGo=function(o,k){eg(o,k);const r=ELV.ride;if(r){r.d*=3;r.cd=CAM.dist;r.cp=CAM.pitch;ME.visible=true;toast('🛗 電梯移動中…看看外面的風景',1800)}}}
+{const et=elevTick;elevTick=function(dt){const r=ELV.ride;et(dt);if(r&&r.car){const w=new THREE.Vector3();r.car.getWorldPosition(w);ME.visible=true;ME.position.set(w.x,w.y-1.05,w.z);ME.userData.legs.forEach(l=>l.rotation.x=0);CAMY=w.y;CAM.dist+=(9-CAM.dist)*Math.min(1,dt*2);CAM.pitch+=(.18-CAM.pitch)*Math.min(1,dt*2)}
+  if(r&&!ELV.ride){CAMY=null;if(r.cd)CAM.dist=Math.max(r.cd,12);if(r.cp)CAM.pitch=r.cp;if(r.k!=='g'&&r.k[0]!=='s'){}}}}
+{const mt=meTick;meTick=function(dt){if(ELV.ride)return;return mt(dt)}}
+{const b=bal2Tick;bal2Tick=function(dt){b(dt);try{gateTick(dt)}catch(e){}}}
+// ---- 🛡️ 保全：可以派去巡邏城堡、任何建築；晚上拿手電筒；很多種保全可以選 ----
+const GTYPE={human:{n:'保全員',em:'👮',c:0x1a2a4a},trex:{n:'超級大暴龍',em:'🦖',c:0x4a7a3a,sz:[1,10,5],fly:0,sp:3},ufo:{n:'外星飛碟',em:'🛸',c:0xa8b0c0,sz:[1,10,2],fly:28,sp:6},dragon:{n:'飛龍',em:'🐉',c:0xb8302a,sz:[1,10,2],fly:22,sp:6},
+  airship:{n:'飛船',em:'🎈',c:0xe8e0d0,sz:[1,10,1.5],fly:38,sp:4},spark:{n:'雷電小精靈（原創）',em:'⚡',c:0x8a5ae8,sz:[1,10,1.5],fly:0,sp:3},hero:{n:'飛天英雄（原創）',em:'🦸',c:0x2a8a5a,sz:[1,10,1.5],fly:12,sp:7},
+  carrier:{n:'太空航空母艦',em:'🚀',c:0x6a7480,sz:[1,10,3],fly:70,sp:3},bichon:{n:'比熊犬',em:'🐩',c:0xfaf8f2,sp:2},wolfdog:{n:'大狼狗',em:'🐕',c:0x6a4a2a,sp:3},sheep:{n:'大綿羊',em:'🐑',c:0xf2efe6,sp:1.2},
+  goat:{n:'大山羊',em:'🐐',c:0xe8e0d0,sp:1.4},bull:{n:'大公牛',em:'🐂',c:0x3a2a22,sp:1.6},rooster:{n:'公雞',em:'🐓',c:0xd8502a,sp:1.4},monkey:{n:'大猴子',em:'🐒',c:0x8a5a3a,sp:2}};
+const gm=(c,o)=>new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:.7},o||{}));
+function gMesh(g,geo,m,x,y,z,rx,ry,rz){const s=new THREE.Mesh(geo,m);s.position.set(x||0,y||0,z||0);s.rotation.set(rx||0,ry||0,rz||0);s.castShadow=true;g.add(s);return s}
+function quad(g,c,len,ht,legH,legW){// 四隻腳的動物身體骨架
+  const L=[];for(const [x,z] of [[-1,1],[1,1],[-1,-1],[1,-1]]){const p=new THREE.Group();p.position.set(x*legW,legH,z*len*.32);const l=gMesh(p,new THREE.BoxGeometry(legW*.55,legH,legW*.55),gm(c),0,-legH/2,0);g.add(p);L.push(p)}g.userData.legs=L;return L}
+function gModel(t,c){const g=new THREE.Group();const T=GTYPE[t]||GTYPE.human;c=c!=null?c:T.c;const dk=new THREE.Color(c).multiplyScalar(.6).getHex(),eye=gm(0x111111),wh=gm(0xffffff);
+  if(t==='human'){const p=guardModel();return p}
+  if(t==='trex'){quad(g,c,0,0,0,0);g.userData.legs=[];for(const s of [-1,1]){const p=new THREE.Group();p.position.set(s*.55,2.2,0);gMesh(p,new THREE.BoxGeometry(.55,1.3,.7),gm(c),0,-.4,0,.3);gMesh(p,new THREE.BoxGeometry(.4,1.1,.45),gm(c),0,-1.3,-.15,-.2);gMesh(p,new THREE.BoxGeometry(.6,.2,.9),gm(dk),0,-1.9,.15);g.add(p);g.userData.legs.push(p)}
+    gMesh(g,new THREE.SphereGeometry(1,14,10),gm(c),0,2.6,0,0,0,0).scale.set(1,1,1.6);gMesh(g,new THREE.ConeGeometry(.7,3.4,10),gm(c),0,2.5,-2.8,-Math.PI/2-.15);gMesh(g,new THREE.CylinderGeometry(.45,.6,1.4,10),gm(c),0,3.4,1.3,.7);
+    const h=new THREE.Group();h.position.set(0,4,2);gMesh(h,new THREE.BoxGeometry(.9,.8,1.5),gm(c),0,0,.5);const jw=gMesh(h,new THREE.BoxGeometry(.8,.25,1.3),gm(dk),0,-.45,.45);for(let i=0;i<6;i++)gMesh(h,new THREE.ConeGeometry(.05,.18,4),wh,(i%2?.3:-.3),-.32,.2+i*.2,Math.PI);for(const s of [-1,1]){gMesh(h,new THREE.SphereGeometry(.1,8,6),gm(0xffe040,{emissive:0xffa000,emissiveIntensity:.5}),s*.42,.18,.6)}g.add(h);g.userData.head=h;
+    for(const s of [-1,1])gMesh(g,new THREE.BoxGeometry(.15,.5,.15),gm(c),s*.6,2.8,1.4,.8);for(let i=0;i<6;i++)gMesh(g,new THREE.ConeGeometry(.15,.4,4),gm(dk),0,3.55-i*.12,1-i*.6);return g}
+  if(t==='ufo'){gMesh(g,new THREE.SphereGeometry(3,24,10),gm(c,{metalness:.8,roughness:.25}),0,0,0).scale.set(1,.28,1);gMesh(g,new THREE.SphereGeometry(1.3,18,10,0,6.3,0,1.6),gm(0x80e8ff,{transparent:true,opacity:.6,metalness:.3}),0,.55,0);
+    const R=new THREE.Group();for(let i=0;i<12;i++){const a=i/12*6.283;gMesh(R,new THREE.SphereGeometry(.18,8,6),new THREE.MeshBasicMaterial({color:[0xff4060,0x40ff80,0x40a0ff][i%3]}),Math.sin(a)*2.7,-.1,Math.cos(a)*2.7)}g.add(R);g.userData.spin=R;
+    const beam=gMesh(g,new THREE.ConeGeometry(2.2,6,16,1,true),new THREE.MeshBasicMaterial({color:0x80ffb0,transparent:true,opacity:.12,depthWrite:false,side:THREE.DoubleSide}),0,-3.4,0);g.userData.beam=beam;return g}
+  if(t==='dragon'){gMesh(g,new THREE.SphereGeometry(1,14,10),gm(c),0,0,0).scale.set(.9,.8,2);gMesh(g,new THREE.ConeGeometry(.5,4,8),gm(c),0,-.1,-3.4,-Math.PI/2);gMesh(g,new THREE.CylinderGeometry(.35,.55,1.8,8),gm(c),0,.7,2.2,.9);
+    const h=new THREE.Group();h.position.set(0,1.3,3.1);gMesh(h,new THREE.BoxGeometry(.7,.6,1.3),gm(c),0,0,.3);for(const s of [-1,1]){gMesh(h,new THREE.ConeGeometry(.1,.7,5),gm(0xe8d8a0),s*.25,.5,-.1,-.5);gMesh(h,new THREE.SphereGeometry(.09,6,5),gm(0xffd020,{emissive:0xff8000,emissiveIntensity:.6}),s*.3,.15,.6)}g.add(h);
+    g.userData.wings=[];for(const s of [-1,1]){const w=new THREE.Group();w.position.set(s*.7,.4,.3);const sh=new THREE.Shape();sh.moveTo(0,0);sh.lineTo(s*4.5,1.2);sh.lineTo(s*4,-.4);sh.lineTo(s*2.6,-.1);sh.lineTo(s*1.6,-1.2);sh.lineTo(0,-1);const wg=new THREE.Mesh(new THREE.ShapeGeometry(sh),gm(dk,{side:THREE.DoubleSide}));wg.rotation.x=-Math.PI/2;w.add(wg);g.add(w);g.userData.wings.push(w)}
+    for(let i=0;i<5;i++)gMesh(g,new THREE.ConeGeometry(.12,.4,4),gm(0xe8d8a0),0,.8,1-i*.7);quad(g,c,4,.9,.9,.5);g.userData.legs.forEach(l=>l.position.y=-.1);return g}
+  if(t==='airship'){gMesh(g,new THREE.SphereGeometry(2.2,20,12),gm(c),0,0,0).scale.set(1,1,3.2);gMesh(g,new THREE.BoxGeometry(1.3,.9,3),gm(0x6a4a2a),0,-2.5,0);for(const s of [-1,1])gMesh(g,new THREE.BoxGeometry(.1,2,1.6),gm(0xc83a2a),s*1.2,0,-6.2,0,0,0);gMesh(g,new THREE.BoxGeometry(2.6,.1,1.6),gm(0xc83a2a),0,0,-6.2);gMesh(g,new THREE.BoxGeometry(.1,2,1.6),gm(0xc83a2a),0,1.2,-6.2);
+    for(const s of [-1,1])gMesh(g,new THREE.CylinderGeometry(.05,.05,2,4),gm(0x3a3a3a),s*.6,-1.4,0,0,0,s*.3);const pr=new THREE.Group();pr.position.set(0,-2.5,-1.7);gMesh(pr,new THREE.BoxGeometry(1.4,.12,.05),gm(0x3a3a3a));g.add(pr);g.userData.spin=pr;
+    gMesh(g,new THREE.BoxGeometry(.02,1,3),new THREE.MeshBasicMaterial({color:0xffe080}),1.3,0,0);return g}
+  if(t==='spark'){gMesh(g,new THREE.SphereGeometry(.7,16,12),gm(c),0,.75,0);gMesh(g,new THREE.SphereGeometry(.42,12,10),gm(0xfff4e0),0,.6,.35).scale.set(1,1,.5);for(const s of [-1,1]){gMesh(g,new THREE.SphereGeometry(.13,10,8),eye,s*.25,1.0,.58);gMesh(g,new THREE.SphereGeometry(.04,6,5),wh,s*.22,1.05,.69);
+    gMesh(g,new THREE.CylinderGeometry(.03,.03,.6,5),gm(dk),s*.25,1.6,0,0,0,s*.4);gMesh(g,new THREE.SphereGeometry(.12,10,8),new THREE.MeshStandardMaterial({color:0x80f0ff,emissive:0x40d0ff,emissiveIntensity:1.5}),s*.38,1.88,0);
+    const w=new THREE.Group();w.position.set(s*.6,1,-.2);gMesh(w,new THREE.SphereGeometry(.4,10,8),gm(0xffffff,{transparent:true,opacity:.7}),s*.3,0,0).scale.set(1,.5,.15);g.add(w);(g.userData.wings=g.userData.wings||[]).push(w)}
+    g.userData.legs=[];for(const s of [-1,1]){const p=new THREE.Group();p.position.set(s*.3,.25,0);gMesh(p,new THREE.SphereGeometry(.18,8,6),gm(dk),0,-.1,.08);g.add(p);g.userData.legs.push(p)}return g}
+  if(t==='hero'){const p=person(c);p.rotation.x=0;g.add(p);const cape=gMesh(g,new THREE.BoxGeometry(.75,1.3,.04),gm(0xe8b020,{side:THREE.DoubleSide}),0,1.0,-.35,.25);g.userData.cape=cape;gMesh(g,new THREE.OctahedronGeometry(.13),gm(0xffd040,{emissive:0xffa000,emissiveIntensity:.5}),0,1.25,.27);gMesh(g,new THREE.BoxGeometry(.5,.08,.36),gm(0xe8b020),0,.85,0);g.userData.hero=p;return g}
+  if(t==='carrier'){gMesh(g,new THREE.BoxGeometry(4,1.2,16),gm(c,{metalness:.7,roughness:.35}),0,0,0);gMesh(g,new THREE.CylinderGeometry(.01,2,4,4),gm(c,{metalness:.7}),0,0,9.5,Math.PI/2,0,Math.PI/4);gMesh(g,new THREE.BoxGeometry(5,.25,14),gm(0x3a3e44),0,.7,-.5);
+    gMesh(g,new THREE.BoxGeometry(1,2.2,2.5),gm(dk,{metalness:.6}),1.7,1.9,-2);gMesh(g,new THREE.BoxGeometry(1.1,.4,1),new THREE.MeshBasicMaterial({color:0x80d8ff}),1.7,2.6,-1);for(const s of [-1,1]){gMesh(g,new THREE.BoxGeometry(1.6,1,5),gm(c,{metalness:.7}),s*2.9,-.2,-3);gMesh(g,new THREE.CylinderGeometry(.5,.5,.3,12),new THREE.MeshBasicMaterial({color:0x60c8ff}),s*2.9,-.2,-5.6,Math.PI/2)}
+    for(let i=0;i<3;i++)gMesh(g,new THREE.CylinderGeometry(.6,.6,.3,14),new THREE.MeshBasicMaterial({color:0x60c8ff}),(i-1)*1.3,0,-8.1,Math.PI/2);for(let i=0;i<8;i++)gMesh(g,new THREE.BoxGeometry(.15,.02,1),new THREE.MeshBasicMaterial({color:0xffffff}),-.8,.84,-6+i*1.6);return g}
+  // 一般大小的動物
+  const A={bichon:[.75,.55,.3,.13],wolfdog:[1.3,.85,.55,.17],sheep:[1.4,.95,.6,.2],goat:[1.3,.95,.65,.18],bull:[2.3,1.5,.85,.32],monkey:[.9,.8,.45,.15],rooster:[.6,.55,.4,.08]}[t]||[1,.8,.5,.15];const [len,ht,legH,lw]=A;
+  if(t==='rooster'){g.userData.legs=[];for(const s of [-1,1]){const p=new THREE.Group();p.position.set(s*.1,.35,0);gMesh(p,new THREE.CylinderGeometry(.025,.025,.35,5),gm(0xe8b020),0,-.17,0);gMesh(p,new THREE.BoxGeometry(.12,.02,.15),gm(0xe8b020),0,-.35,.04);g.add(p);g.userData.legs.push(p)}
+    gMesh(g,new THREE.SphereGeometry(.25,12,10),gm(c),0,.55,0).scale.set(.9,1,1.3);gMesh(g,new THREE.SphereGeometry(.13,10,8),gm(c),0,.85,.22);gMesh(g,new THREE.ConeGeometry(.04,.1,4),gm(0xf0c020),0,.85,.37,Math.PI/2);for(let i=0;i<3;i++)gMesh(g,new THREE.SphereGeometry(.05,6,5),gm(0xe8202a),0,.98+i*.01,.18+i*.06);gMesh(g,new THREE.SphereGeometry(.04,6,5),gm(0xe8202a),0,.74,.33);
+    for(let i=0;i<5;i++)gMesh(g,new THREE.BoxGeometry(.04,.45,.12),gm([0x2a6a3a,0x1a2a4a,0x3a2a1a][i%3],{metalness:.4}),(i-2)*.05,.8,-.3,-.5+i*.05);for(const s of [-1,1])gMesh(g,new THREE.SphereGeometry(.03,6,5),eye,s*.08,.88,.32);return g}
+  quad(g,c,len,ht,legH,lw*1.3);const bc=t==='sheep'?0xf8f6ee:c;const body=gMesh(g,t==='sheep'||t==='bichon'?new THREE.SphereGeometry(.5,12,10):new THREE.BoxGeometry(lw*3.4,ht*.55,len*.85),gm(bc),0,legH+ht*.25,0);if(t==='sheep'||t==='bichon')body.scale.set(lw*6,ht*.9,len*1.15);
+  const h=new THREE.Group();h.position.set(0,legH+ht*.55,len*.48);const hs=ht*.42;const head=gMesh(h,t==='bichon'?new THREE.SphereGeometry(hs*.75,12,10):new THREE.BoxGeometry(hs*1.1,hs,hs*1.2),gm(t==='sheep'?0x3a3530:c),0,0,0);
+  for(const s of [-1,1])gMesh(h,new THREE.SphereGeometry(hs*.12,6,5),eye,s*hs*.32,hs*.15,hs*.58);
+  if(t==='wolfdog'){gMesh(h,new THREE.BoxGeometry(hs*.55,hs*.45,hs*.8),gm(0x2a1a10),0,-hs*.15,hs*.8);for(const s of [-1,1])gMesh(h,new THREE.ConeGeometry(hs*.2,hs*.55,4),gm(0x2a1a10),s*hs*.32,hs*.65,-hs*.1)}
+  if(t==='bichon'){gMesh(h,new THREE.SphereGeometry(hs*.12,6,5),eye,0,-hs*.08,hs*.75);for(const s of [-1,1])gMesh(h,new THREE.SphereGeometry(hs*.35,8,6),gm(c),s*hs*.65,-hs*.15,0)}
+  if(t==='goat'){for(const s of [-1,1])gMesh(h,new THREE.ConeGeometry(hs*.12,hs*1.1,5),gm(0x8a7a5a),s*hs*.25,hs*.8,-hs*.3,-.6);gMesh(h,new THREE.ConeGeometry(hs*.12,hs*.5,5),gm(0xd8d0c0),0,-hs*.75,hs*.4,Math.PI)}
+  if(t==='bull'){for(const s of [-1,1])gMesh(h,new THREE.ConeGeometry(hs*.12,hs*.9,6),gm(0xf0e8d0),s*hs*.75,hs*.35,0,0,0,-s*1.1);gMesh(h,new THREE.TorusGeometry(hs*.16,hs*.04,5,10),gm(0xd8b030,{metalness:.8}),0,-hs*.3,hs*.62)}
+  if(t==='sheep'){for(const s of [-1,1])gMesh(h,new THREE.BoxGeometry(hs*.5,hs*.15,hs*.25),gm(0x3a3530),s*hs*.6,hs*.1,0)}
+  if(t==='monkey'){gMesh(h,new THREE.SphereGeometry(hs*.42,10,8),gm(0xe8c8a0),0,-hs*.1,hs*.45).scale.set(1,.8,.6);for(const s of [-1,1])gMesh(h,new THREE.SphereGeometry(hs*.22,8,6),gm(0xe8c8a0),s*hs*.62,hs*.05,0);gMesh(g,new THREE.TorusGeometry(len*.35,.05,6,12,Math.PI*1.2),gm(c),0,legH+ht*.6,-len*.45,0,Math.PI/2,0)}
+  g.add(h);g.userData.head=h;if(t!=='monkey')gMesh(g,new THREE.ConeGeometry(lw*.6,len*.3,6),gm(bc),0,legH+ht*.35,-len*.5,-Math.PI/2-.5);return g}
+function gFlash(m){// 晚上的手電筒（光束＋地上的光圈）
+  if(m.userData.fl)return m.userData.fl;const g=new THREE.Group();const cone=new THREE.Mesh(new THREE.ConeGeometry(1.6,7,16,1,true),new THREE.MeshBasicMaterial({color:0xfff2b0,transparent:true,opacity:.14,depthWrite:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide}));cone.rotation.x=Math.PI/2+.35;cone.position.set(0,0,3.4);g.add(cone);
+  const lamp=new THREE.Mesh(new THREE.CylinderGeometry(.06,.05,.25,8),new THREE.MeshStandardMaterial({color:0x2a2a2e,emissive:0xfff0b0,emissiveIntensity:.8}));lamp.rotation.x=Math.PI/2;g.add(lamp);g.position.set(-.3,1.0,.25);m.add(g);
+  const spot=new THREE.Mesh(new THREE.CircleGeometry(1.8,20),new THREE.MeshBasicMaterial({color:0xfff2b0,transparent:true,opacity:.28,depthWrite:false,blending:THREE.AdditiveBlending}));spot.rotation.x=-Math.PI/2;spot.position.set(0,.06,6);m.add(spot);m.userData.fl=g;m.userData.spot=spot;return g}
+// 巡邏地點：加上超大城堡（模板一整座）和任何房子、塔
+{const gl=grdLocs;grdLocs=function(){const L=gl();const has=new Set(L.map(l=>l.key));const grp=new Map();
+  for(const o of S.objs){if(o.burnt)continue;if(o.tg&&o.tpl){const k='g:'+o.tg;let e=grp.get(k);if(!e){e={key:k,objs:[],tpl:o.tpl};grp.set(k,e)}e.objs.push(o);continue}
+    if((o.t==='house'||o.t==='tower')&&!has.has('o:'+o.id)&&!(o.bt!=null&&o.bt<1)){const r=o.t==='tower'?o.rad+3:Math.max(o.w,o.d)/2+4;L.push({key:'o:'+o.id,n:`${o.t==='tower'?'🗼':'🏠'} ${o.name||(o.t==='tower'?'塔':'房子')}`,x:o.x,z:o.z,r,o})}}
+  for(const [k,e] of grp){let x0=1e9,x1=-1e9,z0=1e9,z1=-1e9;for(const o of e.objs){const r=o.t==='wall'?o.len/2:o.t==='tower'?o.rad:Math.max(o.w||4,o.d||4)/2;x0=Math.min(x0,o.x-r);x1=Math.max(x1,o.x+r);z0=Math.min(z0,o.z-r);z1=Math.max(z1,o.z+r)}const t=TPL.find(q=>q.id===e.tpl);
+    L.push({key:k,n:`${t&&t.big?'🏰':'🏘️'} ${t?t.n:'建築群'}`,x:(x0+x1)/2,z:(z0+z1)/2,r:Math.max(x1-x0,z1-z0)/2,box:[x0,x1,z0,z1],objs:e.objs})}
+  return L}}
+const gRect=(x,z,w,d,r,m)=>{const c=Math.cos(r||0),s=Math.sin(r||0);const P=[[-1,-1],[1,-1],[1,1],[-1,1]].map(([a,b])=>{const lx=a*(w/2+m),lz=b*(d/2+m);return {x:x+lx*c+lz*s,z:z-lx*s+lz*c}});P.push(P[0]);return P};
+function gRoutes(l){if(l.rt)return l.rt;const R=[];if(l.box){const [x0,x1,z0,z1]=l.box;R.push(gRect((x0+x1)/2,(z0+z1)/2,x1-x0,z1-z0,0,6));for(const o of l.objs){if(o.t==='house')R.push(gRect(o.x,o.z,o.w,o.d,o.r,3));else if(o.t==='tower'&&o.rad>6)R.push(gRect(o.x,o.z,o.rad*2,o.rad*2,0,3))}}
+  else if(l.o&&l.o.t==='house')R.push(gRect(l.o.x,l.o.z,l.o.w,l.o.d,l.o.r,3));else{const P=[];for(let i=0;i<=24;i++){const a=i/24*6.283;P.push({x:l.x+Math.cos(a)*l.r,z:l.z+Math.sin(a)*l.r})}R.push(P)}
+  for(const P of R){P.L=[0];for(let i=1;i<P.length;i++)P.L.push(P.L[i-1]+Math.hypot(P[i].x-P[i-1].x,P[i].z-P[i-1].z))}l.rt=R;return R}
+function gAt(P,s){const T=P.L[P.L.length-1];s=((s%T)+T)%T;let i=1;while(i<P.length-1&&P.L[i]<s)i++;const a=P[i-1],b=P[i];const k=(s-P.L[i-1])/Math.max(.001,P.L[i]-P.L[i-1]);return {x:a.x+(b.x-a.x)*k,z:a.z+(b.z-a.z)*k,h:Math.atan2(b.x-a.x,b.z-a.z)}}
+const gCfg=k=>(S.grdT||{})[k]||{t:'human'};
+{const gt=grdTick;grdTick=function(dt){gt(dt);const now=performance.now()/1000;
+  for(const [k,e] of GRD.v){const cf=gCfg(k);const T=GTYPE[cf.t]||GTYPE.human;const sz=T.sz?(cf.sz||T.sz[2]):1;const sig=cf.t+'|'+(cf.c??'')+'|'+sz;
+    for(const q of e.gs){if(q.sig!==sig){const p=q.m.position.clone();scene.remove(q.m);q.m=gModel(cf.t,cf.c);q.m.scale.setScalar(sz);q.m.position.copy(p);scene.add(q.m);q.sig=sig;q.s=Math.random()*400}}
+    const big=T.sz&&sz>=2;const vis=big?2:8;const R=gRoutes(e.l);
+    e.gs.forEach((q,i)=>{q.m.visible=i<vis;if(q.chase||i>=vis)return;const P=R[i===0||R.length===1?0:(i%R.length)];q.s=(q.s||0)+(T.sp||1.4)*(1+(sz>1?sz*.3:0))*dt*(i%2?1:-1)*(q.dir||1);const p=gAt(P,q.s+i*P.L[P.L.length-1]/Math.max(1,Math.min(vis,e.gs.length)));
+      const gy=Math.max(hAt(p.x,p.z),WATER_Y);const fly=T.fly?T.fly+sz*2+Math.sin(now*.7+i)*1.5:0;q.m.position.set(p.x,gy+fly+(T.fly?0:Math.abs(Math.sin(now*6+i))*.04*sz),p.z);q.m.rotation.y=p.h+(i%2?0:Math.PI);
+      const u=q.m.userData;if(u.legs)u.legs.forEach((l,j)=>l.rotation.x=Math.sin(now*7+j*Math.PI*(j%3===0?1:1.5))*.45);if(u.wings)u.wings.forEach((w,j)=>w.rotation.z=(j?1:-1)*Math.sin(now*(cf.t==='spark'?14:3))*.5);if(u.spin)u.spin.rotation.y+=dt*(cf.t==='airship'?14:1.5);if(u.head&&cf.t==='trex')u.head.rotation.x=Math.sin(now*1.3)*.15;if(u.hero){u.hero.rotation.x=0}if(cf.t==='hero')q.m.rotation.x=1.3;if(u.beam)u.beam.material.opacity=NIGHT>.5?.18:.06;
+      if(cf.t==='human'){const night=NIGHT>.55;if(night)gFlash(q.m).visible=true;if(u.fl){u.fl.visible=night;u.spot.visible=night}}})}}}
+function grdCfgPanel(k,back){const L=grdLocs().find(l=>l.key===k);const cf=Object.assign({},gCfg(k));const T=GTYPE[cf.t]||GTYPE.human;
+  openPanel(`<h2>🛡️ 選保全類型・${L?L.n:''}</h2><div style="font-size:13px;color:#7a6a4a;margin-bottom:6px">選好以後這個地點的保全都會換成這一種，一樣會巡邏、抓小偷。保全員晚上會拿手電筒。</div>
+    <div class="chips">${Object.entries(GTYPE).map(([t,x])=>`<button data-gty="${t}" class="${cf.t===t?'on':''}">${x.em} ${x.n}</button>`).join('')}</div>
+    <div class="lab">🎨 顏色</div><div class="chips">${[null,0x1a2a4a,0x4a7a3a,0xb8302a,0xe8b020,0x2a6ad8,0x8a5ae8,0xec6fa6,0xf4f4f4,0x2a2a2e,0x8a5a3a,0xa8b0c0].map(c=>`<button data-gco="${c}" class="${(cf.c??null)===c?'on':''}">${c==null?'原本':`<span style="display:inline-block;width:16px;height:16px;border-radius:50%;vertical-align:-3px;border:1px solid #0003;background:#${c.toString(16).padStart(6,'0')}"></span>`}</button>`).join('')}</div>
+    ${T.sz?`<div class="lab">📏 大小 <span id="gszv">${cf.sz||T.sz[2]}</span> 倍</div><input type="range" min="${T.sz[0]}" max="${T.sz[1]}" step=".5" value="${cf.sz||T.sz[2]}" id="gsz" style="width:100%">`:''}
+    <button class="hb b" data-gback="1" style="width:100%;margin-top:8px">⬅️ 回去</button>`,()=>{const P=$('#panel');const sv=()=>{S.grdT=S.grdT||{};S.grdT[k]=cf;dirty()};
+    P.querySelectorAll('[data-gty]').forEach(b=>b.onclick=()=>{cf.t=b.dataset.gty;delete cf.sz;sv();SFX.click();grdCfgPanel(k,back)});P.querySelectorAll('[data-gco]').forEach(b=>b.onclick=()=>{cf.c=b.dataset.gco==='null'?null:+b.dataset.gco;sv();SFX.click();grdCfgPanel(k,back)});
+    const r=P.querySelector('#gsz');if(r){r.oninput=()=>{cf.sz=+r.value;P.querySelector('#gszv').textContent=cf.sz;sv()}}P.querySelector('[data-gback]').onclick=()=>{SFX.click();back?back():grdPanel()}})}
+{const gr=grdRow;grdRow=function(L){const h=gr(L);const cf=gCfg(L.key);const T=GTYPE[cf.t]||GTYPE.human;return h.replace('</small></div>',`</small><button class="hb y" data-gcf="${L.key}" style="padding:3px 8px;font-size:12px;margin-top:3px">${T.em} ${T.n}・換類型</button></div>`)}}
+{const gb=grdBind;grdBind=function(re){gb(re);$('#panel').querySelectorAll('[data-gcf]').forEach(b=>b.onclick=ev=>{ev.stopPropagation();SFX.click();grdCfgPanel(b.dataset.gcf,re)})}}
+
 /* ======================= 編輯面板（選到東西時出現） ======================= */
 const chipsH=(key,opts,cur,lock)=>`<div class="chips">${Object.entries(opts).map(([k,n])=>`<button data-${key}="${k}" class="${String(cur)===k?'on':''}" ${lock&&lock(k)?'disabled style="opacity:.4"':''}>${n}</button>`).join('')}</div>`;
 const swH=(key,cols,cur)=>`<div class="chips">${cols.map(c=>`<button class="sw ${cur===c?'on':''}" data-${key}="${c}" style="background:${hex(c)}"></button>`).join('')}</div>`;
@@ -4674,7 +4834,7 @@ function editShow(){if(INT){intEdit();return}const e=$('#edit');const o=SEL&&byI
   else if(o.t==='tower'){h=head('🗼',TOWERK[o.kind||'round'])+`<div class="lab">種類</div>${chipsH('tk',TOWERK,o.kind||'round')}`+`<div style="font-size:13px;color:#7a6a4a">造價 ${money(costOf(o))}</div><div class="lab">樓層（最多 15 層）</div><div class="step"><button data-st="floors|-1">－</button><span>${o.floors} 層</span><button data-st="floors|1">＋</button></div>
     <div class="lab">粗細 ${o.rad} 公尺</div><input type="range" min="1.2" max="6" step=".1" value="${o.rad}" data-rg="rad"><div class="lab">外牆</div>${chipsH('wall',{stone:'石牆',brick:'紅磚',plaster:'灰泥',wood:'原木'},o.wall)}<div class="lab">外牆顏色</div>${swH('wc',WALL_COLS,o.wallC)}
     <div class="lab">塔頂</div>${chipsH('roof',{cone:'尖頂',dome:'圓頂',battlement:'城垛'},o.roof)}<div class="lab">屋頂材質</div>${chipsH('rm',Object.fromEntries(Object.entries(ROOFM).map(([k,x])=>[k,x.n])),o.roofM)}<div class="lab">屋頂顏色</div>${swH('rc',ROOF_COLS,o.roofC)}`+foot}
-  else if(o.t==='wall'){h=head('🧱','城牆')+`<div class="lab">長度 ${o.len} 公尺</div><input type="range" min="2" max="40" step=".5" value="${o.len}" data-rg="len"><div class="lab">高度 ${o.h} 公尺（最高 20）</div><input type="range" min="2" max="20" step=".5" value="${o.h}" data-rg="h"><div class="row2" style="margin:4px 0"><button class="hb g" data-hup="3">⬆️ 往上加高一層</button><button class="hb" data-hup="-3">⬇️ 降低</button></div>${rot}<div class="lab">加裝</div><div class="chips">${togH('gate','城門',o.gate)}${togH('slits','箭窗',o.slits)}${togH('windows','城堡窗戶',o.windows)}${togH('walk','城牆走道',o.walk)}${togH('banner','旗幟',o.banner)}<button data-tog="cren" class="${o.cren!==0?'on':''}">${o.cren!==0?'✅':'⬜'} 城垛</button></div><div class="lab">牆面材質</div>${chipsH('wall',{stone:'石牆',brick:'紅磚',plaster:'灰泥',wood:'原木'},o.wall||'stone')}<div class="lab">顏色</div>${swH('wc',WALL_COLS,o.wallC)}`+foot}
+  else if(o.t==='wall'){h=head('🧱','城牆')+`<div class="lab">長度 ${o.len} 公尺</div><input type="range" min="2" max="500" step=".5" value="${o.len}" data-rg="len"><div class="lab">高度 ${o.h} 公尺（最高 40）</div><input type="range" min="2" max="40" step=".5" value="${o.h}" data-rg="h"><div class="row2" style="margin:4px 0"><button class="hb g" data-hup="3">⬆️ 往上加高一層</button><button class="hb" data-hup="-3">⬇️ 降低</button></div>${rot}<div class="lab">加裝</div><div class="chips">${togH('gate','城門',o.gate)}${togH('slits','箭窗',o.slits)}${togH('windows','城堡窗戶',o.windows)}${togH('walk','城牆走道',o.walk)}${togH('banner','旗幟',o.banner)}<button data-tog="cren" class="${o.cren!==0?'on':''}">${o.cren!==0?'✅':'⬜'} 城垛</button>${togH('but','扶壁',o.but)}${togH('band','裝飾色帶',o.band)}${togH('mach','突出石托',o.mach)}${togH('roofw','屋頂走廊',o.roofw)}${togH('plinth','石砌底座',o.plinth)}</div><div class="lab">城垛樣式</div><div class="chips">${[['block','方塊'],['swallow','燕尾'],['round','圓頂'],['spike','尖刺'],['none','平頂']].map(([k,n])=>`<button data-crs="${k}" class="${(o.crenS||'block')===k?'on':''}">${n}</button>`).join('')}</div><div class="lab">牆面材質</div>${chipsH('wall',{stone:'石牆',brick:'紅磚',plaster:'灰泥',wood:'原木'},o.wall||'stone')}<div class="lab">顏色</div>${swH('wc',WALL_COLS,o.wallC)}`+foot}
   else if(o.t==='road'){h=head('🛣️','道路')+`<div class="lab">種類</div>${chipsH('rk',Object.fromEntries(Object.entries(ROADS).map(([k,x])=>[k,x.n])),o.k)}`+foot}
   else if(o.t==='fence'){h=head('🚧','圍籬')+`<div class="lab">種類</div>${chipsH('rk',Object.fromEntries(Object.entries(FENCES).map(([k,x])=>[k,x.n])),o.k,k=>(FENCES[k].lv||1)>lv)}`+foot}
   else if(o.t==='lm'){const D=LM[o.k];h=head(D.em,D.n)+`<div style="font-size:13px;color:#7a6a4a">${D.ds||''}<br>${o.bt!=null&&o.bt<1?`👷 施工中 ${Math.floor(o.bt*100)}%`:`估價 ${money(valueOf(o).v)}・觀光收入每分鐘 ${money(lmIncome(o))}`}</div>`+rot+foot}
@@ -4697,8 +4857,8 @@ function editBind(o){const e=$('#edit');const before=costOf(o);
   e.querySelectorAll('[data-rg]').forEach(b=>{b.oninput=()=>{const k=b.dataset.rg;const v=+b.value;const lab=b.previousElementSibling;if(lab&&lab.classList.contains('lab'))lab.textContent=lab.textContent.replace(/[\d.]+/,v);o[k]=v;place(o);selSync()};b.onchange=()=>{const k=b.dataset.rg;const v=+b.value;o[k]=JSON.parse(JSON.stringify(o))[k];apply(()=>{o[k]=v})}});
   e.querySelectorAll('[data-rot]').forEach(b=>b.onclick=()=>apply(()=>{o.r=(o.r||0)+ +b.dataset.rot*Math.PI/12},true));
   for(const [a,k,num] of [['tk','kind'],['prm','rm'],['pmat','mat'],['pc','c',1],['prc','rc',1],['ptc','tc',1],['pdc','dc',1],['wall','wall'],['roof','roof'],['rm','roofM'],['win','win'],['rk','k'],['wc','wallC',1],['rc','roofC',1],['tc','trimC',1],['sc','shutC',1],['dc','doorC',1]])e.querySelectorAll(`[data-${a}]`).forEach(b=>b.onclick=()=>apply(()=>{o[k]=num?+b.dataset[a]:b.dataset[a];if(k==='wall'&&o.t==='house'){if(WALLS[o[k]].c)o.wallC=WALLS[o[k]].c;o.floors=Math.min(o.floors,maxFloors(o))}}));
-  e.querySelectorAll('[data-tog]').forEach(b=>b.onclick=()=>apply(()=>{const k=b.dataset.tog;if(k==='cren')o.cren=o.cren===0?1:0;else o[k]=o[k]?0:1}));
-  e.querySelectorAll('[data-hup]').forEach(b=>b.onclick=()=>apply(()=>{o.h=clamp((o.h||4.5)+ +b.dataset.hup,2,20)}));
+  e.querySelectorAll('[data-crs]').forEach(b=>b.onclick=()=>apply(()=>{o.crenS=b.dataset.crs}));e.querySelectorAll('[data-tog]').forEach(b=>b.onclick=()=>apply(()=>{const k=b.dataset.tog;if(k==='cren')o.cren=o.cren===0?1:0;else o[k]=o[k]?0:1}));
+  e.querySelectorAll('[data-hup]').forEach(b=>b.onclick=()=>apply(()=>{o.h=clamp((o.h||4.5)+ +b.dataset.hup,2,40)}));
   e.querySelectorAll('[data-prt]').forEach(b=>b.onclick=()=>apply(()=>{o.r=(o.r||0)+ +b.dataset.prt*Math.PI/2},true));
   const pu=$('#pUp');if(pu)pu.onclick=()=>{const c=JSON.parse(JSON.stringify(o));delete c.id;c.y=o.y+PART[o.k].h;snapUndo();if(!useMats(matsOf(c),PART[o.k].n))return;addObj(c);SEL=c.id;SFX.place();dirty();editShow()};
   const ps=$('#pSide');if(ps)ps.onclick=()=>{const c=JSON.parse(JSON.stringify(o));delete c.id;const w=PART[o.k].w;c.x=o.x+Math.cos(o.r||0)*w;c.z=o.z-Math.sin(o.r||0)*w;if(!owned(c.x,c.z)){landHint();return}snapUndo();if(!useMats(matsOf(c),PART[o.k].n))return;addObj(c);SEL=c.id;SFX.place();dirty();editShow()};
