@@ -3883,13 +3883,13 @@ const GRD={v:new Map(),th:null,nt:180,st:0};
 function grdLocs(){const L=[];for(const Z of ZONES)if(Z.x!=null)L.push({key:'z:'+Z.k,n:`${Z.em} ${Z.n}`,x:Z.x,z:Z.z,r:Math.min(Z.r,26),Z});
   for(const o of S.objs){if(o.burnt||(o.bt!=null&&o.bt<1))continue;if(o.t==='house'&&(o.fac||o.sign))L.push({key:'o:'+o.id,n:o.fac?`${FAC[o.fac].em||'🏭'} ${FAC[o.fac].n}`:o.sign,x:o.x,z:o.z,r:Math.max(o.w,o.d)/2+4,o});else if(o.t==='lm')L.push({key:'o:'+o.id,n:LM[o.k]?`${LM[o.k].em||'🗽'} ${LM[o.k].n}`:'🗽 世界地標',x:o.x,z:o.z,r:Math.max(o.w||10,o.d||10)/2+4,o});else if(o.t==='dec'&&o.k==='runway')L.push({key:'o:'+o.id,n:'✈️ 機場跑道',x:o.x,z:o.z,r:30,o})}return L}
 const isSec=o=>o.t==='house'&&o.sign&&/保全/.test(o.sign)&&!(o.bt!=null&&o.bt<1)&&!o.burnt;
-function grdCap(){let n=0;for(const o of S.objs)if(isSec(o))n+=(o.floors||1)*50;return Math.min(500,n)}
+function grdCap(){let n=0;for(const o of S.objs)if(isSec(o))n+=(o.floors||1)*50;return Math.min(5000,n)}
 function grdTot(){let n=0;for(const v of Object.values(S.grd||{}))n+=v;return n}
 const GCOST=3000,GWAGE=100;
-function grdSet(key,n){S.grd=S.grd||{};const cur=S.grd[key]||0;n=clamp(Math.round(n),0,50);let d=n-cur;if(d>0){const room=grdCap()-grdTot();if(room<=0){SFX.err();toast(grdCap()?`🛡️ 保全公司最多只能雇 ${grdCap()} 人，加蓋保全公司的樓層可以多雇（每層 50 人，最多 500 人）`:'🛡️ 要先蓋「保全公司」（建築模板）才能雇保全',3600);return false}d=Math.min(d,room);if(!spend(d*GCOST,'雇用保全'))return false;n=cur+d}if(n)S.grd[key]=n;else delete S.grd[key];GRD.st=0;dirty();SFX.cash();return true}
+function grdSet(key,n){S.grd=S.grd||{};const cur=S.grd[key]||0;n=clamp(Math.round(n),0,99999);let d=n-cur;if(d>0){const room=grdCap()-grdTot();if(room<=0){SFX.err();toast(grdCap()?`🛡️ 保全公司最多只能雇 ${grdCap()} 人，加蓋保全公司的樓層可以多雇（每層 50 人，最多 5000 人）`:'🛡️ 要先蓋「保全公司」（建築模板）才能雇保全',3600);return false}d=Math.min(d,room);if(!spend(d*GCOST,'雇用保全'))return false;n=cur+d}if(n)S.grd[key]=n;else delete S.grd[key];GRD.st=0;dirty();SFX.cash();return true}
 function grdRow(L){const n=(S.grd||{})[L.key]||0;return `<div class="prow"><div class="tx"><b>${L.n}</b><small>🛡️ 保全 ${n} / 50 人</small></div><div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end">${[-10,-1,1,10].map(d=>`<button class="hb ${d>0?'g':''}" data-gs="${L.key}|${d}" style="padding:5px 9px">${d>0?'+':'－'}${Math.abs(d)}</button>`).join('')}</div></div>`}
 function grdBind(re){$('#panel').querySelectorAll('[data-gs]').forEach(b=>b.onclick=()=>{const [k,d]=b.dataset.gs.split('|');const cur=(S.grd||{})[k]||0;if(grdSet(k,cur+(+d)))re()});const pk=$('#panel').querySelector('[data-gpick]');if(pk)pk.onclick=()=>{closePanel();window.__gpick=1;SFX.click();toast('📍 點一下地圖上要派保全的採集場或建築',3000)};const al=$('#panel').querySelector('[data-gall]');if(al)al.onclick=()=>{SFX.click();grdPanel()}}
-function grdHead(){const cap=grdCap(),t=grdTot();return `<div style="background:#eef4ff;border-radius:10px;padding:8px 10px;font-size:14px;line-height:1.7">🛡️ 已雇用 <b>${t}</b> / ${cap} 人（保全公司每層樓可以雇 50 人，最多 500 人）<br>💰 雇一個 ${money(GCOST)}・每天薪水每人 ${money(GWAGE)}（今天共 ${money(t*GWAGE)}）<br>⚡ 保全手拿電擊棒在地點附近巡邏，有小偷來會衝過去電暈他（人越多越容易抓到）；沒有保全的地方，小偷會偷走材料或錢。每個地點最多 50 人。</div>`}
+function grdHead(){const cap=grdCap(),t=grdTot();return `<div style="background:#eef4ff;border-radius:10px;padding:8px 10px;font-size:14px;line-height:1.7">🛡️ 已雇用 <b>${t}</b> / ${cap} 人（保全公司每層樓可以雇 50 人，最多 5000 人）<br>💰 雇一個 ${money(GCOST)}・每天薪水每人 ${money(GWAGE)}（今天共 ${money(t*GWAGE)}）<br>⚡ 保全手拿電擊棒在地點附近巡邏，有小偷來會衝過去電暈他（人越多越容易抓到）；沒有保全的地方，小偷會偷走材料或錢。每個地點可以混搭很多種保全，數量不限（只看保全公司能雇多少人）。</div>`}
 function grdPanel(){const L=grdLocs();const g=S.grd||{};L.sort((a,b)=>(g[b.key]||0)-(g[a.key]||0));openPanel(`<h2>🛡️ 保全派遣</h2>${grdHead()}<button class="hb b" data-gpick="1" style="width:100%;margin:8px 0">📍 點地圖選地點</button>${L.length?L.map(grdRow).join(''):'<div style="padding:10px">還沒有採集場或重要設施</div>'}`,()=>grdBind(grdPanel))}
 function grdOne(L){openPanel(`<h2>🛡️ 派保全到「${L.n}」</h2>${grdHead()}${grdRow(L)}<div class="row2"><button class="hb b" data-gpick="1">📍 換一個地點</button><button class="hb" data-gall="1">📋 所有地點</button></div>`,()=>grdBind(()=>grdOne(L)))}
 addEventListener('pointerdown',e=>{if(window.__gpick&&e.target===renderer.domElement){e.stopPropagation();e.preventDefault()}},true);
@@ -3900,7 +3900,7 @@ function guardModel(){const p=person(0x1a2a4a);const cap=new THREE.Mesh(new THRE
 function thiefModel(){const p=person(0x1a1a1a);const m=new THREE.Mesh(new THREE.SphereGeometry(.185,10,8,0,Math.PI*2,0,Math.PI*.62),mat('',0x101010));m.position.y=1.55;p.add(m);const bag=new THREE.Mesh(new THREE.SphereGeometry(.28,8,6),mat('',0xc8a868));bag.position.set(0,1.1,-.3);p.add(bag);return p}
 function zapFx(x,y,z){for(let i=0;i<6;i++){const sm=dustM.clone();sm.color.set(0x60c8ff);sm.opacity=1;sm.blending=THREE.AdditiveBlending;const s=new THREE.Sprite(sm);s.position.set(x+rand(-.5,.5),y+rand(.6,1.8),z+rand(-.5,.5));s.scale.setScalar(rand(.4,.9));scene.add(s);TSMK.push({s,t:.6})}}
 function grdTick(dt){GRD.st-=dt;const g=S.grd||{};
-  if(GRD.st<=0){GRD.st=1;const L=grdLocs();const want=new Map();for(const l of L){const n=g[l.key]||0;if(n>0)want.set(l.key,{l,n:Math.min(n,isMob()?3:8)})}for(const k of Object.keys(g))if(!L.some(l=>l.key===k))delete g[k];
+  if(GRD.st<=0){GRD.st=1;const L=grdLocs();const want=new Map();for(const l of L){const n=g[l.key]||0;if(n>0)want.set(l.key,{l,n:Math.min(n,isMob()?12:60)})}for(const k of Object.keys(g))if(!L.some(l=>l.key===k))delete g[k];
     for(const [k,e] of GRD.v){const w=want.get(k);if(!w){for(const q of e.gs)scene.remove(q.m);GRD.v.delete(k)}}
     for(const [k,w] of want){let e=GRD.v.get(k);if(!e){e={gs:[]};GRD.v.set(k,e)}e.l=w.l;while(e.gs.length<w.n){const m=guardModel();scene.add(m);e.gs.push({m,a:Math.random()*6.28,sp:rand(.15,.3)*(Math.random()<.5?-1:1)})}while(e.gs.length>w.n)scene.remove(e.gs.pop().m)}}
   const T=GRD.th;
@@ -4794,23 +4794,37 @@ function gRoutes(l){if(l.rt)return l.rt;const R=[];if(l.box){const [x0,x1,z0,z1]
   for(const P of R){P.L=[0];for(let i=1;i<P.length;i++)P.L.push(P.L[i-1]+Math.hypot(P[i].x-P[i-1].x,P[i].z-P[i-1].z))}l.rt=R;return R}
 function gAt(P,s){const T=P.L[P.L.length-1];s=((s%T)+T)%T;let i=1;while(i<P.length-1&&P.L[i]<s)i++;const a=P[i-1],b=P[i];const k=(s-P.L[i-1])/Math.max(.001,P.L[i]-P.L[i-1]);return {x:a.x+(b.x-a.x)*k,z:a.z+(b.z-a.z)*k,h:Math.atan2(b.x-a.x,b.z-a.z)}}
 const gCfg=k=>(S.grdT||{})[k]||{t:'human'};
+function gSquads(k){S.grdQ=S.grdQ||{};let Q=S.grdQ[k];const n=(S.grd||{})[k]||0;if(!Q){const o=(S.grdT||{})[k];Q=S.grdQ[k]=n?[{t:o&&o.t||'human',c:o?o.c:null,sz:o?o.sz:undefined,n}]:[]}
+  let sum=Q.reduce((a,q)=>a+q.n,0);if(sum!==n){if(sum<n){let h=Q.find(q=>q.t==='human');if(!h){h={t:'human',c:null,n:0};Q.push(h)}h.n+=n-sum}else{let d=sum-n;for(let i=Q.length-1;i>=0&&d>0;i--){const x=Math.min(Q[i].n,d);Q[i].n-=x;d-=x}}}
+  for(let i=Q.length-1;i>=0;i--)if(Q[i].n<=0&&Q.length>1)Q.splice(i,1);return Q}
+function gTypeAt(k,i,shown){const Q=gSquads(k);const tot=Q.reduce((a,q)=>a+q.n,0)||1;let acc=0;const pos=(i+.5)/shown*tot;for(const q of Q){acc+=q.n;if(pos<acc)return q}return Q[Q.length-1]||{t:'human',n:1}}
 {const gt=grdTick;grdTick=function(dt){gt(dt);const now=performance.now()/1000;
-  for(const [k,e] of GRD.v){const cf=gCfg(k);const T=GTYPE[cf.t]||GTYPE.human;const sz=T.sz?(cf.sz||T.sz[2]):1;const sig=cf.t+'|'+(cf.c??'')+'|'+sz;
-    for(const q of e.gs){if(q.sig!==sig){const p=q.m.position.clone();scene.remove(q.m);q.m=gModel(cf.t,cf.c);q.m.scale.setScalar(sz);q.m.position.copy(p);scene.add(q.m);q.sig=sig;q.s=Math.random()*400}}
-    const big=T.sz&&sz>=2;const vis=big?2:8;const R=gRoutes(e.l);
-    e.gs.forEach((q,i)=>{q.m.visible=i<vis;if(q.chase||i>=vis)return;const P=R[i===0||R.length===1?0:(i%R.length)];q.s=(q.s||0)+(T.sp||1.4)*(1+(sz>1?sz*.3:0))*dt*(i%2?1:-1)*(q.dir||1);const p=gAt(P,q.s+i*P.L[P.L.length-1]/Math.max(1,Math.min(vis,e.gs.length)));
-      const gy=Math.max(hAt(p.x,p.z),WATER_Y);const fly=T.fly?T.fly+sz*2+Math.sin(now*.7+i)*1.5:0;q.m.position.set(p.x,gy+fly+(T.fly?0:Math.abs(Math.sin(now*6+i))*.04*sz),p.z);q.m.rotation.y=p.h+(i%2?0:Math.PI);
-      const u=q.m.userData;if(u.legs)u.legs.forEach((l,j)=>l.rotation.x=Math.sin(now*7+j*Math.PI*(j%3===0?1:1.5))*.45);if(u.wings)u.wings.forEach((w,j)=>w.rotation.z=(j?1:-1)*Math.sin(now*(cf.t==='spark'?14:3))*.5);if(u.spin)u.spin.rotation.y+=dt*(cf.t==='airship'?14:1.5);if(u.head&&cf.t==='trex')u.head.rotation.x=Math.sin(now*1.3)*.15;if(u.hero){u.hero.rotation.x=0}if(cf.t==='hero')q.m.rotation.x=1.3;if(u.beam)u.beam.material.opacity=NIGHT>.5?.18:.06;
+  for(const [k,e] of GRD.v){const R=gRoutes(e.l);const P0=R[0];const L0=P0.L[P0.L.length-1];const nG=e.gs.length;const inner=R.slice(1);
+    e.gs.forEach((q,i)=>{const cf=gTypeAt(k,i,nG);const T=GTYPE[cf.t]||GTYPE.human;const sz=T.sz?(cf.sz||T.sz[2]):1;const sig=cf.t+'|'+(cf.c??'')+'|'+sz;
+      if(q.sig!==sig){const p=q.m.position.clone();scene.remove(q.m);q.m=gModel(cf.t,cf.c);q.m.scale.setScalar(sz);q.m.position.copy(p);scene.add(q.m);q.sig=sig;q.s=0}
+      q.m.visible=true;if(q.chase)return;
+      // 大的、會飛的：全部繞外圍；一般保全和動物：一半繞外圍、一半繞裡面的建築
+      const big=(T.sz&&sz>=2)||T.fly;const useIn=!big&&inner.length&&i%2===1;const P=useIn?inner[Math.floor(i/2)%inner.length]:P0;const LL=P.L[P.L.length-1];
+      const spd=(T.sp||1.4)*(1+(sz>1?sz*.3:0));q.s=(q.s||0)+spd*dt;const off=useIn?(i*7.3)%LL:i*L0/Math.max(1,nG);const p=gAt(P,q.s+off);
+      const gy=Math.max(hAt(p.x,p.z),WATER_Y);const fly=T.fly?T.fly+sz*2+Math.sin(now*.7+i)*1.5:0;q.m.position.set(p.x,gy+fly+(T.fly?0:Math.abs(Math.sin(now*6+i))*.04*sz),p.z);q.m.rotation.y=p.h;
+      const u=q.m.userData;if(u.legs)u.legs.forEach((l,j)=>l.rotation.x=Math.sin(now*7+j*Math.PI*(j%3===0?1:1.5))*.45);if(u.wings)u.wings.forEach((w,j)=>w.rotation.z=(j?1:-1)*Math.sin(now*(cf.t==='spark'?14:3))*.5);if(u.spin)u.spin.rotation.y+=dt*(cf.t==='airship'?14:1.5);if(u.head&&cf.t==='trex')u.head.rotation.x=Math.sin(now*1.3)*.15;if(cf.t==='hero')q.m.rotation.x=1.3;if(u.beam)u.beam.material.opacity=NIGHT>.5?.18:.06;
       if(cf.t==='human'){const night=NIGHT>.55;if(night)gFlash(q.m).visible=true;if(u.fl){u.fl.visible=night;u.spot.visible=night}}})}}}
-function grdCfgPanel(k,back){const L=grdLocs().find(l=>l.key===k);const cf=Object.assign({},gCfg(k));const T=GTYPE[cf.t]||GTYPE.human;
-  openPanel(`<h2>🛡️ 選保全類型・${L?L.n:''}</h2><div style="font-size:13px;color:#7a6a4a;margin-bottom:6px">選好以後這個地點的保全都會換成這一種，一樣會巡邏、抓小偷。保全員晚上會拿手電筒。</div>
-    <div class="chips">${Object.entries(GTYPE).map(([t,x])=>`<button data-gty="${t}" class="${cf.t===t?'on':''}">${x.em} ${x.n}</button>`).join('')}</div>
-    <div class="lab">🎨 顏色</div><div class="chips">${[null,0x1a2a4a,0x4a7a3a,0xb8302a,0xe8b020,0x2a6ad8,0x8a5ae8,0xec6fa6,0xf4f4f4,0x2a2a2e,0x8a5a3a,0xa8b0c0].map(c=>`<button data-gco="${c}" class="${(cf.c??null)===c?'on':''}">${c==null?'原本':`<span style="display:inline-block;width:16px;height:16px;border-radius:50%;vertical-align:-3px;border:1px solid #0003;background:#${c.toString(16).padStart(6,'0')}"></span>`}</button>`).join('')}</div>
-    ${T.sz?`<div class="lab">📏 大小 <span id="gszv">${cf.sz||T.sz[2]}</span> 倍</div><input type="range" min="${T.sz[0]}" max="${T.sz[1]}" step=".5" value="${cf.sz||T.sz[2]}" id="gsz" style="width:100%">`:''}
-    <button class="hb b" data-gback="1" style="width:100%;margin-top:8px">⬅️ 回去</button>`,()=>{const P=$('#panel');const sv=()=>{S.grdT=S.grdT||{};S.grdT[k]=cf;dirty()};
-    P.querySelectorAll('[data-gty]').forEach(b=>b.onclick=()=>{cf.t=b.dataset.gty;delete cf.sz;sv();SFX.click();grdCfgPanel(k,back)});P.querySelectorAll('[data-gco]').forEach(b=>b.onclick=()=>{cf.c=b.dataset.gco==='null'?null:+b.dataset.gco;sv();SFX.click();grdCfgPanel(k,back)});
-    const r=P.querySelector('#gsz');if(r){r.oninput=()=>{cf.sz=+r.value;P.querySelector('#gszv').textContent=cf.sz;sv()}}P.querySelector('[data-gback]').onclick=()=>{SFX.click();back?back():grdPanel()}})}
-{const gr=grdRow;grdRow=function(L){const h=gr(L);const cf=gCfg(L.key);const T=GTYPE[cf.t]||GTYPE.human;return h.replace('</small></div>',`</small><button class="hb y" data-gcf="${L.key}" style="padding:3px 8px;font-size:12px;margin-top:3px">${T.em} ${T.n}・換類型</button></div>`)}}
+const GCOLS=[null,0x1a2a4a,0x4a7a3a,0xb8302a,0xe8b020,0x2a6ad8,0x8a5ae8,0xec6fa6,0xf4f4f4,0x2a2a2e,0x8a5a3a,0xa8b0c0];
+function grdCfgPanel(k,back){const L=grdLocs().find(l=>l.key===k);const Q=gSquads(k);const tot=(S.grd||{})[k]||0;
+  const sw=c=>c==null?'原本色':`<span style="display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:-2px;border:1px solid #0003;background:#${c.toString(16).padStart(6,'0')}"></span>`;
+  openPanel(`<h2>🛡️ 保全隊伍・${L?L.n:''}</h2>${grdHead()}<div style="font-size:14px;margin:6px 0">這裡共 <b>${tot}</b> 個保全，可以混搭很多種類，每一種的數量都可以自己加減。</div>
+    ${Q.map((q,i)=>{const T=GTYPE[q.t]||GTYPE.human;return `<div class="prow"><div class="em">${T.em}</div><div class="tx"><b>${T.n}</b> × ${q.n}<small>${sw(q.c??null)}${T.sz?`・大小 ${q.sz||T.sz[2]} 倍`:''}</small><button class="hb y" data-qe="${i}" style="padding:3px 8px;font-size:12px;margin-top:3px">🎨 顏色／大小</button></div><div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end">${[-10,-1,1,10].map(d=>`<button class="hb ${d>0?'g':''}" data-qn="${i}|${d}" style="padding:5px 9px">${d>0?'+':'－'}${Math.abs(d)}</button>`).join('')}</div></div>`}).join('')||'<div style="padding:8px;color:#7a6a4a">還沒有保全，從下面選一種加進來</div>'}
+    <div class="lab">➕ 新增一種保全（按一下就加 1 個，可以一直加）</div><div class="chips">${Object.entries(GTYPE).map(([t,x])=>`<button data-qa="${t}">${x.em} ${x.n}</button>`).join('')}</div>
+    <div class="row2"><button class="hb b" data-gback="1">⬅️ 回去</button></div>`,()=>{const P=$('#panel');const re=()=>grdCfgPanel(k,back);
+    const addN=(i,d)=>{const q=Q[i];if(d<0)d=-Math.min(q.n,-d);if(!d)return;const cur=(S.grd||{})[k]||0;S.grdQ[k]=Q;const before=cur;q.n+=d;if(!grdSet(k,cur+d)){q.n-=d;return}const got=((S.grd||{})[k]||0)-before;if(got!==d)q.n+=got-d;if(q.n<=0&&Q.length>1)Q.splice(i,1);dirty();re()};
+    P.querySelectorAll('[data-qn]').forEach(b=>b.onclick=()=>{const [i,d]=b.dataset.qn.split('|').map(Number);addN(i,d)});
+    P.querySelectorAll('[data-qa]').forEach(b=>b.onclick=()=>{const t=b.dataset.qa;let i=Q.findIndex(q=>q.t===t&&q.c==null&&!q.sz);if(i<0){Q.push({t,c:null,n:0});i=Q.length-1}addN(i,1)});
+    P.querySelectorAll('[data-qe]').forEach(b=>b.onclick=()=>{SFX.click();grdSqEdit(k,+b.dataset.qe,re)});P.querySelector('[data-gback]').onclick=()=>{SFX.click();back?back():grdPanel()}})}
+function grdSqEdit(k,i,back){const q=gSquads(k)[i];if(!q){back();return}const T=GTYPE[q.t]||GTYPE.human;
+  openPanel(`<h2>${T.em} ${T.n}・顏色和大小</h2><div class="lab">🎨 顏色</div><div class="chips">${GCOLS.map(c=>`<button data-gco="${c}" class="${(q.c??null)===c?'on':''}">${c==null?'原本':`<span style="display:inline-block;width:16px;height:16px;border-radius:50%;vertical-align:-3px;border:1px solid #0003;background:#${c.toString(16).padStart(6,'0')}"></span>`}</button>`).join('')}</div>
+    ${T.sz?`<div class="lab">📏 大小 <span id="gszv">${q.sz||T.sz[2]}</span> 倍</div><input type="range" min="${T.sz[0]}" max="${T.sz[1]}" step=".5" value="${q.sz||T.sz[2]}" id="gsz" style="width:100%">`:'<div style="font-size:13px;color:#7a6a4a;margin-top:6px">這種是正常體型，不用調大小。</div>'}<button class="hb b" data-gback="1" style="width:100%;margin-top:8px">⬅️ 回去</button>`,
+    ()=>{const P=$('#panel');P.querySelectorAll('[data-gco]').forEach(b=>b.onclick=()=>{q.c=b.dataset.gco==='null'?null:+b.dataset.gco;dirty();SFX.click();grdSqEdit(k,i,back)});const r=P.querySelector('#gsz');if(r)r.oninput=()=>{q.sz=+r.value;P.querySelector('#gszv').textContent=q.sz;dirty()};P.querySelector('[data-gback]').onclick=()=>{SFX.click();back()}})}
+{const gr=grdRow;grdRow=function(L){const h=gr(L);const Q=gSquads(L.key);return h.replace(/保全 (\d+) \/ 50 人/,'保全 $1 人').replace('</small></div>',`</small><button class="hb y" data-gcf="${L.key}" style="padding:3px 8px;font-size:12px;margin-top:3px">${Q.length?Q.map(q=>(GTYPE[q.t]||GTYPE.human).em+'×'+q.n).join(' '):'👮'}・⚙️ 保全種類和數量</button></div>`)}}
 {const gb=grdBind;grdBind=function(re){gb(re);$('#panel').querySelectorAll('[data-gcf]').forEach(b=>b.onclick=ev=>{ev.stopPropagation();SFX.click();grdCfgPanel(b.dataset.gcf,re)})}}
 
 /* ======================= 2.57：整座城堡算一棟（自動把城牆、塔、裡面的房子合成一座）、整座鎖定、整座派保全、圍牆也能派保全 ======================= */
@@ -4842,6 +4856,8 @@ function cgAuto(){const sig=S.objs.length+'|'+S.objs.filter(o=>o.tg).length;if(s
   d.querySelector('[data-cg="grd"]').onclick=()=>{SFX.click();const L=grdLocs().find(l=>l.key===key);if(L)grdOne(L)};
   d.querySelector('[data-cg="name"]').onclick=()=>{const v=prompt('城堡的新名字',cgName(o.tg).replace(/^\S+\s/,''));if(v&&v.trim()){S.cgName=S.cgName||{};S.cgName[o.tg]='🏰 '+v.trim().slice(0,20);dirty();editShow()}};
   d.querySelector('[data-cg="out"]').onclick=()=>{delete o.tg;delete o.tpl;o.notg=1;SFX.click();dirty();toast('✂️ 這一個已經從城堡裡拿出來了',1800);editShow()}}catch(err){console.warn(err)}}}
+
+{const gs=grdSet;grdSet=function(){const r=gs.apply(this,arguments);if(r&&SEL!=null&&$('#edit').style.display!=='none')setTimeout(()=>{try{editShow()}catch(e){}},0);return r}}
 
 /* ======================= 編輯面板（選到東西時出現） ======================= */
 const chipsH=(key,opts,cur,lock)=>`<div class="chips">${Object.entries(opts).map(([k,n])=>`<button data-${key}="${k}" class="${String(cur)===k?'on':''}" ${lock&&lock(k)?'disabled style="opacity:.4"':''}>${n}</button>`).join('')}</div>`;
