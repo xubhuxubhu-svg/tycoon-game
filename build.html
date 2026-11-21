@@ -689,7 +689,8 @@ const maxFloors=o=>o.wall==='glass'?60:o.wall==='concrete'?20:8;
 const wallOK=k=>true;
 /* ======================= 鏡頭 ======================= */
 const CAM={tx:0,tz:0,yaw:.6,pitch:.62,dist:60,ty:0};
-function camApply(){CAM.pitch=clamp(CAM.pitch,.12,1.45);CAM.dist=clamp(CAM.dist,INT?3:7,2200);CAM.tx=clamp(CAM.tx,-HALF-10,HALF+10);CAM.tz=clamp(CAM.tz,-HALF-10,HALF+10);CAM.ty+=(Math.max(hAt(CAM.tx,CAM.tz),0)-CAM.ty)*.15;
+let CAMY=null;
+function camApply(){CAM.pitch=clamp(CAM.pitch,.12,1.45);CAM.dist=clamp(CAM.dist,INT?3:7,2200);CAM.tx=clamp(CAM.tx,-HALF-10,HALF+10);CAM.tz=clamp(CAM.tz,-HALF-10,HALF+10);CAM.ty+=((CAMY!=null?CAMY:Math.max(hAt(CAM.tx,CAM.tz),0))-CAM.ty)*.15;
   const c=Math.cos(CAM.pitch);camera.position.set(CAM.tx+Math.sin(CAM.yaw)*c*CAM.dist,CAM.ty+Math.sin(CAM.pitch)*CAM.dist,CAM.tz+Math.cos(CAM.yaw)*c*CAM.dist);const gy=hAt(camera.position.x,camera.position.z)+1.2;if(camera.position.y<gy)camera.position.y=gy;camera.lookAt(CAM.tx,CAM.ty,CAM.tz)}
 function panBy(dx,dy){const k=CAM.dist*.0019;const fx=-Math.sin(CAM.yaw),fz=-Math.cos(CAM.yaw);const rx=Math.cos(CAM.yaw),rz=-Math.sin(CAM.yaw);CAM.tx+=(-dx*rx+dy*-fx)*k*1.3;CAM.tz+=(-dx*rz+dy*-fz)*k*1.3}
 /* ======================= 工具 ======================= */
@@ -1448,7 +1449,7 @@ function makeMe(ok){const O=OUTFITS[ok]||OUTFITS.work;const g=new THREE.Group();
   const legs=[],arms=[];for(const s of [-1,1]){const p=new THREE.Group();p.position.set(.15*s,.32,0);const l=ms(new THREE.BoxGeometry(.17,.3,.2),M_(O.pants,O.metal?{metalness:.7,roughness:.3}:null));l.position.y=-.15;const b=ms(new THREE.BoxGeometry(.2,.12,.28),M_(0x1c1f27));b.position.set(0,-.27,.04);p.add(l,b);g.add(p);legs.push(p)}
   for(const s of [-1,1]){const p=new THREE.Group();p.position.set(.36*s,.92,0);const a=ms(new THREE.CapsuleGeometry(.09,.32,4,8),bm);a.position.y=-.2;const mt=ms(new THREE.SphereGeometry(.1,8,6),M_(O.metal?0x9a9ea8:0x2b2f3a));mt.position.y=-.42;p.add(a,mt);p.rotation.z=.18*s;body.add(p);arms.push(p)}
   // 右手拿設計圖
-  const roll=ms(new THREE.CylinderGeometry(.06,.06,.5,8),M_(0x9ac8f0));roll.rotation.x=Math.PI/2;roll.position.set(0,-.42,.15);arms[0].add(roll);
+
   const ring=new THREE.Mesh(new THREE.RingGeometry(.55,.7,24),new THREE.MeshBasicMaterial({color:0xffd040,transparent:true,opacity:.75,depthWrite:false}));ring.rotation.x=-Math.PI/2;ring.position.y=.06;g.add(ring);
   g.userData={body,legs,arms,ring};return g}
 let ME=makeMe('work');scene.add(ME);
@@ -3050,7 +3051,7 @@ let mktT=0;function mktTick(dt){if(typeof CO!=='undefined'&&CO.role==='guest')re
   if(Math.random()<.25){const k=MK[Math.floor(Math.random()*MK.length)];S.mkt[k]=Math.min(1.6,mktOf(k)+.3);S.mktD[k]=1;toast(`📈 市場消息：${MATD[k].em}${MATD[k].n}缺貨，收購價大漲到每個 ${money(sellP(k))}！`,3600)}dirty()}
 function mktTop(){const ks=MK.slice().sort((a,b)=>mktOf(b)-mktOf(a));const have=MK.filter(k=>(S.mat[k]||0)>=1).sort((a,b)=>sellP(b)*(S.mat[b]||0)-sellP(a)*(S.mat[a]||0));const tot=MK.reduce((a,k)=>a+Math.floor(S.mat[k]||0)*sellP(k),0);
   return `<div class="prow" style="background:#fff6dc"><div class="em">📊</div><div class="tx"><b>今天的材料市場</b><small>📈 漲最多：${ks.slice(0,3).map(k=>`${MATD[k].em}${MATD[k].n} ${money(sellP(k))}`).join('、')}</small><small>📉 跌最多：${ks.slice(-3).reverse().map(k=>`${MATD[k].em}${MATD[k].n} ${money(sellP(k))}`).join('、')}</small>${have.length?`<small>💰 倉庫裡最值錢：${have.slice(0,3).map(k=>`${MATD[k].em}${MATD[k].n}（全部賣 ${money(Math.floor(S.mat[k])*sellP(k))}）`).join('、')}</small><small>倉庫全部材料估計可以賣 <b style="color:#c8701a">${money(tot)}</b></small>`:''}</div></div>`}
-function sellBtns(k){const h=Math.floor(S.mat[k]||0);if(h<1)return '';return `<div class="sellRow" style="display:flex;flex-basis:100%;width:100%;justify-content:space-between;align-items:center;gap:6px;margin-top:4px;padding-top:4px;border-top:1px dashed #d8c8a0"><button class="hb o" data-sell="${k}|all" style="margin-right:auto">全部賣 ${h}<br><small>${money(h*sellP(k))}</small></button><span style="display:flex;gap:6px">${[10,50,100,1000].filter(n=>h>=n).map(n=>`<button class="hb" data-sell="${k}|${n}">賣 ${n}<br><small>${money(n*sellP(k))}</small></button>`).join('')}</span></div>`}
+function sellBtns(k){const h=Math.floor(S.mat[k]||0);if(h<1)return '';return `<div class="sellRow" style="display:flex;flex-basis:100%;width:100%;justify-content:space-between;align-items:center;gap:6px;margin-top:4px;padding-top:4px;border-top:1px dashed #d8c8a0"><button class="hb o" data-sell="${k}|all" style="margin-right:auto">全部賣 ${h}<br><small>${money(h*sellP(k))}</small></button><span style="display:flex;gap:6px">${[10,50,100,1000,10000].filter(n=>h>=n).map(n=>`<button class="hb" data-sell="${k}|${n}">賣 ${n}<br><small>${money(n*sellP(k))}</small></button>`).join('')}</span></div>`}
 
 /* ---- 自動採集 ---- */
 const AG={nd:null,cd:0,hold:0,dir:null,ban:new Map(),lp:null,ct:0,warn:0,ui:0};
@@ -4559,21 +4560,21 @@ let trUI=null;function trUIshow(){if(!trUI){trUI=document.createElement('div');t
 let DRV=null;const DRVK={car:'🚗',boat:'🚤',heli:'🚁',plane:'✈️',balloon:'🎈'};
 function vehIdx(i){return VEH[i]}
 function myVehPanel(){S.veh=S.veh||[];const L=S.veh.map((v,i)=>({v,i,d:VEHD[v.k]})).filter(x=>x.d);
-  openPanel(`<h2>🚗 我的交通工具</h2><div style="font-size:14px;color:#7a6a4a;line-height:1.7">按「叫過來坐上去」，交通工具會開到你旁邊，你就坐上去自己開。<br>開的時候：搖桿（或 W A S D）前進、轉彎；飛的會有「⬆️ 上升 ⬇️ 下降」按鈕。<br>「🅿️ 下車停這裡」會停在原地；「📦 收起來」交通工具會回去自己在小鎮跑。</div>`+
-   (L.length?L.map(({v,i,d})=>`<div class="prow"><div class="em">${d.em}</div><div class="tx"><b>${d.n}</b> #${i+1}<small>${DRV&&DRV.i===i?'🧍 你正在開':v.park?'🅿️ 停在路邊':'在小鎮自己跑'}</small></div>${DRV&&DRV.i===i?`<button class="hb o" data-vout="1">下車</button>`:`<button class="hb g" data-vride="${i}">叫過來坐上去</button>`}${v.park&&!(DRV&&DRV.i===i)?`<button class="hb" data-vstow="${i}">📦 收起來</button>`:''}</div>`).join(''):'<div style="padding:12px;color:#7a6a4a">還沒有交通工具，先到「小鎮 → 交通工具」買一台吧。</div>'),
-   ()=>{const P=$('#panel');P.querySelectorAll('[data-vride]').forEach(b=>b.onclick=()=>{closePanel();vehRide(+b.dataset.vride)});P.querySelectorAll('[data-vstow]').forEach(b=>b.onclick=()=>{const v=S.veh[+b.dataset.vstow];delete v.park;dirty();SFX.click();toast('📦 收起來了，它會回去自己在小鎮跑',2000);myVehPanel()});P.querySelectorAll('[data-vout]').forEach(b=>b.onclick=()=>{closePanel();vehOut(false)})})}
+  openPanel(`<h2>🚗 我的交通工具</h2><div style="font-size:14px;color:#7a6a4a;line-height:1.7">按「叫過來坐上去」，交通工具會開到你旁邊，你就坐上去自己開。<br>開的時候：搖桿（或 W A S D）前進、轉彎；飛的會有「⬆️ 上升 ⬇️ 下降」按鈕。<br>「🅿️ 下車停這裡」會停在原地；「📦 收起來」放回車庫，不會出來；「🏙️ 放出去跑」讓它自己在小鎮跑。</div>`+
+   (L.length?L.map(({v,i,d})=>`<div class="prow"><div class="em">${d.em}</div><div class="tx"><b>${d.n}</b> #${i+1}<small>${DRV&&DRV.i===i?'🧍 你正在開':v.stow?'📦 收在車庫':v.park?'🅿️ 停在路邊':'🏙️ 在小鎮自己跑'}</small></div>${DRV&&DRV.i===i?`<button class="hb o" data-vout="1">下車</button>`:`<button class="hb g" data-vride="${i}">叫過來坐上去</button>`}${!(DRV&&DRV.i===i)&&!v.stow?`<button class="hb" data-vstow="${i}">📦 收起來</button>`:''}${!(DRV&&DRV.i===i)&&(v.stow||v.park)?`<button class="hb b" data-vfree="${i}">🏙️ 放出去跑</button>`:''}</div>`).join(''):'<div style="padding:12px;color:#7a6a4a">還沒有交通工具，先到「小鎮 → 交通工具」買一台吧。</div>'),
+   ()=>{const P=$('#panel');P.querySelectorAll('[data-vride]').forEach(b=>b.onclick=()=>{closePanel();vehRide(+b.dataset.vride)});P.querySelectorAll('[data-vstow]').forEach(b=>b.onclick=()=>{const v=S.veh[+b.dataset.vstow];delete v.park;v.stow=1;dirty();SFX.click();toast('📦 收起來了（放回車庫）',2000);myVehPanel()});P.querySelectorAll('[data-vfree]').forEach(b=>b.onclick=()=>{const v=S.veh[+b.dataset.vfree];delete v.park;delete v.stow;dirty();SFX.click();toast('🏙️ 放出去了，它會自己在小鎮跑',2000);myVehPanel()});P.querySelectorAll('[data-vout]').forEach(b=>b.onclick=()=>{closePanel();vehOut(false)})})}
 function vehRide(i){const v=VEH[i],sv=S.veh[i];if(!v||!sv)return;if(DRV)vehOut(false);if(PJ){toast('先下飛機再開',1800);return}const d=v.d;const g=v.g;let x=ME.position.x,z=ME.position.z;const h0=ME.rotation.y;
   if(d.k==='boat'){if(hAt(x,z)>WATER_Y-.4){const w=findWater({x,z});if(!w){SFX.err();toast('附近找不到湖或池塘，快艇沒地方開',2400);return}x=w.x;z=w.z;toast('🚤 已經把你帶到最近的水邊',2000)}}
   else{x+=Math.sin(h0+Math.PI/2)*3;z+=Math.cos(h0+Math.PI/2)*3}
   if(S.view){DRV={i,v,sv,x,z,h:h0,sp:0,y:0,alt:0,view:S.view};S.view='';viewUI()}else DRV={i,v,sv,x,z,h:h0,sp:0,y:0,alt:0,view:''};
-  DRV.y=d.k==='boat'?WATER_Y-.25:Math.max(hAt(x,z),WATER_Y);if(d.k==='heli'||d.k==='plane'||d.k==='balloon')DRV.y+=.1;delete sv.park;closePanel();SEL=null;editShow();SFX.click();drvUI();
+  DRV.y=d.k==='boat'?WATER_Y-.25:Math.max(hAt(x,z),WATER_Y);if(d.k==='heli'||d.k==='plane'||d.k==='balloon')DRV.y+=.1;delete sv.park;delete sv.stow;closePanel();SEL=null;editShow();SFX.click();drvUI();
   toast(`${d.em} 坐上${d.n}了！${{car:'搖桿往前是油門，左右轉彎',boat:'只能在水上開',heli:'按 ⬆️ 上升就能起飛',plane:'按 ⬆️ 上升就能起飛',balloon:'你抓著熱氣球的籃子，⬆️ 上升、搖桿移動'}[d.k]}`,3200)}
 function vehOut(stow){if(!DRV)return;const D=DRV,d=D.v.d;const gy=Math.max(hAt(D.x,D.z),WATER_Y);
   if(!stow&&(d.k==='heli'||d.k==='plane'||d.k==='balloon')&&D.y>gy+3){SFX.err();toast('先按 ⬇️ 下降，降落到地面才能下車',2200);return}
   if(!stow&&d.k==='boat'){/* 從船上下來：找最近的岸邊 */let best=null;for(let r=2;r<40&&!best;r+=2)for(let k=0;k<16;k++){const a=k/16*6.28;const x=D.x+Math.sin(a)*r,z=D.z+Math.cos(a)*r;if(hAt(x,z)>WATER_Y-.2&&!meHit(x,z)){best={x,z};break}}if(best){ME.position.x=best.x;ME.position.z=best.z}else{ME.position.x=D.x;ME.position.z=D.z}}
   else{const a=D.h+Math.PI/2;const ex=D.x+Math.sin(a)*3,ez=D.z+Math.cos(a)*3;ME.position.x=meHit(ex,ez)?D.x:ex;ME.position.z=meHit(ex,ez)?D.z:ez}
-  if(stow)delete D.sv.park;else D.sv.park={x:Math.round(D.x*10)/10,z:Math.round(D.z*10)/10,y:Math.round(Math.max(D.y,gy)*10)/10,r:Math.round(D.h*100)/100};
-  ME.visible=true;ME.rotation.x=0;ME.userData.arms.forEach(a=>a.rotation.x=0);if(D.view){S.view=D.view;viewUI()}DRV=null;dirty();SFX.click();drvUI();toast(stow?'📦 收起來了':'🅿️ 停好了，下次在「🚗 我的交通工具」再叫它',2200)}
+  if(stow){delete D.sv.park;D.sv.stow=1}else D.sv.park={x:Math.round(D.x*10)/10,z:Math.round(D.z*10)/10,y:Math.round(Math.max(D.y,gy)*10)/10,r:Math.round(D.h*100)/100};
+  ME.visible=true;ME.rotation.x=0;ME.userData.arms.forEach(a=>a.rotation.x=0);ME.userData.legs.forEach(a=>a.rotation.x=0);if(ME.userData.ring)ME.userData.ring.visible=true;CAMY=null;if(D.view){S.view=D.view;viewUI()}DRV=null;dirty();SFX.click();drvUI();toast(stow?'📦 收起來了（放回車庫，不會出來亂跑）':'🅿️ 停好了，下次在「🚗 我的交通工具」再叫它',2200)}
 let drvBtn=null,drvBar=null;
 function drvUI(){const jw=$('#joyW');if(jw&&!drvBtn){drvBtn=document.createElement('button');drvBtn.className='hb y';drvBtn.style.cssText='font-size:13px;padding:5px 8px';drvBtn.textContent='🚗 我的交通工具';drvBtn.onclick=e=>{e.stopPropagation();SFX.click();myVehPanel()};jw.appendChild(drvBtn)}
   if(!drvBar){drvBar=document.createElement('div');drvBar.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:132px;z-index:31;display:none;gap:6px;background:#fff8e8;padding:6px 10px;border-radius:16px;box-shadow:0 2px 8px #0003;color:#5a3a1a;font-weight:bold;font-size:14px;align-items:center';document.body.appendChild(drvBar)}
@@ -4587,27 +4588,70 @@ function drvTick(dt){const D=DRV;const v=D.v,d=v.d,g=v.g;const typing=document.a
   const up=D.up||(!typing&&(keys[' ']||keys.e)),dn=D.dn||(!typing&&(keys.q||keys.c));const k=d.k;const gy=Math.max(hAt(D.x,D.z),WATER_Y);
   const MAX={car:(d.sp||12)*2.4,boat:22,heli:30,plane:d.big?70:50,balloon:7}[k];
   if(k==='balloon'){// 熱氣球：搖桿照畫面方向移動
-    const fx=-Math.sin(CAM.yaw),fz=-Math.cos(CAM.yaw),rx=-fz,rz=fx;const mx=rx*ix+fx*-iy,mz=rz*ix+fz*-iy;const air=D.y>gy+1;if(air){D.x+=mx*MAX*dt;D.z+=mz*MAX*dt}D.sp=air?Math.hypot(mx,mz)*MAX:0}
+    const fx=-Math.sin(CAM.yaw),fz=-Math.cos(CAM.yaw),rx=-fz,rz=fx;const mx=rx*ix+fx*-iy,mz=rz*ix+fz*-iy;const air=D.y>gy+1;if(air){const nx=D.x+mx*MAX*dt,nz=D.z+mz*MAX*dt;if(!vehHit(nx,nz,D.y-1,3)){D.x=nx;D.z=nz}}D.sp=air?Math.hypot(mx,mz)*MAX:0}
   else{const air=(k==='heli'||k==='plane')&&D.y>gy+1.5;const canMove=k==='heli'?air:true;const tgt=-iy*MAX*(k==='plane'&&!air?.5:1);D.sp+=(tgt-D.sp)*Math.min(1,dt*(k==='car'?1.6:1.2));if(!canMove)D.sp*=.9;
     const turn=(k==='car'||k==='boat')?1.6*clamp(D.sp/6,-1,1):1.2;D.h-=ix*turn*dt;
     const nx=D.x+Math.sin(D.h)*D.sp*dt,nz=D.z+Math.cos(D.h)*D.sp*dt;let ok=Math.abs(nx)<HALF-4&&Math.abs(nz)<HALF-4;
-    if(ok&&k==='car')ok=hAt(nx,nz)>WATER_Y-.3&&!meHit(nx,nz);if(ok&&k==='boat')ok=hAt(nx,nz)<WATER_Y-.3;if(ok&&(k==='heli'||k==='plane')&&D.y<gy+12)ok=!meHit(nx,nz);
+    if(ok&&k==='car')ok=hAt(nx,nz)>WATER_Y-.3&&!vehHit(nx,nz,Math.max(hAt(nx,nz),WATER_Y)+.5,1.2);if(ok&&k==='boat')ok=hAt(nx,nz)<WATER_Y-.3&&!vehHit(nx,nz,WATER_Y+.5,1.5);if(ok&&(k==='heli'||k==='plane'))ok=!vehHit(nx,nz,D.y,3);
     if(ok){D.x=nx;D.z=nz}else{D.sp*=-.2}}
   if(k==='heli'||k==='plane'||k==='balloon'){const vs={heli:9,plane:12,balloon:3}[k];if(up&&(k!=='plane'||Math.abs(D.sp)>18||D.y>gy+2))D.y+=vs*dt;if(dn)D.y-=vs*dt;D.y=clamp(D.y,Math.max(hAt(D.x,D.z),WATER_Y)+(k==='balloon'?.1:.1),400)}
   else D.y=k==='boat'?WATER_Y-.25+Math.sin(performance.now()/500)*.05:Math.max(hAt(D.x,D.z),WATER_Y);
-  // 交通工具的位置
-  g.position.set(D.x,D.y+(k==='balloon'?0:0),D.z);g.rotation.order='YXZ';g.rotation.y=D.h;g.rotation.x=(k==='heli'?.12*clamp(D.sp/MAX,-1,1):k==='boat'?-.06*clamp(D.sp/MAX,0,1):0);g.rotation.z=(k==='heli'||k==='plane')?-ix*.25:0;if(k==='plane'&&D.y>gy+2)g.rotation.x=-.08;
+  // 交通工具的位置（加上模型底部的高度，不會陷進地面）
+  const lift=vehLift(v);g.position.set(D.x,D.y+lift,D.z);g.rotation.order='YXZ';g.rotation.y=D.h;g.rotation.x=(k==='heli'?.12*clamp(D.sp/MAX,-1,1):k==='boat'?-.06*clamp(D.sp/MAX,0,1):0);g.rotation.z=(k==='heli'||k==='plane')?-ix*.25:0;if(k==='plane'&&D.y>gy+2)g.rotation.x=-.08;
   if(g.userData.rotor)g.userData.rotor.rotation.y+=dt*(D.y>gy+.5?28:10);
-  // 人物：熱氣球是抓著籃子吊在下面，其他都坐在裡面
-  if(k==='balloon'){ME.visible=true;ME.position.set(D.x+Math.sin(D.h)*.0,D.y-1.75,D.z);ME.rotation.y=D.h;ME.userData.arms.forEach(a=>a.rotation.x=-3);const sw=Math.sin(performance.now()/400)*.25;ME.userData.legs[0].rotation.x=sw;ME.userData.legs[1].rotation.x=-sw;ME.scale.setScalar(1)}
+  // 人物：熱氣球站在大籃子裡；快艇、機車坐在座位上；其他坐在裡面看不到
+  const u=ME.userData;ME.scale.setScalar(1);if(u.ring)u.ring.visible=false;
+  if(k==='balloon'){ME.visible=true;ME.position.set(D.x,D.y+lift-.3,D.z);ME.rotation.y=D.h;u.arms[0].rotation.x=-.5+Math.sin(performance.now()/700)*.15;u.arms[1].rotation.x=-.5;u.legs[0].rotation.x=u.legs[1].rotation.x=0}
+  else if(SEAT[v.k]){const st=SEAT[v.k];ME.visible=true;const c=Math.cos(D.h),sn=Math.sin(D.h);ME.position.set(D.x+sn*st[1],D.y+lift+st[0],D.z+c*st[1]);ME.rotation.y=D.h;u.legs[0].rotation.x=u.legs[1].rotation.x=-1.45;u.arms[0].rotation.x=u.arms[1].rotation.x=-1.1}
   else{ME.visible=false;ME.position.set(D.x,D.y,D.z);ME.rotation.y=D.h}
+  CAMY=(k==='heli'||k==='plane'||k==='balloon')?D.y:null;
   // 鏡頭跟在後面
   CAM.tx+=(D.x-CAM.tx)*Math.min(1,dt*5);CAM.tz+=(D.z-CAM.tz)*Math.min(1,dt*5);if(Math.abs(D.sp)>2){let dy=(D.h+Math.PI)-CAM.yaw;while(dy>Math.PI)dy-=Math.PI*2;while(dy<-Math.PI)dy+=Math.PI*2;CAM.yaw+=dy*Math.min(1,dt*.9)}
   if(D.y>gy+20&&CAM.dist<D.y-gy)CAM.dist+=(Math.min(260,D.y-gy+60)-CAM.dist)*dt*.5;S.mePos={x:D.x,z:D.z};const e=$('#drvSp');if(e)e.textContent=`時速 ${Math.round(Math.abs(D.sp)*3.6)} 公里${(k==='heli'||k==='plane'||k==='balloon')?`・高度 ${Math.round(D.y-gy)} 公尺`:''}`}
 {const mt=meTick;meTick=function(dt){if(DRV&&!INT){const jw=document.getElementById('joyW');if(jw)jw.style.display='flex';try{drvTick(dt)}catch(e){console.warn(e)}return}return mt(dt)}}
-{const vt=vehTick;vehTick=function(dt){vt(dt);for(let i=0;i<VEH.length;i++){const sv=S.veh[i];if(!sv)continue;const g=VEH[i].g;if(DRV&&DRV.i===i){g.position.set(DRV.x,DRV.y,DRV.z);g.rotation.order='YXZ';g.rotation.y=DRV.h;g.visible=true;continue}
-  if(sv.park){g.visible=true;g.position.set(sv.park.x,sv.park.y!=null?sv.park.y:Math.max(hAt(sv.park.x,sv.park.z),WATER_Y),sv.park.z);g.rotation.set(0,sv.park.r||0,0)}}}}
+{const vt=vehTick;vehTick=function(dt){vt(dt);for(let i=0;i<VEH.length;i++){const sv=S.veh[i];if(!sv)continue;const g=VEH[i].g;if(DRV&&DRV.i===i){g.position.set(DRV.x,DRV.y+vehLift(VEH[i]),DRV.z);g.rotation.order='YXZ';g.rotation.y=DRV.h;g.visible=true;continue}
+  if(sv.stow){g.visible=false;continue}if(sv.park){g.visible=true;g.position.set(sv.park.x,(sv.park.y!=null?sv.park.y:Math.max(hAt(sv.park.x,sv.park.z),WATER_Y))+vehLift(VEH[i]),sv.park.z);g.rotation.set(0,sv.park.r||0,0)}}}}
 {const b=bal2Tick;bal2Tick=function(dt){b(dt);try{trUIshow()}catch(e){}}}
+
+/* ======================= 2.54：交通工具不陷地、人物坐在裡面、避開建築、鏡頭跟著飛、警消救護車警笛、新機車和熱氣球 ======================= */
+const SEAT={speedboat:[.35,-.9],yacht:[1.2,-2],moto:[.62,-.25]};
+function vehLift(v){if(v.lift==null){const g=v.g;const p=g.position.clone(),r=g.rotation.clone(),sc=g.scale.clone();g.position.set(0,0,0);g.rotation.set(0,0,0);g.updateMatrixWorld(true);const b=new THREE.Box3().setFromObject(g);g.position.copy(p);g.rotation.copy(r);g.scale.copy(sc);v.lift=b.isEmpty()?0:Math.max(0,-b.min.y)}return v.lift}
+function objTop(o){const g=OBJM.get(o.id);if(!g)return hAt(o.x,o.z)+8;const u=g.userData;if(u.topY==null||u.topG!==g){g.updateMatrixWorld(true);const b=new THREE.Box3().setFromObject(g);u.topY=b.isEmpty()?g.position.y+6:b.max.y;u.topG=g}return u.topY}
+function vehHit(x,z,y,pad){if(!OBST)return false;const a=OBST.get(Math.floor(x/OC)*1000+Math.floor(z/OC));if(!a)return false;pad=pad||1;
+  for(const b of a){const o=b.o;let inside=false;
+    if(o&&canEnter(o)){const r=o.r||0,c=Math.cos(r),s=Math.sin(r);const dx=x-o.x,dz=z-o.z;const lx=dx*c-dz*s,lz=dx*s+dz*c;inside=Math.abs(lx)<o.w/2+pad&&Math.abs(lz)<o.d/2+pad}
+    else if(b.k==='circ')inside=Math.hypot(x-b.x,z-b.z)<b.rr+pad;
+    else{const c=Math.cos(-b.r),s=Math.sin(-b.r);const dx=x-b.x,dz=z-b.z;inside=Math.abs(dx*c+dz*s)<b.w+pad&&Math.abs(-dx*s+dz*c)<b.d+pad}
+    if(inside&&y<(o?objTop(o):hAt(x,z)+8)+1)return true}return false}
+function topAt(x,z){let t=-1e9;if(!OBST)return t;const a=OBST.get(Math.floor(x/OC)*1000+Math.floor(z/OC));if(!a)return t;for(const b of a){const o=b.o;if(!o)continue;const d=Math.hypot(x-o.x,z-o.z);if(d<Math.max(o.w||0,o.d||0,(o.rad||0)*2,o.len||0)/2+12)t=Math.max(t,objTop(o))}return t}
+// 新機車（速克達，沒有別人坐在上面）
+VEHD.moto.mk=()=>bat(new THREE.Group(),B=>{const bc=mat('',0x3ab0e8,{metalness:.4,roughness:.35}),dk=mat('',0x2a2a2e),ch=mat('',0xc8c8d0,{metalness:.8,roughness:.2});
+  for(const z of [-.62,.62]){B.add(cyl(.27,.27,.16,16),mat('',0x1a1a1a),mxAt(0,.27,z,0,1,1,1,0,Math.PI/2));B.add(cyl(.13,.13,.17,10),ch,mxAt(0,.27,z,0,1,1,1,0,Math.PI/2))}
+  B.add(boxG(.42,.12,.9),bc,mxAt(0,.38,-.05));B.add(boxG(.44,.38,.55),bc,mxAt(0,.55,-.45));B.add(boxG(.36,.12,.62),dk,mxAt(0,.8,-.4));
+  B.add(boxG(.46,.75,.14),bc,mxAt(0,.7,.42,0,1,1,1,-.25));B.add(boxG(.5,.08,.32),bc,mxAt(0,.47,.6));B.add(boxG(.06,.75,.06),ch,mxAt(0,.85,.55,0,1,1,1,-.3));
+  B.add(boxG(.62,.05,.05),dk,mxAt(0,1.2,.45));for(const s of [-1,1])B.add(boxG(.08,.06,.12),dk,mxAt(s*.33,1.2,.45));B.add(cyl(.08,.08,.06,12),new THREE.MeshStandardMaterial({color:0xfff4c0,emissive:0xffe080,emissiveIntensity:.6}),mxAt(0,1.05,.58,0,1,1,1,Math.PI/2));
+  B.add(boxG(.3,.08,.1),mat('',0xe8402a),mxAt(0,.62,-.74))}).parent;
+// 新熱氣球（大籃子，人站在籃子裡）
+VEHD.balloon.mk=()=>{const g=bat(new THREE.Group(),B=>{const C=[0xe84a4a,0xf8c820,0x3a8ae8,0xf4f4f8];for(let i=0;i<16;i++)B.add(new THREE.SphereGeometry(5.2,18,14,i/16*6.283,6.283/16),mat('',C[i%4]),mxAt(0,9.6,0,0,1,1.2,1));
+  B.add(new THREE.CylinderGeometry(1.4,2.2,1.6,16,1,true),mat('',0xe84a4a,{side:THREE.DoubleSide}),mxAt(0,3.6,0));
+  const w=mat('wood',0x9a6a3a),r=mat('',0x6a4a2a);B.add(boxG(2.6,.12,2.6),w,mxAt(0,-.55,0));for(const [x,z,sx,sz] of [[0,1.3,2.6,.12],[0,-1.3,2.6,.12],[1.3,0,.12,2.6],[-1.3,0,.12,2.6]])B.add(boxG(sx,1.25,sz),w,mxAt(x,.08,z));
+  for(const [x,z,sx,sz] of [[0,1.32,2.7,.18],[0,-1.32,2.7,.18],[1.32,0,.18,2.7],[-1.32,0,.18,2.7]])B.add(boxG(sx,.14,sz),r,mxAt(x,.72,z));
+  for(const x of [-1.2,1.2])for(const z of [-1.2,1.2]){const L=Math.hypot(x*.15,2.2,z*.15);B.add(boxG(.05,3.2,.05),r,mxAt(x*.92,2.3,z*.92))}
+  B.add(boxG(.5,.3,.5),mat('',0x3a3a42,{metalness:.6}),mxAt(0,2.4,0))}).parent;const fl=new THREE.Mesh(new THREE.ConeGeometry(.25,.9,8),new THREE.MeshBasicMaterial({color:0xffa020,transparent:true,opacity:.85}));fl.position.y=2.95;g.add(fl);g.userData.flame=fl;return g};
+// 自己在小鎮跑的交通工具也要避開建築
+{const vt2=vehTick;vehTick=function(dt){const prev=VEH.map(v=>v.g.position.clone());vt2(dt);const t=performance.now()/1000;
+  for(let i=0;i<VEH.length;i++){const v=VEH[i],sv=S.veh[i];if(!sv||sv.stow||sv.park||(DRV&&DRV.i===i))continue;const g=v.g,k=v.d.k;
+    if(k==='car'){if(prev[i]&&vehHit(g.position.x,g.position.z,g.position.y+.5,.8)){v.dir*=-1;g.position.copy(prev[i])}}
+    else if(k==='heli'||k==='balloon'||k==='plane'){const tp=topAt(g.position.x,g.position.z);v.hy=Math.max(v.hy||0,tp+12-g.position.y);v.hy*=Math.pow(.6,dt);if(v.hy>0)g.position.y+=v.hy}}
+  for(const v of VEH)if(v.g.userData.flame)v.g.userData.flame.scale.setScalar(.8+Math.sin(t*9)*.15+((DRV&&DRV.v===v&&DRV.up)?.6:0));
+  try{sirenTick(dt)}catch(e){}}}
+// 警車、消防車、救護車：在外面跑的時候一直響警笛（離越近越大聲）
+const SIRK={police:{type:'sawtooth',f:t=>900+300*Math.sin(t*2*Math.PI/2.2)},fire:{type:'square',f:t=>620+380*(.5+.5*Math.sin(t*2*Math.PI/4))},ambu:{type:'triangle',f:t=>(Math.floor(t*1.4)%2)?960:760}};const SIRV={};
+function sirenTick(){if(!A.ctx||!A.out)return;const ctx=A.ctx,t=ctx.currentTime;const lx=ME.position.x,lz=ME.position.z,cx=CAM.tx,cz=CAM.tz;
+  for(const k in SIRK){let best=1e9,mine=false;for(let i=0;i<VEH.length;i++){const v=VEH[i];if(v.k!==k)continue;const sv=S.veh[i];if(!sv||sv.stow)continue;if(sv.park&&!(DRV&&DRV.i===i))continue;const p=v.g.position;const d=Math.min(Math.hypot(p.x-lx,p.z-lz),Math.hypot(p.x-cx,p.z-cz));if(DRV&&DRV.i===i){mine=true;best=0}if(d<best)best=d}
+    let vol=best>=1e9||document.hidden?0:Math.pow(clamp(1-best/320,0,1),1.6)*(mine?.07:.09);
+    let V=SIRV[k];if(!V&&vol>0){const o=ctx.createOscillator();o.type=SIRK[k].type;const lp=ctx.createBiquadFilter();lp.type='lowpass';lp.frequency.value=2200;const gn=ctx.createGain();gn.gain.value=0;o.connect(lp);lp.connect(gn);gn.connect(A.out);o.start();V=SIRV[k]={o,gn}}
+    if(V){V.o.frequency.setTargetAtTime(SIRK[k].f(t),t,.03);V.gn.gain.setTargetAtTime(vol,t,.2)}}}
 
 /* ======================= 編輯面板（選到東西時出現） ======================= */
 const chipsH=(key,opts,cur,lock)=>`<div class="chips">${Object.entries(opts).map(([k,n])=>`<button data-${key}="${k}" class="${String(cur)===k?'on':''}" ${lock&&lock(k)?'disabled style="opacity:.4"':''}>${n}</button>`).join('')}</div>`;
